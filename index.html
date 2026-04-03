@@ -5,9 +5,27 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:'Courier New',monospace;overflow:hidden;}
-canvas{width:768px;height:432px;display:block;image-rendering:pixelated;}
-#settings{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:100;flex-direction:column;align-items:center;justify-content:center;gap:20px;}
+canvas{
+  display:block;
+  image-rendering:pixelated;
+  max-width:100vw;
+  max-height:100vh;
+  width:auto;
+  height:auto;
+  aspect-ratio:16/9;
+}
+body{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  background:#000;
+  margin:0;
+  overflow:hidden;
+}
+#settings{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:100;align-items:center;justify-content:center;}
 #settings.open{display:flex;}
+#settings-inner{display:flex;flex-direction:column;align-items:center;gap:12px;background:rgba(5,5,15,0.98);border:1px solid #333;padding:24px 40px;max-height:90vh;overflow-y:auto;min-width:400px;}
 .s-title{font-size:13px;letter-spacing:4px;color:#555;margin-bottom:8px;}
 .s-section{font-size:9px;letter-spacing:3px;color:#333;margin-top:8px;}
 .s-row{display:flex;align-items:center;gap:16px;width:360px;}
@@ -24,6 +42,7 @@ canvas{width:768px;height:432px;display:block;image-rendering:pixelated;}
 <body>
 <canvas id="c" width="1280" height="720"></canvas>
 <div id="settings">
+<div id="settings-inner">
   <div class="s-title">SETTINGS</div>
   <div class="s-section">AUDIO</div>
   <div class="s-row"><span class="s-label">BGM VOLUME</span><input class="s-slider" type="range" id="volBGM" min="0" max="100" value="80"><span class="s-val" id="volBGMVal">80</span></div>
@@ -41,13 +60,12 @@ canvas{width:768px;height:432px;display:block;image-rendering:pixelated;}
   <div class="s-row" style="justify-content:space-between;width:360px;padding:4px 0;">
     <span class="s-label">最高到達ステージ</span><span class="s-val" id="statBest" style="width:auto;">1</span>
   </div>
-  <div class="s-row" style="justify-content:space-between;width:360px;padding:4px 0;">
-    <span class="s-label">累計クリア数</span><span class="s-val" id="statClears" style="width:auto;">0</span>
-  </div>
+
   <div class="s-row" style="justify-content:space-between;width:360px;padding:4px 0;">
     <span class="s-label">累計ポイント</span><span class="s-val" id="statPts" style="width:auto;color:#f5c842;">0 PT</span>
   </div>
   <button class="s-close" onclick="closeSettings()">[ CLOSE ]</button>
+</div>
 </div>
 <script>
 const canvas=document.getElementById('c');
@@ -115,7 +133,6 @@ function openSettings(){
   document.getElementById('settings').classList.add('open');
   document.getElementById('statDeaths').textContent=getStat('totalDeaths').toLocaleString()+'回';
   document.getElementById('statBest').textContent='Stage '+getStat('bestStage',1);
-  document.getElementById('statClears').textContent=getStat('totalClears')+'回';
   document.getElementById('statPts').textContent=getStat('points').toLocaleString()+' PT';
 }
 function closeSettings(){document.getElementById('settings').classList.remove('open');canvas.focus();}
@@ -254,79 +271,79 @@ document.addEventListener('keyup',e=>{keys[e.key]=false;prevKeys[e.key]=false;})
 // ======== STAGES 1-10 ========
 const STAGES=[
 
-  // STAGE 1 — The Warm Up
-  // Ground stage. One pit. One visible spike. One warn trap.
-  // Clear concept: walk right, jump the pit, watch the spike on landing.
+  // STAGE 1 — How hard can it be?
+  // 地面を右に歩くだけ。でも終盤に罠。
+  // スパイクは右端。「まだ何もないな」→突然罠。
   {name:'STAGE 1',sub:'How hard can it be?',
    plats:[
-     {x:0,y:640,w:288,h:80},
-     {x:352,y:640,w:256,h:80},
-     {x:672,y:640,w:608,h:80},
+     {x:0,y:640,w:1280,h:80},
    ],
    spikes:[
-     {x:352,y:608,w:32,h:32},
+     {x:1216,y:608,w:32,h:32},
    ],
    traps:[
-     {x:672,y:608,w:32,h:32,tx:608,warn:true},
+     {x:512,y:608,w:32,h:32,tx:448,warn:true},
+     {x:896,y:608,w:32,h:32,tx:832,warn:false},
    ],
    fall:[],move:[],mimics:[],ceiling:[],
-   hg:[{x:416,y:608,w:16,h:32},{x:800,y:608,w:16,h:32}],
-   goal:{x:1200,y:528,w:48,h:112},spawn:{x:48,y:592}},
+   hg:[{x:640,y:608,w:16,h:32},{x:1024,y:608,w:16,h:32}],
+   goal:{x:1200,y:528,w:64,h:112},spawn:{x:48,y:592}},
 
-  // STAGE 2 — Step Up
-  // Ascending platforms. Each one narrower. Spike always on left edge.
-  // Learn: land on the right side of each platform.
+  // STAGE 2 — Keep climbing.
+  // 階段。各足場のスパイク位置が全部違う。
+  // 「左端かと思ったら右端」「右端かと思ったら中央」
+  // 毎回読み直さないと死ぬ設計。
   {name:'STAGE 2',sub:'Keep climbing.',
    plats:[
      {x:0,y:640,w:192,h:80},
-     {x:256,y:560,w:128,h:16},
-     {x:448,y:480,w:112,h:16},
-     {x:624,y:400,w:96,h:16},
-     {x:784,y:320,w:96,h:16},
-     {x:944,y:240,w:336,h:480},
+     {x:256,y:560,w:160,h:16},   // スパイク：右端
+     {x:480,y:480,w:160,h:16},   // スパイク：左端
+     {x:704,y:400,w:160,h:16},   // スパイク：中央（裏切り）
+     {x:928,y:320,w:160,h:16},   // スパイク：右端
+     {x:1152,y:240,w:128,h:480},
    ],
    spikes:[
-     {x:256,y:528,w:32,h:32},
-     {x:448,y:448,w:32,h:32},
-     {x:624,y:368,w:32,h:32},
-     {x:784,y:288,w:32,h:32},
+     {x:384,y:528,w:32,h:32},   // 1番足場：右端
+     {x:480,y:448,w:32,h:32},   // 2番足場：左端
+     {x:768,y:368,w:32,h:32},   // 3番足場：中央
+     {x:1056,y:288,w:32,h:32},  // 4番足場：右端
    ],
    traps:[
      {x:272,y:528,w:32,h:32,tx:224,warn:false},
-     {x:608,y:368,w:32,h:32,tx:560,warn:false},
+     {x:720,y:368,w:32,h:32,tx:672,warn:false},
    ],
    fall:[],move:[],mimics:[],ceiling:[],
-   hg:[{x:320,y:528,w:16,h:32},{x:704,y:368,w:16,h:32},{x:848,y:288,w:16,h:32}],
-   goal:{x:960,y:128,w:48,h:112},spawn:{x:48,y:592}},
+   hg:[{x:320,y:528,w:16,h:32},{x:752,y:368,w:16,h:32},{x:976,y:288,w:16,h:32}],
+   goal:{x:1168,y:128,w:48,h:112},spawn:{x:48,y:592}},
 
-  // STAGE 3 — The Gap
-  // Two platforms. Big gap. Moving platform in between.
-  // Simple concept, precise execution needed.
+  // STAGE 3 — Time it right.
+  // 動く足場。速い。待たなくていい。
+  // スパイクは両台座の「中央より奥」にある。手前は安全。
   {name:'STAGE 3',sub:'Time it right.',
    plats:[
-     {x:0,y:608,w:224,h:112},
-     {x:1024,y:608,w:256,h:112},
+     {x:0,y:608,w:240,h:112},
+     {x:1040,y:608,w:240,h:112},
    ],
    spikes:[
-     {x:192,y:576,w:32,h:32},
-     {x:1024,y:576,w:32,h:32},
+     {x:160,y:576,w:32,h:32},   // 左台座：奥（右寄り）
+     {x:1136,y:576,w:32,h:32},  // 右台座：奥（右寄り）
    ],
    traps:[
-     {x:208,y:576,w:32,h:32,tx:160,warn:false},
+     {x:48,y:576,w:32,h:32,tx:0,warn:false},
      {x:1040,y:576,w:32,h:32,tx:992,warn:false},
    ],
    fall:[],mimics:[],ceiling:[],
    move:[
-     {x:288,y:560,w:128,h:16,vx:3.0,vy:0,rx:240,ry:0,sx:480,sy:560},
-     {x:576,y:480,w:112,h:16,vx:0,vy:2.5,rx:0,ry:80,sx:576,sy:480},
-     {x:736,y:560,w:128,h:16,vx:-3.0,vy:0,rx:160,ry:0,sx:736,sy:560},
+     {x:272,y:576,w:128,h:16,vx:5.5,vy:0,rx:208,ry:0,sx:480,sy:576},
+     {x:672,y:512,w:112,h:16,vx:0,vy:4.5,rx:0,ry:64,sx:672,sy:512},
+     {x:800,y:576,w:128,h:16,vx:-5.5,vy:0,rx:176,ry:0,sx:816,sy:576},
    ],
-   hg:[{x:336,y:528,w:16,h:32},{x:624,y:448,w:16,h:32}],
-   goal:{x:1168,y:496,w:48,h:112},spawn:{x:48,y:560}},
+   hg:[{x:400,y:544,w:16,h:32},{x:688,y:480,w:16,h:32}],
+   goal:{x:1168,y:496,w:64,h:112},spawn:{x:48,y:560}},
 
-  // STAGE 4 — Spike Floor
-  // Full spike floor. Moving platforms only. Visible danger.
-  // Fall = instant death. No forgiveness.
+  // STAGE 4 — Don't Fall.
+  // 床全面スパイク。動く足場。
+  // 途中に「一瞬止まれそうな広い足場」があるが、罠がある。
   {name:'STAGE 4',sub:"Don't. Fall.",
    plats:[
      {x:0,y:576,w:160,h:144},
@@ -345,73 +362,81 @@ const STAGES=[
      {x:1024,y:672,w:32,h:32},{x:1056,y:672,w:32,h:32},{x:1088,y:672,w:32,h:32},
    ],
    traps:[
-     {x:480,y:544,w:32,h:32,tx:416,warn:true},
+     // 広い足場（休憩に見える）に罠
+     {x:576,y:512,w:32,h:32,tx:512,warn:false},
    ],
    fall:[],mimics:[],ceiling:[],
    move:[
-     {x:192,y:528,w:128,h:16,vx:3.5,vy:0,rx:112,ry:0,sx:256,sy:528},
-     {x:448,y:464,w:128,h:16,vx:0,vy:3.0,rx:0,ry:80,sx:448,sy:464},
-     {x:704,y:528,w:128,h:16,vx:-3.5,vy:0,rx:112,ry:0,sx:768,sy:528},
-     {x:960,y:464,w:128,h:16,vx:0,vy:-2.5,rx:0,ry:64,sx:960,sy:464},
+     {x:192,y:528,w:96,h:16,vx:4.0,vy:0,rx:96,ry:0,sx:240,sy:528},
+     // 広く見える足場（でも罠）
+     {x:448,y:528,w:192,h:16,vx:0,vy:0,rx:0,ry:0,sx:448,sy:528},
+     {x:704,y:464,w:96,h:16,vx:0,vy:3.5,rx:0,ry:80,sx:704,sy:464},
+     {x:864,y:528,w:96,h:16,vx:-4.0,vy:0,rx:96,ry:0,sx:912,sy:528},
+     {x:992,y:464,w:96,h:16,vx:0,vy:-3.0,rx:0,ry:64,sx:992,sy:464},
    ],
-   hg:[{x:240,y:496,w:16,h:32},{x:496,y:432,w:16,h:32},{x:752,y:496,w:16,h:32}],
+   hg:[{x:256,y:496,w:16,h:32},{x:512,y:496,w:16,h:32},{x:720,y:432,w:16,h:32}],
    goal:{x:1136,y:464,w:48,h:112},spawn:{x:48,y:528}},
 
-  // STAGE 5 (Creator Zone) — The Long Road
-  // Ground level the whole way. But almost every step has something.
-  // Safe spots exist but look the same as dangerous ones.
+  // STAGE 5 (Creator Zone) — Just walk. Sure.
+  // 地面だけ。スパイクはクラスターで覚えやすい位置。
+  // でも「ここは安全」と思った直後に罠。
+  // スパイクの「形」で覚える：1本→2本→3本→1本
   {name:'STAGE 5',sub:'Just walk. Sure.',
    plats:[
      {x:0,y:640,w:1280,h:80},
    ],
    spikes:[
-     {x:128,y:608,w:32,h:32},
-     {x:320,y:608,w:32,h:32},{x:352,y:608,w:32,h:32},
-     {x:576,y:608,w:32,h:32},
+     // 1本（序盤警告）
+     {x:192,y:608,w:32,h:32},
+     // 2本（中盤）
+     {x:512,y:608,w:32,h:32},{x:544,y:608,w:32,h:32},
+     // 3本（ここが一番危ない）
      {x:800,y:608,w:32,h:32},{x:832,y:608,w:32,h:32},{x:864,y:608,w:32,h:32},
-     {x:1056,y:608,w:32,h:32},
+     // 1本（終盤、油断させる）
+     {x:1152,y:608,w:32,h:32},
    ],
    traps:[
-     {x:192,y:608,w:32,h:32,tx:128,warn:false},
-     {x:448,y:608,w:32,h:32,tx:384,warn:false},
-     {x:640,y:608,w:32,h:32,tx:576,warn:false},
-     {x:960,y:608,w:32,h:32,tx:896,warn:false},
-     {x:1120,y:608,w:32,h:32,tx:1056,warn:false},
+     // スパイクの直後に罠（「越えた！」の瞬間に死）
+     {x:256,y:608,w:32,h:32,tx:192,warn:false},
+     {x:608,y:608,w:32,h:32,tx:544,warn:false},
+     {x:912,y:608,w:32,h:32,tx:864,warn:false},
+     {x:1216,y:608,w:32,h:32,tx:1152,warn:false},
    ],
    fall:[],move:[],mimics:[],ceiling:[],
-   hg:[{x:256,y:608,w:16,h:32},{x:704,y:608,w:16,h:32},{x:1008,y:608,w:16,h:32}],
-   goal:{x:1200,y:528,w:48,h:112},spawn:{x:48,y:592}},
+   hg:[{x:368,y:608,w:16,h:32},{x:688,y:608,w:16,h:32},{x:1024,y:608,w:16,h:32}],
+   goal:{x:1200,y:528,w:64,h:112},spawn:{x:48,y:592}},
 
-  // STAGE 6 — Up and Over
-  // Must go up a tall platform wall and come down the other side.
-  // Traps on the way up. Spike on landing.
+  // STAGE 6 — Up and Over.
+  // 壁を登って反対側へ。ゴールは最終足場と同じ高さ。
+  // スパイクは「登り中の意外な場所」に。
   {name:'STAGE 6',sub:'Up. Then down.',
    plats:[
-     {x:0,y:640,w:256,h:80},
-     {x:256,y:0,w:64,h:640},
-     {x:320,y:560,w:192,h:16},
-     {x:576,y:480,w:192,h:16},
-     {x:832,y:400,w:192,h:16},
-     {x:832,y:400,w:64,h:320},
-     {x:896,y:560,w:384,h:160},
+     {x:0,y:640,w:208,h:80},
+     {x:208,y:0,w:48,h:544},
+     {x:256,y:512,w:176,h:16},   // 1段目
+     {x:496,y:432,w:176,h:16},   // 2段目
+     {x:736,y:352,w:176,h:16},   // 3段目
+     {x:912,y:352,w:48,h:288},   // 右降り壁
+     {x:960,y:512,w:320,h:128},  // ゴール台
    ],
    spikes:[
-     {x:320,y:528,w:32,h:32},
-     {x:576,y:448,w:32,h:32},
-     {x:896,y:528,w:32,h:32},
+     {x:400,y:480,w:32,h:32},    // 1段目：右端寄り（中央を通ろうとする人に）
+     {x:496,y:400,w:32,h:32},    // 2段目：左端（降りた瞬間）
+     {x:864,y:320,w:32,h:32},    // 3段目：右端（ゴールに近い方）
+     {x:960,y:480,w:32,h:32},    // ゴール台：入口左端
    ],
    traps:[
-     {x:336,y:528,w:32,h:32,tx:288,warn:false},
-     {x:592,y:448,w:32,h:32,tx:544,warn:false},
-     {x:848,y:368,w:32,h:32,tx:800,warn:false},
+     {x:272,y:480,w:32,h:32,tx:224,warn:false},
+     {x:592,y:400,w:32,h:32,tx:544,warn:false},
+     {x:1072,y:480,w:32,h:32,tx:1024,warn:false},
    ],
    fall:[],move:[],mimics:[],ceiling:[],
-   hg:[{x:384,y:528,w:16,h:32},{x:640,y:448,w:16,h:32},{x:944,y:528,w:16,h:32}],
-   goal:{x:1168,y:448,w:48,h:112},spawn:{x:48,y:592}},
+   hg:[{x:320,y:480,w:16,h:32},{x:624,y:400,w:16,h:32},{x:1008,y:480,w:16,h:32}],
+   goal:{x:1168,y:400,w:64,h:112},spawn:{x:48,y:592}},
 
-  // STAGE 7 — Falling Platforms
-  // Platforms look safe and wide. All of them fall. Different timing.
-  // The trick: run fast, don't stop.
+  // STAGE 7 — Keep Moving.
+  // 全足場が崩れる。止まったら落ちる。
+  // スパイクは「次の足場への着地点」に。走りながら判断が必要。
   {name:'STAGE 7',sub:'Keep moving.',
    plats:[
      {x:0,y:640,w:192,h:80},
@@ -423,12 +448,13 @@ const STAGES=[
      {x:1152,y:640,w:128,h:80},
    ],
    spikes:[
-     {x:192,y:608,w:32,h:32},
-     {x:960,y:608,w:32,h:32},
+     {x:192,y:560,w:32,h:32},   // 1番：左端（スタートから見える）
+     {x:544,y:512,w:32,h:32},   // 3番：右寄り（意外な位置）
+     {x:960,y:560,w:32,h:32},   // 5番：左端（再び）
    ],
    traps:[
-     {x:288,y:560,w:32,h:32,tx:224,warn:false},
-     {x:672,y:464,w:32,h:32,tx:608,warn:false},
+     {x:352,y:512,w:32,h:32,tx:288,warn:false},
+     {x:736,y:512,w:32,h:32,tx:672,warn:false},
    ],
    fall:[
      {x:192,y:592,w:192,h:16,spikesOn:false},
@@ -438,12 +464,13 @@ const STAGES=[
      {x:960,y:592,w:192,h:16,spikesOn:false},
    ],
    move:[],mimics:[],ceiling:[],
-   hg:[{x:240,y:560,w:16,h:32},{x:528,y:512,w:16,h:32},{x:816,y:512,w:16,h:32}],
-   goal:{x:1168,y:528,w:48,h:112},spawn:{x:48,y:592}},
+   hg:[{x:256,y:560,w:16,h:32},{x:448,y:512,w:16,h:32},{x:816,y:512,w:16,h:32}],
+   goal:{x:1168,y:528,w:64,h:112},spawn:{x:48,y:592}},
 
-  // STAGE 8 — Two Lanes
-  // Upper and lower paths. Upper looks safer, lower is actually safer.
-  // Spikes block the obvious route.
+  // STAGE 8 — Which way?
+  // 上ルートは全面スパイクで通れない（見ればわかる）。
+  // 下ルートが正解。でも下ルートも罠だらけ。
+  // 罠は「安全そうな足場の中央」に隠れている。
   {name:'STAGE 8',sub:'Which way?',
    plats:[
      {x:0,y:640,w:192,h:80},
@@ -456,85 +483,98 @@ const STAGES=[
      {x:960,y:640,w:320,h:80},
    ],
    spikes:[
+     // 上ルート完全封鎖
      {x:192,y:448,w:32,h:32},{x:224,y:448,w:32,h:32},{x:256,y:448,w:32,h:32},
+     {x:288,y:448,w:32,h:32},{x:320,y:448,w:32,h:32},{x:352,y:448,w:32,h:32},
      {x:448,y:368,w:32,h:32},{x:480,y:368,w:32,h:32},{x:512,y:368,w:32,h:32},
+     {x:544,y:368,w:32,h:32},{x:576,y:368,w:32,h:32},{x:608,y:368,w:32,h:32},
      {x:704,y:448,w:32,h:32},{x:736,y:448,w:32,h:32},{x:768,y:448,w:32,h:32},
+     {x:800,y:448,w:32,h:32},{x:832,y:448,w:32,h:32},{x:864,y:448,w:32,h:32},
+     // 下ルート：ゴール手前の右端（最後の最後）
+     {x:848,y:576,w:32,h:32},
      {x:960,y:608,w:32,h:32},
    ],
    traps:[
-     {x:208,y:576,w:32,h:32,tx:144,warn:false},
-     {x:720,y:576,w:32,h:32,tx:656,warn:false},
+     // 下ルート：中央に罠（端は安全に見える）
+     {x:272,y:576,w:32,h:32,tx:224,warn:false},
+     {x:544,y:576,w:32,h:32,tx:496,warn:false},
    ],
    fall:[],move:[],mimics:[],ceiling:[],
-   hg:[{x:464,y:576,w:16,h:32},{x:720,y:576,w:16,h:32}],
-   goal:{x:1168,y:528,w:48,h:112},spawn:{x:48,y:592}},
+   hg:[{x:480,y:576,w:16,h:32},{x:736,y:576,w:16,h:32}],
+   goal:{x:1168,y:528,w:64,h:112},spawn:{x:48,y:592}},
 
-  // STAGE 9 — The Bait
-  // Wide comfortable platforms. Plenty of room. Then they fall.
-  // And there's a trap right where you'd try to stand still.
-  {name:'STAGE 9',sub:'Take your time.',
+  // STAGE 9 — Nice and easy... right?
+  // 広い足場3枚。全部崩れる。
+  // スパイクは各足場の「真ん中より少し奥」。端っこは安全に見える。
+  // 罠は「次の足場への踏み出し位置」。走って死ぬ。
+  {name:'STAGE 9',sub:'Nice and easy... right?',
    plats:[
      {x:0,y:640,w:224,h:80},
-     {x:224,y:608,w:256,h:16},
-     {x:480,y:576,w:256,h:16},
-     {x:736,y:544,w:256,h:16},
-     {x:992,y:640,w:288,h:80},
+     {x:224,y:608,w:224,h:16},
+     {x:448,y:576,w:224,h:16},
+     {x:672,y:544,w:224,h:16},
+     {x:896,y:640,w:384,h:80},
    ],
    spikes:[
-     {x:224,y:576,w:32,h:32},
-     {x:992,y:608,w:32,h:32},
+     {x:352,y:576,w:32,h:32},   // 1番：中央より奥
+     {x:896,y:608,w:32,h:32},   // ゴール地面：入口
    ],
    traps:[
-     {x:352,y:576,w:32,h:32,tx:288,warn:false},
-     {x:608,y:544,w:32,h:32,tx:544,warn:false},
-     {x:864,y:512,w:32,h:32,tx:800,warn:false},
+     // 踏み出す瞬間に出てくる
+     {x:240,y:576,w:32,h:32,tx:192,warn:false},
+     {x:560,y:544,w:32,h:32,tx:512,warn:false},
+     {x:784,y:512,w:32,h:32,tx:736,warn:false},
    ],
    fall:[
-     {x:224,y:608,w:256,h:16,spikesOn:false},
-     {x:480,y:576,w:256,h:16,spikesOn:false},
-     {x:736,y:544,w:256,h:16,spikesOn:false},
+     {x:224,y:608,w:224,h:16,spikesOn:false},
+     {x:448,y:576,w:224,h:16,spikesOn:false},
+     {x:672,y:544,w:224,h:16,spikesOn:false},
    ],
    move:[],mimics:[],ceiling:[],
-   hg:[{x:320,y:576,w:16,h:32},{x:576,y:544,w:16,h:32},{x:832,y:512,w:16,h:32}],
-   goal:{x:1168,y:528,w:48,h:112},spawn:{x:48,y:592}},
+   hg:[{x:288,y:576,w:16,h:32},{x:512,y:544,w:16,h:32},{x:736,y:512,w:16,h:32}],
+   goal:{x:1168,y:528,w:64,h:112},spawn:{x:48,y:592}},
 
-  // STAGE 10 (Creator Zone) — Everything
-  // Ground start, moving platform crossing, falling platform section,
-  // spike floor section, trap gauntlet. All in one.
+  // STAGE 10 (Creator Zone) — You've learned nothing.
+  // 全要素。スパイク床横断＋崩れ足場＋動く足場＋罠。
+  // スパイクは「絶対ここは大丈夫」と思った場所に配置。
   {name:'STAGE 10',sub:"You've learned nothing.",
    plats:[
      {x:0,y:640,w:160,h:80},
-     {x:544,y:640,w:160,h:80},
-     {x:704,y:592,w:160,h:16},
-     {x:864,y:544,w:160,h:16},
-     {x:1024,y:496,w:256,h:224},
+     {x:560,y:640,w:160,h:80},
+     {x:720,y:592,w:160,h:16},
+     {x:880,y:544,w:160,h:16},
+     {x:1040,y:496,w:240,h:224},
    ],
    spikes:[
      {x:160,y:672,w:32,h:32},{x:192,y:672,w:32,h:32},{x:224,y:672,w:32,h:32},
      {x:256,y:672,w:32,h:32},{x:288,y:672,w:32,h:32},{x:320,y:672,w:32,h:32},
      {x:352,y:672,w:32,h:32},{x:384,y:672,w:32,h:32},{x:416,y:672,w:32,h:32},
      {x:448,y:672,w:32,h:32},{x:480,y:672,w:32,h:32},{x:512,y:672,w:32,h:32},
-     {x:544,y:608,w:32,h:32},
-     {x:704,y:560,w:32,h:32},
-     {x:864,y:512,w:32,h:32},
+     {x:544,y:672,w:32,h:32},
+     // 崩れ足場のスパイク：右端（「右は安全」の裏切り）
+     {x:848,y:560,w:32,h:32},
+     // ゴール台：中央に1本（入口と出口の間）
+     {x:1136,y:464,w:32,h:32},
    ],
    traps:[
-     {x:720,y:560,w:32,h:32,tx:672,warn:false},
-     {x:880,y:512,w:32,h:32,tx:832,warn:false},
-     {x:1040,y:464,w:32,h:32,tx:992,warn:false},
+     {x:736,y:560,w:32,h:32,tx:688,warn:false},
+     {x:896,y:512,w:32,h:32,tx:848,warn:false},
+     {x:1056,y:464,w:32,h:32,tx:1008,warn:false},
    ],
    fall:[
-     {x:704,y:592,w:160,h:16,spikesOn:false},
-     {x:864,y:544,w:160,h:16,spikesOn:false},
+     {x:720,y:592,w:160,h:16,spikesOn:false},
+     {x:880,y:544,w:160,h:16,spikesOn:false},
    ],
    mimics:[],ceiling:[],
    move:[
-     {x:192,y:576,w:128,h:16,vx:3.5,vy:0,rx:128,ry:0,sx:288,sy:576},
-     {x:384,y:512,w:128,h:16,vx:0,vy:3.0,rx:0,ry:80,sx:384,sy:512},
+     {x:192,y:576,w:128,h:16,vx:4.5,vy:0,rx:128,ry:0,sx:288,sy:576},
+     {x:384,y:512,w:128,h:16,vx:0,vy:3.5,rx:0,ry:80,sx:384,sy:512},
    ],
-   hg:[{x:240,y:544,w:16,h:32},{x:432,y:480,w:16,h:32},{x:768,y:560,w:16,h:32}],
-   goal:{x:1040,y:384,w:48,h:112},spawn:{x:48,y:592}},
+   hg:[{x:240,y:544,w:16,h:32},{x:432,y:480,w:16,h:32},{x:784,y:560,w:16,h:32}],
+   goal:{x:1056,y:384,w:48,h:112},spawn:{x:48,y:592}},
 ];
+
+
 
 
 

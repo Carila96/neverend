@@ -253,279 +253,288 @@ document.addEventListener('keyup',e=>{keys[e.key]=false;prevKeys[e.key]=false;})
 // ======== STAGES 1-10 ========
 const STAGES=[
 
-  // STAGE 1 — Just walk. But can you?
-  // Ground level. One collapse, one visible spike. Tutorial.
-  {name:'STAGE 1',sub:'Just walk. But can you?',
+  // STAGE 1 — The Warm Up
+  // Ground stage. One pit. One visible spike. One warn trap.
+  // Clear concept: walk right, jump the pit, watch the spike on landing.
+  {name:'STAGE 1',sub:'How hard can it be?',
    plats:[
-     {x:0,y:656,w:400,h:64},
-     {x:480,y:656,w:320,h:64},
-     {x:880,y:656,w:400,h:64},
-     {x:416,y:608,w:48,h:16},
+     {x:0,y:640,w:288,h:80},
+     {x:352,y:640,w:256,h:80},
+     {x:672,y:640,w:608,h:80},
    ],
    spikes:[
-     {x:848,y:624,w:32,h:32},
+     {x:352,y:608,w:32,h:32},
    ],
    traps:[
-     {x:416,y:576,w:32,h:32,tx:352,warn:true},
+     {x:672,y:608,w:32,h:32,tx:608,warn:true},
    ],
    fall:[],move:[],mimics:[],ceiling:[],
-   hg:[{x:496,y:624,w:24,h:28},{x:928,y:624,w:24,h:28}],
-   goal:{x:1184,y:544,w:48,h:176},spawn:{x:32,y:608}},
+   hg:[{x:416,y:608,w:24,h:28},{x:800,y:608,w:24,h:28}],
+   goal:{x:1200,y:528,w:48,h:112},spawn:{x:48,y:592}},
 
-  // STAGE 2 — One step at a time.
-  // Staircase up. Each step hides a trap.
-  {name:'STAGE 2',sub:'One step at a time.',
+  // STAGE 2 — Step Up
+  // Ascending platforms. Each one narrower. Spike always on left edge.
+  // Learn: land on the right side of each platform.
+  {name:'STAGE 2',sub:'Keep climbing.',
    plats:[
-     {x:0,y:656,w:208,h:64},
-     {x:0,y:0,w:16,h:720},
-     {x:208,y:576,w:160,h:16},
-     {x:432,y:496,w:160,h:16},
-     {x:656,y:416,w:160,h:16},
-     {x:880,y:336,w:160,h:16},
-     {x:1104,y:256,w:176,h:464},
+     {x:0,y:640,w:192,h:80},
+     {x:256,y:560,w:128,h:16},
+     {x:448,y:480,w:112,h:16},
+     {x:624,y:400,w:96,h:16},
+     {x:784,y:320,w:96,h:16},
+     {x:944,y:240,w:336,h:480},
    ],
    spikes:[
-     {x:208,y:544,w:32,h:32},
-     {x:880,y:304,w:32,h:32},
+     {x:256,y:528,w:32,h:32},
+     {x:448,y:448,w:32,h:32},
+     {x:624,y:368,w:32,h:32},
+     {x:784,y:288,w:32,h:32},
    ],
    traps:[
-     {x:448,y:464,w:32,h:32,tx:384,warn:true},
-     {x:672,y:384,w:32,h:32,tx:608,warn:false},
+     {x:272,y:528,w:32,h:32,tx:224,warn:false},
+     {x:608,y:368,w:32,h:32,tx:560,warn:false},
    ],
    fall:[],move:[],mimics:[],ceiling:[],
-   hg:[{x:272,y:544,w:24,h:28},{x:720,y:384,w:24,h:28},{x:944,y:304,w:24,h:28}],
-   goal:{x:1120,y:144,w:48,h:112},spawn:{x:32,y:608}},
+   hg:[{x:320,y:528,w:24,h:28},{x:704,y:368,w:24,h:28},{x:848,y:288,w:24,h:28}],
+   goal:{x:960,y:128,w:48,h:112},spawn:{x:48,y:592}},
 
-  // STAGE 3 — Sometimes you go down first.
-  // Ground into a pit. Climb out from the bottom.
-  {name:'STAGE 3',sub:'Sometimes you go down first.',
+  // STAGE 3 — The Gap
+  // Two platforms. Big gap. Moving platform in between.
+  // Simple concept, precise execution needed.
+  {name:'STAGE 3',sub:'Time it right.',
    plats:[
-     {x:0,y:656,w:320,h:64},
-     {x:0,y:0,w:16,h:720},
-     {x:320,y:0,w:16,h:560},
-     {x:320,y:624,w:16,h:96},
-     {x:640,y:0,w:16,h:720},
-     {x:16,y:624,w:304,h:96},
-     {x:656,y:592,w:96,h:16},
-     {x:816,y:512,w:96,h:16},
-     {x:976,y:432,w:96,h:16},
-     {x:1136,y:352,w:144,h:368},
+     {x:0,y:608,w:224,h:112},
+     {x:1024,y:608,w:256,h:112},
    ],
    spikes:[
-     {x:16,y:592,w:32,h:32},
-     {x:272,y:592,w:32,h:32},
-     {x:976,y:400,w:32,h:32},
+     {x:192,y:576,w:32,h:32},
+     {x:1024,y:576,w:32,h:32},
    ],
    traps:[
-     {x:672,y:560,w:32,h:32,tx:608,warn:false},
-     {x:832,y:480,w:32,h:32,tx:768,warn:false},
-   ],
-   fall:[],move:[],mimics:[],ceiling:[],
-   hg:[{x:688,y:560,w:24,h:28},{x:992,y:400,w:24,h:28}],
-   goal:{x:1152,y:240,w:48,h:112},spawn:{x:32,y:608}},
-
-  // STAGE 4 — Don't fall.
-  // Spike pit floor. Moving platforms only. No ground.
-  {name:'STAGE 4',sub:"Don't fall.",
-   plats:[
-     {x:0,y:560,w:160,h:160},
-     {x:1104,y:560,w:176,h:160},
-   ],
-   spikes:[
-     {x:160,y:688,w:32,h:32},{x:192,y:688,w:32,h:32},{x:224,y:688,w:32,h:32},
-     {x:256,y:688,w:32,h:32},{x:288,y:688,w:32,h:32},{x:320,y:688,w:32,h:32},
-     {x:352,y:688,w:32,h:32},{x:384,y:688,w:32,h:32},{x:416,y:688,w:32,h:32},
-     {x:448,y:688,w:32,h:32},{x:480,y:688,w:32,h:32},{x:512,y:688,w:32,h:32},
-     {x:544,y:688,w:32,h:32},{x:576,y:688,w:32,h:32},{x:608,y:688,w:32,h:32},
-     {x:640,y:688,w:32,h:32},{x:672,y:688,w:32,h:32},{x:704,y:688,w:32,h:32},
-     {x:736,y:688,w:32,h:32},{x:768,y:688,w:32,h:32},{x:800,y:688,w:32,h:32},
-     {x:832,y:688,w:32,h:32},{x:864,y:688,w:32,h:32},{x:896,y:688,w:32,h:32},
-     {x:928,y:688,w:32,h:32},{x:960,y:688,w:32,h:32},{x:992,y:688,w:32,h:32},
-     {x:1024,y:688,w:32,h:32},{x:1056,y:688,w:32,h:32},{x:1088,y:688,w:32,h:32},
-   ],
-   traps:[
-     {x:640,y:528,w:32,h:32,tx:576,warn:true},
+     {x:208,y:576,w:32,h:32,tx:160,warn:false},
+     {x:1040,y:576,w:32,h:32,tx:992,warn:false},
    ],
    fall:[],mimics:[],ceiling:[],
    move:[
-     {x:192,y:528,w:112,h:16,vx:3.0,vy:0,rx:96,ry:0,sx:240,sy:528},
-     {x:448,y:480,w:112,h:16,vx:0,vy:2.5,rx:0,ry:64,sx:448,sy:480},
-     {x:704,y:528,w:112,h:16,vx:-3.0,vy:0,rx:96,ry:0,sx:752,sy:528},
-     {x:960,y:480,w:96,h:16,vx:2.5,vy:0,rx:64,ry:0,sx:960,sy:480},
+     {x:288,y:560,w:128,h:16,vx:3.0,vy:0,rx:240,ry:0,sx:480,sy:560},
+     {x:576,y:480,w:112,h:16,vx:0,vy:2.5,rx:0,ry:80,sx:576,sy:480},
+     {x:736,y:560,w:128,h:16,vx:-3.0,vy:0,rx:160,ry:0,sx:736,sy:560},
    ],
-   hg:[{x:256,y:496,w:24,h:28},{x:512,y:448,w:24,h:28},{x:768,y:496,w:24,h:28}],
-   goal:{x:1120,y:448,w:48,h:112},spawn:{x:32,y:512}},
+   hg:[{x:336,y:528,w:24,h:28},{x:624,y:448,w:24,h:28}],
+   goal:{x:1168,y:496,w:48,h:112},spawn:{x:48,y:560}},
 
-  // STAGE 5 (Creator Zone) — Run. Don't think.
-  // Narrow corridor with ceiling and floor. Walls divide it into sections.
-  {name:'STAGE 5',sub:"Run. Don't think.",
+  // STAGE 4 — Spike Floor
+  // Full spike floor. Moving platforms only. Visible danger.
+  // Fall = instant death. No forgiveness.
+  {name:'STAGE 4',sub:"Don't. Fall.",
    plats:[
-     {x:0,y:0,w:1280,h:64},
-     {x:0,y:656,w:1280,h:64},
-     {x:400,y:64,w:32,h:480},
-     {x:800,y:176,w:32,h:480},
-     {x:1184,y:64,w:96,h:592},
+     {x:0,y:576,w:160,h:144},
+     {x:1120,y:576,w:160,h:144},
    ],
    spikes:[
-     {x:128,y:624,w:32,h:32},{x:160,y:624,w:32,h:32},{x:192,y:624,w:32,h:32},
-     {x:544,y:624,w:32,h:32},{x:576,y:624,w:32,h:32},{x:608,y:624,w:32,h:32},
-     {x:960,y:624,w:32,h:32},{x:992,y:624,w:32,h:32},{x:1024,y:624,w:32,h:32},
-     {x:256,y:64,w:32,h:32},{x:288,y:64,w:32,h:32},
-     {x:672,y:64,w:32,h:32},{x:704,y:64,w:32,h:32},
-     {x:1056,y:64,w:32,h:32},{x:1088,y:64,w:32,h:32},
+     {x:160,y:672,w:32,h:32},{x:192,y:672,w:32,h:32},{x:224,y:672,w:32,h:32},
+     {x:256,y:672,w:32,h:32},{x:288,y:672,w:32,h:32},{x:320,y:672,w:32,h:32},
+     {x:352,y:672,w:32,h:32},{x:384,y:672,w:32,h:32},{x:416,y:672,w:32,h:32},
+     {x:448,y:672,w:32,h:32},{x:480,y:672,w:32,h:32},{x:512,y:672,w:32,h:32},
+     {x:544,y:672,w:32,h:32},{x:576,y:672,w:32,h:32},{x:608,y:672,w:32,h:32},
+     {x:640,y:672,w:32,h:32},{x:672,y:672,w:32,h:32},{x:704,y:672,w:32,h:32},
+     {x:736,y:672,w:32,h:32},{x:768,y:672,w:32,h:32},{x:800,y:672,w:32,h:32},
+     {x:832,y:672,w:32,h:32},{x:864,y:672,w:32,h:32},{x:896,y:672,w:32,h:32},
+     {x:928,y:672,w:32,h:32},{x:960,y:672,w:32,h:32},{x:992,y:672,w:32,h:32},
+     {x:1024,y:672,w:32,h:32},{x:1056,y:672,w:32,h:32},{x:1088,y:672,w:32,h:32},
    ],
    traps:[
-     {x:336,y:624,w:32,h:32,tx:272,warn:false},
-     {x:736,y:624,w:32,h:32,tx:672,warn:false},
-     {x:1120,y:624,w:32,h:32,tx:1056,warn:false},
-   ],
-   fall:[],move:[],mimics:[],ceiling:[],
-   hg:[{x:64,y:624,w:24,h:28},{x:464,y:624,w:24,h:28},{x:864,y:624,w:24,h:28}],
-   goal:{x:1136,y:544,w:48,h:112},spawn:{x:32,y:608}},
-
-  // STAGE 6 — There's only one way.
-  // Room maze. Looks complex, one safe route.
-  {name:'STAGE 6',sub:"There's only one way.",
-   plats:[
-     {x:0,y:656,w:1280,h:64},
-     {x:0,y:0,w:1280,h:16},
-     {x:0,y:0,w:16,h:720},
-     {x:1264,y:0,w:16,h:720},
-     {x:256,y:16,w:16,h:496},
-     {x:512,y:224,w:16,h:496},
-     {x:768,y:16,w:16,h:496},
-     {x:1024,y:224,w:16,h:496},
-     {x:128,y:480,w:112,h:16},
-     {x:368,y:400,w:128,h:16},
-     {x:624,y:480,w:128,h:16},
-     {x:880,y:400,w:128,h:16},
-   ],
-   spikes:[
-     {x:128,y:448,w:32,h:32},
-     {x:624,y:448,w:32,h:32},
-   ],
-   traps:[
-     {x:384,y:368,w:32,h:32,tx:320,warn:false},
-     {x:896,y:368,w:32,h:32,tx:832,warn:false},
-     {x:1136,y:624,w:32,h:32,tx:1072,warn:false},
-   ],
-   fall:[],move:[],mimics:[],ceiling:[],
-   hg:[{x:160,y:448,w:24,h:28},{x:672,y:448,w:24,h:28},{x:928,y:368,w:24,h:28}],
-   goal:{x:1136,y:544,w:48,h:112},spawn:{x:32,y:608}},
-
-  // STAGE 7 — Going down.
-  // Vertical shaft. Fall and land on ledges from walls.
-  {name:'STAGE 7',sub:'Going down.',
-   plats:[
-     {x:0,y:0,w:16,h:720},
-     {x:1264,y:0,w:16,h:720},
-     {x:0,y:0,w:1280,h:64},
-     {x:0,y:656,w:1280,h:64},
-     {x:16,y:160,w:160,h:16},
-     {x:16,y:320,w:160,h:16},
-     {x:16,y:480,w:160,h:16},
-     {x:1104,y:240,w:160,h:16},
-     {x:1104,y:400,w:160,h:16},
-     {x:1104,y:560,w:160,h:16},
-   ],
-   spikes:[
-     {x:144,y:128,w:32,h:32},
-     {x:144,y:288,w:32,h:32},
-     {x:1104,y:208,w:32,h:32},
-     {x:1104,y:368,w:32,h:32},
-   ],
-   traps:[
-     {x:32,y:448,w:32,h:32,tx:0,warn:false},
-     {x:1216,y:528,w:32,h:32,tx:1264,warn:false},
-   ],
-   fall:[],move:[],mimics:[],ceiling:[],
-   hg:[{x:80,y:288,w:24,h:28},{x:1152,y:368,w:24,h:28},{x:80,y:448,w:24,h:28}],
-   goal:{x:576,y:544,w:128,h:112},spawn:{x:608,y:80}},
-
-  // STAGE 8 — Stay in the middle.
-  // Moving walls close in from left and right. Survive.
-  {name:'STAGE 8',sub:'Stay in the middle.',
-   plats:[
-     {x:0,y:656,w:1280,h:64},
-     {x:0,y:0,w:1280,h:16},
-     {x:1184,y:16,w:96,h:640},
-   ],
-   spikes:[
-     {x:128,y:624,w:32,h:32},{x:384,y:624,w:32,h:32},
-     {x:640,y:624,w:32,h:32},{x:896,y:624,w:32,h:32},
-   ],
-   traps:[
-     {x:512,y:592,w:32,h:32,tx:448,warn:false},
-     {x:768,y:592,w:32,h:32,tx:704,warn:false},
+     {x:480,y:544,w:32,h:32,tx:416,warn:true},
    ],
    fall:[],mimics:[],ceiling:[],
    move:[
-     {x:0,y:80,w:64,h:560,vx:1.5,vy:0,rx:192,ry:0,sx:0,sy:80},
-     {x:1120,y:80,w:64,h:560,vx:-1.5,vy:0,rx:192,ry:0,sx:1120,sy:80},
-     {x:576,y:480,w:128,h:16,vx:0,vy:2.0,rx:0,ry:80,sx:576,sy:480},
+     {x:192,y:528,w:128,h:16,vx:3.5,vy:0,rx:112,ry:0,sx:256,sy:528},
+     {x:448,y:464,w:128,h:16,vx:0,vy:3.0,rx:0,ry:80,sx:448,sy:464},
+     {x:704,y:528,w:128,h:16,vx:-3.5,vy:0,rx:112,ry:0,sx:768,sy:528},
+     {x:960,y:464,w:128,h:16,vx:0,vy:-2.5,rx:0,ry:64,sx:960,sy:464},
    ],
-   hg:[{x:352,y:592,w:24,h:28},{x:608,y:448,w:24,h:28},{x:864,y:592,w:24,h:28}],
-   goal:{x:1136,y:544,w:48,h:112},spawn:{x:32,y:608}},
+   hg:[{x:240,y:496,w:24,h:28},{x:496,y:432,w:24,h:28},{x:752,y:496,w:24,h:28}],
+   goal:{x:1136,y:464,w:48,h:112},spawn:{x:48,y:528}},
 
-  // STAGE 9 — Nice and easy... right?
-  // Wide open platforms. All of them fall. No warning.
-  {name:'STAGE 9',sub:'Nice and easy... right?',
+  // STAGE 5 (Creator Zone) — The Long Road
+  // Ground level the whole way. But almost every step has something.
+  // Safe spots exist but look the same as dangerous ones.
+  {name:'STAGE 5',sub:'Just walk. Sure.',
    plats:[
-     {x:0,y:656,w:256,h:64},
-     {x:256,y:608,w:256,h:16},
-     {x:512,y:560,w:256,h:16},
-     {x:768,y:512,w:256,h:16},
-     {x:1024,y:656,w:256,h:64},
+     {x:0,y:640,w:1280,h:80},
    ],
    spikes:[
-     {x:256,y:624,w:32,h:32},
-     {x:1024,y:624,w:32,h:32},
+     {x:128,y:608,w:32,h:32},
+     {x:320,y:608,w:32,h:32},{x:352,y:608,w:32,h:32},
+     {x:576,y:608,w:32,h:32},
+     {x:800,y:608,w:32,h:32},{x:832,y:608,w:32,h:32},{x:864,y:608,w:32,h:32},
+     {x:1056,y:608,w:32,h:32},
    ],
    traps:[
-     {x:272,y:576,w:32,h:32,tx:208,warn:false},
-     {x:784,y:480,w:32,h:32,tx:720,warn:false},
+     {x:192,y:608,w:32,h:32,tx:128,warn:false},
+     {x:448,y:608,w:32,h:32,tx:384,warn:false},
+     {x:640,y:608,w:32,h:32,tx:576,warn:false},
+     {x:960,y:608,w:32,h:32,tx:896,warn:false},
+     {x:1120,y:608,w:32,h:32,tx:1056,warn:false},
+   ],
+   fall:[],move:[],mimics:[],ceiling:[],
+   hg:[{x:256,y:608,w:24,h:28},{x:704,y:608,w:24,h:28},{x:1008,y:608,w:24,h:28}],
+   goal:{x:1200,y:528,w:48,h:112},spawn:{x:48,y:592}},
+
+  // STAGE 6 — Up and Over
+  // Must go up a tall platform wall and come down the other side.
+  // Traps on the way up. Spike on landing.
+  {name:'STAGE 6',sub:'Up. Then down.',
+   plats:[
+     {x:0,y:640,w:256,h:80},
+     {x:256,y:0,w:64,h:640},
+     {x:320,y:560,w:192,h:16},
+     {x:576,y:480,w:192,h:16},
+     {x:832,y:400,w:192,h:16},
+     {x:832,y:400,w:64,h:320},
+     {x:896,y:560,w:384,h:160},
+   ],
+   spikes:[
+     {x:320,y:528,w:32,h:32},
+     {x:576,y:448,w:32,h:32},
+     {x:896,y:528,w:32,h:32},
+   ],
+   traps:[
+     {x:336,y:528,w:32,h:32,tx:288,warn:false},
+     {x:592,y:448,w:32,h:32,tx:544,warn:false},
+     {x:848,y:368,w:32,h:32,tx:800,warn:false},
+   ],
+   fall:[],move:[],mimics:[],ceiling:[],
+   hg:[{x:384,y:528,w:24,h:28},{x:640,y:448,w:24,h:28},{x:944,y:528,w:24,h:28}],
+   goal:{x:1168,y:448,w:48,h:112},spawn:{x:48,y:592}},
+
+  // STAGE 7 — Falling Platforms
+  // Platforms look safe and wide. All of them fall. Different timing.
+  // The trick: run fast, don't stop.
+  {name:'STAGE 7',sub:'Keep moving.',
+   plats:[
+     {x:0,y:640,w:192,h:80},
+     {x:192,y:592,w:192,h:16},
+     {x:384,y:544,w:192,h:16},
+     {x:576,y:496,w:192,h:16},
+     {x:768,y:544,w:192,h:16},
+     {x:960,y:592,w:192,h:16},
+     {x:1152,y:640,w:128,h:80},
+   ],
+   spikes:[
+     {x:192,y:608,w:32,h:32},
+     {x:960,y:608,w:32,h:32},
+   ],
+   traps:[
+     {x:288,y:560,w:32,h:32,tx:224,warn:false},
+     {x:672,y:464,w:32,h:32,tx:608,warn:false},
    ],
    fall:[
-     {x:256,y:608,w:256,h:16,spikesOn:false},
-     {x:512,y:560,w:256,h:16,spikesOn:false},
-     {x:768,y:512,w:256,h:16,spikesOn:false},
+     {x:192,y:592,w:192,h:16,spikesOn:false},
+     {x:384,y:544,w:192,h:16,spikesOn:false},
+     {x:576,y:496,w:192,h:16,spikesOn:false},
+     {x:768,y:544,w:192,h:16,spikesOn:false},
+     {x:960,y:592,w:192,h:16,spikesOn:false},
    ],
    move:[],mimics:[],ceiling:[],
-   hg:[{x:352,y:576,w:24,h:28},{x:608,y:528,w:24,h:28},{x:864,y:480,w:24,h:28}],
-   goal:{x:1136,y:544,w:48,h:112},spawn:{x:32,y:608}},
+   hg:[{x:240,y:560,w:24,h:28},{x:528,y:512,w:24,h:28},{x:816,y:512,w:24,h:28}],
+   goal:{x:1168,y:528,w:48,h:112},spawn:{x:48,y:592}},
 
-  // STAGE 10 (Creator Zone) — You've learned nothing.
-  // Everything at once. Ground, pit, moving platform, falling floor, ceiling spikes.
-  {name:'STAGE 10',sub:"You've learned nothing.",
+  // STAGE 8 — Two Lanes
+  // Upper and lower paths. Upper looks safer, lower is actually safer.
+  // Spikes block the obvious route.
+  {name:'STAGE 8',sub:'Which way?',
    plats:[
-     {x:0,y:656,w:160,h:64},
-     {x:240,y:608,w:128,h:16},
-     {x:448,y:544,w:128,h:16},
-     {x:640,y:656,w:160,h:64},
-     {x:880,y:592,w:112,h:16},
-     {x:1056,y:528,w:224,h:192},
-     {x:0,y:0,w:1280,h:32},
+     {x:0,y:640,w:192,h:80},
+     {x:192,y:480,w:192,h:16},
+     {x:448,y:400,w:192,h:16},
+     {x:704,y:480,w:192,h:16},
+     {x:192,y:608,w:192,h:16},
+     {x:448,y:608,w:192,h:16},
+     {x:704,y:608,w:192,h:16},
+     {x:960,y:640,w:320,h:80},
    ],
    spikes:[
-     {x:160,y:624,w:32,h:32},
-     {x:640,y:624,w:32,h:32},
-     {x:880,y:560,w:32,h:32},
-     {x:320,y:32,w:32,h:32},{x:352,y:32,w:32,h:32},
-     {x:704,y:32,w:32,h:32},{x:736,y:32,w:32,h:32},
+     {x:192,y:448,w:32,h:32},{x:224,y:448,w:32,h:32},{x:256,y:448,w:32,h:32},
+     {x:448,y:368,w:32,h:32},{x:480,y:368,w:32,h:32},{x:512,y:368,w:32,h:32},
+     {x:704,y:448,w:32,h:32},{x:736,y:448,w:32,h:32},{x:768,y:448,w:32,h:32},
+     {x:960,y:608,w:32,h:32},
    ],
    traps:[
-     {x:256,y:576,w:32,h:32,tx:192,warn:false},
-     {x:464,y:512,w:32,h:32,tx:400,warn:false},
-     {x:896,y:560,w:32,h:32,tx:832,warn:false},
+     {x:208,y:576,w:32,h:32,tx:144,warn:false},
+     {x:720,y:576,w:32,h:32,tx:656,warn:false},
    ],
-   fall:[{x:448,y:544,w:128,h:16,spikesOn:false}],
+   fall:[],move:[],mimics:[],ceiling:[],
+   hg:[{x:464,y:576,w:24,h:28},{x:720,y:576,w:24,h:28}],
+   goal:{x:1168,y:528,w:48,h:112},spawn:{x:48,y:592}},
+
+  // STAGE 9 — The Bait
+  // Wide comfortable platforms. Plenty of room. Then they fall.
+  // And there's a trap right where you'd try to stand still.
+  {name:'STAGE 9',sub:'Take your time.',
+   plats:[
+     {x:0,y:640,w:224,h:80},
+     {x:224,y:608,w:256,h:16},
+     {x:480,y:576,w:256,h:16},
+     {x:736,y:544,w:256,h:16},
+     {x:992,y:640,w:288,h:80},
+   ],
+   spikes:[
+     {x:224,y:576,w:32,h:32},
+     {x:992,y:608,w:32,h:32},
+   ],
+   traps:[
+     {x:352,y:576,w:32,h:32,tx:288,warn:false},
+     {x:608,y:544,w:32,h:32,tx:544,warn:false},
+     {x:864,y:512,w:32,h:32,tx:800,warn:false},
+   ],
+   fall:[
+     {x:224,y:608,w:256,h:16,spikesOn:false},
+     {x:480,y:576,w:256,h:16,spikesOn:false},
+     {x:736,y:544,w:256,h:16,spikesOn:false},
+   ],
+   move:[],mimics:[],ceiling:[],
+   hg:[{x:320,y:576,w:24,h:28},{x:576,y:544,w:24,h:28},{x:832,y:512,w:24,h:28}],
+   goal:{x:1168,y:528,w:48,h:112},spawn:{x:48,y:592}},
+
+  // STAGE 10 (Creator Zone) — Everything
+  // Ground start, moving platform crossing, falling platform section,
+  // spike floor section, trap gauntlet. All in one.
+  {name:'STAGE 10',sub:"You've learned nothing.",
+   plats:[
+     {x:0,y:640,w:160,h:80},
+     {x:544,y:640,w:160,h:80},
+     {x:704,y:592,w:160,h:16},
+     {x:864,y:544,w:160,h:16},
+     {x:1024,y:496,w:256,h:224},
+   ],
+   spikes:[
+     {x:160,y:672,w:32,h:32},{x:192,y:672,w:32,h:32},{x:224,y:672,w:32,h:32},
+     {x:256,y:672,w:32,h:32},{x:288,y:672,w:32,h:32},{x:320,y:672,w:32,h:32},
+     {x:352,y:672,w:32,h:32},{x:384,y:672,w:32,h:32},{x:416,y:672,w:32,h:32},
+     {x:448,y:672,w:32,h:32},{x:480,y:672,w:32,h:32},{x:512,y:672,w:32,h:32},
+     {x:544,y:608,w:32,h:32},
+     {x:704,y:560,w:32,h:32},
+     {x:864,y:512,w:32,h:32},
+   ],
+   traps:[
+     {x:720,y:560,w:32,h:32,tx:672,warn:false},
+     {x:880,y:512,w:32,h:32,tx:832,warn:false},
+     {x:1040,y:464,w:32,h:32,tx:992,warn:false},
+   ],
+   fall:[
+     {x:704,y:592,w:160,h:16,spikesOn:false},
+     {x:864,y:544,w:160,h:16,spikesOn:false},
+   ],
    mimics:[],ceiling:[],
    move:[
-     {x:240,y:608,w:128,h:16,vx:2.5,vy:0,rx:64,ry:0,sx:240,sy:608},
+     {x:192,y:576,w:128,h:16,vx:3.5,vy:0,rx:128,ry:0,sx:288,sy:576},
+     {x:384,y:512,w:128,h:16,vx:0,vy:3.0,rx:0,ry:80,sx:384,sy:512},
    ],
-   hg:[{x:272,y:576,w:24,h:28},{x:672,y:624,w:24,h:28},{x:912,y:560,w:24,h:28}],
-   goal:{x:1072,y:416,w:48,h:112},spawn:{x:32,y:608}},
+   hg:[{x:240,y:544,w:24,h:28},{x:432,y:480,w:24,h:28},{x:768,y:560,w:24,h:28}],
+   goal:{x:1040,y:384,w:48,h:112},spawn:{x:48,y:592}},
 ];
+
 
 
 function loadStage(n){
@@ -563,35 +572,56 @@ function resolvePlayer(){
     player.y+=playerPlatform.dy||0;
   }
 
-  player.x+=player.vx;
-  player.x=Math.max(0,Math.min(W-player.w,player.x));
   const allPlats=[...platforms,...fallingBlocks.filter(b=>!b.falling&&!b.gone),...movingPlatforms];
 
+  // X movement + horizontal collision
+  player.x+=player.vx;
+  player.x=Math.max(0,Math.min(W-player.w,player.x));
   for(const p of allPlats){
     if(overlap(player,p)){
-      if(player.vx>0)player.x=p.x-player.w;
-      else if(player.vx<0)player.x=p.x+p.w;
-      player.vx=0;
-    }
-  }
-
-  player.onGround=false;
-  playerPlatform=null;
-  player.y+=player.vy;
-
-  for(const p of allPlats){
-    if(overlap(player,p)){
-      if(player.vy>=0){
-        player.y=p.y-player.h;
-        player.vy=0;
-        player.onGround=true;
-        if(movingPlatforms.includes(p))playerPlatform=p;
-      } else {
-        player.y=p.y+p.h;
-        player.vy=0;
+      // Only resolve horizontally if player center is closer to side than top/bottom
+      const overlapLeft=player.x+player.w-p.x;
+      const overlapRight=p.x+p.w-player.x;
+      const overlapTop=player.y+player.h-p.y;
+      const overlapBottom=p.y+p.h-player.y;
+      const minH=Math.min(overlapLeft,overlapRight);
+      const minV=Math.min(overlapTop,overlapBottom);
+      if(minH<minV){
+        // Horizontal push
+        if(overlapLeft<overlapRight){player.x=p.x-player.w;}
+        else{player.x=p.x+p.w;}
+        player.vx=0;
       }
     }
   }
+
+  // Y movement + vertical collision
+  player.onGround=false;
+  playerPlatform=null;
+  player.y+=player.vy;
+  for(const p of allPlats){
+    if(overlap(player,p)){
+      const overlapLeft=player.x+player.w-p.x;
+      const overlapRight=p.x+p.w-player.x;
+      const overlapTop=player.y+player.h-p.y;
+      const overlapBottom=p.y+p.h-player.y;
+      const minH=Math.min(overlapLeft,overlapRight);
+      const minV=Math.min(overlapTop,overlapBottom);
+      if(minV<=minH){
+        if(player.vy>=0&&overlapTop<overlapBottom){
+          player.y=p.y-player.h;
+          player.vy=0;
+          player.onGround=true;
+          if(movingPlatforms.includes(p))playerPlatform=p;
+        } else if(player.vy<0&&overlapBottom<=overlapTop){
+          player.y=p.y+p.h;
+          player.vy=0;
+        }
+      }
+    }
+  }
+  // Hard clamp to screen
+  player.x=Math.max(0,Math.min(W-player.w,player.x));
 }
 
 // ======== DRAW ========
@@ -942,7 +972,9 @@ function update(dt){
     }
     resolvePlayer();
     for(const t of trapSpikes){
-      if(!t.triggered&&player.x>t.tx){t.triggered=true;t.visible=true;t.timer=t.warn?0.5:0;}
+      // Only trigger if player is within Y range of the trap (prevents cross-level firing)
+      const inYRange=player.y+player.h>t.y-160&&player.y<t.y+t.h+160;
+      if(!t.triggered&&player.x>t.tx&&inYRange){t.triggered=true;t.visible=true;t.timer=t.warn?0.5:0;}
       if(t.triggered&&t.timer>0)t.timer-=dt;
     }
     for(const b of fallingBlocks){

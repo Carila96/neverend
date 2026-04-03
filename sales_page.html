@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>neverEND -- Own the Background</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap');
+:root{
+  --black:#090912;--dark:#0e0e1a;--panel:#13131f;--panel2:#17172a;
+  --border:#262640;--border2:#303050;
+  --accent:#e74c3c;--accent2:#4ab8ff;--gold:#f5c842;--green:#4ade80;
+  --text:#e0e4f0;--muted:#787f90;--muted2:#a0a8b8;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--black);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden;line-height:1.6;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 4px,rgba(0,0,0,0.025) 4px,rgba(0,0,0,0.025) 5px);pointer-events:none;z-index:9999;}
+
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;padding:18px 48px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(9,9,18,0.97);backdrop-filter:blur(12px);z-index:100;}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:#fff;}
+.logo span{color:var(--accent);}
+nav{display:flex;gap:28px;align-items:center;}
+nav a{color:var(--muted2);text-decoration:none;font-size:11px;letter-spacing:2px;text-transform:uppercase;transition:color 0.2s;}
+nav a:hover{color:var(--accent2);}
+.nav-cta{background:var(--accent);color:#fff !important;padding:8px 20px;}
+
+/* HERO */
+.hero{text-align:center;padding:72px 48px 40px;}
+.hero-eyebrow{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:4px;color:var(--muted2);margin-bottom:20px;text-transform:uppercase;}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(44px,7vw,88px);line-height:0.92;color:#fff;margin-bottom:24px;}
+.hero h1 em{color:var(--accent);font-style:normal;}
+.hero p{font-size:15px;color:var(--muted2);max-width:500px;margin:0 auto 48px;line-height:1.75;font-weight:300;}
+
+/* STATS */
+.stats-bar{display:flex;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:48px;background:var(--dark);}
+.stat-item{text-align:center;padding:28px 40px;border-right:1px solid var(--border);flex:1;max-width:220px;}
+.stat-item:last-child{border-right:none;}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:38px;color:#fff;line-height:1;}
+.stat-label{font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-top:6px;}
+
+/* PLACEMENT TOOL -- full-width integrated section */
+.placement-section{max-width:1400px;margin:0 auto;padding:0 24px 72px;}
+.placement-title-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+.placement-title{font-family:'Bebas Neue',sans-serif;font-size:36px;color:#fff;letter-spacing:1px;}
+.placement-subtitle{font-size:12px;color:var(--muted2);margin-top:2px;letter-spacing:0.5px;}
+
+/* Step flow indicator */
+.step-flow{display:flex;align-items:center;gap:0;margin-bottom:32px;border:1px solid var(--border);overflow:hidden;}
+.step-item{flex:1;padding:12px 16px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);background:var(--dark);text-align:center;border-right:1px solid var(--border);transition:all 0.2s;text-transform:uppercase;}
+.step-item:last-child{border-right:none;}
+.step-item.active{color:var(--accent2);background:rgba(74,184,255,0.06);}
+.step-item.done{color:var(--green);background:rgba(74,222,128,0.04);}
+.step-num{display:block;font-size:18px;font-family:'Bebas Neue',sans-serif;margin-bottom:2px;}
+
+/* TWO COLUMN LAYOUT */
+.placement-layout{display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start;}
+
+/* LEFT PANEL */
+.placement-controls{background:var(--dark);border:1px solid var(--border);}
+.ctrl-section{padding:20px;border-bottom:1px solid var(--border);}
+.ctrl-section:last-child{border-bottom:none;}
+.ctrl-title{font-family:'Bebas Neue',sans-serif;font-size:16px;color:#fff;letter-spacing:1px;margin-bottom:14px;}
+.ctrl-label{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted2);display:block;margin-bottom:8px;text-transform:uppercase;}
+.ctrl-select,.ctrl-input{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:9px 12px;font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;appearance:none;margin-bottom:12px;}
+.ctrl-select:focus,.ctrl-input:focus{border-color:var(--accent2);}
+
+/* Upload zone */
+.drop-zone{border:2px dashed var(--border2);padding:24px 12px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--panel2);margin-bottom:14px;}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--accent2);background:rgba(74,184,255,0.05);}
+.drop-zone-icon{font-size:24px;margin-bottom:8px;color:var(--muted2);}
+.drop-zone-text{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);letter-spacing:1px;line-height:1.8;}
+#fileInput{display:none;}
+
+/* Pixel preview small */
+.pixel-preview-small{background:var(--panel2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;height:80px;margin-bottom:12px;overflow:hidden;}
+.pixel-preview-small canvas{max-height:76px;max-width:100%;image-rendering:pixelated;}
+.pixel-preview-placeholder{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;}
+
+/* Status badge */
+.placement-status{padding:10px 14px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;border:1px solid var(--border);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.placement-status.idle{color:var(--muted);background:var(--panel2);border-color:var(--border);}
+.placement-status.valid{color:var(--green);background:rgba(74,222,128,0.06);border-color:rgba(74,222,128,0.3);}
+.placement-status.invalid{color:var(--accent);background:rgba(231,76,60,0.08);border-color:rgba(231,76,60,0.3);}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.placement-status.idle .status-dot{background:var(--muted);}
+.placement-status.valid .status-dot{background:var(--green);}
+.placement-status.invalid .status-dot{background:var(--accent);}
+
+/* Recommendation list */
+.rec-list{display:flex;flex-direction:column;gap:6px;}
+.rec-item{padding:8px 10px;background:var(--panel2);border:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);cursor:pointer;transition:all 0.2s;display:flex;justify-content:space-between;align-items:center;}
+.rec-item:hover{border-color:var(--accent2);color:var(--accent2);}
+.rec-item .rec-coords{color:var(--muted);font-size:9px;}
+.rec-note{font-size:10px;color:var(--muted);letter-spacing:0.5px;margin-top:8px;font-style:italic;}
+
+/* Action buttons */
+.btn-primary{width:100%;background:var(--accent);border:none;color:#fff;padding:13px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;font-weight:700;transition:background 0.2s;margin-bottom:8px;}
+.btn-primary:hover{background:#c0392b;}
+.btn-primary:disabled{background:var(--muted);color:#555;cursor:not-allowed;}
+.btn-secondary{width:100%;background:none;border:1px solid var(--border);color:var(--muted2);padding:10px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;margin-bottom:8px;}
+.btn-secondary:hover{border-color:var(--accent2);color:var(--accent2);}
+.btn-blue{width:100%;background:var(--accent2);border:none;color:#000;padding:12px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;font-weight:700;transition:opacity 0.2s;margin-bottom:8px;}
+.btn-blue:hover{opacity:0.85;}
+.btn-blue:disabled{background:var(--muted);color:#555;cursor:not-allowed;}
+
+/* Placement confirmation box */
+.confirm-box{background:rgba(74,222,128,0.06);border:1px solid rgba(74,222,128,0.25);padding:14px;margin-bottom:14px;font-family:'Share Tech Mono',monospace;font-size:11px;line-height:2;}
+.confirm-box .row{display:flex;justify-content:space-between;}
+.confirm-box .val{color:var(--accent2);}
+
+/* GRID section */
+.grid-wrapper{position:relative;background:var(--dark);border:1px solid var(--border);overflow:hidden;}
+.grid-header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px;}
+.grid-info{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;}
+.grid-info strong{color:var(--accent2);}
+.grid-legend{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+.legend-item{display:flex;gap:6px;align-items:center;font-size:10px;color:var(--muted2);letter-spacing:1px;font-family:'Share Tech Mono',monospace;}
+.legend-dot{width:11px;height:11px;border:1px solid transparent;}
+.legend-dot.empty{background:#1a1a2c;border-color:#2a2a40;}
+.legend-dot.claimed{background:#2a3a5c;border-color:#3a5a8a;}
+.legend-dot.placing{background:rgba(74,184,255,0.25);border-color:var(--accent2);}
+.legend-dot.placing-invalid{background:rgba(231,76,60,0.25);border-color:var(--accent);}
+.legend-dot.conflict{background:rgba(231,76,60,0.4);border-color:var(--accent);}
+.legend-dot.reserved{background:rgba(245,200,66,0.12);border-color:rgba(245,200,66,0.4);}
+#gridCanvas{display:block;width:100%;image-rendering:pixelated;}
+.grid-hint{padding:8px 20px;background:rgba(74,184,255,0.04);border-top:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;}
+
+/* STAGE NAV */
+.stage-nav-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.stage-btn{background:none;border:1px solid var(--border);color:var(--muted2);width:32px;height:32px;cursor:pointer;font-size:14px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.stage-btn:hover:not(:disabled){border-color:var(--accent2);color:var(--accent2);}
+.stage-btn:disabled{opacity:0.2;cursor:not-allowed;}
+.stage-select-wrap{position:relative;flex:1;}
+select.ctrl-select-inline{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:8px 32px 8px 12px;font-family:'Share Tech Mono',monospace;font-size:11px;cursor:pointer;appearance:none;outline:none;}
+select.ctrl-select-inline:focus{border-color:var(--accent2);}
+.stage-select-wrap::after{content:'v';position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-family:'Share Tech Mono',monospace;font-size:9px;}
+.creator-badge-small{display:none;padding:6px 12px;background:rgba(245,200,66,0.07);border:1px solid rgba(245,200,66,0.22);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--gold);margin-bottom:10px;}
+.creator-badge-small.visible{display:block;}
+
+/* TOOLTIP */
+#tooltip{position:fixed;background:var(--panel2);border:1px solid var(--border2);padding:10px 14px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;pointer-events:none;z-index:500;display:none;max-width:200px;line-height:1.9;}
+.tt-coord{color:var(--accent2);}
+.tt-claimed{color:var(--accent);}
+.tt-free{color:var(--green);}
+.tt-reserved{color:var(--gold);}
+.tt-locked{color:var(--muted);}
+
+/* PURCHASE PANEL */
+#purchasePanel{position:fixed;right:0;top:0;bottom:0;width:380px;background:var(--panel2);border-left:1px solid var(--border2);z-index:200;transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.22,1,0.36,1);display:flex;flex-direction:column;padding:32px;overflow-y:auto;}
+#purchasePanel.open{transform:translateX(0);}
+.panel-close{position:absolute;top:20px;right:20px;background:none;border:1px solid var(--border);color:var(--muted);width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.panel-close:hover{border-color:var(--accent);color:var(--accent);}
+.panel-eyebrow{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--accent);margin-bottom:12px;}
+.panel-title{font-family:'Bebas Neue',sans-serif;font-size:34px;color:#fff;line-height:1;margin-bottom:24px;}
+.panel-block-info{background:var(--dark);border:1px solid var(--border);padding:16px;margin-bottom:24px;font-family:'Share Tech Mono',monospace;font-size:11px;line-height:2;}
+.panel-block-info .row{display:flex;justify-content:space-between;}
+.panel-block-info .val{color:var(--accent2);}
+.panel-section-title{font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;font-family:'Share Tech Mono',monospace;}
+.block-count-wrap{display:flex;align-items:center;gap:12px;margin-bottom:24px;}
+.count-btn{background:none;border:1px solid var(--border);color:var(--text);width:36px;height:36px;cursor:pointer;font-size:18px;transition:all 0.2s;font-family:'Share Tech Mono',monospace;}
+.count-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+.count-display{font-family:'Bebas Neue',sans-serif;font-size:48px;color:#fff;min-width:80px;text-align:center;line-height:1;}
+.count-label{font-size:11px;color:var(--muted);letter-spacing:1px;}
+.plan-toggle{display:flex;margin-bottom:16px;border:1px solid var(--border);}
+.plan-btn{flex:1;background:none;border:none;color:var(--muted);padding:10px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;}
+.plan-btn.active{background:var(--accent2);color:#000;font-weight:700;}
+.price-summary{background:var(--dark);border:1px solid var(--border);padding:16px;margin-bottom:24px;}
+.price-row{display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:11px;margin-bottom:8px;color:var(--muted);}
+.price-row.total{border-top:1px solid var(--border);padding-top:12px;margin-top:4px;color:#fff;font-size:14px;}
+.price-row.annual-billed{background:rgba(245,200,66,0.06);padding:8px 12px;margin:-4px -12px 8px;border-left:2px solid var(--gold);}
+.price-row .discount{color:var(--green);}
+.price-row .amount{color:var(--gold);}
+.price-row .annual-amount{color:var(--gold);}
+.cta-btn{width:100%;background:var(--accent);border:none;color:#fff;padding:16px;font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:3px;cursor:pointer;text-transform:uppercase;transition:background 0.2s;margin-bottom:12px;}
+.cta-btn:hover{background:#c0392b;}
+.panel-note{font-size:10px;color:var(--muted);line-height:1.8;letter-spacing:0.5px;}
+.panel-note a{color:var(--accent2);text-decoration:none;}
+
+/* PRICING */
+.pricing-section{max-width:960px;margin:0 auto;padding:0 24px 80px;}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:44px;color:#fff;margin-bottom:6px;}
+.section-sub{font-size:13px;color:var(--muted2);margin-bottom:40px;letter-spacing:1px;line-height:1.6;}
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:48px;align-items:stretch;}
+.price-tier{background:var(--dark);padding:24px 20px;transition:background 0.2s;display:flex;flex-direction:column;}
+.price-tier:hover{background:var(--panel);}
+.tier-label{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--muted2);margin-bottom:12px;text-transform:uppercase;}
+.tier-price{font-family:'Bebas Neue',sans-serif;font-size:44px;color:#fff;line-height:1;}
+.tier-price sup{font-size:18px;vertical-align:top;margin-top:8px;display:inline-block;}
+.tier-price sub{font-size:12px;color:var(--muted);font-family:'Share Tech Mono',monospace;}
+.tier-price-text{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--text);line-height:1.5;margin-bottom:4px;letter-spacing:0.5px;padding:10px 0;}
+.tier-note{font-size:11px;color:var(--muted2);margin-top:10px;line-height:1.75;flex:1;}
+.tier-cap{color:var(--gold);font-size:10px;letter-spacing:2px;margin-top:10px;display:block;font-family:'Share Tech Mono',monospace;}
+.vol-section-title{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;margin-bottom:6px;}
+.volume-table{border:1px solid var(--border);overflow:hidden;margin-bottom:48px;}
+.vol-row{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:12px;transition:background 0.15s;}
+.vol-row:last-child{border-bottom:none;}
+.vol-row:hover{background:var(--panel);}
+.vol-row .blocks{color:var(--text);letter-spacing:1px;}
+.vol-row .disc{color:var(--green);font-weight:600;}
+.vol-row .disc.none{color:var(--muted);}
+.corp-guidance{background:var(--panel);border:1px solid var(--border);padding:24px;margin-bottom:48px;}
+.corp-guidance-title{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--muted2);text-transform:uppercase;margin-bottom:6px;}
+.corp-guidance-note{font-size:11px;color:var(--muted);margin-bottom:20px;letter-spacing:0.5px;line-height:1.6;}
+.corp-sizes{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);}
+.corp-size{background:var(--dark);padding:22px 16px;text-align:center;}
+.corp-size-num{font-family:'Bebas Neue',sans-serif;font-size:48px;color:#fff;line-height:1;}
+.corp-size-unit{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted2);letter-spacing:3px;margin-bottom:10px;text-transform:uppercase;}
+.corp-size-label{font-size:12px;color:var(--muted2);letter-spacing:1px;margin-bottom:4px;}
+.corp-size-example-label{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-top:12px;text-transform:uppercase;display:block;}
+.corp-size-example{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);margin-top:3px;display:block;}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.footer-logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--muted);}
+.footer-logo span{color:var(--accent);}
+.footer-links{display:flex;gap:20px;flex-wrap:wrap;}
+.footer-links a{font-size:11px;color:var(--muted);text-decoration:none;letter-spacing:1px;}
+.footer-links a:hover{color:var(--accent2);}
+.footer-copy{font-size:10px;color:#333;letter-spacing:1px;}
+</style>
+</head>
+<body>
+<div id="tooltip"><div class="tt-coord" id="ttCoord"></div><div id="ttStatus"></div></div>
+
+<!-- PURCHASE PANEL -->
+<div id="purchasePanel">
+  <button class="panel-close" onclick="closePanel()">x</button>
+  <div class="panel-eyebrow">GRID PLACEMENT</div>
+  <div class="panel-title">SECURE YOUR<br>PLACEMENT</div>
+  <div class="panel-block-info" id="panelInfo">
+    <div class="row"><span>STAGE</span><span class="val" id="panelStage">--</span></div>
+    <div class="row"><span>POSITION</span><span class="val" id="panelPos">--</span></div>
+    <div class="row"><span>SIZE</span><span class="val" id="panelSize">--</span></div>
+    <div class="row"><span>TYPE</span><span class="val" id="panelType">STANDARD</span></div>
+    <div class="row"><span>BLOCKS</span><span class="val" id="panelBlocks">--</span></div>
+    <div class="row"><span>PRICE</span><span class="val">$3 / block / mo</span></div>
+  </div>
+  <div class="panel-section-title">BILLING PLAN</div>
+  <div class="plan-toggle">
+    <button class="plan-btn active" onclick="setPlan('monthly',this)">MONTHLY</button>
+    <button class="plan-btn" onclick="setPlan('annual',this)">ANNUAL -- 2 MONTHS FREE</button>
+  </div>
+  <div class="price-summary">
+    <div class="price-row"><span>BASE PRICE</span><span class="amount" id="basePrice">$3.00</span></div>
+    <div class="price-row"><span>VOLUME DISCOUNT</span><span class="discount" id="discountRow">--</span></div>
+    <div class="price-row"><span>PLAN DISCOUNT</span><span class="discount" id="planRow">--</span></div>
+    <div class="price-row total"><span>MONTHLY TOTAL</span><span class="amount" id="totalPrice">$3.00</span></div>
+    <div class="price-row annual-billed" id="annualBilledRow" style="display:none">
+      <span>BILLED ANNUALLY</span><span class="annual-amount" id="annualBilledAmt">--</span>
+    </div>
+  </div>
+  <button class="cta-btn" id="ctaBtn" onclick="proceedToCheckout()">CLAIM THIS PLACEMENT</button>
+  <p class="panel-note">By proceeding you agree to our <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>.<br><br>First month is prorated from purchase date. Billing auto-renews. Cancel anytime -- placement stays live until period ends.<br><br>EU customers: <a href="/terms#eu-cooling">statutory withdrawal rights apply</a>.</p>
+</div>
+
+<header>
+  <div class="logo">never<span>END</span></div>
+  <nav>
+    <a href="#">How It Works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#">Content Policy</a>
+    <a href="#" class="nav-cta">CLAIM YOUR SPACE</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero-eyebrow">// BACKGROUND GRID PLACEMENT MARKETPLACE</div>
+  <h1>YOUR BRAND<br>LIVES IN THE <em>GAME</em></h1>
+  <p>neverEND is a hardcore browser platformer. Every death, every stream, every share -- your placement is right there. Claim a piece of the background before it is gone.</p>
+</section>
+
+<div class="stats-bar">
+  <div class="stat-item"><div class="stat-num">3,600</div><div class="stat-label">Total Blocks</div></div>
+  <div class="stat-item"><div class="stat-num" id="takenCount">247</div><div class="stat-label">Claimed</div></div>
+  <div class="stat-item"><div class="stat-num">3,353</div><div class="stat-label">Available</div></div>
+  <div class="stat-item"><div class="stat-num">$3</div><div class="stat-label">Per Block / Mo</div></div>
+</div>
+
+<!-- MAIN PLACEMENT TOOL -->
+<section class="placement-section">
+  <div class="placement-title-bar">
+    <div>
+      <div class="placement-title">Place Your Logo</div>
+      <div class="placement-subtitle">Upload, preview, position, and confirm before checkout.</div>
+    </div>
+  </div>
+
+  <!-- Step indicator -->
+  <div class="step-flow">
+    <div class="step-item active" id="step1"><span class="step-num">1</span>Upload</div>
+    <div class="step-item" id="step2"><span class="step-num">2</span>Convert</div>
+    <div class="step-item" id="step3"><span class="step-num">3</span>Position</div>
+    <div class="step-item" id="step4"><span class="step-num">4</span>Confirm</div>
+    <div class="step-item" id="step5"><span class="step-num">5</span>Checkout</div>
+  </div>
+
+  <div class="placement-layout">
+    <!-- LEFT CONTROLS -->
+    <div class="placement-controls">
+
+      <!-- Step 1: Upload -->
+      <div class="ctrl-section">
+        <div class="ctrl-title">1. Upload Logo</div>
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+          <div class="drop-zone-icon">&#8593;</div>
+          <div class="drop-zone-text">Click or drag image here<br>PNG / JPG / SVG<br><span style="color:var(--accent2);font-size:10px">PNG transparency preserved</span></div>
+        </div>
+        <input type="file" id="fileInput" accept="image/*">
+      </div>
+
+      <!-- Step 2: Size & Convert -->
+      <div class="ctrl-section">
+        <div class="ctrl-title">2. Size & Convert</div>
+        <label class="ctrl-label">Logo Size</label>
+        <select class="ctrl-select" id="sizePreset" onchange="onSizeChange()">
+          <option value="100">Small -- ~100 blocks (10x10)</option>
+          <option value="200" selected>Standard -- ~200 blocks (14x14)</option>
+          <option value="300">Large -- ~300 blocks (17x18)</option>
+          <option value="custom">Custom</option>
+        </select>
+        <div id="customWrap" style="display:none">
+          <label class="ctrl-label">Width (blocks)</label>
+          <input type="number" class="ctrl-input" id="customW" value="10" min="1" max="40" oninput="onSizeChange()">
+          <label class="ctrl-label">Height (blocks)</label>
+          <input type="number" class="ctrl-input" id="customH" value="10" min="1" max="22" oninput="onSizeChange()">
+        </div>
+        <div class="pixel-preview-small" id="pixelPreviewWrap">
+          <div class="pixel-preview-placeholder" id="pixelPlaceholder">Upload to preview</div>
+          <canvas id="pixelCanvas" style="display:none"></canvas>
+        </div>
+        <button class="btn-blue" id="convertBtn" onclick="runConvert()" disabled>Convert Logo</button>
+      </div>
+
+      <!-- Step 3: Stage & Position -->
+      <div class="ctrl-section">
+        <div class="ctrl-title">3. Choose Stage</div>
+        <div class="stage-nav-row">
+          <button class="stage-btn" id="prevBtn" onclick="changeStage(-1)" disabled>&#9664;</button>
+          <div class="stage-select-wrap">
+            <select class="ctrl-select-inline" id="stageSelect" onchange="setStage(parseInt(this.value))"></select>
+          </div>
+          <button class="stage-btn" id="nextBtn" onclick="changeStage(1)">&#9654;</button>
+        </div>
+        <div class="creator-badge-small" id="creatorBadge">CREATOR ZONE -- PNG upload allowed</div>
+        <div class="placement-status idle" id="placementStatus">
+          <div class="status-dot"></div>
+          <span id="statusText">Convert your logo to begin placing</span>
+        </div>
+      </div>
+
+      <!-- Step 4: Recommendations -->
+      <div class="ctrl-section" id="recSection" style="display:none">
+        <div class="ctrl-title">Suggestions</div>
+        <div class="rec-list" id="recList"></div>
+        <div class="rec-note">Optional -- drag directly on grid to place freely.</div>
+      </div>
+
+      <!-- Step 5: Confirm -->
+      <div class="ctrl-section" id="confirmSection" style="display:none">
+        <div class="ctrl-title">4. Confirm Placement</div>
+        <div class="confirm-box" id="confirmBox">
+          <div class="row"><span>STAGE</span><span class="val" id="cfStage">--</span></div>
+          <div class="row"><span>POSITION</span><span class="val" id="cfPos">--</span></div>
+          <div class="row"><span>SIZE</span><span class="val" id="cfSize">--</span></div>
+          <div class="row"><span>BLOCKS</span><span class="val" id="cfBlocks">--</span></div>
+        </div>
+        <button class="btn-primary" id="confirmBtn" onclick="confirmPlacement()" disabled>Confirm &amp; Proceed to Checkout</button>
+        <button class="btn-secondary" onclick="resetPlacement()">Reset Position</button>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: GRID CANVAS -->
+    <div>
+      <div class="grid-wrapper">
+        <div class="grid-header">
+          <div class="grid-info"><strong id="gridStageName">STAGE 1</strong> &nbsp;|&nbsp; <span id="gridBlocksInfo">40 x 22 | 1 block = 16x16px | STANDARD</span></div>
+          <div class="grid-legend">
+            <div class="legend-item"><div class="legend-dot empty"></div>AVAILABLE</div>
+            <div class="legend-item"><div class="legend-dot claimed"></div>CLAIMED</div>
+            <div class="legend-item"><div class="legend-dot placing"></div>PLACING</div>
+            <div class="legend-item"><div class="legend-dot placing-invalid"></div>CONFLICT</div>
+            <div class="legend-item"><div class="legend-dot reserved"></div>RESERVED</div>
+          </div>
+        </div>
+        <canvas id="gridCanvas" width="1280" height="720"></canvas>
+        <div class="grid-hint" id="gridHint">Select a stage and convert your logo to begin placing.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section" id="pricing">
+  <div class="section-title">PRICING</div>
+  <div class="section-sub">Transparent pricing. Hard cap at $20/block/mo. Always.</div>
+  <div class="pricing-grid">
+    <div class="price-tier">
+      <div class="tier-label">Early Access Eligibility</div>
+      <div class="tier-price-text">Available while the base price is below $8</div>
+      <div class="tier-note">Subscriptions started before the base price reaches $8 may transition to a minimum of $5 within up to 6 months. After that, pricing remains fixed only while the subscription stays active. If canceled, all previous pricing conditions are permanently lost. Any re-subscription uses the current price.</div>
+    </div>
+    <div class="price-tier">
+      <div class="tier-label">Launch -- Standard</div>
+      <div class="tier-price"><sup>$</sup>3<sub>/block/mo</sub></div>
+      <div class="tier-note">Current price. Lock in your placement now at the lowest available rate.</div>
+    </div>
+    <div class="price-tier">
+      <div class="tier-label">Growth Pricing</div>
+      <div class="tier-price-text">Prices increase in stages</div>
+      <div class="tier-note">Pricing increases based on demand, grid occupancy, and platform growth. Standard pricing typically operates in the lower and mid tiers, with an absolute maximum cap of $20 per block per month. Active subscriptions are never auto-increased.</div>
+    </div>
+    <div class="price-tier">
+      <div class="tier-label">Absolute Cap</div>
+      <div class="tier-price"><sup>$</sup>20<sub>/block/mo</sub></div>
+      <div class="tier-note">Standard pricing will never exceed $20 per block per month.</div>
+      <span class="tier-cap">HARD LIMIT -- UNCONDITIONAL</span>
+    </div>
+  </div>
+  <div class="vol-section-title">VOLUME DISCOUNTS</div>
+  <div class="section-sub" style="margin-bottom:16px">Applied automatically at checkout.</div>
+  <div class="volume-table">
+    <div class="vol-row"><span class="blocks">1 -- 24 blocks</span><span class="disc none">No discount</span></div>
+    <div class="vol-row"><span class="blocks">25 -- 99 blocks</span><span class="disc">-10%</span></div>
+    <div class="vol-row"><span class="blocks">100 -- 249 blocks</span><span class="disc">-20%</span></div>
+    <div class="vol-row"><span class="blocks">250+ blocks</span><span class="disc">-30%</span></div>
+  </div>
+  <div class="corp-guidance">
+    <div class="corp-guidance-title">Corporate Logo Reference Guide</div>
+    <div class="corp-guidance-note">Block counts are approximate guides. Prices shown are illustrative at current launch rates ($3/block) and will vary as pricing tiers change.</div>
+    <div class="corp-sizes">
+      <div class="corp-size">
+        <div class="corp-size-num">~100</div>
+        <div class="corp-size-unit">BLOCKS</div>
+        <div class="corp-size-label">Small Logo</div>
+        <div class="corp-size-label" style="color:var(--muted);font-size:10px">approx. 10 x 10</div>
+        <span class="corp-size-example-label">Example pricing (illustrative only)</span>
+        <span class="corp-size-example">~$270/mo at $3 (-10%)</span>
+      </div>
+      <div class="corp-size">
+        <div class="corp-size-num">~200</div>
+        <div class="corp-size-unit">BLOCKS</div>
+        <div class="corp-size-label">Standard Logo</div>
+        <div class="corp-size-label" style="color:var(--muted);font-size:10px">approx. 14 x 14</div>
+        <span class="corp-size-example-label">Example pricing (illustrative only)</span>
+        <span class="corp-size-example">~$480/mo at $3 (-20%)</span>
+      </div>
+      <div class="corp-size">
+        <div class="corp-size-num">~300</div>
+        <div class="corp-size-unit">BLOCKS</div>
+        <div class="corp-size-label">Large Logo</div>
+        <div class="corp-size-label" style="color:var(--muted);font-size:10px">approx. 17 x 18</div>
+        <span class="corp-size-example-label">Example pricing (illustrative only)</span>
+        <span class="corp-size-example">~$630/mo at $3 (-30%)</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">never<span>END</span></div>
+  <div class="footer-links">
+    <a href="#">Terms of Service</a><a href="#">Privacy Policy</a><a href="#">Cookie Policy</a><a href="#">IP / DMCA</a><a href="#">Content Policy</a>
+  </div>
+  <div class="footer-copy">2025 Carila. All rights reserved.</div>
+</footer>
+
+<script>
+// -- DATA --
+const STAGES_DATA=[
+  {id:1,name:'STAGE 1',sub:'Learn to survive.',type:'standard'},
+  {id:2,name:'STAGE 2',sub:'The floor is a lie.',type:'standard'},
+  {id:3,name:'STAGE 3',sub:'Which way is right?',type:'standard'},
+  {id:4,name:'STAGE 4',sub:'Nothing stays still.',type:'standard'},
+  {id:5,name:'STAGE 5',sub:'The chaos zone.',type:'creator'},
+  {id:6,name:'STAGE 6',sub:'Trust nothing.',type:'standard'},
+  {id:7,name:'STAGE 7',sub:'Going up.',type:'standard'},
+  {id:8,name:'STAGE 8',sub:'Nothing is safe.',type:'standard'},
+  {id:9,name:'STAGE 9',sub:"One mistake. That's all.",type:'standard'},
+  {id:10,name:'STAGE 10',sub:'You made it this far?',type:'creator'},
+];
+const GRID_COLS=40,GRID_ROWS=22,CELL=32,BASE_PRICE=3;
+
+// -- STATE --
+let currentStage=1;
+let gridStates={};          // per stage: {col,row -> 'claimed'|'reserved'}
+let uploadedImage=null;
+let logoOffscreen=null;     // pixelated logo canvas
+let logoW=0,logoH=0;        // in blocks
+let logoConverted=false;
+let placingX=0,placingY=0;  // top-left block coordinate of logo ghost
+let isDragging=false;
+let dragOffX=0,dragOffY=0;
+let placementValid=false;
+let confirmedPlacement=null; // {stage,x,y,w,h} locked before checkout
+let plan='monthly';
+let hoveredBlock=null;
+
+// -- MOCK GRID --
+function generateMockGrid(id){
+  const g={};let s=id*1337;
+  for(let i=0;i<15+(id*3)%20;i++){
+    s=(s*1664525+1013904223)&0x7fffffff;const c=s%GRID_COLS;
+    s=(s*1664525+1013904223)&0x7fffffff;const r=s%GRID_ROWS;
+    g[c+','+r]='claimed';
+  }
+  return g;
+}
+function getState(id,c,r){return(gridStates[id]&&gridStates[id][c+','+r])||'available';}
+function mockColor(id,c,r){return['#1a3a5c','#2a1a3a','#1a3a1a','#3a2a1a','#2a3a3a','#1e2a4a','#3a1a2a','#2a2a1a'][(id*7+c*3+r*11)%8];}
+
+STAGES_DATA.forEach(function(s){gridStates[s.id]=generateMockGrid(s.id);});
+
+// Populate stage select
+const stageSelEl=document.getElementById('stageSelect');
+STAGES_DATA.forEach(function(s){
+  const o=document.createElement('option');
+  o.value=s.id;o.textContent=s.name+' -- '+s.sub;stageSelEl.appendChild(o);
+});
+
+// -- STAGE --
+function setStage(id){
+  currentStage=id;stageSelEl.value=id;
+  document.getElementById('prevBtn').disabled=(id<=1);
+  document.getElementById('nextBtn').disabled=(id>=STAGES_DATA.length);
+  const s=STAGES_DATA[id-1];
+  document.getElementById('gridStageName').textContent=s.name;
+  const isC=s.type==='creator';
+  document.getElementById('creatorBadge').classList.toggle('visible',isC);
+  document.getElementById('gridBlocksInfo').textContent='40 x 22 | 1 block = 16x16px | '+(isC?'CREATOR ZONE':'STANDARD');
+  if(logoConverted){
+    updatePlacementStatus();
+    updateRecommendations();
+  }
+  drawGrid();
+}
+function changeStage(d){const n=currentStage+d;if(n>=1&&n<=STAGES_DATA.length)setStage(n);}
+
+// -- GRID CANVAS --
+const canvas=document.getElementById('gridCanvas');
+const ctx=canvas.getContext('2d');
+
+function getBlock(e){
+  const rect=canvas.getBoundingClientRect();
+  const c=Math.floor((e.clientX-rect.left)*(1280/rect.width)/CELL);
+  const r=Math.floor((e.clientY-rect.top)*(720/rect.height)/CELL);
+  if(c<0||c>=GRID_COLS||r<0||r>=GRID_ROWS)return null;
+  return[c,r];
+}
+
+function checkPlacementValidity(px,py){
+  if(!logoConverted)return false;
+  for(let dr=0;dr<logoH;dr++){
+    for(let dc=0;dc<logoW;dc++){
+      const gc=px+dc,gr=py+dr;
+      if(gc<0||gc>=GRID_COLS||gr<0||gr>=GRID_ROWS)return false;
+      const st=getState(currentStage,gc,gr);
+      if(st==='claimed'||st==='reserved')return false;
+    }
+  }
+  return true;
+}
+
+function drawGrid(){
+  ctx.clearRect(0,0,1280,720);
+  const isValid=logoConverted?checkPlacementValidity(placingX,placingY):false;
+
+  for(let r=0;r<GRID_ROWS;r++){
+    for(let c=0;c<GRID_COLS;c++){
+      const x=c*CELL,y=r*CELL;
+      const state=getState(currentStage,c,r);
+      const inLogo=logoConverted&&c>=placingX&&c<placingX+logoW&&r>=placingY&&r<placingY+logoH;
+      const isHov=hoveredBlock&&hoveredBlock[0]===c&&hoveredBlock[1]===r;
+
+      if(state==='claimed'){
+        ctx.fillStyle=mockColor(currentStage,c,r);ctx.fillRect(x,y,CELL,CELL);
+        // highlight conflict
+        if(inLogo){
+          ctx.fillStyle='rgba(231,76,60,0.55)';ctx.fillRect(x,y,CELL,CELL);
+        }
+        ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=0.5;ctx.strokeRect(x,y,CELL,CELL);
+      }else if(state==='reserved'){
+        ctx.fillStyle='rgba(245,200,66,0.1)';ctx.fillRect(x,y,CELL,CELL);
+        if(inLogo){ctx.fillStyle='rgba(231,76,60,0.4)';ctx.fillRect(x,y,CELL,CELL);}
+        ctx.strokeStyle='rgba(245,200,66,0.35)';ctx.lineWidth=0.5;ctx.strokeRect(x,y,CELL,CELL);
+      }else if(inLogo){
+        // Draw logo pixel at this block
+        if(logoOffscreen){
+          const lc=c-placingX,lr=r-placingY;
+          const tmp=document.createElement('canvas');tmp.width=1;tmp.height=1;
+          const tCtx=tmp.getContext('2d');tCtx.imageSmoothingEnabled=false;
+          tCtx.drawImage(logoOffscreen,lc,lr,1,1,0,0,1,1);
+          const pxData=tCtx.getImageData(0,0,1,1).data;
+          const alpha=pxData[3]/255;
+          if(alpha>0.05){
+            ctx.fillStyle='rgba('+pxData[0]+','+pxData[1]+','+pxData[2]+','+alpha+')';
+            ctx.fillRect(x,y,CELL,CELL);
+          }else{
+            // transparent block -- show as available
+            ctx.fillStyle=(c+r)%2===0?'#191926':'#1b1b28';ctx.fillRect(x,y,CELL,CELL);
+          }
+        }
+        // Ghost tint
+        if(isValid){
+          ctx.fillStyle='rgba(74,184,255,0.12)';ctx.fillRect(x,y,CELL,CELL);
+          ctx.strokeStyle='rgba(74,184,255,0.6)';ctx.lineWidth=1;ctx.strokeRect(x+0.5,y+0.5,CELL-1,CELL-1);
+        }else{
+          ctx.fillStyle='rgba(231,76,60,0.2)';ctx.fillRect(x,y,CELL,CELL);
+          ctx.strokeStyle='rgba(231,76,60,0.5)';ctx.lineWidth=1;ctx.strokeRect(x+0.5,y+0.5,CELL-1,CELL-1);
+        }
+      }else if(isHov&&!logoConverted){
+        ctx.fillStyle='rgba(74,184,255,0.08)';ctx.fillRect(x,y,CELL,CELL);
+        ctx.strokeStyle='rgba(74,184,255,0.3)';ctx.lineWidth=0.5;ctx.strokeRect(x,y,CELL,CELL);
+      }else{
+        ctx.fillStyle=(c+r)%2===0?'#191926':'#1b1b28';ctx.fillRect(x,y,CELL,CELL);
+        ctx.strokeStyle='#232335';ctx.lineWidth=0.5;ctx.strokeRect(x,y,CELL,CELL);
+      }
+    }
+  }
+
+  // Logo bounding box border
+  if(logoConverted){
+    const bx=placingX*CELL,by=placingY*CELL,bw=logoW*CELL,bh=logoH*CELL;
+    ctx.strokeStyle=isValid?'rgba(74,184,255,0.9)':'rgba(231,76,60,0.9)';
+    ctx.lineWidth=2;ctx.strokeRect(bx,by,bw,bh);
+    // Corner handles
+    const hs=6;
+    [[bx,by],[bx+bw-hs,by],[bx,by+bh-hs],[bx+bw-hs,by+bh-hs]].forEach(function(pt){
+      ctx.fillStyle=isValid?'rgba(74,184,255,0.9)':'rgba(231,76,60,0.9)';
+      ctx.fillRect(pt[0],pt[1],hs,hs);
+    });
+  }
+}
+
+// -- MOUSE EVENTS --
+canvas.addEventListener('mousemove',function(e){
+  const b=getBlock(e);hoveredBlock=b;
+  const tt=document.getElementById('tooltip');
+  if(b){
+    const[c,r]=b;
+    if(isDragging&&logoConverted){
+      const raw=canvas.getBoundingClientRect();
+      const scX=1280/raw.width,scY=720/raw.height;
+      const mx=(e.clientX-raw.left)*scX,my=(e.clientY-raw.top)*scY;
+      let nx=Math.floor(mx/CELL)-dragOffX;
+      let ny=Math.floor(my/CELL)-dragOffY;
+      nx=Math.max(0,Math.min(GRID_COLS-logoW,nx));
+      ny=Math.max(0,Math.min(GRID_ROWS-logoH,ny));
+      placingX=nx;placingY=ny;
+      placementValid=checkPlacementValidity(placingX,placingY);
+      updatePlacementStatus();
+      updateConfirmSection();
+    }
+    const state=getState(currentStage,c,r);
+    tt.style.display='block';
+    tt.style.left=(e.clientX+16)+'px';tt.style.top=(e.clientY-10)+'px';
+    document.getElementById('ttCoord').textContent='('+( c+1)+', '+(r+1)+')';
+    const sm={available:'<span class="tt-free">AVAILABLE</span>',claimed:'<span class="tt-claimed">CLAIMED</span>',reserved:'<span class="tt-reserved">RESERVED</span>'};
+    document.getElementById('ttStatus').innerHTML=sm[state]||'';
+  }else{tt.style.display='none';}
+  drawGrid();
+});
+
+canvas.addEventListener('mouseleave',function(){
+  hoveredBlock=null;isDragging=false;
+  document.getElementById('tooltip').style.display='none';
+  drawGrid();
+});
+
+canvas.addEventListener('mousedown',function(e){
+  if(!logoConverted)return;
+  const b=getBlock(e);if(!b)return;
+  const[c,r]=b;
+  if(c>=placingX&&c<placingX+logoW&&r>=placingY&&r<placingY+logoH){
+    isDragging=true;
+    dragOffX=c-placingX;dragOffY=r-placingY;
+    canvas.style.cursor='grabbing';
+  }
+});
+
+canvas.addEventListener('mouseup',function(){
+  if(isDragging){
+    isDragging=false;canvas.style.cursor='crosshair';
+    placementValid=checkPlacementValidity(placingX,placingY);
+    updatePlacementStatus();
+    updateConfirmSection();
+    drawGrid();
+  }
+});
+
+// -- UPLOAD --
+const dropZone=document.getElementById('dropZone');
+const fileInput=document.getElementById('fileInput');
+dropZone.addEventListener('dragover',function(e){e.preventDefault();dropZone.classList.add('dragover');});
+dropZone.addEventListener('dragleave',function(){dropZone.classList.remove('dragover');});
+dropZone.addEventListener('drop',function(e){
+  e.preventDefault();dropZone.classList.remove('dragover');
+  const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadImg(f);
+});
+fileInput.addEventListener('change',function(){if(fileInput.files[0])loadImg(fileInput.files[0]);});
+
+function loadImg(file){
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const img=new Image();
+    img.onload=function(){
+      uploadedImage=img;
+      dropZone.querySelector('.drop-zone-text').innerHTML='<strong style="color:#4ab8ff">'+file.name+'</strong><br>Ready to convert';
+      document.getElementById('convertBtn').disabled=false;
+      setStep(2);
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// -- SIZE CHANGE --
+function onSizeChange(){
+  const v=document.getElementById('sizePreset').value;
+  document.getElementById('customWrap').style.display=v==='custom'?'block':'none';
+  if(uploadedImage&&logoConverted)runConvert();
+}
+
+function calcLogoSize(){
+  const v=document.getElementById('sizePreset').value;
+  if(v==='custom'){
+    return{w:Math.min(parseInt(document.getElementById('customW').value)||10,GRID_COLS),
+           h:Math.min(parseInt(document.getElementById('customH').value)||10,GRID_ROWS)};
+  }
+  const blocks=parseInt(v);
+  const ratio=uploadedImage?uploadedImage.width/uploadedImage.height:1;
+  let h=Math.round(Math.sqrt(blocks/ratio));
+  let w=Math.round(blocks/h);
+  return{w:Math.min(w,GRID_COLS),h:Math.min(h,GRID_ROWS)};
+}
+
+// -- CONVERT --
+function runConvert(){
+  if(!uploadedImage)return;
+  const{w,h}=calcLogoSize();
+  logoW=w;logoH=h;
+  // Create offscreen pixelated logo (preserves transparency)
+  logoOffscreen=document.createElement('canvas');
+  logoOffscreen.width=w;logoOffscreen.height=h;
+  const oCtx=logoOffscreen.getContext('2d');
+  oCtx.imageSmoothingEnabled=false;
+  oCtx.clearRect(0,0,w,h);
+  oCtx.drawImage(uploadedImage,0,0,w,h);
+
+  // Small pixel preview
+  const pc=document.getElementById('pixelCanvas');
+  const DS=Math.floor(76/Math.max(w,h));
+  pc.width=w*DS;pc.height=h*DS;
+  const pCtx=pc.getContext('2d');pCtx.imageSmoothingEnabled=false;
+  pCtx.clearRect(0,0,pc.width,pc.height);
+  pCtx.drawImage(logoOffscreen,0,0,w*DS,h*DS);
+  // grid lines
+  pCtx.strokeStyle='rgba(255,255,255,0.07)';pCtx.lineWidth=0.5;
+  for(let x=0;x<=w;x++){pCtx.beginPath();pCtx.moveTo(x*DS,0);pCtx.lineTo(x*DS,h*DS);pCtx.stroke();}
+  for(let y=0;y<=h;y++){pCtx.beginPath();pCtx.moveTo(0,y*DS);pCtx.lineTo(w*DS,y*DS);pCtx.stroke();}
+  document.getElementById('pixelPlaceholder').style.display='none';
+  pc.style.display='block';
+
+  // Center logo initially
+  placingX=Math.floor((GRID_COLS-logoW)/2);
+  placingY=Math.floor((GRID_ROWS-logoH)/2);
+  logoConverted=true;
+  canvas.style.cursor='crosshair';
+
+  placementValid=checkPlacementValidity(placingX,placingY);
+  updatePlacementStatus();
+  updateRecommendations();
+  updateConfirmSection();
+  setStep(3);
+  document.getElementById('recSection').style.display='block';
+  document.getElementById('confirmSection').style.display='block';
+  document.getElementById('gridHint').textContent='Drag the logo on the grid to choose its position. Blue = valid. Red = conflict.';
+  drawGrid();
+}
+
+// -- PLACEMENT STATUS --
+function updatePlacementStatus(){
+  const el=document.getElementById('placementStatus');
+  const txt=document.getElementById('statusText');
+  if(!logoConverted){
+    el.className='placement-status idle';txt.textContent='Convert your logo to begin placing';return;
+  }
+  if(placementValid){
+    el.className='placement-status valid';txt.textContent='Placement available';
+  }else{
+    el.className='placement-status invalid';txt.textContent='Cannot place here -- overlaps claimed blocks';
+  }
+}
+
+// -- RECOMMENDATIONS (contiguous empty regions) --
+function findContiguousRegions(stageId,needW,needH){
+  const results=[];
+  // scan top-left corners of needW x needH windows
+  for(let r=0;r<=GRID_ROWS-needH;r++){
+    for(let c=0;c<=GRID_COLS-needW;c++){
+      let ok=true;
+      outer:for(let dr=0;dr<needH;dr++){
+        for(let dc=0;dc<needW;dc++){
+          if(getState(stageId,c+dc,r+dr)!=='available'){ok=false;break outer;}
+        }
+      }
+      if(ok)results.push({c:c,r:r});
+    }
+  }
+  return results;
+}
+
+function updateRecommendations(){
+  if(!logoConverted)return;
+  const recs=findContiguousRegions(currentStage,logoW,logoH);
+  const recList=document.getElementById('recList');
+  recList.innerHTML='';
+  const show=recs.slice(0,4);
+  if(show.length===0){
+    recList.innerHTML='<div style="font-family:Share Tech Mono,monospace;font-size:10px;color:var(--muted)">No fully clear regions found for this size.</div>';
+    return;
+  }
+  show.forEach(function(rec,i){
+    const el=document.createElement('div');
+    el.className='rec-item';
+    el.innerHTML='<span>Option '+(i+1)+': clear region</span><span class="rec-coords">col '+(rec.c+1)+', row '+(rec.r+1)+'</span>';
+    el.onclick=function(){
+      placingX=rec.c;placingY=rec.r;
+      placementValid=true;
+      updatePlacementStatus();updateConfirmSection();drawGrid();
+    };
+    recList.appendChild(el);
+  });
+}
+
+// -- CONFIRM SECTION --
+function updateConfirmSection(){
+  if(!logoConverted)return;
+  const s=STAGES_DATA[currentStage-1];
+  document.getElementById('cfStage').textContent=s.name;
+  document.getElementById('cfPos').textContent='col '+(placingX+1)+', row '+(placingY+1);
+  document.getElementById('cfSize').textContent=logoW+' x '+logoH+' blocks';
+  document.getElementById('cfBlocks').textContent=(logoW*logoH)+' total';
+  document.getElementById('confirmBtn').disabled=!placementValid;
+  if(placementValid)setStep(4);
+}
+
+// -- CONFIRM PLACEMENT --
+function confirmPlacement(){
+  if(!placementValid)return;
+  confirmedPlacement={
+    stage:currentStage,
+    x:placingX,y:placingY,
+    w:logoW,h:logoH,
+    blocks:logoW*logoH
+  };
+  const s=STAGES_DATA[currentStage-1];
+  // Fill purchase panel
+  document.getElementById('panelStage').textContent=s.name;
+  document.getElementById('panelPos').textContent='col '+(placingX+1)+', row '+(placingY+1);
+  document.getElementById('panelSize').textContent=logoW+' x '+logoH+' blocks';
+  document.getElementById('panelType').textContent=s.type==='creator'?'CREATOR ZONE':'STANDARD';
+  document.getElementById('panelBlocks').textContent=confirmedPlacement.blocks+' blocks';
+  updatePanelPrice(confirmedPlacement.blocks);
+  setStep(5);
+  document.getElementById('purchasePanel').classList.add('open');
+}
+
+function resetPlacement(){
+  placingX=Math.floor((GRID_COLS-logoW)/2);
+  placingY=Math.floor((GRID_ROWS-logoH)/2);
+  confirmedPlacement=null;
+  placementValid=checkPlacementValidity(placingX,placingY);
+  updatePlacementStatus();updateConfirmSection();drawGrid();
+}
+
+// -- STEP INDICATOR --
+function setStep(n){
+  for(let i=1;i<=5;i++){
+    const el=document.getElementById('step'+i);
+    if(i<n)el.className='step-item done';
+    else if(i===n)el.className='step-item active';
+    else el.className='step-item';
+  }
+}
+
+// -- PRICING --
+function calcTotal(n,p){
+  let d=0;if(n>=250)d=0.30;else if(n>=100)d=0.20;else if(n>=25)d=0.10;
+  const pd=p==='annual'?(1/6):0;
+  const base=BASE_PRICE*n,av=base*(1-d),total=av*(1-pd);
+  return{base:base,disc:d,planDisc:pd,total:total,annual:total*10};
+}
+
+function updatePanelPrice(n){
+  const r=calcTotal(n,plan);
+  document.getElementById('basePrice').textContent='$'+r.base.toFixed(2);
+  document.getElementById('discountRow').textContent=r.disc>0?'-'+(r.disc*100).toFixed(0)+'%':'--';
+  document.getElementById('planRow').textContent=r.planDisc>0?'-'+(r.planDisc*100).toFixed(1)+'%':'--';
+  document.getElementById('totalPrice').textContent='$'+r.total.toFixed(2);
+  const annRow=document.getElementById('annualBilledRow');
+  if(plan==='annual'){
+    annRow.style.display='flex';
+    document.getElementById('annualBilledAmt').textContent='$'+r.annual.toFixed(2)+' / yr';
+    document.getElementById('ctaBtn').textContent='SECURE THIS PLACEMENT';
+  }else{
+    annRow.style.display='none';
+    document.getElementById('ctaBtn').textContent='CLAIM THIS PLACEMENT';
+  }
+}
+
+function setPlan(p,btn){
+  plan=p;
+  document.querySelectorAll('.plan-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  if(confirmedPlacement)updatePanelPrice(confirmedPlacement.blocks);
+}
+
+function closePanel(){document.getElementById('purchasePanel').classList.remove('open');}
+
+function proceedToCheckout(){
+  if(!confirmedPlacement){alert('Please confirm your placement first.');return;}
+  alert('Stripe checkout integration coming soon.\n\nStage: '+STAGES_DATA[confirmedPlacement.stage-1].name+'\nPosition: col '+(confirmedPlacement.x+1)+', row '+(confirmedPlacement.y+1)+'\nSize: '+confirmedPlacement.w+'x'+confirmedPlacement.h+'\nBlocks: '+confirmedPlacement.blocks+'\nPlan: '+plan);
+}
+
+// -- INIT --
+setStage(1);
+drawGrid();
+</script>
+</body>
+</html>

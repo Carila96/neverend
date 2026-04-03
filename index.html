@@ -34,6 +34,19 @@ canvas{width:768px;height:432px;display:block;image-rendering:pixelated;}
   <div class="s-keybind"><span class="s-key">PAUSE</span><span class="s-keyval">F &nbsp;/&nbsp; ESC</span></div>
   <div class="s-keybind"><span class="s-key">BACK TO TITLE</span><span class="s-keyval">T</span></div>
   <div class="s-keybind"><span class="s-key">SETTINGS</span><span class="s-keyval">TAB &nbsp;/&nbsp; Click SETTINGS</span></div>
+  <div class="s-section">STATS</div>
+  <div class="s-row" style="justify-content:space-between;width:360px;padding:4px 0;">
+    <span class="s-label">総死亡数</span><span class="s-val" id="statDeaths" style="width:auto;color:#e74c3c;">0</span>
+  </div>
+  <div class="s-row" style="justify-content:space-between;width:360px;padding:4px 0;">
+    <span class="s-label">最高到達ステージ</span><span class="s-val" id="statBest" style="width:auto;">1</span>
+  </div>
+  <div class="s-row" style="justify-content:space-between;width:360px;padding:4px 0;">
+    <span class="s-label">累計クリア数</span><span class="s-val" id="statClears" style="width:auto;">0</span>
+  </div>
+  <div class="s-row" style="justify-content:space-between;width:360px;padding:4px 0;">
+    <span class="s-label">累計ポイント</span><span class="s-val" id="statPts" style="width:auto;color:#f5c842;">0 PT</span>
+  </div>
   <button class="s-close" onclick="closeSettings()">[ CLOSE ]</button>
 </div>
 <script>
@@ -44,10 +57,71 @@ const W=1280,H=720,MAX_TIME=60;
 const GRID_W=40,GRID_H=22,CELL=32;
 
 let volBGM=0.8,volSFX=0.8;
+
+// ======== SAVE DATA (localStorage) ========
+const SAVE_KEY='neverend_save';
+function loadSave(){
+  try{return JSON.parse(localStorage.getItem(SAVE_KEY))||{};}catch(e){return{};}
+}
+function writeSave(d){
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify(d));}catch(e){}
+}
+function getStat(k,def=0){return loadSave()[k]??def;}
+function setStat(k,v){const d=loadSave();d[k]=v;writeSave(d);}
+function incStat(k,by=1){setStat(k,(getStat(k))+by);}
+
+// Death cause tracking
+let lastDeathCause='';  // 'spike','trap','fall','time'
+let lastDeathStage=1;
+let lastTimeLeft=0;
+
+// Death messages by cause (randomized)
+const DEATH_MSGS={
+  spike:[
+    'お疲れ様でした。','見えてたよね？','才能の問題かも。','スパイク、君が好きすぎる。',
+    '次は避けられる。多分。','何回目？','痛そう。','あ。','ドンマイ（棒）',
+    'スパイクさん1、君0。','そこは当たり判定あります。','学習能力は？',
+    'まあ、そうなるよね。','串刺し上等。','気のせいじゃなかった。',
+    'キャリアハイを更新中。','それでも進め。','生まれ変わって出直せ。',
+    'IQが溶けた瞬間。','勘は大事。今は外れたけど。'],
+  trap:[
+    'そこにあるの？！','完全に騙された。','見えないのはずるい（合法）',
+    '仕掛け人に拍手。','次は気をつけろ。次も死ぬけど。',
+    '裏切られた。でも予想はできた。','信じた君が悪い。',
+    '罠だと思った。正解だった。','直感を信じろ。次回から。',
+    '見えない恐怖って映えるよね。','なんで？（分かってる）',
+    '人生は罠だらけ。ゲームも然り。','またお前か。','完璧なフェイント。',
+    '設計者を恨め。','予測できた未来。','ここはそういう場所。'],
+  fall:[
+    '奈落へようこそ。','重力、働きすぎ。','足場ってそこにあると思ってた。',
+    'さようなら地上。','飛べると思った？','落ちるのは得意？',
+    '次は地に足をつけて。','下を見ろとは言った。','無限落下チャレンジ成功。',
+    '足場の幻覚を見ていた。','頑張ったのに。','物理法則は平等だ。',
+    '今のは綺麗な落下だった。','もう少し気をつけて。多分無理だけど。',
+    '地球の中心まで行ってきた？'],
+  time:[
+    'もう少しだった（毎回言ってる）','時間切れ。砂時計はどこだ。',
+    '30秒って短くない？（仕様です）','惜しすぎて笑えない。',
+    '急げ。もっと急げ。','時は金なり。君には足りなかった。',
+    '0秒。完全な敗北。','砂時計を取れ、それだけだ。',
+    '残り時間という概念を学べ。','焦りすぎても死ぬ。でも急げ。',
+    '時間は待ってくれない。ゲームも然り。','また時間か。',
+    '砂時計3個取れば余裕。（嘘）','時間管理が人生の課題。'],
+};
+function getDeathMsg(cause){
+  const arr=DEATH_MSGS[cause]||DEATH_MSGS.spike;
+  return arr[Math.floor(Math.random()*arr.length)];
+}
 document.getElementById('volBGM').oninput=e=>{volBGM=e.target.value/100;document.getElementById('volBGMVal').textContent=e.target.value;};
 document.getElementById('volSFX').oninput=e=>{volSFX=e.target.value/100;document.getElementById('volSFXVal').textContent=e.target.value;};
 
-function openSettings(){document.getElementById('settings').classList.add('open');}
+function openSettings(){
+  document.getElementById('settings').classList.add('open');
+  document.getElementById('statDeaths').textContent=getStat('totalDeaths').toLocaleString()+'回';
+  document.getElementById('statBest').textContent='Stage '+getStat('bestStage',1);
+  document.getElementById('statClears').textContent=getStat('totalClears')+'回';
+  document.getElementById('statPts').textContent=getStat('points').toLocaleString()+' PT';
+}
 function closeSettings(){document.getElementById('settings').classList.remove('open');canvas.focus();}
 
 // ======== AUDIO ========
@@ -391,6 +465,281 @@ const STAGES=[
    ],
    hg:[{x:192,y:544,w:24,h:28},{x:512,y:400,w:24,h:28},{x:832,y:400,w:24,h:28}],
    goal:{x:1152,y:320,w:48,h:112},spawn:{x:32,y:592}},
+  // STAGE 11 — 記憶が邪魔をする（10面と同じマップ、トラップ位置が全部違う）
+  {name:'STAGE 11',sub:'...知ってるはずなのに。',
+   plats:[
+     {x:0,y:640,w:112,h:80},
+     {x:176,y:576,w:80,h:16},{x:336,y:512,w:80,h:16},{x:496,y:432,w:80,h:16},
+     {x:656,y:512,w:80,h:16},{x:816,y:432,w:80,h:16},{x:976,y:352,w:80,h:16},
+     {x:1136,y:432,w:144,h:288}
+   ],
+   spikes:[
+     {x:208,y:544,w:32,h:32},    // 10面と違う位置
+     {x:848,y:400,w:32,h:32},
+   ],
+   traps:[
+     // 10面で安全だった場所に罠
+     {x:496,y:400,w:32,h:32,tx:448,warn:false},   // 10面では安全だった4番右
+     {x:672,y:480,w:32,h:32,tx:608,warn:false},   // 10面では罠なかった5番
+     {x:976,y:320,w:32,h:32,tx:928,warn:false},   // 10面と同位置に見えて微妙にずれてる
+     {x:336,y:480,w:32,h:32,tx:272,warn:false},   // 10面では無警戒だった2番
+   ],
+   fall:[{x:816,y:432,w:80,h:16,spikesOn:false}], // 10面で安全だった6番が落ちる
+   move:[
+     {x:976,y:352,w:80,h:16,vx:0,vy:2.0,rx:0,ry:48,sx:976,sy:352},
+   ],
+   mimics:[],ceiling:[],
+   hg:[{x:352,y:480,w:24,h:28},{x:672,y:400,w:24,h:28}],
+   goal:{x:1152,y:320,w:48,h:112},spawn:{x:32,y:592}},
+
+  // STAGE 12 — 密度地獄（足場多いが短い。何もない足場もある）
+  {name:'STAGE 12',sub:'多すぎる。',
+   plats:[
+     {x:0,y:640,w:96,h:80},
+     {x:144,y:592,w:48,h:16},{x:240,y:544,w:48,h:16},{x:336,y:496,w:48,h:16},
+     {x:432,y:544,w:48,h:16},{x:528,y:496,w:48,h:16},{x:624,y:448,w:48,h:16},
+     {x:720,y:496,w:48,h:16},{x:816,y:448,w:48,h:16},{x:912,y:400,w:48,h:16},
+     {x:1008,y:448,w:48,h:16},{x:1104,y:400,w:48,h:16},
+     {x:1152,y:400,w:128,h:320}
+   ],
+   spikes:[
+     {x:144,y:560,w:32,h:32},   // 1番左端
+     {x:368,y:464,w:32,h:32},   // 3番右端
+     {x:656,y:416,w:32,h:32},   // 6番右端
+     {x:912,y:368,w:32,h:32},   // 9番左端
+   ],
+   traps:[
+     {x:256,y:512,w:32,h:32,tx:208,warn:false},
+     {x:544,y:464,w:32,h:32,tx:496,warn:false},
+     {x:736,y:464,w:32,h:32,tx:688,warn:false},
+     {x:1024,y:416,w:32,h:32,tx:976,warn:false},
+   ],
+   fall:[],move:[],mimics:[],ceiling:[],
+   hg:[{x:256,y:512,w:24,h:28},{x:720,y:464,w:24,h:28},{x:1008,y:416,w:24,h:28}],
+   goal:{x:1168,y:288,w:48,h:112},spawn:{x:32,y:592}},
+
+  // STAGE 13 — タイマーが初めて意味を持つ（砂時計を取ると楽になる）
+  {name:'STAGE 13',sub:'時間、足りてる？',
+   plats:[
+     {x:0,y:640,w:128,h:80},
+     {x:192,y:560,w:112,h:16},
+     {x:384,y:480,w:112,h:16},
+     {x:576,y:400,w:112,h:16},
+     {x:768,y:480,w:112,h:16},
+     {x:960,y:400,w:112,h:16},
+     {x:1136,y:464,w:144,h:256}
+   ],
+   spikes:[
+     {x:192,y:528,w:32,h:32},
+     {x:960,y:368,w:32,h:32},
+   ],
+   traps:[
+     {x:400,y:448,w:32,h:32,tx:352,warn:false},
+     {x:784,y:448,w:32,h:32,tx:736,warn:false},
+   ],
+   fall:[],move:[],mimics:[],ceiling:[],
+   // 砂時計を意図的に寄り道に配置。取らなくてもクリアできるが取ると楽
+   hg:[
+     {x:320,y:448,w:24,h:28},   // 2→3番の間、寄り道で取れる
+     {x:704,y:368,w:24,h:28},   // 4→5番間
+     {x:880,y:368,w:24,h:28},   // 5番上、少し寄り道
+   ],
+   goal:{x:1152,y:352,w:48,h:112},spawn:{x:32,y:592}},
+
+  // STAGE 14 — 見えない床（警告なし落下足場）
+  {name:'STAGE 14',sub:'信じるな。',
+   plats:[
+     {x:0,y:640,w:144,h:80},
+     {x:208,y:576,w:96,h:16},   // 安全
+     {x:384,y:512,w:96,h:16},   // 落ちる（警告なし）
+     {x:560,y:448,w:96,h:16},   // 安全
+     {x:736,y:512,w:96,h:16},   // 落ちる（警告なし）
+     {x:912,y:448,w:96,h:16},   // 安全に見えて罠あり
+     {x:1088,y:512,w:96,h:16},  // 安全
+     {x:1152,y:464,w:128,h:256}
+   ],
+   spikes:[
+     {x:144,y:608,w:32,h:32},
+     {x:944,y:416,w:32,h:32},
+   ],
+   traps:[
+     {x:912,y:416,w:32,h:32,tx:864,warn:false},  // 安全そうな足場に罠
+   ],
+   fall:[
+     {x:384,y:512,w:96,h:16,spikesOn:false},   // 警告なし
+     {x:736,y:512,w:96,h:16,spikesOn:false},   // 警告なし
+   ],
+   move:[],mimics:[],ceiling:[],
+   hg:[{x:224,y:544,w:24,h:28},{x:576,y:416,w:24,h:28},{x:1104,y:480,w:24,h:28}],
+   goal:{x:1168,y:352,w:48,h:112},spawn:{x:32,y:592}},
+
+  // STAGE 15 (Creator Zone) — ミミック。寄り道に宝箱、近づいたら死
+  {name:'STAGE 15',sub:'欲張りは死ぬ。',
+   plats:[
+     {x:0,y:640,w:128,h:80},
+     {x:192,y:576,w:96,h:16},
+     {x:368,y:512,w:96,h:16},
+     {x:544,y:448,w:96,h:16},
+     {x:720,y:512,w:96,h:16},   // メインルート
+     {x:896,y:448,w:96,h:16},
+     {x:1072,y:384,w:96,h:16},
+     {x:1152,y:384,w:128,h:336},
+     // 寄り道（宝箱がある）
+     {x:368,y:400,w:64,h:16},   // 3番から上に寄り道
+     {x:720,y:400,w:64,h:16},   // 5番から上に寄り道
+   ],
+   spikes:[{x:128,y:608,w:32,h:32}],
+   traps:[
+     {x:208,y:544,w:32,h:32,tx:160,warn:false},
+     {x:896,y:416,w:32,h:32,tx:848,warn:false},
+   ],
+   fall:[],move:[],ceiling:[],
+   mimics:[
+     {x:384,y:368,w:40,h:32},   // 寄り道足場の上に宝箱
+     {x:736,y:368,w:40,h:32},   // もう一個
+   ],
+   hg:[{x:560,y:416,w:24,h:28},{x:912,y:416,w:24,h:28}],
+   goal:{x:1168,y:272,w:48,h:112},spawn:{x:32,y:592}},
+
+  // STAGE 16 — 複数ルートに見えて実は1つ
+  {name:'STAGE 16',sub:'道は一つだ。',
+   plats:[
+     {x:0,y:640,w:144,h:80},
+     // 上ルート（罠だらけで通れない）
+     {x:208,y:480,w:80,h:16},{x:368,y:416,w:80,h:16},{x:528,y:480,w:80,h:16},
+     // 下ルート（一見危なそうだが通れる）
+     {x:208,y:608,w:80,h:16},{x:368,y:608,w:80,h:16},{x:528,y:608,w:80,h:16},
+     // 合流
+     {x:688,y:528,w:96,h:16},{x:864,y:448,w:96,h:16},{x:1040,y:384,w:96,h:16},
+     {x:1136,y:384,w:144,h:336}
+   ],
+   spikes:[
+     // 上ルート：全部の足場に降りられない
+     {x:208,y:448,w:32,h:32},{x:240,y:448,w:32,h:32},{x:272,y:448,w:32,h:32}, // 1番上ルート埋め尽くし
+     {x:368,y:384,w:32,h:32},{x:400,y:384,w:32,h:32},{x:432,y:384,w:32,h:32}, // 2番
+     {x:528,y:448,w:32,h:32},{x:560,y:448,w:32,h:32},                          // 3番
+     // 合流後
+     {x:896,y:416,w:32,h:32},
+   ],
+   traps:[
+     // 下ルート：罠もあるが通れる（右側は安全）
+     {x:208,y:576,w:32,h:32,tx:160,warn:false},
+     {x:368,y:576,w:32,h:32,tx:320,warn:false},
+     {x:1056,y:352,w:32,h:32,tx:1008,warn:false},
+   ],
+   fall:[],move:[],mimics:[],ceiling:[],
+   hg:[{x:384,y:576,w:24,h:28},{x:544,y:576,w:24,h:28},{x:880,y:416,w:24,h:28}],
+   goal:{x:1152,y:272,w:48,h:112},spawn:{x:32,y:592}},
+
+  // STAGE 17 — 天井トラップ初登場
+  {name:'STAGE 17',sub:'上も、ダメ。',
+   plats:[
+     {x:0,y:640,w:160,h:80},
+     {x:224,y:576,w:96,h:16},
+     {x:400,y:512,w:96,h:16},
+     {x:576,y:448,w:96,h:16},
+     {x:752,y:512,w:96,h:16},
+     {x:928,y:448,w:96,h:16},
+     {x:1104,y:512,w:96,h:16},
+     {x:1168,y:464,w:112,h:256}
+   ],
+   spikes:[
+     {x:160,y:608,w:32,h:32},
+     {x:960,y:416,w:32,h:32},
+   ],
+   traps:[
+     {x:400,y:480,w:32,h:32,tx:352,warn:false},
+     {x:768,y:480,w:32,h:32,tx:720,warn:false},
+   ],
+   fall:[],move:[],mimics:[],
+   // 天井トラップ（逆さスパイク）
+   ceiling:[
+     {x:320,y:0,w:64,h:48,tx:192,warn:false},   // 2→3番の間の天井
+     {x:576,y:0,w:64,h:48,tx:448,warn:false},   // 3→4番
+     {x:864,y:0,w:64,h:48,tx:736,warn:false},   // 5→6番
+   ],
+   hg:[{x:240,y:544,w:24,h:28},{x:592,y:416,w:24,h:28},{x:944,y:416,w:24,h:28}],
+   goal:{x:1184,y:352,w:48,h:112},spawn:{x:32,y:592}},
+
+  // STAGE 18 — スピード勝負（速い動く足場）
+  {name:'STAGE 18',sub:'乗り遅れたら終わり。',
+   plats:[
+     {x:0,y:640,w:144,h:80},
+     {x:1120,y:560,w:160,h:160}
+   ],
+   spikes:[
+     {x:144,y:608,w:32,h:32},
+     {x:640,y:608,w:32,h:32},
+   ],
+   traps:[
+     {x:384,y:512,w:32,h:32,tx:320,warn:false},
+     {x:768,y:448,w:32,h:32,tx:704,warn:false},
+   ],
+   fall:[],mimics:[],ceiling:[],
+   move:[
+     {x:192,y:528,w:112,h:16,vx:4.0,vy:0,rx:96,ry:0,sx:240,sy:528},   // 速い
+     {x:480,y:464,w:112,h:16,vx:0,vy:4.0,rx:0,ry:80,sx:480,sy:464},   // 縦も速い
+     {x:720,y:528,w:112,h:16,vx:-4.0,vy:0,rx:96,ry:0,sx:760,sy:528},  // 逆方向速い
+     {x:960,y:480,w:96,h:16,vx:3.5,vy:0,rx:64,ry:0,sx:960,sy:480},
+   ],
+   hg:[{x:256,y:496,w:24,h:28},{x:544,y:432,w:24,h:28},{x:800,y:496,w:24,h:28}],
+   goal:{x:1136,y:448,w:48,h:112},spawn:{x:32,y:592}},
+
+  // STAGE 19 — 速度と精度の両立（速い動く足場の上でジャンプ精度が必要）
+  {name:'STAGE 19',sub:'正確に。速く。',
+   plats:[
+     {x:0,y:640,w:128,h:80},
+     {x:1136,y:496,w:144,h:224}
+   ],
+   spikes:[
+     {x:128,y:608,w:32,h:32},
+     {x:576,y:608,w:32,h:32},
+   ],
+   traps:[
+     {x:320,y:480,w:32,h:32,tx:256,warn:false},
+     {x:640,y:416,w:32,h:32,tx:576,warn:false},
+     {x:960,y:448,w:32,h:32,tx:896,warn:false},
+   ],
+   fall:[{x:480,y:496,w:96,h:16,spikesOn:false}],
+   mimics:[],ceiling:[],
+   move:[
+     // 速い横移動の上に精密ジャンプが必要
+     {x:192,y:512,w:96,h:16,vx:3.5,vy:0,rx:80,ry:0,sx:232,sy:512},
+     {x:448,y:448,w:96,h:16,vx:0,vy:3.5,rx:0,ry:64,sx:448,sy:448},
+     {x:672,y:496,w:96,h:16,vx:-3.5,vy:0,rx:80,ry:0,sx:712,sy:496},
+     {x:864,y:432,w:96,h:16,vx:3.0,vy:0,rx:64,ry:0,sx:864,sy:432},
+     {x:1008,y:480,w:96,h:16,vx:0,vy:-3.0,rx:0,ry:48,sx:1008,sy:480},
+   ],
+   hg:[{x:208,y:480,w:24,h:28},{x:464,y:416,w:24,h:28},{x:880,y:400,w:24,h:28}],
+   goal:{x:1152,y:384,w:48,h:112},spawn:{x:32,y:592}},
+
+  // STAGE 20 (Creator Zone) — ご褒美に見えて油断死
+  {name:'STAGE 20',sub:'やっと来た。',
+   plats:[
+     {x:0,y:640,w:256,h:80},    // 広い！安心する
+     {x:336,y:576,w:192,h:16},  // 広い足場（でも落ちる）
+     {x:608,y:512,w:192,h:16},  // 広い足場（でも罠）
+     {x:880,y:448,w:192,h:16},  // 広い足場（本当に安全→でも最後に落ちる）
+     {x:1136,y:448,w:144,h:272}
+   ],
+   spikes:[
+     // あえて少ない。安心させる
+     {x:256,y:608,w:32,h:32},
+   ],
+   traps:[
+     // 広い足場の端にひっそりと
+     {x:608,y:480,w:32,h:32,tx:544,warn:false},   // 3番左端（広いのに）
+   ],
+   fall:[
+     {x:336,y:576,w:192,h:16,spikesOn:false},  // 2番：広い→落ちる（警告なし）
+     {x:880,y:448,w:192,h:16,spikesOn:false},  // 4番：「今度こそ」→落ちる
+   ],
+   move:[],mimics:[],ceiling:[],
+   hg:[
+     {x:400,y:544,w:24,h:28},   // 落ちる足場の上に砂時計（取ったら落ちる）
+     {x:944,y:416,w:24,h:28},   // 落ちる足場の上にも
+   ],
+   goal:{x:1152,y:336,w:48,h:112},spawn:{x:32,y:592}},
 ];
 
 function loadStage(n){
@@ -403,6 +752,8 @@ function loadStage(n){
   trapSpikes=s.traps.map(t=>({...t,triggered:false,visible:false,timer:0.4}));
   fallingBlocks=s.fall.map(b=>({...b,falling:false,vy:0,shakeT:0,triggered:false,gone:false}));
   movingPlatforms=s.move?s.move.map(p=>({...p,phase:0})):[];
+  mimics=s.mimics?s.mimics.map(m=>({...m,triggered:false,exploded:false,timer:0})):[];
+  ceilingTraps=s.ceiling?s.ceiling.map(c=>({...c,triggered:false,visible:false,timer:0})):[];
   player={x:s.spawn.x,y:s.spawn.y,vx:0,vy:0,w:28,h:44,onGround:false,facing:1,walkT:0};
   stageNum=n;
 }
@@ -417,6 +768,7 @@ function overlap(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
 
 // Track which moving platform player is standing on
 let playerPlatform=null;
+let mimics=[],ceilingTraps=[];
 
 function resolvePlayer(){
   // Apply moving platform carry to player before resolving
@@ -444,13 +796,13 @@ function resolvePlayer(){
   for(const p of allPlats){
     if(overlap(player,p)){
       if(player.vy>=0){
-        player.y=p.y-player.h;
-        player.vy=0;
+        player.y:p.y-player.h;
+        player.vy:0;
         player.onGround=true;
         if(movingPlatforms.includes(p))playerPlatform=p;
       } else {
-        player.y=p.y+p.h;
-        player.vy=0;
+        player.y:p.y+p.h;
+        player.vy:0;
       }
     }
   }
@@ -533,6 +885,50 @@ function drawHourglass(h){
   neonText('+5s',cx,cy-20+bob,col,11,6,'center');
 }
 
+function drawMimic(m){
+  if(m.exploded)return;
+  const cx=m.x+m.w/2,cy=m.y+m.h/2;
+  const pulse=Math.sin(animT*2)*.1+.9;
+  ctx.save();
+  // 宝箱本体
+  ctx.shadowColor='rgba(180,120,40,0.8)';ctx.shadowBlur=10;
+  ctx.fillStyle='rgba(80,45,10,0.9)';ctx.fillRect(m.x,m.y+m.h*0.35,m.w,m.h*0.65);
+  ctx.fillStyle='rgba(100,60,15,0.9)';ctx.fillRect(m.x,m.y,m.w,m.h*0.38);
+  // 金の縁
+  ctx.strokeStyle=`rgba(200,150,30,${pulse})`;ctx.lineWidth=2;
+  ctx.strokeRect(m.x+1,m.y+1,m.w-2,m.h-2);
+  ctx.beginPath();ctx.moveTo(m.x,m.y+m.h*0.38);ctx.lineTo(m.x+m.w,m.y+m.h*0.38);ctx.stroke();
+  // 錠前
+  ctx.fillStyle=`rgba(220,170,40,${pulse})`;
+  ctx.fillRect(cx-5,m.y+m.h*0.3,10,10);
+  ctx.strokeStyle='rgba(150,100,20,0.9)';ctx.lineWidth=1.5;
+  ctx.strokeRect(cx-5,m.y+m.h*0.3,10,10);
+  // トリガー済みなら赤く震える
+  if(m.triggered){
+    ctx.shadowColor='rgba(255,50,50,1)';ctx.shadowBlur=20;
+    ctx.strokeStyle='rgba(255,50,50,0.9)';ctx.lineWidth=2.5;
+    ctx.strokeRect(m.x-2+Math.random()*4-2,m.y-2,m.w+4,m.h+4);
+  }
+  ctx.restore();
+}
+
+function drawCeilingTrap(c){
+  if(!c.visible)return;
+  // 天井から降りてくるトゲ（逆さスパイク）
+  const teeth=Math.max(1,Math.floor(c.w/20));
+  const tw=c.w/teeth;
+  const col=c.warn&&c.timer>0?'rgba(255,200,50,0.9)':'rgba(220,80,60,0.85)';
+  ctx.save();ctx.shadowColor=col;ctx.shadowBlur=8;
+  ctx.strokeStyle=col;ctx.lineWidth=1.8;ctx.fillStyle='rgba(0,0,0,0.5)';
+  for(let i=0;i<teeth;i++){
+    const tx=c.x+i*tw,cx2=tx+tw/2;
+    // 逆さ（天井から下に向かって）
+    ctx.beginPath();ctx.moveTo(tx,c.y);ctx.lineTo(cx2,c.y+c.h);ctx.lineTo(tx+tw,c.y);ctx.closePath();
+    ctx.fill();ctx.stroke();
+  }
+  ctx.restore();
+}
+
 function drawGoal(){
   const g=goal,pulse=Math.sin(animT*2)*.25+.75;
   const col=`rgba(255,230,80,${pulse})`;
@@ -600,7 +996,7 @@ function drawUI(){
 }
 
 function drawRetroOverlay(){
-  for(let y=0;y<H;y+=2){ctx.fillStyle='rgba(0,0,0,0.22)';ctx.fillRect(0,y,W,1);}
+  for(let y:0;y<H;y+=2){ctx.fillStyle='rgba(0,0,0,0.22)';ctx.fillRect(0,y,W,1);}
   const amt=Math.sin(animT*7)*2+3;
   ctx.save();ctx.globalCompositeOperation='screen';ctx.globalAlpha=0.12;
   ctx.drawImage(canvas,amt,0,W,H,0,0,W,H);
@@ -658,17 +1054,33 @@ function drawPause(){
 }
 
 function drawDead(){
-  ctx.fillStyle='rgba(0,0,0,0.82)';ctx.fillRect(0,0,W,H);
-  neonText('DAMN!',W/2,H/2-50,'rgba(255,40,40,1)',72,28,'center');
-  ctx.save();ctx.fillStyle='rgba(255,150,140,0.9)';ctx.font='18px "Courier New"';ctx.textAlign='center';
-  ctx.shadowColor='rgba(255,120,120,0.7)';ctx.shadowBlur=10;
-  ctx.fillText('Die. Again. Again. Again.',W/2,H/2+10);
-  ctx.fillStyle='rgba(160,185,255,0.75)';ctx.font='16px "Courier New"';
-  ctx.fillText('[ SPACE ] Try Again',W/2,H/2+48);
+  ctx.fillStyle='rgba(0,0,0,0.86)';ctx.fillRect(0,0,W,H);
+  neonText('DAMN!',W/2,H/2-60,'rgba(255,40,40,1)',80,32,'center');
+  ctx.save();ctx.textAlign='center';
+
+  // 死因メッセージ
+  const msg=getDeathMsg(lastDeathCause);
+  ctx.shadowColor='rgba(255,120,120,0.8)';ctx.shadowBlur=12;
+  ctx.fillStyle='rgba(255,170,150,0.95)';ctx.font='bold 20px "Courier New"';
+  ctx.fillText(msg,W/2,H/2+10);
+
+  // 今回到達 vs 最高記録
+  const best=getStat('bestStage',1);
+  const reachCol=lastDeathStage>=best?'rgba(255,220,50,0.95)':'rgba(160,185,255,0.75)';
+  ctx.shadowColor=reachCol;ctx.shadowBlur=8;
+  ctx.fillStyle=reachCol;ctx.font='15px "Courier New"';
+  const reachMsg=lastDeathStage>=best&&getStat('totalDeaths')>1
+    ?'今回: Stage '+lastDeathStage+'  ★ 最高記録更新！'
+    :'今回: Stage '+lastDeathStage+'  |  最高: Stage '+best;
+  ctx.fillText(reachMsg,W/2,H/2+38);
+
+  // 操作
+  ctx.shadowBlur=4;
+  ctx.fillStyle='rgba(160,185,255,0.85)';ctx.font='16px "Courier New"';
+  ctx.fillText('[ SPACE ] もう一回',W/2,H/2+76);
   ctx.fillStyle='rgba(100,120,180,0.5)';ctx.font='13px "Courier New"';
-  ctx.fillText('[ T ] Back to Title',W/2,H/2+76);
-  ctx.fillStyle='rgba(120,150,200,0.55)';ctx.font='14px "Courier New"';
-  ctx.fillText('TIME: '+Math.max(0,timeLeft).toFixed(1)+'s',W/2,H/2+104);
+  ctx.fillText('[ T ] タイトルへ',W/2,H/2+102);
+
   ctx.restore();
 }
 
@@ -706,6 +1118,19 @@ function drawTitle(){
   ctx.save();ctx.fillStyle='rgba(100,120,160,0.6)';ctx.font='12px "Courier New"';ctx.textAlign='center';
   ctx.fillText('← →  MOVE    SPACE  JUMP    F / ESC  PAUSE',W/2,H-36);ctx.restore();
   if(adminMode)neonText('[ ADMIN MODE ON ]',W/2,H-16,'rgba(255,220,50,0.5)',10,4,'center');
+  // タイトルに累計情報をさりげなく
+  const td=getStat('totalDeaths');
+  const tb=getStat('bestStage',0);
+  if(td>0){
+    ctx.save();
+    ctx.fillStyle='rgba(255,80,80,0.35)';ctx.font='11px "Courier New"';ctx.textAlign='left';
+    ctx.fillText('deaths: '+td.toLocaleString(),20,H-16);
+    if(tb>0){
+      ctx.fillStyle='rgba(160,185,255,0.3)';ctx.textAlign='right';
+      ctx.fillText('best: Stage '+tb,W-20,H-16);
+    }
+    ctx.restore();
+  }
   if(hardMode)neonText('HARD MODE ON',160,H-16,'rgba(255,80,60,0.6)',10,4);
   if(retroMode)neonText('RETRO MODE ON',W-160,H-16,'rgba(100,255,120,0.6)',10,4);
 }
@@ -714,7 +1139,7 @@ function drawTitle(){
 function update(dt){
   if(state==='play'){
     timeLeft-=dt;
-    if(timeLeft<=0){triggerDeath();return;}
+    if(timeLeft<=0){lastDeathCause='time';lastDeathStage=stageNum;lastTimeLeft=0;triggerDeath();return;}
     if(keys['ArrowLeft']||keys['a']||keys['A']){player.vx=-5;player.facing=-1;}
     else if(keys['ArrowRight']||keys['d']||keys['D']){player.vx=5;player.facing=1;}
     else player.vx*=0.75;
@@ -745,7 +1170,7 @@ function update(dt){
           b.falling=true;
           for(const s of spikes){
             if(!s.falling&&s.x+s.w>b.x&&s.x<b.x+b.w&&s.y+s.h>=b.y-32&&s.y<b.y+4){
-              s.falling=true;s.vy=0;
+              s.falling=true;s.vy:0;
             }
           }
         }
@@ -753,13 +1178,13 @@ function update(dt){
       if(b.falling){b.vy+=1.5;b.y+=b.vy;if(b.y>H+100)b.gone=true;}
     }
     for(const s of spikes){if(s.falling){s.vy+=1.5;s.y+=s.vy;}}
-    if(player.y>H+60){triggerDeath();return;}
+    if(player.y>H+60){lastDeathCause='fall';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
     for(const s of spikes){
       if(s.y>H+50)continue;
-      if(overlap(player,{x:s.x+4,y:s.y+4,w:s.w-8,h:s.h-8})){triggerDeath();return;}
+      if(overlap(player,{x:s.x+4,y:s.y+4,w:s.w-8,h:s.h-8})){lastDeathCause='spike';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
     }
     for(const t of trapSpikes){
-      if(t.visible&&t.timer<=0&&overlap(player,{x:t.x+4,y:t.y+4,w:t.w-8,h:t.h-8})){triggerDeath();return;}
+      if(t.visible&&t.timer<=0&&overlap(player,{x:t.x+4,y:t.y+4,w:t.w-8,h:t.h-8})){lastDeathCause='trap';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
     }
     for(const h of hourglasses){
       if(!h.taken&&overlap(player,{x:h.x,y:h.y,w:h.w,h:h.h})){
@@ -767,7 +1192,33 @@ function update(dt){
         floatMsgs.push({txt:'+5s!',x:h.x+12,y:h.y,life:1.2});sfxHourglass();
       }
     }
-    if(overlap(player,goal)){
+    // Mimic check
+    for(const m of mimics){
+      if(m.exploded)continue;
+      const dist=Math.abs((player.x+player.w/2)-(m.x+m.w/2));
+      if(dist<64&&Math.abs((player.y+player.h/2)-(m.y+m.h/2))<64){
+        if(!m.triggered)m.triggered=true;
+      }
+      if(m.triggered){
+        m.timer+=dt;
+        if(m.timer>0.4){
+          m.exploded=true;
+          // spawn trap spikes around mimic
+          lastDeathCause='trap';lastDeathStage=stageNum;lastTimeLeft=timeLeft;
+          triggerDeath();return;
+        }
+      }
+    }
+    // Ceiling traps
+    for(const c of ceilingTraps){
+      if(!c.triggered&&player.x>c.tx){c.triggered=true;c.visible=true;c.timer=c.warn?0.5:0;}
+      if(c.triggered&&c.timer>0)c.timer-=dt;
+      if(c.visible&&c.timer<=0&&overlap(player,{x:c.x+4,y:c.y,w:c.w-8,h:c.h})){
+        lastDeathCause='trap';lastDeathStage=stageNum;lastTimeLeft=timeLeft;
+        triggerDeath();return;
+      }
+    }
+    if(overlap(player,goal)){incStat('points',50);incStat('totalClears');
       const next=stageNum+1;
       timeLeft=Math.min(MAX_TIME,timeLeft+3);score+=500+Math.floor(timeLeft*10);sfxGoal();
       if(next<=STAGES.length){
@@ -806,8 +1257,24 @@ function update(dt){
   Object.keys(keys).forEach(k=>{if(keys[k])prevKeys[k]=true;else delete prevKeys[k];});
 }
 
+// Flash overlay for death
+let deathFlash=0;
+
 function triggerDeath(){
   damnEffect={x:player.x+player.w/2,y:player.y};damnTimer=1.5;state='dead';sfxDamn();stopBGM();
+  deathFlash=1.0;
+
+  // Stats
+  incStat('totalDeaths');
+  incStat('deaths_stage_'+lastDeathStage);
+  const best=getStat('bestStage',1);
+  if(lastDeathStage>best)setStat('bestStage',lastDeathStage);
+  incStat('totalStagesReached',lastDeathStage);
+
+  // Points: 1pt per death, bonus for stage reached
+  incStat('points',1);
+  incStat('points',lastDeathStage*2);
+  if(lastDeathCause==='time'&&lastTimeLeft>=0&&lastTimeLeft<1)incStat('points',5); // near miss bonus
 }
 
 function loop(ts){
@@ -822,9 +1289,12 @@ function loop(ts){
     for(const s of spikes)drawSpike(s);
     for(const t of trapSpikes)drawTrapSpike(t);
     for(const h of hourglasses)drawHourglass(h);
+    for(const m of mimics)drawMimic(m);
+    for(const c of ceilingTraps)drawCeilingTrap(c);
     drawGoal();drawPlayer();drawFloatMsgs();drawUI();
     if(state==='pause')drawPause();
     if(state==='dead')drawDead();
+    if(deathFlash>0){ctx.fillStyle=`rgba(255,30,30,${deathFlash*.55})`;ctx.fillRect(0,0,W,H);deathFlash=Math.max(0,deathFlash-dt*3);}
     drawDamn();
     if(retroMode)drawRetroOverlay();
   }

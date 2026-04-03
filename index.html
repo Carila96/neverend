@@ -796,13 +796,13 @@ function resolvePlayer(){
   for(const p of allPlats){
     if(overlap(player,p)){
       if(player.vy>=0){
-        player.y:p.y-player.h;
-        player.vy:0;
+        player.y=p.y-player.h;
+        player.vy=0;
         player.onGround=true;
         if(movingPlatforms.includes(p))playerPlatform=p;
       } else {
-        player.y:p.y+p.h;
-        player.vy:0;
+        player.y=p.y+p.h;
+        player.vy=0;
       }
     }
   }
@@ -996,7 +996,7 @@ function drawUI(){
 }
 
 function drawRetroOverlay(){
-  for(let y:0;y<H;y+=2){ctx.fillStyle='rgba(0,0,0,0.22)';ctx.fillRect(0,y,W,1);}
+  for(let y=0;y<H;y+=2){ctx.fillStyle='rgba(0,0,0,0.22)';ctx.fillRect(0,y,W,1);}
   const amt=Math.sin(animT*7)*2+3;
   ctx.save();ctx.globalCompositeOperation='screen';ctx.globalAlpha=0.12;
   ctx.drawImage(canvas,amt,0,W,H,0,0,W,H);
@@ -1170,7 +1170,7 @@ function update(dt){
           b.falling=true;
           for(const s of spikes){
             if(!s.falling&&s.x+s.w>b.x&&s.x<b.x+b.w&&s.y+s.h>=b.y-32&&s.y<b.y+4){
-              s.falling=true;s.vy:0;
+              s.falling=true;s.vy=0;
             }
           }
         }

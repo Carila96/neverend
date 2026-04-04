@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p app/api app/data app/pages docs/specification docs/legal docs/future)",
+      "Bash(mv reserve.js app/api/)",
+      "Bash(mv schema.sql app/data/)",
+      "Bash(mv sales_page.html app/pages/)",
+      "Bash(mv .env.example app/)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
+    ]
+  }
+}

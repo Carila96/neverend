@@ -33,7 +33,7 @@ create table subscription_contracts (
 -- ============================================================
 create table owned_blocks (
   id          uuid primary key default gen_random_uuid(),
-  contract_id uuid not null references subscription_contracts(id) on delete cascade,
+  contract_id uuid references subscription_contracts(id) on delete cascade,  -- null until payment confirmed
   stage_id    integer not null check (stage_id >= 1),
   x           integer not null check (x >= 0 and x < 80),
   y           integer not null check (y >= 0 and y < 45),

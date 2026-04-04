@@ -14,9 +14,10 @@ export default async function handler(req, res) {
   const stage_id = parseInt(req.query.stage_id, 10);
   if (!stage_id || stage_id < 1) return res.status(400).json({ error: 'Missing or invalid stage_id' });
 
-  // Expire stale reservations before returning grid state
-  // (Supabase pg_cron handles this periodically, but we clean up on read too)
-  await supabase.rpc('expire_stale_reservations').catch(() => {}); // non-fatal if it fails
+  // Expire stale reservations before returning grid state (non-fatal)
+  try {
+    await supabase.rpc('expire_stale_reservations');
+  } catch (_) {}
 
   const { data: blocks, error } = await supabase
     .from('owned_blocks')

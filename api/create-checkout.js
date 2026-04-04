@@ -68,8 +68,8 @@ export default async function handler(req, res) {
       payment_method_types: ['card'],
       line_items: [lineItem],
       mode: isSubscription ? 'subscription' : 'payment',
-      success_url: `${baseUrl}/success?session_key=${session_key}`,
-      cancel_url: `${baseUrl}/?session_key=${session_key}&cancelled=1`,
+      success_url: 'https://neverend.vercel.app/success?session_id={CHECKOUT_SESSION_ID}',
+      cancel_url: 'https://neverend.vercel.app/cancel',
       metadata: {
         session_key,
         stage_id: String(stage_id),

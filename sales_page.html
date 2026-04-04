@@ -375,7 +375,7 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
     <div>
       <div class="grid-wrapper">
         <div class="grid-header">
-          <div class="grid-info"><strong id="gridStageName">STAGE 1</strong> &nbsp;|&nbsp; <span id="gridBlocksInfo">40 x 22 | 1 block = 16x16px | STANDARD</span></div>
+          <div class="grid-info"><strong id="gridStageName">STAGE 1</strong> &nbsp;|&nbsp; <span id="gridBlocksInfo">80 x 45 | 1 block = 16x16px | STANDARD</span></div>
           <div class="grid-legend">
             <div class="legend-item"><div class="legend-dot empty"></div>AVAILABLE</div>
             <div class="legend-item"><div class="legend-dot claimed"></div>CLAIMED</div>
@@ -394,7 +394,7 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
 <!-- PRICING -->
 <section class="pricing-section" id="pricing">
   <div class="section-title">PRICING</div>
-  <div class="section-sub">Transparent pricing. Hard cap at $20/block/mo. Always.</div>
+  <div class="section-sub">Transparent pricing. Hard cap at $15/block/mo. Always.</div>
   <div class="pricing-grid">
     <div class="price-tier">
       <div class="tier-label">Early Access Eligibility</div>
@@ -480,7 +480,7 @@ const STAGES_DATA=[
   {id:9,name:'STAGE 9',sub:"One mistake. That's all.",type:'standard'},
   {id:10,name:'STAGE 10',sub:'You made it this far?',type:'creator'},
 ];
-const GRID_COLS=40,GRID_ROWS=22,CELL=32,BASE_PRICE=3;
+const GRID_COLS=80,GRID_ROWS=45,CELL=16,BASE_PRICE=3;
 
 // -- STATE --
 let currentStage=1;
@@ -528,7 +528,7 @@ function setStage(id){
   document.getElementById('gridStageName').textContent=s.name;
   const isC=s.type==='creator';
   document.getElementById('creatorBadge').classList.toggle('visible',isC);
-  document.getElementById('gridBlocksInfo').textContent='40 x 22 | 1 block = 16x16px | '+(isC?'CREATOR ZONE':'STANDARD');
+  document.getElementById('gridBlocksInfo').textContent='80 x 45 | 1 block = 16x16px | '+(isC?'CREATOR ZONE':'STANDARD');
   if(logoConverted){
     updatePlacementStatus();
     updateRecommendations();

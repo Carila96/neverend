@@ -179,7 +179,7 @@ CTA button text:
 - Early Access Eligibility: described as eligibility condition, not a numeric range
 - Launch Standard: $3/block/month (current)
 - Growth Pricing: described as staged increases, no fake range displayed
-- Absolute Cap: $20/block/month, displayed as hard unconditional limit
+- Absolute Cap: $15/block/month, displayed as hard unconditional limit
 
 ### 6.2 Volume Discounts
 

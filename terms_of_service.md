@@ -46,31 +46,40 @@ Grid Placements may be offered under Standard, Business, Enterprise, or other pl
 
 ### 4.2 Pricing Tiers & Price Cap
 
-Pricing increases in stages as the game grows. Current pricing is always displayed before checkout.
+Standard prices per block per month:
 
-| Stage | Standard price per block/month |
+| Price | Trigger |
 |---|---|
-| Launch — Early Adopter (first 3 months) | $1 |
-| Launch — Standard | $3 |
-| Growth I | $5 |
-| Growth II | $10 |
-| Established I | $15 |
-| Established II | $20 |
+| $3/block/mo | Launch price |
+| $5/block/mo | 20% grid occupancy OR platform growth |
+| $8/block/mo | 40% grid occupancy OR platform growth |
+| $10/block/mo | 60% grid occupancy OR platform growth |
+| $12/block/mo | 70% grid occupancy OR platform growth |
+| $15/block/mo | 80% grid occupancy OR platform growth |
 
-**Permanent price cap:** The standard price per block per month will **never exceed $30 USD**. This cap applies to all standard placements and is an unconditional commitment.
-
-*Exception: Custom enterprise agreements, exclusive placements, and special arrangements negotiated separately may be priced differently and are not subject to the $30 cap. Such agreements will be documented in a separate written order form.*
+**Permanent price cap:** The standard price per block per month will **never exceed $15 USD**. This is an unconditional commitment.
 
 Prices are stated **exclusive of taxes**. VAT, GST, sales tax, or similar indirect taxes may be added at checkout where required by law.
 
 Carila will provide at least **30 days' written notice** before any price increase takes effect for existing subscribers.
 
-### 4.3 Early Adopter Pricing
+Active subscriptions are never automatically increased. Price changes apply only to new subscriptions or renewals after the notice period.
 
-- Users who purchase during the **initial launch period (first 3 months)** are locked in at **$1/block/month for 12 months** from their first purchase date.
-- After 12 months, pricing transitions to the then-current standard rate.
-- If you cancel and re-subscribe after your early adopter period ends, the standard rate applies.
-- Early adopter status is non-transferable and applies per account.
+### 4.3 Early Adopter Program
+
+Users who subscribe at **$5/block/month or below** qualify as Early Adopters.
+
+**Benefits:**
+- Your price is locked at your contract price until the market price reaches $8/block/month
+- When the market price reaches $8/block/month, all Early Adopters transition to **$5/block/month permanently**
+- $5/block/month is the permanent cap for Early Adopters — no further increases apply
+- Volume discounts (Section 4.4) apply on top of the $5 cap
+
+**Conditions:**
+- Early Adopter benefits apply only while your subscription remains active and continuous
+- All Early Adopter benefits are permanently forfeited upon cancellation
+- Re-subscription after cancellation uses the current market price
+- Early Adopters are **not eligible** for the Lifetime Purchase option (Section 4.7)
 
 ### 4.4 Volume Discount
 

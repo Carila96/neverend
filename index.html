@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:'Courier New',monospace;overflow:hidden;}
 canvas{
   display:block;
   image-rendering:pixelated;
@@ -37,6 +36,40 @@ body{
 .s-keyval{font-size:10px;color:#888;letter-spacing:1px;}
 .s-close{padding:8px 24px;background:#0a0a12;color:#666;border:1px solid #222;font-family:'Courier New';font-size:11px;letter-spacing:2px;cursor:pointer;margin-top:8px;}
 .s-close:hover{border-color:#4af;color:#4af;}
+
+/* COOKIE BANNER */
+#cookieBanner{
+  display:none;position:fixed;bottom:0;left:0;right:0;
+  background:rgba(8,8,18,0.97);border-top:1px solid #262640;
+  padding:14px 24px;z-index:9999;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  font-family:'Courier New',monospace;font-size:11px;color:#888;
+}
+#cookieBanner.hidden{display:none!important;}
+#cookieBanner a{color:#4ab8ff;text-decoration:none;}
+#cookieBanner a:hover{text-decoration:underline;}
+.cookie-btn{
+  padding:6px 16px;font-family:'Courier New',monospace;font-size:11px;
+  letter-spacing:1px;cursor:pointer;border:1px solid;white-space:nowrap;
+}
+.cookie-accept{background:#4ab8ff;color:#000;border-color:#4ab8ff;}
+.cookie-decline{background:transparent;color:#555;border-color:#333;}
+.cookie-decline:hover{border-color:#555;color:#888;}
+
+/* SHARE BUTTON on dead screen */
+#shareBtn{
+  display:none;
+  margin-top:8px;
+  padding:8px 24px;
+  background:transparent;
+  border:1px solid #4ab8ff;
+  color:#4ab8ff;
+  font-family:'Courier New',monospace;
+  font-size:13px;
+  letter-spacing:2px;
+  cursor:pointer;
+}
+#shareBtn:hover{background:rgba(74,184,255,0.1);}
 </style>
 </head>
 <body>
@@ -68,6 +101,10 @@ body{
 </div>
 </div>
 <script>
+window.onerror=function(msg,src,line,col,err){
+  console.error('neverEND error:',msg,'at',src+':'+line+':'+col,err);
+  return false;
+};
 const canvas=document.getElementById('c');
 const ctx=canvas.getContext('2d');
 ctx.imageSmoothingEnabled=false;
@@ -78,15 +115,20 @@ let volBGM=0.8,volSFX=0.8;
 
 // ======== SAVE DATA (localStorage) ========
 const SAVE_KEY='neverend_save';
+let _saveCache=null;
 function loadSave(){
-  try{return JSON.parse(localStorage.getItem(SAVE_KEY))||{};}catch(e){return{};}
+  if(_saveCache)return _saveCache;
+  try{_saveCache=JSON.parse(localStorage.getItem(SAVE_KEY))||{};}
+  catch(e){_saveCache={};}
+  return _saveCache;
 }
 function writeSave(d){
+  _saveCache=d;
   try{localStorage.setItem(SAVE_KEY,JSON.stringify(d));}catch(e){}
 }
-function getStat(k,def=0){return loadSave()[k]??def;}
+function getStat(k,def){if(def===undefined)def=0;const v=loadSave()[k];return v!==undefined?v:def;}
 function setStat(k,v){const d=loadSave();d[k]=v;writeSave(d);}
-function incStat(k,by=1){setStat(k,(getStat(k))+by);}
+function incStat(k,by){if(by===undefined)by=1;setStat(k,(getStat(k))+by);}
 
 // Death cause tracking
 let lastDeathCause='';
@@ -237,9 +279,11 @@ function updateBGMTempo(){
 }
 
 // ======== HIDDEN COMMANDS ========
-let adminMode=false,hardMode=false,retroMode=false,inputBuf=[];
+let adminMode=false,hardMode=false,retroMode=false,easyMode=false,inputBuf=[];
+let easyModeSavedStage=1;
 const ADMIN_SEQ=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a','1','9','8','4'];
 const HARD_SEQ=['h','h','h','h','h'],RETRO_SEQ=['r','r','r','r','r'];
+const EASY_SEQ=['g','i','v','e','u','p'];
 
 // ======== GAME STATE ========
 let state='title',keys={},prevKeys={};
@@ -263,85 +307,97 @@ document.addEventListener('keydown',e=>{
     if(b.length>=5){
       if(HARD_SEQ.every((k,i)=>k===b.slice(-5)[i])){hardMode=!hardMode;inputBuf=[];return;}
       if(RETRO_SEQ.every((k,i)=>k===b.slice(-5)[i])){retroMode=!retroMode;inputBuf=[];return;}
+    if(b.length>=6&&EASY_SEQ.every((k,i)=>k===b.slice(-6)[i])){easyMode=!easyMode;inputBuf=[];floatMsgs.push({txt:easyMode?'BABY MODE ON':'BABY MODE OFF',x:W/2,y:H/2,life:2,color:'rgba(255,180,255,1)'});return;}
     }
   }
 },{passive:false});
 document.addEventListener('keyup',e=>{keys[e.key]=false;prevKeys[e.key]=false;});
 
 // ======== STAGES 1-10 ========
+// 設計ルール準拠版
+// - 構造タイプを多様に
+// - パターン学習→応用→裏切りの順
+// - スパイクは足場ごとに異なる位置
+// - 座標全て16px単位
+// - 動く足場速度4.0以上
+// - スタート位置・着地点にスパイクなし
+
 const STAGES=[
 
-  // STAGE 1 — How hard can it be?
-  // 地面を右に歩くだけ。でも終盤に罠。
-  // スパイクは右端。「まだ何もないな」→突然罠。
+  // ── STAGE 1 ── 構造：地続き横移動
+  // テーマ：「床トラップ」の初登場。警告ありのみ。
+  // パターン：歩いていると前方から何かが出てくる。
+  // スパイクは右端（終盤の視覚的ゴール）。
+  // 学習：警告トラップの存在を知る。スパイクは見える位置にある。
   {name:'STAGE 1',sub:'How hard can it be?',
-   plats:[
-     {x:0,y:640,w:1280,h:80},
-   ],
-   spikes:[
-     {x:1216,y:608,w:32,h:32},
-   ],
+   plats:[{x:0,y:640,w:1280,h:80}],
+   spikes:[{x:1056,y:608,w:32,h:32}],
    traps:[
-     {x:512,y:608,w:32,h:32,tx:448,warn:true},
-     {x:896,y:608,w:32,h:32,tx:832,warn:false},
+     {x:384,y:608,w:32,h:32,tx:256,warn:true},
+     {x:720,y:608,w:32,h:32,tx:592,warn:true},
    ],
    fall:[],move:[],mimics:[],ceiling:[],
-   hg:[{x:640,y:608,w:16,h:32},{x:1024,y:608,w:16,h:32}],
-   goal:{x:1200,y:528,w:64,h:112},spawn:{x:48,y:592}},
+   hg:[{x:496,y:608,w:16,h:32},{x:848,y:608,w:16,h:32}],
+   goal:{x:1184,y:528,w:80,h:112},spawn:{x:48,y:592}},
 
-  // STAGE 2 — Keep climbing.
-  // 階段。各足場のスパイク位置が全部違う。
-  // 「左端かと思ったら右端」「右端かと思ったら中央」
-  // 毎回読み直さないと死ぬ設計。
+  // ── STAGE 2 ── 構造：縦方向（上昇）
+  // テーマ：「段差スパイク」。各足場でスパイク位置が違う。
+  // パターン：段差を登るたびにスパイクの位置を読む。
+  // 1番右端、2番左端、3番中央、4番右端（中央で一度裏切る）
+  // 学習：毎回足場を読む習慣をつける。
   {name:'STAGE 2',sub:'Keep climbing.',
    plats:[
      {x:0,y:640,w:192,h:80},
-     {x:256,y:560,w:160,h:16},   // スパイク：右端
-     {x:480,y:480,w:160,h:16},   // スパイク：左端
-     {x:704,y:400,w:160,h:16},   // スパイク：中央（裏切り）
-     {x:928,y:320,w:160,h:16},   // スパイク：右端
+     {x:256,y:560,w:160,h:16},
+     {x:480,y:480,w:160,h:16},
+     {x:704,y:400,w:160,h:16},
+     {x:928,y:320,w:160,h:16},
      {x:1152,y:240,w:128,h:480},
    ],
    spikes:[
-     {x:384,y:528,w:32,h:32},   // 1番足場：右端
-     {x:592,y:448,w:32,h:32},   // 2番足場：右端に変更
-     {x:768,y:368,w:32,h:32},   // 3番足場：中央
-     {x:1056,y:288,w:32,h:32},  // 4番足場：右端
+     {x:384,y:528,w:32,h:32},   // 1番：右端
+     {x:480,y:448,w:32,h:32},   // 2番：左端（1番と違う）
+     {x:768,y:368,w:32,h:32},   // 3番：中央（裏切り）
+     {x:1056,y:288,w:32,h:32},  // 4番：右端（1番と同じ→覚えた人には安心感）
    ],
    traps:[
      {x:272,y:528,w:32,h:32,tx:224,warn:false},
-     {x:720,y:368,w:32,h:32,tx:672,warn:false},
+     {x:736,y:368,w:32,h:32,tx:688,warn:false},
    ],
    fall:[],move:[],mimics:[],ceiling:[],
-   hg:[{x:320,y:528,w:16,h:32},{x:752,y:368,w:16,h:32},{x:976,y:288,w:16,h:32}],
+   hg:[{x:320,y:528,w:16,h:32},{x:800,y:368,w:16,h:32},{x:976,y:288,w:16,h:32}],
    goal:{x:1168,y:128,w:48,h:112},spawn:{x:48,y:592}},
 
-  // STAGE 3 — Time it right.
-  // 動く足場。速い。待たなくていい。
-  // スパイクは両台座の「中央より奥」にある。手前は安全。
+  // ── STAGE 3 ── 構造：動く足場メイン
+  // テーマ：「動く足場で渡る」初体験。速い足場。
+  // 待ち時間ゼロ。乗れるタイミングを見て跳ぶだけ。
+  // スパイクは両側台座の「奥側」。入口付近は安全。
   {name:'STAGE 3',sub:'Time it right.',
    plats:[
-     {x:0,y:608,w:240,h:112},
-     {x:1040,y:608,w:240,h:112},
+     {x:0,y:608,w:224,h:112},
+     {x:1056,y:608,w:224,h:112},
    ],
    spikes:[
-     {x:1136,y:576,w:32,h:32},  // 右台座
+     {x:160,y:576,w:32,h:32},    // 左台座：奥（右寄り）
+     {x:1120,y:576,w:32,h:32},   // 右台座：奥（右寄り）
    ],
    traps:[
-     {x:1040,y:576,w:32,h:32,tx:992,warn:false},
+     {x:48,y:576,w:32,h:32,tx:208,warn:true},    // 左：警告あり（3面初トラップ）
+     {x:1200,y:576,w:32,h:32,tx:1056,warn:false}, // 右：警告なし（着地直後）
    ],
    fall:[],mimics:[],ceiling:[],
    move:[
-     {x:272,y:576,w:128,h:16,vx:5.5,vy:0,rx:208,ry:0,sx:480,sy:576},
+     {x:256,y:576,w:128,h:16,vx:5.0,vy:0,rx:208,ry:0,sx:480,sy:576},
      {x:672,y:512,w:112,h:16,vx:0,vy:4.5,rx:0,ry:64,sx:672,sy:512},
-     {x:800,y:576,w:128,h:16,vx:-5.5,vy:0,rx:176,ry:0,sx:816,sy:576},
+     {x:816,y:576,w:128,h:16,vx:-5.0,vy:0,rx:176,ry:0,sx:816,sy:576},
    ],
-   hg:[{x:400,y:544,w:16,h:32},{x:688,y:480,w:16,h:32}],
+   hg:[{x:384,y:544,w:16,h:32},{x:688,y:480,w:16,h:32}],
    goal:{x:1168,y:496,w:64,h:112},spawn:{x:48,y:560}},
 
-  // STAGE 4 — Don't Fall.
-  // 床全面スパイク。動く足場。
-  // 途中に「一瞬止まれそうな広い足場」があるが、罠がある。
+  // ── STAGE 4 ── 構造：スパイク床横断
+  // テーマ：「落ちたら死ぬ」が視覚的に明確。
+  // 動く足場で渡る。広い足場に見えるものが1枚あるが罠。
+  // 1面の「床トラップ」パターンを応用：足場の上でも出てくる。
   {name:'STAGE 4',sub:"Don't. Fall.",
    plats:[
      {x:0,y:576,w:160,h:144},
@@ -360,14 +416,12 @@ const STAGES=[
      {x:1024,y:672,w:32,h:32},{x:1056,y:672,w:32,h:32},{x:1088,y:672,w:32,h:32},
    ],
    traps:[
-     // 広い足場（休憩に見える）に罠
-     {x:576,y:512,w:32,h:32,tx:512,warn:false},
+     {x:576,y:512,w:32,h:32,tx:512,warn:false},  // 広い足場の中央に罠
    ],
    fall:[],mimics:[],ceiling:[],
    move:[
      {x:192,y:528,w:96,h:16,vx:4.0,vy:0,rx:96,ry:0,sx:240,sy:528},
-     // 広く見える足場（でも罠）
-     {x:448,y:528,w:192,h:16,vx:0,vy:0,rx:0,ry:0,sx:448,sy:528},
+     {x:448,y:528,w:192,h:16,vx:0,vy:0,rx:0,ry:0,sx:448,sy:528}, // 広い静止足場（罠あり）
      {x:704,y:464,w:96,h:16,vx:0,vy:3.5,rx:0,ry:80,sx:704,sy:464},
      {x:864,y:528,w:96,h:16,vx:-4.0,vy:0,rx:96,ry:0,sx:912,sy:528},
      {x:992,y:464,w:96,h:16,vx:0,vy:-3.0,rx:0,ry:64,sx:992,sy:464},
@@ -375,66 +429,68 @@ const STAGES=[
    hg:[{x:256,y:496,w:16,h:32},{x:512,y:496,w:16,h:32},{x:720,y:432,w:16,h:32}],
    goal:{x:1136,y:464,w:48,h:112},spawn:{x:48,y:528}},
 
-  // STAGE 5 (Creator Zone) — Just walk. Sure.
-  // 地面だけ。スパイクはクラスターで覚えやすい位置。
-  // でも「ここは安全」と思った直後に罠。
-  // スパイクの「形」で覚える：1本→2本→3本→1本
-  {name:'STAGE 5',sub:'Just walk. Sure.',
+  // ── STAGE 5 ── 構造：地続き＋崩れる床の組み合わせ（Creator Zone）
+  // テーマ：「小さな達成感」。1〜4面の学習が全部使える。
+  // 前半：地続きでトラップ（1面の応用）
+  // 後半：広い足場が崩れる（初体験・驚き）
+  // ギリギリ突破できる設計。「あと少し」感を最大化。
+  {name:'STAGE 5',sub:'Almost there.',
    plats:[
-     {x:0,y:640,w:1280,h:80},
+     {x:0,y:640,w:384,h:80},      // 前半：地続き
+     {x:448,y:608,w:256,h:16},    // 広い足場1（崩れる）
+     {x:768,y:576,w:256,h:16},    // 広い足場2（崩れる）
+     {x:1088,y:640,w:192,h:80},   // ゴール地面
    ],
    spikes:[
-     // 1本（序盤警告）
-     {x:192,y:608,w:32,h:32},
-     // 2本（中盤）
-     {x:512,y:608,w:32,h:32},{x:544,y:608,w:32,h:32},
-     // 3本（ここが一番危ない）
-     {x:800,y:608,w:32,h:32},{x:832,y:608,w:32,h:32},{x:864,y:608,w:32,h:32},
-     // 1本（終盤、油断させる）
-     {x:1152,y:608,w:32,h:32},
+     {x:320,y:608,w:32,h:32},     // 地続き右端（見えている）
+     {x:1088,y:608,w:32,h:32},    // ゴール地面入口
    ],
    traps:[
-     // スパイクの直後に罠（「越えた！」の瞬間に死）
-     {x:256,y:608,w:32,h:32,tx:192,warn:false},
-     {x:608,y:608,w:32,h:32,tx:544,warn:false},
-     {x:912,y:608,w:32,h:32,tx:864,warn:false},
-     {x:1216,y:608,w:32,h:32,tx:1152,warn:false},
+     {x:160,y:608,w:32,h:32,tx:96,warn:true},     // 前半：警告あり（1面の復習）
+     {x:464,y:576,w:32,h:32,tx:416,warn:false},   // 広い足場1の踏み出し直後
+     {x:784,y:544,w:32,h:32,tx:736,warn:false},   // 広い足場2の踏み出し直後
    ],
-   fall:[],move:[],mimics:[],ceiling:[],
-   hg:[{x:368,y:608,w:16,h:32},{x:688,y:608,w:16,h:32},{x:1024,y:608,w:16,h:32}],
-   goal:{x:1200,y:528,w:64,h:112},spawn:{x:48,y:592}},
+   fall:[
+     {x:448,y:608,w:256,h:16,spikesOn:false},
+     {x:768,y:576,w:256,h:16,spikesOn:false},
+   ],
+   move:[],mimics:[],ceiling:[],
+   hg:[{x:224,y:608,w:16,h:32},{x:576,y:576,w:16,h:32},{x:896,y:544,w:16,h:32}],
+   goal:{x:1168,y:528,w:64,h:112},spawn:{x:48,y:592}},
 
-  // STAGE 6 — Up and Over.
-  // 壁を登って反対側へ。ゴールは最終足場と同じ高さ。
-  // スパイクは「登り中の意外な場所」に。
+  // ── STAGE 6 ── 構造：壁・仕切りのある構造
+  // テーマ：「壁を越えて反対側へ」。縦と横の複合。
+  // ゴールは最終足場と同じ高さで必ず届く。
+  // スパイクは「登り中の意外な位置」。
   {name:'STAGE 6',sub:'Up. Then down.',
    plats:[
      {x:0,y:640,w:208,h:80},
      {x:208,y:0,w:48,h:544},
-     {x:256,y:512,w:176,h:16},   // 1段目
-     {x:496,y:432,w:176,h:16},   // 2段目
-     {x:736,y:352,w:176,h:16},   // 3段目
-     {x:912,y:352,w:48,h:288},   // 右降り壁
-     {x:960,y:512,w:320,h:128},  // ゴール台
+     {x:256,y:512,w:160,h:16},
+     {x:480,y:432,w:160,h:16},
+     {x:704,y:352,w:160,h:16},
+     {x:864,y:352,w:48,h:368},
+     {x:912,y:560,w:368,h:160},
    ],
    spikes:[
-     {x:400,y:480,w:32,h:32},    // 1段目：右端寄り（中央を通ろうとする人に）
-     {x:496,y:400,w:32,h:32},    // 2段目：左端（降りた瞬間）
-     {x:864,y:320,w:32,h:32},    // 3段目：右端（ゴールに近い方）
-     {x:960,y:480,w:32,h:32},    // ゴール台：入口左端
+     {x:256,y:480,w:32,h:32},
+     {x:480,y:400,w:32,h:32},
+     {x:736,y:320,w:32,h:32},
+     {x:912,y:528,w:32,h:32},
    ],
    traps:[
-     {x:272,y:480,w:32,h:32,tx:224,warn:false},
-     {x:592,y:400,w:32,h:32,tx:544,warn:false},
-     {x:1072,y:480,w:32,h:32,tx:1024,warn:false},
+     {x:352,y:480,w:32,h:32,tx:288,warn:false},
+     {x:576,y:400,w:32,h:32,tx:512,warn:false},
+     {x:1024,y:528,w:32,h:32,tx:960,warn:false},
    ],
    fall:[],move:[],mimics:[],ceiling:[],
-   hg:[{x:320,y:480,w:16,h:32},{x:624,y:400,w:16,h:32},{x:1008,y:480,w:16,h:32}],
-   goal:{x:1168,y:400,w:64,h:112},spawn:{x:48,y:592}},
+   hg:[{x:304,y:480,w:16,h:32},{x:608,y:400,w:16,h:32},{x:960,y:528,w:16,h:32}],
+   goal:{x:1168,y:448,w:64,h:112},spawn:{x:48,y:592}},
 
-  // STAGE 7 — Keep Moving.
-  // 全足場が崩れる。止まったら落ちる。
-  // スパイクは「次の足場への着地点」に。走りながら判断が必要。
+  // ── STAGE 7 ── 構造：崩れる床メイン
+  // テーマ：「止まったら死ぬ」。全足場が崩れる。
+  // スパイクは1番左端、3番右寄り（2面で学んだ「位置が変わる」の応用）
+  // パターン：走り続けながら位置を読む。
   {name:'STAGE 7',sub:'Keep moving.',
    plats:[
      {x:0,y:640,w:192,h:80},
@@ -446,9 +502,9 @@ const STAGES=[
      {x:1152,y:640,w:128,h:80},
    ],
    spikes:[
-     {x:192,y:560,w:32,h:32},   // 1番：左端（スタートから見える）
-     {x:544,y:512,w:32,h:32},   // 3番：右寄り（意外な位置）
-     {x:960,y:560,w:32,h:32},   // 5番：左端（再び）
+     {x:192,y:560,w:32,h:32},      // 1番：左端（見えている）
+     {x:544,y:512,w:32,h:32},      // 3番：右寄り（裏切り）
+     {x:960,y:560,w:32,h:32},      // 5番：左端（1番と同じ→覚えやすい）
    ],
    traps:[
      {x:352,y:512,w:32,h:32,tx:288,warn:false},
@@ -462,38 +518,35 @@ const STAGES=[
      {x:960,y:592,w:192,h:16,spikesOn:false},
    ],
    move:[],mimics:[],ceiling:[],
-   hg:[{x:256,y:560,w:16,h:32},{x:448,y:512,w:16,h:32},{x:816,y:512,w:16,h:32}],
+   hg:[{x:240,y:560,w:16,h:32},{x:448,y:512,w:16,h:32},{x:816,y:512,w:16,h:32}],
    goal:{x:1168,y:528,w:64,h:112},spawn:{x:48,y:592}},
 
-  // STAGE 8 — Which way?
-  // 上ルートは全面スパイクで通れない（見ればわかる）。
-  // 下ルートが正解。でも下ルートも罠だらけ。
-  // 罠は「安全そうな足場の中央」に隠れている。
+  // ── STAGE 8 ── 構造：壁・仕切り（2ルート）
+  // テーマ：「ルートの選択」。上は見るだけで通れない。下が正解。
+  // 下ルートに1〜5面のパターン（床トラップ）を応用。
+  // 裏切り：下ルートの「端は安全」と思わせて中央に罠。
   {name:'STAGE 8',sub:'Which way?',
    plats:[
      {x:0,y:640,w:192,h:80},
-     {x:192,y:480,w:192,h:16},
-     {x:448,y:400,w:192,h:16},
-     {x:704,y:480,w:192,h:16},
+     {x:192,y:448,w:192,h:16},
+     {x:448,y:368,w:192,h:16},
+     {x:704,y:448,w:192,h:16},
      {x:192,y:608,w:192,h:16},
      {x:448,y:608,w:192,h:16},
      {x:704,y:608,w:192,h:16},
      {x:960,y:640,w:320,h:80},
    ],
    spikes:[
-     // 上ルート完全封鎖
-     {x:192,y:448,w:32,h:32},{x:224,y:448,w:32,h:32},{x:256,y:448,w:32,h:32},
-     {x:288,y:448,w:32,h:32},{x:320,y:448,w:32,h:32},{x:352,y:448,w:32,h:32},
-     {x:448,y:368,w:32,h:32},{x:480,y:368,w:32,h:32},{x:512,y:368,w:32,h:32},
-     {x:544,y:368,w:32,h:32},{x:576,y:368,w:32,h:32},{x:608,y:368,w:32,h:32},
-     {x:704,y:448,w:32,h:32},{x:736,y:448,w:32,h:32},{x:768,y:448,w:32,h:32},
-     {x:800,y:448,w:32,h:32},{x:832,y:448,w:32,h:32},{x:864,y:448,w:32,h:32},
-     // 下ルート：ゴール手前の右端（最後の最後）
+     {x:192,y:416,w:32,h:32},{x:224,y:416,w:32,h:32},{x:256,y:416,w:32,h:32},
+     {x:288,y:416,w:32,h:32},{x:320,y:416,w:32,h:32},{x:352,y:416,w:32,h:32},
+     {x:448,y:336,w:32,h:32},{x:480,y:336,w:32,h:32},{x:512,y:336,w:32,h:32},
+     {x:544,y:336,w:32,h:32},{x:576,y:336,w:32,h:32},{x:608,y:336,w:32,h:32},
+     {x:704,y:416,w:32,h:32},{x:736,y:416,w:32,h:32},{x:768,y:416,w:32,h:32},
+     {x:800,y:416,w:32,h:32},{x:832,y:416,w:32,h:32},{x:864,y:416,w:32,h:32},
      {x:848,y:576,w:32,h:32},
      {x:960,y:608,w:32,h:32},
    ],
    traps:[
-     // 下ルート：中央に罠（端は安全に見える）
      {x:272,y:576,w:32,h:32,tx:224,warn:false},
      {x:544,y:576,w:32,h:32,tx:496,warn:false},
    ],
@@ -501,10 +554,11 @@ const STAGES=[
    hg:[{x:480,y:576,w:16,h:32},{x:736,y:576,w:16,h:32}],
    goal:{x:1168,y:528,w:64,h:112},spawn:{x:48,y:592}},
 
-  // STAGE 9 — Nice and easy... right?
-  // 広い足場3枚。全部崩れる。
-  // スパイクは各足場の「真ん中より少し奥」。端っこは安全に見える。
-  // 罠は「次の足場への踏み出し位置」。走って死ぬ。
+  // ── STAGE 9 ── 構造：崩れる床（応用）
+  // テーマ：「広い足場が全部崩れる」。7面の上位互換。
+  // 7面では足場が連続して崩れた。9面では足場が広くて安心感がある。
+  // 裏切り：広い＝安全の学習を破壊。
+  // スパイクは「踏み出す方向の先」にある。
   {name:'STAGE 9',sub:'Nice and easy... right?',
    plats:[
      {x:0,y:640,w:224,h:80},
@@ -514,12 +568,11 @@ const STAGES=[
      {x:896,y:640,w:384,h:80},
    ],
    spikes:[
-     {x:352,y:576,w:32,h:32},   // 1番：中央より奥
-     {x:896,y:608,w:32,h:32},   // ゴール地面：入口
+     {x:352,y:576,w:32,h:32},      // 1番足場の中央より奥
+     {x:896,y:608,w:32,h:32},      // ゴール地面入口
    ],
    traps:[
-     // 踏み出す瞬間に出てくる
-     {x:240,y:576,w:32,h:32,tx:192,warn:false},
+     {x:240,y:576,w:32,h:32,tx:192,warn:false},   // 踏み出した直後
      {x:560,y:544,w:32,h:32,tx:512,warn:false},
      {x:784,y:512,w:32,h:32,tx:736,warn:false},
    ],
@@ -532,9 +585,11 @@ const STAGES=[
    hg:[{x:288,y:576,w:16,h:32},{x:512,y:544,w:16,h:32},{x:736,y:512,w:16,h:32}],
    goal:{x:1168,y:528,w:64,h:112},spawn:{x:48,y:592}},
 
-  // STAGE 10 (Creator Zone) — You've learned nothing.
-  // 全要素。スパイク床横断＋崩れ足場＋動く足場＋罠。
-  // スパイクは「絶対ここは大丈夫」と思った場所に配置。
+  // ── STAGE 10 ── 構造：全要素複合（Creator Zone）
+  // テーマ：「これまでの全パターンが出る」。
+  // スパイク床横断→動く足場→崩れる床→トラップ地獄。
+  // 1〜9面で学んだ全てが必要。
+  // 裏切り：ゴール台の「安全そうな中央」にスパイク。
   {name:'STAGE 10',sub:"You've learned nothing.",
    plats:[
      {x:0,y:640,w:160,h:80},
@@ -549,10 +604,8 @@ const STAGES=[
      {x:352,y:672,w:32,h:32},{x:384,y:672,w:32,h:32},{x:416,y:672,w:32,h:32},
      {x:448,y:672,w:32,h:32},{x:480,y:672,w:32,h:32},{x:512,y:672,w:32,h:32},
      {x:544,y:672,w:32,h:32},
-     // 崩れ足場のスパイク：右端（「右は安全」の裏切り）
-     {x:848,y:560,w:32,h:32},
-     // ゴール台：中央に1本（入口と出口の間）
-     {x:1136,y:464,w:32,h:32},
+     {x:848,y:560,w:32,h:32},      // 崩れ足場2番：右端（裏切り）
+     {x:1136,y:464,w:32,h:32},     // ゴール台：中央（最後の裏切り）
    ],
    traps:[
      {x:736,y:560,w:32,h:32,tx:688,warn:false},
@@ -565,12 +618,337 @@ const STAGES=[
    ],
    mimics:[],ceiling:[],
    move:[
-     {x:192,y:576,w:128,h:16,vx:4.5,vy:0,rx:128,ry:0,sx:288,sy:576},
+     {x:192,y:576,w:128,h:16,vx:4.5,vy:0,rx:128,ry:0,sx:192,sy:576},
      {x:384,y:512,w:128,h:16,vx:0,vy:3.5,rx:0,ry:80,sx:384,sy:512},
    ],
    hg:[{x:240,y:544,w:16,h:32},{x:432,y:480,w:16,h:32},{x:784,y:560,w:16,h:32}],
    goal:{x:1056,y:384,w:48,h:112},spawn:{x:48,y:592}},
+// STAGE 11 — Same map. Different traps.
+  // 10面と全く同じレイアウト。でも安全だった場所が全部罠。
+  // 「知ってるはずなのに死ぬ」という記憶への裏切り。
+  {name:'STAGE 11',sub:'...wait, I know this.',
+   plats:[
+     {x:0,y:640,w:160,h:80},
+     {x:560,y:640,w:160,h:80},
+     {x:720,y:592,w:160,h:16},
+     {x:880,y:544,w:160,h:16},
+     {x:1040,y:496,w:240,h:224},
+   ],
+   spikes:[
+     // 10面と違う位置
+     {x:0,y:672,w:32,h:32},{x:32,y:672,w:32,h:32},   // スタート地面左端（10面にはなかった）
+     {x:720,y:560,w:32,h:32},    // 崩れ足場1：左端（10面は右端だった）
+     {x:1040,y:464,w:32,h:32},   // ゴール台：左端
+   ],
+   traps:[
+     // 10面で安全だった場所に罠
+     {x:576,y:608,w:32,h:32,tx:528,warn:false},   // 中間地面：安全だったのに
+     {x:752,y:560,w:32,h:32,tx:704,warn:false},   // 崩れ足場1：右側
+     {x:912,y:512,w:32,h:32,tx:864,warn:false},   // 崩れ足場2：左側
+     {x:1072,y:464,w:32,h:32,tx:1024,warn:false}, // ゴール台：入口
+   ],
+   fall:[
+     {x:720,y:592,w:160,h:16,spikesOn:false},
+     {x:880,y:544,w:160,h:16,spikesOn:false},
+   ],
+   mimics:[],ceiling:[],
+   move:[
+     {x:192,y:576,w:128,h:16,vx:4.5,vy:0,rx:128,ry:0,sx:192,sy:576},
+     {x:384,y:512,w:128,h:16,vx:0,vy:3.5,rx:0,ry:80,sx:384,sy:512},
+   ],
+   hg:[{x:208,y:544,w:16,h:32},{x:736,y:560,w:16,h:32}],
+   goal:{x:1056,y:384,w:48,h:112},spawn:{x:48,y:592}},
+
+  // STAGE 12 — The Bowl.
+  // 深皿型。外側が高く中央が低い。降りるのは簡単、登るのが難しい。
+  // 「中央に降りたら詰む」という罠。
+  {name:'STAGE 12',sub:'Easy to fall in. Hard to get out.',
+   plats:[
+     {x:0,y:640,w:192,h:80},       // 左高台（スタート）
+     {x:192,y:608,w:128,h:16},     // 左斜め1
+     {x:320,y:576,w:128,h:16},     // 左斜め2
+     {x:448,y:544,w:128,h:16},     // 左斜め3
+     {x:576,y:512,w:128,h:16},     // 底（中央）
+     {x:704,y:544,w:128,h:16},     // 右斜め1
+     {x:832,y:576,w:128,h:16},     // 右斜め2
+     {x:960,y:608,w:128,h:16},     // 右斜め3
+     {x:1088,y:640,w:192,h:80},    // 右高台（ゴール）
+   ],
+   spikes:[
+     {x:192,y:576,w:32,h:32},      // 左1：左端
+     {x:576,y:480,w:32,h:32},      // 底：左端（降りた瞬間）
+     {x:960,y:576,w:32,h:32},      // 右3：左端
+   ],
+   traps:[
+     {x:336,y:544,w:32,h:32,tx:288,warn:false},
+     {x:592,y:480,w:32,h:32,tx:544,warn:false},   // 底：右端にも罠（詰み設計）
+     {x:848,y:544,w:32,h:32,tx:800,warn:false},
+     {x:976,y:576,w:32,h:32,tx:928,warn:false},
+   ],
+   fall:[],move:[],mimics:[],ceiling:[],
+   hg:[{x:256,y:576,w:16,h:32},{x:720,y:512,w:16,h:32},{x:1008,y:576,w:16,h:32}],
+   goal:{x:1168,y:528,w:64,h:112},spawn:{x:48,y:592}},
+
+  // STAGE 13 — Hourglass Hunt.
+  // 砂時計が鍵。取らないとタイマーが足りなくてゴールできない。
+  // 砂時計は危険な場所に置いてある。取るかどうかの判断が問われる。
+  {name:'STAGE 13',sub:'Time is running out.',
+   plats:[
+     {x:0,y:640,w:160,h:80},
+     {x:224,y:576,w:112,h:16},
+     {x:416,y:512,w:112,h:16},
+     {x:608,y:448,w:112,h:16},
+     {x:800,y:512,w:112,h:16},
+     {x:992,y:448,w:112,h:16},
+     {x:1152,y:512,w:128,h:208},
+   ],
+   spikes:[
+     {x:224,y:544,w:32,h:32},      // 1番：左端
+     {x:800,y:480,w:32,h:32},      // 4番：左端
+   ],
+   traps:[
+     {x:240,y:544,w:32,h:32,tx:192,warn:false},
+     {x:624,y:416,w:32,h:32,tx:576,warn:false},
+     {x:1008,y:416,w:32,h:32,tx:960,warn:false},
+   ],
+   fall:[],move:[],mimics:[],ceiling:[],
+   // 砂時計は危険な場所（スパイクの隣）に配置
+   hg:[
+     {x:288,y:544,w:16,h:32},      // 1番：スパイスの隣（取りにくい）
+     {x:672,y:416,w:16,h:32},      // 3番：罠の先
+     {x:1040,y:416,w:16,h:32},     // 5番：罠の先
+   ],
+   goal:{x:1168,y:400,w:48,h:112},spawn:{x:48,y:592}},
+
+  // STAGE 14 — Razor's Edge.
+  // 足場が全部狭い（3ブロック幅=48px）。精度だけが求められる。
+  // スパイクが足場の半分を占めるので実質1〜2ブロックしか安全地帯がない。
+  {name:'STAGE 14',sub:'Precision only.',
+   plats:[
+     {x:0,y:640,w:160,h:80},
+     {x:208,y:576,w:48,h:16},      // 3ブロック幅
+     {x:320,y:512,w:48,h:16},
+     {x:432,y:448,w:48,h:16},
+     {x:544,y:384,w:48,h:16},
+     {x:656,y:448,w:48,h:16},
+     {x:768,y:512,w:48,h:16},
+     {x:880,y:448,w:48,h:16},
+     {x:992,y:384,w:48,h:16},
+     {x:1104,y:448,w:176,h:272},
+   ],
+   spikes:[
+     {x:208,y:544,w:32,h:32},      // 各足場：左2ブロックがスパイク→右1ブロックだけ安全
+     {x:320,y:480,w:32,h:32},
+     {x:432,y:416,w:32,h:32},
+     {x:656,y:416,w:32,h:32},
+     {x:768,y:480,w:32,h:32},
+     {x:880,y:416,w:32,h:32},
+   ],
+   traps:[
+     {x:544,y:352,w:32,h:32,tx:496,warn:false},   // 4番：スパイクなしだが罠
+     {x:992,y:352,w:32,h:32,tx:944,warn:false},   // 8番：スパイクなしだが罠
+   ],
+   fall:[],move:[],mimics:[],ceiling:[],
+   hg:[{x:368,y:480,w:16,h:32},{x:704,y:416,w:16,h:32},{x:1008,y:352,w:16,h:32}],
+   goal:{x:1120,y:336,w:48,h:112},spawn:{x:48,y:592}},
+
+  // STAGE 15 (Creator Zone) — The Mimic.
+  // メインルートは普通に進める。でも寄り道に宝箱がある。
+  // 近づいたら爆発して死ぬ。欲張りへの罰。
+  {name:'STAGE 15',sub:'Greed kills.',
+   plats:[
+     {x:0,y:640,w:144,h:80},
+     {x:208,y:576,w:96,h:16},
+     {x:384,y:512,w:96,h:16},
+     {x:560,y:448,w:96,h:16},
+     {x:736,y:512,w:96,h:16},
+     {x:912,y:448,w:96,h:16},
+     {x:1088,y:384,w:96,h:16},
+     {x:1152,y:384,w:128,h:336},
+     // 寄り道足場（宝箱あり）
+     {x:384,y:400,w:64,h:16},
+     {x:736,y:400,w:64,h:16},
+   ],
+   spikes:[
+     {x:144,y:608,w:32,h:32},
+     {x:912,y:416,w:32,h:32},
+   ],
+   traps:[
+     {x:224,y:544,w:32,h:32,tx:176,warn:false},
+     {x:1104,y:352,w:32,h:32,tx:1056,warn:false},
+   ],
+   fall:[],mimics:[
+     {x:400,y:368,w:40,h:32},    // 寄り道1の宝箱
+     {x:752,y:368,w:40,h:32},    // 寄り道2の宝箱
+   ],ceiling:[],
+   hg:[{x:576,y:416,w:16,h:32},{x:928,y:416,w:16,h:32}],
+   goal:{x:1168,y:272,w:48,h:112},spawn:{x:48,y:592}},
+
+  // STAGE 16 — Up and Down.
+  // 階段を登って、今度は逆階段で降りる。
+  // 登りと降りでスパイクの位置が対称になっている（登りは左端、降りは右端）
+  {name:'STAGE 16',sub:'What goes up...',
+   plats:[
+     {x:0,y:640,w:160,h:80},
+     {x:192,y:560,w:112,h:16},    // 登り1
+     {x:368,y:480,w:112,h:16},    // 登り2
+     {x:544,y:400,w:112,h:16},    // 頂上
+     {x:720,y:480,w:112,h:16},    // 降り1
+     {x:896,y:560,w:112,h:16},    // 降り2
+     {x:1072,y:640,w:208,h:80},   // ゴール地面
+   ],
+   spikes:[
+     {x:192,y:528,w:32,h:32},     // 登り1：左端
+     {x:368,y:448,w:32,h:32},     // 登り2：左端
+     {x:800,y:448,w:32,h:32},     // 降り1：右端（対称）
+     {x:976,y:528,w:32,h:32},     // 降り2：右端（対称）
+     {x:1072,y:608,w:32,h:32},    // ゴール地面：入口
+   ],
+   traps:[
+     {x:272,y:528,w:32,h:32,tx:224,warn:false},
+     {x:560,y:368,w:32,h:32,tx:512,warn:false},   // 頂上：降り始める直前
+     {x:896,y:528,w:32,h:32,tx:848,warn:false},
+   ],
+   fall:[],move:[],mimics:[],ceiling:[],
+   hg:[{x:304,y:528,w:16,h:32},{x:576,y:368,w:16,h:32},{x:928,y:528,w:16,h:32}],
+   goal:{x:1168,y:528,w:64,h:112},spawn:{x:48,y:592}},
+
+  // STAGE 17 — Rising Danger.
+  // マグマ上昇（エフェクトのみ版）。画面下から赤い警告ラインが上がってくる。
+  // 実際の死判定はタイマーで代替。「急げ」という視覚的プレッシャー。
+  // 本格マグマエンジンは後で実装。
+  {name:'STAGE 17',sub:"Don't look down.",
+   plats:[
+     {x:0,y:640,w:160,h:80},
+     {x:224,y:576,w:96,h:16},
+     {x:400,y:496,w:96,h:16},
+     {x:576,y:416,w:96,h:16},
+     {x:752,y:336,w:96,h:16},
+     {x:928,y:256,w:96,h:16},
+     {x:1104,y:176,w:176,h:544},
+   ],
+   spikes:[
+     {x:224,y:544,w:32,h:32},     // 1番：左端
+     {x:576,y:384,w:32,h:32},     // 3番：左端
+     {x:928,y:224,w:32,h:32},     // 5番：左端
+   ],
+   traps:[
+     {x:320,y:464,w:32,h:32,tx:272,warn:false},
+     {x:672,y:384,w:32,h:32,tx:624,warn:false},
+     {x:848,y:304,w:32,h:32,tx:800,warn:false},
+   ],
+   fall:[],move:[],mimics:[],ceiling:[],
+   hg:[{x:256,y:544,w:16,h:32},{x:608,y:384,w:16,h:32},{x:944,y:224,w:16,h:32}],
+   goal:{x:1120,y:64,w:48,h:112},spawn:{x:48,y:592}},
+
+  // STAGE 18 — Speed Run.
+  // 全動く足場で渡る。速度が段階的に上がる。
+  // 4面（スパイク床+動く足場）の上位互換。より速く、より精密。
+  {name:'STAGE 18',sub:'Faster.',
+   plats:[
+     {x:0,y:576,w:160,h:144},
+     {x:1120,y:576,w:160,h:144},
+   ],
+   spikes:[
+     {x:160,y:672,w:32,h:32},{x:192,y:672,w:32,h:32},{x:224,y:672,w:32,h:32},
+     {x:256,y:672,w:32,h:32},{x:288,y:672,w:32,h:32},{x:320,y:672,w:32,h:32},
+     {x:352,y:672,w:32,h:32},{x:384,y:672,w:32,h:32},{x:416,y:672,w:32,h:32},
+     {x:448,y:672,w:32,h:32},{x:480,y:672,w:32,h:32},{x:512,y:672,w:32,h:32},
+     {x:544,y:672,w:32,h:32},{x:576,y:672,w:32,h:32},{x:608,y:672,w:32,h:32},
+     {x:640,y:672,w:32,h:32},{x:672,y:672,w:32,h:32},{x:704,y:672,w:32,h:32},
+     {x:736,y:672,w:32,h:32},{x:768,y:672,w:32,h:32},{x:800,y:672,w:32,h:32},
+     {x:832,y:672,w:32,h:32},{x:864,y:672,w:32,h:32},{x:896,y:672,w:32,h:32},
+     {x:928,y:672,w:32,h:32},{x:960,y:672,w:32,h:32},{x:992,y:672,w:32,h:32},
+     {x:1024,y:672,w:32,h:32},{x:1056,y:672,w:32,h:32},{x:1088,y:672,w:32,h:32},
+   ],
+   traps:[
+     {x:576,y:528,w:32,h:32,tx:512,warn:false},
+   ],
+   fall:[],mimics:[],ceiling:[],
+   move:[
+     {x:192,y:528,w:96,h:16,vx:5.0,vy:0,rx:96,ry:0,sx:192,sy:528},   // 速い
+     {x:448,y:464,w:96,h:16,vx:0,vy:5.0,rx:0,ry:80,sx:448,sy:464},   // 縦も速い
+     {x:608,y:528,w:128,h:16,vx:0,vy:0,rx:0,ry:0,sx:608,sy:528},     // 静止（罠あり）
+     {x:768,y:464,w:96,h:16,vx:-5.0,vy:0,rx:96,ry:0,sx:816,sy:464}, // 逆方向
+     {x:960,y:528,w:96,h:16,vx:0,vy:-4.5,rx:0,ry:64,sx:960,sy:528},
+   ],
+   hg:[{x:256,y:496,w:16,h:32},{x:464,y:432,w:16,h:32},{x:784,y:432,w:16,h:32}],
+   goal:{x:1136,y:464,w:48,h:112},spawn:{x:48,y:528}},
+
+  // STAGE 19 — Everything Falls.
+  // 崩れる床＋速い動く足場の複合。7面と18面の組み合わせ。
+  // 「止まったら崩れる、急いだら動く足場を外す」というジレンマ。
+  {name:'STAGE 19',sub:'Nothing holds.',
+   plats:[
+     {x:0,y:640,w:160,h:80},
+     {x:160,y:608,w:160,h:16},    // 崩れる
+     {x:320,y:576,w:160,h:16},    // 崩れる
+     {x:864,y:576,w:160,h:16},    // 崩れる
+     {x:1024,y:608,w:160,h:16},   // 崩れる
+     {x:1184,y:640,w:96,h:80},    // ゴール
+   ],
+   spikes:[
+     {x:160,y:576,w:32,h:32},     // 崩れ1：左端
+     {x:1136,y:576,w:32,h:32},    // 崩れ4：右端
+     {x:1184,y:608,w:32,h:32},    // ゴール：入口
+   ],
+   traps:[
+     {x:272,y:544,w:32,h:32,tx:224,warn:false},
+     {x:880,y:544,w:32,h:32,tx:832,warn:false},
+   ],
+   fall:[
+     {x:160,y:608,w:160,h:16,spikesOn:false},
+     {x:320,y:576,w:160,h:16,spikesOn:false},
+     {x:864,y:576,w:160,h:16,spikesOn:false},
+     {x:1024,y:608,w:160,h:16,spikesOn:false},
+   ],
+   mimics:[],ceiling:[],
+   move:[
+     // 中央の隙間を動く足場で渡る
+     {x:480,y:544,w:128,h:16,vx:5.0,vy:0,rx:112,ry:0,sx:544,sy:544},
+     {x:672,y:480,w:128,h:16,vx:0,vy:4.5,rx:0,ry:64,sx:672,sy:480},
+   ],
+   hg:[{x:208,y:576,w:16,h:32},{x:512,y:512,w:16,h:32},{x:912,y:544,w:16,h:32}],
+   goal:{x:1200,y:528,w:64,h:112},spawn:{x:48,y:592}},
+
+  // STAGE 20 (Creator Zone) — The Gift.
+  // ご褒美に見える広いステージ。BGMが少し違う雰囲気。
+  // 全部の足場が崩れる。しかも砂時計が崩れる足場の上にある。
+  // 「やっと休める」→「全部嘘だった」
+  {name:'STAGE 20',sub:'You made it. Almost.',
+   plats:[
+     {x:0,y:640,w:256,h:80},      // 広い！安心する
+     {x:256,y:608,w:256,h:16},    // 広い足場1（崩れる）
+     {x:512,y:576,w:256,h:16},    // 広い足場2（崩れる）
+     {x:768,y:544,w:256,h:16},    // 広い足場3（崩れる）
+     {x:1024,y:640,w:256,h:80},   // ゴール地面
+   ],
+   spikes:[
+     {x:256,y:576,w:32,h:32},     // 足場1：左端（入口）
+     {x:1024,y:608,w:32,h:32},    // ゴール地面：入口
+   ],
+   traps:[
+     // 広い足場の「止まりたくなる場所」に罠
+     {x:400,y:576,w:32,h:32,tx:336,warn:false},   // 足場1中央
+     {x:656,y:544,w:32,h:32,tx:592,warn:false},   // 足場2中央
+     {x:912,y:512,w:32,h:32,tx:848,warn:false},   // 足場3中央
+   ],
+   fall:[
+     {x:256,y:608,w:256,h:16,spikesOn:false},
+     {x:512,y:576,w:256,h:16,spikesOn:false},
+     {x:768,y:544,w:256,h:16,spikesOn:false},
+   ],
+   move:[],mimics:[],ceiling:[],
+   // 砂時計は崩れる足場の上（取りに行ったら崩れる）
+   hg:[
+     {x:336,y:576,w:16,h:32},
+     {x:592,y:544,w:16,h:32},
+     {x:848,y:512,w:16,h:32},
+   ],
+   goal:{x:1168,y:528,w:64,h:112},spawn:{x:48,y:592}},
+
 ];
+
 
 
 
@@ -583,7 +961,9 @@ function loadStage(n){
   spikes=s.spikes.map(p=>({...p,falling:false,vy:0}));
   hourglasses=s.hg.map(h=>({...h,taken:false}));
   goal={...s.goal};
-  trapSpikes=s.traps.map(t=>({...t,triggered:false,visible:false,timer:0.4}));
+  trapSpikes=s.traps.map(t=>({...t,triggered:false,visible:false,
+    timer:hardMode?0.1:0.4,
+    warn:hardMode?false:t.warn}));
   fallingBlocks=s.fall.map(b=>({...b,falling:false,vy:0,shakeT:0,triggered:false,gone:false}));
   movingPlatforms=s.move?s.move.map(p=>({...p,phase:0})):[];
   mimics=s.mimics?s.mimics.map(m=>({...m,triggered:false,exploded:false,timer:0})):[];
@@ -593,7 +973,7 @@ function loadStage(n){
 }
 
 function resetRun(){
-  timeLeft=hardMode?25:30;score=0;
+  timeLeft=easyMode?60:hardMode?25:30;score=0;
   loadStage(1);damnEffect=null;damnTimer=0;floatMsgs=[];
 }
 
@@ -672,12 +1052,14 @@ function neonText(txt,x,y,color,size,blur,align){
 
 function drawBg(isTitle){
   if(isTitle){ctx.fillStyle='#050508';ctx.fillRect(0,0,W,H);return;}
-  for(let gy=0;gy<GRID_H;gy++){
-    for(let gx=0;gx<GRID_W;gx++){
-      ctx.fillStyle=(gx+gy)%2===0?'#222':'#1e1e1e';
-      ctx.fillRect(gx*CELL,gy*CELL,CELL,CELL);
-      ctx.strokeStyle='#2a2a2a';ctx.lineWidth=0.5;
-      ctx.strokeRect(gx*CELL,gy*CELL,CELL,CELL);
+  // Background grid: 16px cells = 80x45 = 3600 blocks (sales grid)
+  const BG=16,BGW=80,BGH=45;
+  for(let gy=0;gy<BGH;gy++){
+    for(let gx=0;gx<BGW;gx++){
+      ctx.fillStyle=(gx+gy)%2===0?'#1c1c28':'#1a1a26';
+      ctx.fillRect(gx*BG,gy*BG,BG,BG);
+      ctx.strokeStyle='#242436';ctx.lineWidth=0.3;
+      ctx.strokeRect(gx*BG,gy*BG,BG,BG);
     }
   }
 }
@@ -935,6 +1317,8 @@ function drawDead(){
   ctx.fillText('[ SPACE ] Try Again',W/2,H/2+76);
   ctx.fillStyle='rgba(100,120,180,0.5)';ctx.font='13px "Courier New"';
   ctx.fillText('[ T ] Title',W/2,H/2+102);
+  ctx.fillStyle='rgba(74,184,255,0.6)';ctx.font='11px "Courier New"';
+  ctx.fillText('[ S ] Share on X / Twitter',W/2,H/2+128);
 
   ctx.restore();
 }
@@ -987,6 +1371,7 @@ function drawTitle(){
     ctx.restore();
   }
   if(hardMode)neonText('HARD MODE ON',160,H-16,'rgba(255,80,60,0.6)',10,4);
+  if(easyMode)neonText('BABY MODE ON — Progress saved. Dignity lost.',W/2,H-32,'rgba(255,180,255,0.7)',10,4,'center');
   if(retroMode)neonText('RETRO MODE ON',W-160,H-16,'rgba(100,255,120,0.6)',10,4);
 }
 
@@ -1075,11 +1460,12 @@ function update(dt){
         triggerDeath();return;
       }
     }
-    if(overlap(player,goal)){incStat('points',50);incStat('totalClears');
+    if(overlap(player,goal)){incStat('points',50);incStat('totalClears');if(easyMode)easyModeSavedStage=stageNum+1;
       const next=stageNum+1;
       timeLeft=Math.min(MAX_TIME,timeLeft+3);score+=500+Math.floor(timeLeft*10);sfxGoal();
       if(next<=STAGES.length){
         loadStage(next);floatMsgs.push({txt:'STAGE '+next+'!',x:W/2,y:H/2,life:2,color:'rgba(255,220,50,1)'});
+        if(easyMode)floatMsgs.push({txt:'Cleared Baby Mode? Cool. Nobody cares.',x:W/2,y:H/2+48,life:3,color:'rgba(255,180,255,0.8)'});
         const nt=getBGMTrack(next);if(nt!==bgmTrack)startBGM(nt);
       } else {
         floatMsgs.push({txt:'ALL CLEAR!!',x:W/2,y:H/2,life:3,color:'rgba(255,220,50,1)'});
@@ -1106,10 +1492,12 @@ function update(dt){
   } else if(state==='dead'){
     if(keys[' ']&&!prevKeys[' ']){
       if(adminMode){loadStage(stageNum);timeLeft=hardMode?25:30;damnEffect=null;damnTimer=0;floatMsgs=[];}
+      else if(easyMode){loadStage(easyModeSavedStage);timeLeft=60;damnEffect=null;damnTimer=0;floatMsgs=[];}
       else resetRun();
       state='play';startBGM(getBGMTrack(stageNum));
     }
     if(keys['t']&&!prevKeys['t']){resetRun();stopBGM();state='title';}
+    if(keys['s']&&!prevKeys['s'])shareDeathCount();
   }
   Object.keys(keys).forEach(k=>{if(keys[k])prevKeys[k]=true;else delete prevKeys[k];});
 }
@@ -1159,8 +1547,87 @@ function loop(ts){
   floatMsgs=floatMsgs.filter(m=>(m.life-=dt)>0);
   update(dt);
   requestAnimationFrame(loop);
+
+// ── COOKIE CONSENT ──
+function initCookieBanner(){
+  try{
+    const consent=localStorage.getItem('neverend_cookie_consent');
+    if(!consent){
+      const b=document.getElementById('cookieBanner');
+      if(b){b.style.display='flex';}
+    }
+  }catch(e){}
+}
+function acceptCookies(){
+  try{localStorage.setItem('neverend_cookie_consent','accepted');}catch(e){}
+  const b=document.getElementById('cookieBanner');
+  if(b)b.style.display='none';
+}
+function declineCookies(){
+  try{
+    localStorage.setItem('neverend_cookie_consent','declined');
+    localStorage.removeItem('neverend_save');
+    _saveCache={};
+  }catch(e){}
+  const b=document.getElementById('cookieBanner');
+  if(b)b.style.display='none';
+}
+initCookieBanner();
+
+// ── SNS SHARE ──
+function shareDeathCount(){
+  const deaths=getStat('totalDeaths');
+  const best=getStat('bestStage',1);
+  const text=`I've died ${deaths} times in neverEND and my best is Stage ${best}. Can you beat that? #DamnRun #neverEND`;
+  const url='https://neverend.vercel.app';
+  const twitterUrl=`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+  window.open(twitterUrl,'_blank','width=600,height=400');
+}
 }
 requestAnimationFrame(loop);
+
+// ── COOKIE CONSENT ──
+function initCookieBanner(){
+  try{
+    const consent=localStorage.getItem('neverend_cookie_consent');
+    if(!consent){
+      const b=document.getElementById('cookieBanner');
+      if(b){b.style.display='flex';}
+    }
+  }catch(e){}
+}
+function acceptCookies(){
+  try{localStorage.setItem('neverend_cookie_consent','accepted');}catch(e){}
+  const b=document.getElementById('cookieBanner');
+  if(b)b.style.display='none';
+}
+function declineCookies(){
+  try{
+    localStorage.setItem('neverend_cookie_consent','declined');
+    localStorage.removeItem('neverend_save');
+    _saveCache={};
+  }catch(e){}
+  const b=document.getElementById('cookieBanner');
+  if(b)b.style.display='none';
+}
+initCookieBanner();
+
+// ── SNS SHARE ──
+function shareDeathCount(){
+  const deaths=getStat('totalDeaths');
+  const best=getStat('bestStage',1);
+  const text=`I've died ${deaths} times in neverEND and my best is Stage ${best}. Can you beat that? #DamnRun #neverEND`;
+  const url='https://neverend.vercel.app';
+  const twitterUrl=`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+  window.open(twitterUrl,'_blank','width=600,height=400');
+}
 </script>
+<div id="cookieBanner" style="display:none;">
+  <span>We use cookies to remember your stats (deaths, best stage, points). No tracking. No ads. &nbsp;<a href="#" onclick="return false;">Learn more</a></span>
+  <div style="display:flex;gap:8px;">
+    <button class="cookie-btn cookie-decline" onclick="declineCookies()">Decline</button>
+    <button class="cookie-btn cookie-accept" onclick="acceptCookies()">Accept</button>
+  </div>
+</div>
 </body>
 </html>

@@ -1474,7 +1474,7 @@ function update(dt){
         triggerDeath();return;
       }
     }
-    if(overlap(player,goal)){incStat('points',50);incStat('totalClears');if(easyMode)easyModeSavedStage=stageNum+1;
+    if(overlap(player,goal)){if(!adminMode){incStat('points',50);incStat('totalClears');}if(easyMode)easyModeSavedStage=stageNum+1;
       const next=stageNum+1;
       timeLeft=Math.min(MAX_TIME,timeLeft+3);score+=500+Math.floor(timeLeft*10);sfxGoal();
       if(next<=STAGES.length){
@@ -1523,10 +1523,12 @@ function triggerDeath(){
   damnEffect={x:player.x+player.w/2,y:player.y};damnTimer=1.5;state='dead';sfxDamn();stopBGM();
   deathFlash=1.0;
   lastDeathMsg=getDeathMsg(lastDeathCause);
+  if(adminMode)return; // admin: death effect only, no stats
 
   // Stats
   incStat('totalDeaths');
   incStat('deaths_stage_'+lastDeathStage);
+  fetch('/api/death',{method:'POST'}).catch(()=>{});
   const best=getStat('bestStage',1);
   if(lastDeathStage>best)setStat('bestStage',lastDeathStage);
   incStat('totalStagesReached',lastDeathStage);

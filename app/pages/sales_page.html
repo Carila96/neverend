@@ -955,6 +955,17 @@ async function proceedToCheckout(){
       alert('Checkout failed: '+(coData.error||'Unknown error'));
       btn.disabled=false;updatePanelPrice(confirmedPlacement.blocks);return;
     }
+    localStorage.setItem('neverend_placement',JSON.stringify({
+      session_key:resData.session_key,
+      stage_id:confirmedPlacement.stage,
+      anchor_x:confirmedPlacement.x,
+      anchor_y:confirmedPlacement.y,
+      width:confirmedPlacement.w,
+      height:confirmedPlacement.h,
+      plan_type:plan,
+      zone_type:s.type,
+      reserved_at:new Date().toISOString()
+    }));
     window.location.href=coData.url;
   }catch(err){
     alert('Network error: '+err.message);

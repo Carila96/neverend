@@ -94,7 +94,13 @@ Subscribers holding multiple blocks simultaneously receive a discount on their t
 
 Discounts are applied automatically and do not stack with other promotions unless stated.
 
-### 4.5 Loyalty Credit
+### 4.5 Grid Placement Reservation
+
+When a user selects a grid placement and proceeds to checkout, the selected blocks are temporarily reserved for 30 minutes. During this period, the blocks cannot be selected or purchased by other users.
+
+If payment is not completed within 30 minutes, the reservation expires automatically and the blocks are released. No charge is made for expired reservations.
+
+### 4.6 Loyalty Credit
 
 Subscribers receive cumulative credit for maintaining active subscriptions:
 
@@ -103,19 +109,19 @@ Subscribers receive cumulative credit for maintaining active subscriptions:
 
 Credit is calculated and applied at the end of each 12-month period, applied to future billing cycles, and **cannot be exchanged for cash**. Subscription must remain uninterrupted to accumulate credit.
 
-### 4.6 Annual Plan
+### 4.7 Annual Plan
 
 - Annual subscribers receive the higher loyalty credit rate (÷4 vs ÷8).
 - Annual plans are billed in full at the start of the plan period.
 - **Partial refunds apply on cancellation:** elapsed months (including the current month) are non-refundable; remaining future months are refunded pro-rata based on the annual amount actually paid, divided by 12 and multiplied by the number of full remaining months.
 
-### 4.7 Complimentary (Free Trial) Blocks
+### 4.8 Complimentary (Free Trial) Blocks
 
 - During the **initial launch period**, Carila may grant selected partners complimentary access to seed the game's background prior to public sale.
 - Free Trial recipients will receive **30 days' written notice** before expiration and may purchase their blocks at the then-current rate before general public release.
 - Free Trial blocks are subject to the same content review and usage policies as paid blocks.
 
-### 4.8 Grid Placement Priority & Display Rights
+### 4.9 Grid Placement Priority & Display Rights
 
 - Grid Placements are allocated on a **first-come, first-served** basis.
 - While your subscription remains active, paid, and in compliance with these Terms, Carila will **not** reassign your placement to another customer, including a customer offering a higher price.
@@ -128,7 +134,7 @@ Credit is calculated and applied at the end of each 12-month period, applied to 
 - Except in urgent cases involving illegality, safety risks, or serious rights infringement, Carila will provide notice and a reasonable opportunity to cure before removal or suspension.
 - **This is a display placement right, not ownership.** No property rights, resale rights, or transferable entitlements are granted. This service is not affiliated with or equivalent to NFT ownership or blockchain-based digital assets.
 
-### 4.9 Placement Types
+### 4.10 Placement Types
 
 - **Standard zones (non-free stages):** Single color per block, selected via color picker.
 - **Creator zones (every 5th stage):** PNG image upload permitted (multi-color pixel art).

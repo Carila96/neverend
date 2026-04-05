@@ -919,9 +919,47 @@ function setPlan(p,btn){
 
 function closePanel(){document.getElementById('purchasePanel').classList.remove('open');}
 
-function proceedToCheckout(){
+async function proceedToCheckout(){
   if(!confirmedPlacement){alert('Please confirm your placement first.');return;}
-  alert('Stripe checkout integration coming soon.\n\nStage: '+STAGES_DATA[confirmedPlacement.stage-1].name+'\nPosition: col '+(confirmedPlacement.x+1)+', row '+(confirmedPlacement.y+1)+'\nSize: '+confirmedPlacement.w+'x'+confirmedPlacement.h+'\nBlocks: '+confirmedPlacement.blocks+'\nPlan: '+plan);
+  const btn=document.getElementById('ctaBtn');
+  btn.disabled=true;btn.textContent='RESERVING...';
+  const s=STAGES_DATA[confirmedPlacement.stage-1];
+  const BASE='https://neverend.vercel.app';
+  try{
+    const resRes=await fetch(BASE+'/api/reserve',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        stage_id:confirmedPlacement.stage,
+        anchor_x:confirmedPlacement.x,
+        anchor_y:confirmedPlacement.y,
+        width:confirmedPlacement.w,
+        height:confirmedPlacement.h,
+        zone_type:s.type,
+        plan_type:plan
+      })
+    });
+    const resData=await resRes.json();
+    if(!resRes.ok||!resData.session_key){
+      alert('Reservation failed: '+(resData.message||resData.error||'Unknown error'));
+      btn.disabled=false;updatePanelPrice(confirmedPlacement.blocks);return;
+    }
+    btn.textContent='CREATING CHECKOUT...';
+    const coRes=await fetch(BASE+'/api/create-checkout',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({session_key:resData.session_key,plan_type:plan})
+    });
+    const coData=await coRes.json();
+    if(!coRes.ok||!coData.url){
+      alert('Checkout failed: '+(coData.error||'Unknown error'));
+      btn.disabled=false;updatePanelPrice(confirmedPlacement.blocks);return;
+    }
+    window.location.href=coData.url;
+  }catch(err){
+    alert('Network error: '+err.message);
+    btn.disabled=false;updatePanelPrice(confirmedPlacement.blocks);
+  }
 }
 
 // -- INIT --

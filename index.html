@@ -972,9 +972,11 @@ function loadStage(n){
   stageNum=n;
 }
 
+let sessionStartTime=Date.now(),sessionDeaths=0,sessionMaxStage=1;
 function resetRun(){
   timeLeft=easyMode?60:hardMode?25:30;score=0;
   loadStage(1);damnEffect=null;damnTimer=0;floatMsgs=[];
+  sessionStartTime=Date.now();sessionDeaths=0;sessionMaxStage=1;
 }
 
 // ======== PHYSICS ========
@@ -1657,6 +1659,13 @@ function triggerDeath(){
   incStat('points',lastDeathStage*2);
   if(lastDeathCause==='time'&&lastTimeLeft>=0&&lastTimeLeft<1)incStat('points',5); // near miss bonus
   checkTitlesOnDeath();
+
+  // Session logging
+  sessionDeaths++;
+  if(lastDeathStage>sessionMaxStage)sessionMaxStage=lastDeathStage;
+  fetch('/api/session-log',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({session_time:Math.floor((Date.now()-sessionStartTime)/1000),death_count:sessionDeaths,max_stage_reached:sessionMaxStage})
+  }).catch(()=>{});
 }
 
 function loop(ts){

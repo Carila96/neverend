@@ -62,36 +62,40 @@ export default async function handler(req, res) {
     quantity: 1,
   };
 
-  let stripeSession;
+  const params = {
+    payment_method_types: ['card'],
+    line_items: [lineItem],
+    mode: isSubscription ? 'subscription' : 'payment',
+    success_url: 'https://neverend.vercel.app/success?session_id={CHECKOUT_SESSION_ID}',
+    cancel_url: 'https://neverend.vercel.app/cancel',
+    metadata: {
+      session_key,
+      stage_id: String(stage_id),
+      anchor_x: String(anchor_x),
+      anchor_y: String(anchor_y),
+      width: String(width),
+      height: String(height),
+      block_count: String(block_count),
+      plan_type,
+      zone_type,
+    },
+  };
+
+  console.log("=== CREATE CHECKOUT START ===");
+  console.log("STRIPE_SECRET_KEY prefix:", process.env.STRIPE_SECRET_KEY ? process.env.STRIPE_SECRET_KEY.slice(0, 7) : "missing");
   try {
-    stripeSession = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [lineItem],
-      mode: isSubscription ? 'subscription' : 'payment',
-      success_url: 'https://neverend.vercel.app/success?session_id={CHECKOUT_SESSION_ID}',
-      cancel_url: 'https://neverend.vercel.app/cancel',
-      metadata: {
-        session_key,
-        stage_id: String(stage_id),
-        anchor_x: String(anchor_x),
-        anchor_y: String(anchor_y),
-        width: String(width),
-        height: String(height),
-        block_count: String(block_count),
-        plan_type,
-        zone_type,
-      },
-    });
-  } catch (err) {
-    console.error('Stripe error:', err.message);
-    return res.status(500).json({ error: 'Failed to create Stripe checkout session' });
+    const session = await stripe.checkout.sessions.create(params);
+    console.log("SESSION CREATED:", { id: session.id, url: session.url, livemode: session.livemode });
+
+    // Store Stripe session ID on reservation session
+    await supabase
+      .from('reservation_sessions')
+      .update({ stripe_session_id: session.id })
+      .eq('session_key', session_key);
+
+    return res.status(200).json({ url: session.url, stripe_session_id: session.id, livemode: session.livemode });
+  } catch (error) {
+    console.error("STRIPE CHECKOUT ERROR:", error);
+    return res.status(500).json({ error: error.message, type: error.type || null, code: error.code || null });
   }
-
-  // Store Stripe session ID on reservation session
-  await supabase
-    .from('reservation_sessions')
-    .update({ stripe_session_id: stripeSession.id })
-    .eq('session_key', session_key);
-
-  return res.status(200).json({ url: stripeSession.url, stripe_session_id: stripeSession.id });
 }

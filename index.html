@@ -291,6 +291,8 @@ let timeLeft,score,stageNum;
 let player,platforms,spikes,hourglasses,goal;
 let trapSpikes=[],fallingBlocks=[],movingPlatforms=[];
 let damnEffect=null,damnTimer=0,floatMsgs=[],animT=0,last=0;
+let worldDeaths=null;
+fetch('/api/world-stats').then(r=>r.json()).then(d=>{worldDeaths=d.total_deaths;}).catch(()=>{});
 
 document.addEventListener('keydown',e=>{
   if(e.key==='Tab'){e.preventDefault();
@@ -1222,7 +1224,7 @@ function drawUI(){
   ctx.fillStyle=col;ctx.fillRect(barX,barY,barW*tp,24);
   ctx.restore();
   neonText(Math.max(0,timeLeft).toFixed(1)+'s',barX+barW+12,barY+18,'rgba(255,255,255,0.95)',15,8);
-  neonText(STAGES[Math.min(stageNum-1,STAGES.length-1)].name,16,32,'rgba(180,200,255,0.7)',13,6);
+  neonText(STAGES[Math.min(stageNum-1,STAGES.length-1)].name,W/2,32,'rgba(180,200,255,0.9)',24,10,'center');
   neonText('SCORE: '+score,W-190,32,'rgba(180,200,255,0.7)',13,6);
   if(hardMode)neonText('⚠ HARD',W/2,H-14,'rgba(255,80,60,0.8)',11,6,'center');
   if(adminMode)neonText('ADMIN',16,H-14,'rgba(255,220,50,0.7)',10,4);
@@ -1290,33 +1292,47 @@ function drawPause(){
 
 function drawDead(){
   ctx.fillStyle='rgba(0,0,0,0.86)';ctx.fillRect(0,0,W,H);
-  neonText('DAMN!',W/2,H/2-60,'rgba(255,40,40,1)',80,32,'center');
+  // DAMN! — 中央最大
+  neonText('DAMN!',W/2,H/2-70,'rgba(255,40,40,1)',80,32,'center');
+
   ctx.save();ctx.textAlign='center';
 
-  // 死因メッセージ（死亡時に確定済み）
+  // STAGE N → BEST M — 大きく28px
+  const best=getStat('bestStage',1);
+  const isNewBest=lastDeathStage>=best&&getStat('totalDeaths')>1;
+  const stageCol=isNewBest?'rgba(255,220,50,0.95)':'rgba(160,185,255,0.85)';
+  ctx.shadowColor=stageCol;ctx.shadowBlur=10;
+  ctx.fillStyle=stageCol;ctx.font='bold 28px "Courier New"';
+  const stageStr=isNewBest
+    ?'STAGE '+lastDeathStage+'   ★ NEW BEST!'
+    :'STAGE '+lastDeathStage+'   →   BEST '+best;
+  ctx.fillText(stageStr,W/2,H/2+10);
+
+  // 死因メッセージ — 中サイズ
   const msg=lastDeathMsg||getDeathMsg(lastDeathCause);
   ctx.shadowColor='rgba(255,120,120,0.8)';ctx.shadowBlur=12;
-  ctx.fillStyle='rgba(255,170,150,0.95)';ctx.font='bold 20px "Courier New"';
-  ctx.fillText(msg,W/2,H/2+10);
+  ctx.fillStyle='rgba(255,170,150,0.9)';ctx.font='bold 18px "Courier New"';
+  ctx.fillText(msg,W/2,H/2+50);
 
-  // 今回到達 vs 最高記録
-  const best=getStat('bestStage',1);
-  const reachCol=lastDeathStage>=best?'rgba(255,220,50,0.95)':'rgba(160,185,255,0.75)';
-  ctx.shadowColor=reachCol;ctx.shadowBlur=8;
-  ctx.fillStyle=reachCol;ctx.font='15px "Courier New"';
-  const reachMsg=lastDeathStage>=best&&getStat('totalDeaths')>1
-    ?'Stage '+lastDeathStage+'  ★ NEW BEST!'
-    :'This run: Stage '+lastDeathStage+'  |  Best: Stage '+best;
-  ctx.fillText(reachMsg,W/2,H/2+38);
-
-  // 操作
+  // 操作ヒント
   ctx.shadowBlur=4;
   ctx.fillStyle='rgba(160,185,255,0.85)';ctx.font='16px "Courier New"';
-  ctx.fillText('[ SPACE ] Try Again',W/2,H/2+76);
+  ctx.fillText('[ SPACE ] Try Again',W/2,H/2+88);
   ctx.fillStyle='rgba(100,120,180,0.5)';ctx.font='13px "Courier New"';
-  ctx.fillText('[ T ] Title',W/2,H/2+102);
+  ctx.fillText('[ T ] Title',W/2,H/2+114);
   ctx.fillStyle='rgba(74,184,255,0.6)';ctx.font='11px "Courier New"';
-  ctx.fillText('[ S ] Share on X / Twitter',W/2,H/2+128);
+  ctx.fillText('[ S ] Share on X / Twitter',W/2,H/2+138);
+
+  // 右下：累計死亡数
+  const td=getStat('totalDeaths');
+  ctx.fillStyle='rgba(180,100,100,0.55)';ctx.font='11px "Courier New"';ctx.textAlign='right';
+  ctx.fillText('Deaths: '+td.toLocaleString(),W-16,H-12);
+
+  // 左下：世界累計死亡数
+  if(worldDeaths!==null){
+    ctx.fillStyle='rgba(120,120,160,0.4)';ctx.font='9px "Courier New"';ctx.textAlign='left';
+    ctx.fillText('World: '+Number(worldDeaths).toLocaleString()+' deaths',16,H-12);
+  }
 
   ctx.restore();
 }
@@ -1423,6 +1439,8 @@ function drawTitle(){
   ctx.shadowColor='rgba(255,50,50,0.9)';ctx.shadowBlur=28;ctx.fillStyle='#e74c3c';
   ctx.fillText('END',sx+nw+gap,H/2-30);ctx.restore();
   neonText('30 seconds to live. Forever.',W/2,H/2+24,'rgba(160,185,255,0.75)',20,8,'center');
+  ctx.save();ctx.fillStyle='rgba(140,140,160,0.4)';ctx.font='13px "Courier New"';ctx.textAlign='center';
+  ctx.fillText('How far can you get in 1 hour?',W/2,H/2+50);ctx.restore();
   const pulse=Math.sin(animT*2)*.3+.7;
   neonText('[ SPACE ] START',W/2,H/2+90,`rgba(255,255,255,${pulse})`,24,14,'center');
   ctx.save();ctx.fillStyle='rgba(100,120,160,0.6)';ctx.font='12px "Courier New"';ctx.textAlign='center';
@@ -1581,11 +1599,16 @@ function update(dt){
 
 // Flash overlay for death
 let deathFlash=0;
+let slowTimer=0,shakeTimer=0;
 
 function triggerDeath(){
   damnEffect={x:player.x+player.w/2,y:player.y};damnTimer=1.5;state='dead';sfxDamn();stopBGM();
-  deathFlash=1.0;
+  deathFlash=2.0;
+  slowTimer=0.2;
+  shakeTimer=0.5;
   lastDeathMsg=getDeathMsg(lastDeathCause);
+  // Refresh world deaths on each death
+  fetch('/api/world-stats').then(r=>r.json()).then(d=>{worldDeaths=d.total_deaths;}).catch(()=>{});
   if(adminMode)return; // admin: death effect only, no stats
 
   // Stats
@@ -1603,8 +1626,15 @@ function triggerDeath(){
 }
 
 function loop(ts){
-  const dt=Math.min((ts-last)/1000,0.05);
+  let dt=Math.min((ts-last)/1000,0.05);
   last=ts;animT=ts/1000;
+  // Slow motion after death
+  if(slowTimer>0){slowTimer=Math.max(0,slowTimer-dt);dt*=0.3;}
+  // Screen shake
+  if(shakeTimer>0){
+    ctx.save();
+    ctx.translate(Math.random()*6-3,Math.random()*4-2);
+  }
   if(state==='title'){drawTitle();}
   else if(state==='mypage'){drawMyPage();}
   else{
@@ -1624,6 +1654,7 @@ function loop(ts){
     drawDamn();
     if(retroMode)drawRetroOverlay();
   }
+  if(shakeTimer>0){ctx.restore();shakeTimer=Math.max(0,shakeTimer-dt);}
   floatMsgs=floatMsgs.filter(m=>(m.life-=dt)>0);
   update(dt);
   requestAnimationFrame(loop);

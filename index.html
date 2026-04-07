@@ -309,7 +309,7 @@ document.addEventListener('keydown',e=>{
     if(b.length>=5){
       if(HARD_SEQ.every((k,i)=>k===b.slice(-5)[i])){hardMode=!hardMode;inputBuf=[];return;}
       if(RETRO_SEQ.every((k,i)=>k===b.slice(-5)[i])){retroMode=!retroMode;inputBuf=[];return;}
-    if(b.length>=6&&EASY_SEQ.every((k,i)=>k===b.slice(-6)[i])){easyMode=!easyMode;inputBuf=[];floatMsgs.push({txt:easyMode?'BABY MODE ON':'BABY MODE OFF',x:W/2,y:H/2,life:2,color:'rgba(255,180,255,1)'});return;}
+    if(b.length>=6&&EASY_SEQ.every((k,i)=>k===b.slice(-6)[i])){easyMode=!easyMode;inputBuf=[];floatMsgs.push({txt:easyMode?'BABY MODE ON':'BABY MODE OFF',x:W/2,y:H/2,life:2,color:'rgba(255,180,255,1)'});if(easyMode)grantTitle('I Give Up');return;}
     }
   }
 },{passive:false});
@@ -1470,6 +1470,7 @@ function drawTitle(){
 // ======== UPDATE ========
 function update(dt){
   if(state==='play'){
+    if(!adminMode){incStat('totalPlayTime',dt);checkTitlesOnPlayTime();}
     timeLeft-=dt;
     if(timeLeft<=0){lastDeathCause='time';lastDeathStage=stageNum;lastTimeLeft=0;triggerDeath();return;}
     if(keys['ArrowLeft']||keys['a']||keys['A']){player.vx=-5;player.facing=-1;}
@@ -1554,6 +1555,7 @@ function update(dt){
     }
     if(overlap(player,goal)){if(!adminMode){incStat('points',50);incStat('totalClears');}if(easyMode)easyModeSavedStage=stageNum+1;
       const next=stageNum+1;
+      checkTitlesOnClear(next);
       timeLeft=Math.min(MAX_TIME,timeLeft+3);score+=500+Math.floor(timeLeft*10);sfxGoal();
       if(next<=STAGES.length){
         loadStage(next);floatMsgs.push({txt:'STAGE '+next+'!',x:W/2,y:H/2,life:2,color:'rgba(255,220,50,1)'});
@@ -1597,6 +1599,37 @@ function update(dt){
   Object.keys(keys).forEach(k=>{if(keys[k])prevKeys[k]=true;else delete prevKeys[k];});
 }
 
+// ── TITLE SYSTEM ──
+function getTitles(){try{return JSON.parse(localStorage.getItem('neverend_titles'))||[];}catch(_){return[];}}
+function hasTitle(t){return getTitles().includes(t);}
+function grantTitle(t){
+  if(hasTitle(t)||adminMode)return;
+  const arr=getTitles();arr.push(t);
+  try{localStorage.setItem('neverend_titles',JSON.stringify(arr));}catch(_){}
+  floatMsgs.push({txt:'TITLE UNLOCKED: '+t,x:W/2,y:H/2-90,life:4,color:'rgba(255,220,50,1)'});
+}
+function checkTitlesOnDeath(){
+  if(adminMode)return;
+  const d=getStat('totalDeaths');
+  if(d>=10)grantTitle('Rookie');
+  if(d>=100)grantTitle('Dedicated');
+  if(d>=500)grantTitle('Obsessed');
+  if(d>=1000)grantTitle('You Need Help');
+  if(d>=5000)grantTitle('Are You OK?');
+  if(hardMode)grantTitle('Masochist');
+}
+function checkTitlesOnClear(nextStage){
+  if(adminMode)return;
+  if(nextStage>=2)grantTitle('First Blood');
+  if(nextStage>=5)grantTitle('Getting Somewhere');
+  if(nextStage>=10)grantTitle('Double Digits');
+  if(easyMode&&nextStage===21)grantTitle('Legend of Giving Up');
+}
+function checkTitlesOnPlayTime(){
+  if(adminMode)return;
+  if(getStat('totalPlayTime',0)>=3600)grantTitle('One Hour Club');
+}
+
 // Flash overlay for death
 let deathFlash=0;
 let slowTimer=0,shakeTimer=0;
@@ -1623,6 +1656,7 @@ function triggerDeath(){
   incStat('points',1);
   incStat('points',lastDeathStage*2);
   if(lastDeathCause==='time'&&lastTimeLeft>=0&&lastTimeLeft<1)incStat('points',5); // near miss bonus
+  checkTitlesOnDeath();
 }
 
 function loop(ts){

@@ -1,6 +1,4 @@
 // api/create-checkout.js — POST /api/create-checkout
-// Dual diagnostic: creates both a subscription and a payment session to isolate
-// "Something went wrong" on Stripe Checkout.
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
@@ -21,17 +19,7 @@ function calcAmountCents(blockCount, planType, pricePerBlock = 3) {
   return Math.round(discountedPrice * blockCount * months * 100);
 }
 
-async function createAndLog(label, params) {
-  console.log(`\n=== ${label} PARAMS ===`);
-  console.log(JSON.stringify(params, null, 2));
-  const session = await stripe.checkout.sessions.create(params);
-  console.log(`=== ${label} SESSION CREATED ===`);
-  console.log(JSON.stringify({ id: session.id, status: session.status, mode: session.mode, livemode: session.livemode, url: session.url }, null, 2));
-  const retrieved = await stripe.checkout.sessions.retrieve(session.id);
-  console.log(`=== ${label} RETRIEVED ===`);
-  console.log(JSON.stringify({ id: retrieved.id, status: retrieved.status, mode: retrieved.mode, livemode: retrieved.livemode, url: retrieved.url }, null, 2));
-  return session;
-}
+const BASE_URL = 'https://neverend.vercel.app';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -53,66 +41,84 @@ export default async function handler(req, res) {
     return res.status(410).json({ error: 'Reservation session has expired — please start over' });
   }
 
-  const { block_count, plan_type } = reservation;
+  const { block_count, plan_type, stage_id, anchor_x, anchor_y, width, height, zone_type } = reservation;
   const amountCents = calcAmountCents(block_count, plan_type);
 
-  console.log("=== CREATE CHECKOUT DIAGNOSTIC START ===");
-  console.log("STRIPE_SECRET_KEY prefix:", process.env.STRIPE_SECRET_KEY ? process.env.STRIPE_SECRET_KEY.slice(0, 7) : "missing");
-  console.log("amount_cents:", amountCents, "block_count:", block_count, "plan_type:", plan_type);
+  console.log('=== CREATE CHECKOUT ===');
+  console.log('session_key:', session_key, 'plan_type:', plan_type, 'block_count:', block_count, 'amount_cents:', amountCents);
 
-  const SUCCESS_URL = 'https://neverend.vercel.app/success?session_id={CHECKOUT_SESSION_ID}';
-  const CANCEL_URL  = 'https://neverend.vercel.app/cancel';
+  // metadata required by webhook to identify and process the reservation
+  const metadata = {
+    session_key,
+    stage_id:  String(stage_id),
+    anchor_x:  String(anchor_x),
+    anchor_y:  String(anchor_y),
+    width:     String(width),
+    height:    String(height),
+    block_count: String(block_count),
+    plan_type,
+    zone_type,
+  };
 
   try {
-    // ── Session A: subscription (simplified) ──
-    const subParams = {
-      mode: 'subscription',
-      line_items: [{
-        price_data: {
-          currency: 'usd',
-          product_data: { name: 'neverEND Grid Placement' },
-          unit_amount: amountCents,
-          recurring: { interval: 'month' },
-        },
-        quantity: 1,
-      }],
-      success_url: SUCCESS_URL,
-      cancel_url:  CANCEL_URL,
-    };
-    const subSession = await createAndLog('SUBSCRIPTION', subParams);
+    let sessionParams;
 
-    // ── Session B: one-time payment (no recurring) ──
-    const payParams = {
-      mode: 'payment',
-      line_items: [{
-        price_data: {
-          currency: 'usd',
-          product_data: { name: 'neverEND Grid Placement (one-time)' },
-          unit_amount: amountCents,
-        },
-        quantity: 1,
-      }],
-      success_url: SUCCESS_URL,
-      cancel_url:  CANCEL_URL,
-    };
-    const paySession = await createAndLog('PAYMENT', payParams);
+    if (plan_type === 'monthly') {
+      // Recurring subscription
+      sessionParams = {
+        mode: 'subscription',
+        line_items: [{
+          price_data: {
+            currency: 'usd',
+            product_data: { name: 'neverEND Grid Placement' },
+            unit_amount: amountCents,
+            recurring: { interval: 'month' },
+          },
+          quantity: 1,
+        }],
+        subscription_data: { metadata },
+        metadata,
+        success_url: `${BASE_URL}/success.html?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url:  `${BASE_URL}/cancel.html`,
+      };
+    } else {
+      // Annual = one-time payment (10 months upfront)
+      sessionParams = {
+        mode: 'payment',
+        line_items: [{
+          price_data: {
+            currency: 'usd',
+            product_data: { name: 'neverEND Grid Placement (Annual)' },
+            unit_amount: amountCents,
+          },
+          quantity: 1,
+        }],
+        metadata,
+        success_url: `${BASE_URL}/success.html?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url:  `${BASE_URL}/cancel.html`,
+      };
+    }
 
-    // Store subscription session ID on reservation
+    console.log('SESSION PARAMS:', JSON.stringify(sessionParams, null, 2));
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
+
+    console.log('SESSION CREATED:', session.id, 'livemode:', session.livemode, 'url:', session.url);
+
+    // Store stripe session ID on reservation
     await supabase
       .from('reservation_sessions')
-      .update({ stripe_session_id: subSession.id })
+      .update({ stripe_session_id: session.id })
       .eq('session_key', session_key);
 
     return res.status(200).json({
-      subscription_url: subSession.url,
-      payment_url:      paySession.url,
-      subscription_id:  subSession.id,
-      payment_id:       paySession.id,
-      livemode:         subSession.livemode,
+      url:        session.url,
+      session_id: session.id,
+      livemode:   session.livemode,
     });
 
-  } catch (error) {
-    console.error("STRIPE ERROR:", error);
-    return res.status(500).json({ error: error.message, type: error.type || null, code: error.code || null });
+  } catch (err) {
+    console.error('STRIPE ERROR:', err);
+    return res.status(500).json({ error: err.message, type: err.type || null, code: err.code || null });
   }
 }

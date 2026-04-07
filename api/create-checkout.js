@@ -83,6 +83,7 @@ export default async function handler(req, res) {
 
   console.log("=== CREATE CHECKOUT START ===");
   console.log("STRIPE_SECRET_KEY prefix:", process.env.STRIPE_SECRET_KEY ? process.env.STRIPE_SECRET_KEY.slice(0, 7) : "missing");
+  console.log("CHECKOUT PARAMS:", JSON.stringify(params, null, 2));
   try {
     const session = await stripe.checkout.sessions.create(params);
     console.log("SESSION CREATED:", { id: session.id, url: session.url, livemode: session.livemode });

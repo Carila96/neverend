@@ -163,6 +163,8 @@ const DEATH_MSGS={
     '30 seconds is shorter than you think.',
     'Time of death: zero.','Run faster.',
     'The timer won.','Not enough time? Get more time.'],
+  lava:["Too slow.","The floor is lava. Literally.","Cooked.","Rise and die.","Warm enough?"],
+  crush:["Squashed.","Size matters.","It was right behind you.","Run faster.","Flat."],
 };
 function getDeathMsg(cause){
   const arr=DEATH_MSGS[cause]||DEATH_MSGS.spike;
@@ -968,6 +970,17 @@ function loadStage(n){
   movingPlatforms=s.move?s.move.map(p=>({...p,phase:0})):[];
   mimics=s.mimics?s.mimics.map(m=>({...m,triggered:false,exploded:false,timer:0})):[];
   ceilingTraps=s.ceiling?s.ceiling.map(c=>({...c,triggered:false,visible:false,timer:0})):[];
+  lavas=(s.lava||[]).map(l=>({...l,currentY:l.y}));
+  fallingSpikesExt=(s.fallingSpikes||[]).map(f=>({...f,triggered:false,currentY:f.y}));
+  chasers=(s.chasers||[]).map(c=>({...c,active:false}));
+  pendulums=(s.pendulums||[]).map(p=>({...p,angle:0}));
+  const dk=s.darkness||{};
+  darknessState={enabled:dk.enabled||false,timer:0,active:false,interval:dk.interval||2,duration:dk.duration||0.5};
+  // Init phantom platform state
+  for(const p of [...platforms,...movingPlatforms]){
+    if(p.phantom){p._phantomTouched=false;p._vanishTimer=0;}
+    if(p.sinking){p._origY=p.y;p._sinkVy=0;}
+  }
   player={x:s.spawn.x,y:s.spawn.y,vx:0,vy:0,w:28,h:44,onGround:false,facing:1,walkT:0};
   stageNum=n;
 }
@@ -985,6 +998,8 @@ function overlap(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
 // Track which moving platform player is standing on
 let playerPlatform=null;
 let mimics=[],ceilingTraps=[];
+let lavas=[],fallingSpikesExt=[],chasers=[],pendulums=[];
+let darknessState={enabled:false,timer:0,active:false,interval:2,duration:0.5};
 
 function resolvePlayer(){
   // Apply moving platform carry to player before resolving
@@ -993,7 +1008,8 @@ function resolvePlayer(){
     player.y+=playerPlatform.dy||0;
   }
 
-  const allPlats=[...platforms,...fallingBlocks.filter(b=>!b.falling&&!b.gone),...movingPlatforms];
+  const allPlats=[...platforms,...fallingBlocks.filter(b=>!b.falling&&!b.gone),...movingPlatforms]
+    .filter(p=>!(p.phantom&&p._phantomTouched&&p._vanishTimer<=0));
 
   // X movement + horizontal collision
   player.x+=player.vx;
@@ -1166,6 +1182,104 @@ function drawCeilingTrap(c){
     ctx.fill();ctx.stroke();
   }
   ctx.restore();
+}
+
+function drawLava(l){
+  const pulse=Math.sin(animT*4)*0.15+0.85;
+  ctx.save();
+  ctx.shadowColor='rgba(255,100,0,0.8)';ctx.shadowBlur=24;
+  const grad=ctx.createLinearGradient(0,l.currentY,0,H);
+  grad.addColorStop(0,'rgba(255,80,0,0.9)');
+  grad.addColorStop(0.3,'rgba(200,40,0,0.88)');
+  grad.addColorStop(1,'rgba(120,10,0,0.95)');
+  ctx.fillStyle=grad;ctx.fillRect(0,l.currentY,W,H-l.currentY+10);
+  // Wavy top
+  ctx.beginPath();ctx.moveTo(0,l.currentY);
+  for(let x=0;x<=W;x+=8){ctx.lineTo(x,l.currentY+Math.sin(x*0.04+animT*3)*6*pulse);}
+  ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();
+  ctx.fillStyle=`rgba(255,130,0,${0.65*pulse})`;ctx.fill();
+  ctx.restore();
+}
+
+function drawFallingSpikeExt(f){
+  const col='rgba(220,80,60,0.9)';
+  ctx.save();ctx.shadowColor=col;ctx.shadowBlur=10;
+  ctx.fillStyle='rgba(0,0,0,0.5)';ctx.strokeStyle=col;ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(f.x,f.currentY);
+  ctx.lineTo(f.x+f.w/2,f.currentY+f.h);
+  ctx.lineTo(f.x+f.w,f.currentY);
+  ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.restore();
+}
+
+function drawChaser(c){
+  if(!c.active)return;
+  ctx.save();
+  ctx.translate(c.x+c.w/2,c.y+c.h/2);
+  ctx.rotate(animT*3);
+  ctx.shadowColor='rgba(255,0,0,0.9)';ctx.shadowBlur=18;
+  ctx.fillStyle='rgba(20,0,0,0.9)';
+  ctx.fillRect(-c.w/2,-c.h/2,c.w,c.h);
+  ctx.strokeStyle='rgba(255,40,40,0.95)';ctx.lineWidth=3;
+  ctx.strokeRect(-c.w/2,-c.h/2,c.w,c.h);
+  ctx.strokeStyle='rgba(255,80,80,0.45)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(-c.w/2,0);ctx.lineTo(c.w/2,0);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(0,-c.h/2);ctx.lineTo(0,c.h/2);ctx.stroke();
+  ctx.restore();
+}
+
+function drawPendulum(p){
+  const maxAngle=Math.PI/4;
+  const ang=Math.sin(animT*p.speed)*maxAngle;
+  const sx=p.pivotX+Math.sin(ang)*p.length;
+  const sy=p.pivotY+Math.cos(ang)*p.length;
+  ctx.save();
+  ctx.shadowColor='rgba(180,180,255,0.4)';ctx.shadowBlur=6;
+  ctx.strokeStyle='rgba(150,150,200,0.7)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(p.pivotX,p.pivotY);ctx.lineTo(sx,sy);ctx.stroke();
+  ctx.fillStyle='rgba(180,180,255,0.7)';
+  ctx.beginPath();ctx.arc(p.pivotX,p.pivotY,4,0,Math.PI*2);ctx.fill();
+  const col='rgba(220,80,60,0.9)';
+  ctx.shadowColor=col;ctx.shadowBlur=10;
+  ctx.fillStyle='rgba(0,0,0,0.5)';ctx.strokeStyle=col;ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(sx-p.w/2,sy-p.h/2);
+  ctx.lineTo(sx,sy+p.h/2);
+  ctx.lineTo(sx+p.w/2,sy-p.h/2);
+  ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.restore();
+}
+
+function drawPhantomPlatform(p){
+  const alpha=p._phantomTouched?Math.max(0.05,(p._vanishTimer/0.3))*0.4:0.4;
+  ctx.save();ctx.globalAlpha=alpha;
+  ctx.fillStyle='rgba(0,0,0,0.65)';ctx.fillRect(p.x,p.y,p.w,p.h);
+  ctx.setLineDash([6,4]);
+  ctx.shadowColor='rgba(160,200,255,0.5)';ctx.shadowBlur=8;
+  ctx.strokeStyle='rgba(180,215,255,0.9)';ctx.lineWidth=2;
+  ctx.strokeRect(p.x,p.y,p.w,p.h);
+  ctx.setLineDash([]);ctx.globalAlpha=1;ctx.restore();
+}
+
+function drawSinkingPlatform(p){
+  const depth=p._origY!==undefined?Math.max(0,p.y-p._origY):0;
+  const t=Math.min(1,depth/200);
+  const r=Math.floor(80+t*175),g=Math.floor(100-t*80);
+  const col=`rgba(${r},${g},20,0.9)`;
+  ctx.save();
+  ctx.fillStyle='rgba(0,0,0,0.65)';ctx.fillRect(p.x,p.y,p.w,p.h);
+  ctx.shadowColor=col;ctx.shadowBlur=12;
+  ctx.strokeStyle=col;ctx.lineWidth=2;ctx.strokeRect(p.x,p.y,p.w,p.h);
+  ctx.shadowColor='rgba(255,255,255,0.7)';ctx.shadowBlur=4;
+  ctx.strokeStyle=t>0.5?'rgba(255,80,30,0.8)':'rgba(255,200,50,0.75)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x+p.w,p.y);ctx.stroke();
+  ctx.restore();
+}
+
+function drawDarkness(){
+  if(!darknessState.enabled||!darknessState.active)return;
+  ctx.fillStyle='rgba(0,0,0,0.95)';ctx.fillRect(0,0,W,H);
 }
 
 function drawGoal(){
@@ -1555,6 +1669,52 @@ function update(dt){
         triggerDeath();return;
       }
     }
+    // Lava rising
+    for(const l of lavas){
+      l.currentY-=l.speed*dt;
+      if(player.y+player.h>=l.currentY){lastDeathCause='lava';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
+    }
+    // Falling spikes (trigger-based)
+    for(const f of fallingSpikesExt){
+      if(!f.triggered&&player.x>f.triggerX){f.triggered=true;}
+      if(f.triggered){f.currentY+=f.speed*dt;}
+      if(overlap(player,{x:f.x+4,y:f.currentY+4,w:f.w-8,h:f.h-8})){lastDeathCause='spike';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
+    }
+    // Chasers (boulders)
+    for(const c of chasers){
+      if(!c.active&&player.x>c.triggerX){c.active=true;}
+      if(c.active){c.x+=c.speed*dt;}
+      if(c.active&&overlap(player,c)){lastDeathCause='crush';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
+    }
+    // Pendulums
+    for(const p of pendulums){
+      const maxAngle=Math.PI/4;
+      const ang=Math.sin(animT*p.speed)*maxAngle;
+      const sx=p.pivotX+Math.sin(ang)*p.length;
+      const sy=p.pivotY+Math.cos(ang)*p.length;
+      if(overlap(player,{x:sx-p.w/2,y:sy-p.h/2,w:p.w,h:p.h})){lastDeathCause='spike';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
+    }
+    // Phantom platforms — vanish timer
+    for(const p of [...platforms,...movingPlatforms]){
+      if(!p.phantom)continue;
+      const onThis=playerPlatform===p||(player.onGround&&player.y+player.h>=p.y-2&&player.y+player.h<=p.y+6&&player.x+player.w>p.x&&player.x<p.x+p.w);
+      if(onThis&&!p._phantomTouched){p._phantomTouched=true;p._vanishTimer=0.3;}
+      if(p._phantomTouched&&p._vanishTimer>0){p._vanishTimer-=dt;}
+    }
+    // Sinking platforms
+    for(const p of [...platforms,...movingPlatforms]){
+      if(!p.sinking)continue;
+      const onThis=playerPlatform===p;
+      if(onThis){p.y+=30*dt;}
+      else if(p._origY!==undefined&&p.y>p._origY){p.y=Math.max(p._origY,p.y-15*dt);}
+      if(p._origY!==undefined&&p.y>p._origY+200){p.y=p._origY;}
+    }
+    // Darkness effect
+    if(darknessState.enabled){
+      darknessState.timer+=dt;
+      if(!darknessState.active&&darknessState.timer>=darknessState.interval){darknessState.active=true;darknessState.timer=0;}
+      else if(darknessState.active&&darknessState.timer>=darknessState.duration){darknessState.active=false;darknessState.timer=0;}
+    }
     if(overlap(player,goal)){if(!adminMode){incStat('points',50);incStat('totalClears');}if(easyMode)easyModeSavedStage=stageNum+1;
       const next=stageNum+1;
       checkTitlesOnClear(next);
@@ -1683,14 +1843,19 @@ function loop(ts){
   else{
     drawBg(false);
     for(const b of fallingBlocks){if(!b.gone)drawPlatform(b,b.triggered&&!b.falling&&b.shakeT>0);}
-    for(const p of platforms)drawPlatform(p);
-    for(const p of movingPlatforms)drawMovingPlatform(p);
+    for(const p of platforms){if(p.phantom)drawPhantomPlatform(p);else if(p.sinking)drawSinkingPlatform(p);else drawPlatform(p);}
+    for(const p of movingPlatforms){if(p.phantom)drawPhantomPlatform(p);else if(p.sinking)drawSinkingPlatform(p);else drawMovingPlatform(p);}
     for(const s of spikes)drawSpike(s);
     for(const t of trapSpikes)drawTrapSpike(t);
+    for(const f of fallingSpikesExt)drawFallingSpikeExt(f);
+    for(const c of chasers)drawChaser(c);
+    for(const p of pendulums)drawPendulum(p);
     for(const h of hourglasses)drawHourglass(h);
     for(const m of mimics)drawMimic(m);
     for(const c of ceilingTraps)drawCeilingTrap(c);
+    for(const l of lavas)drawLava(l);
     drawGoal();drawPlayer();drawFloatMsgs();drawUI();
+    drawDarkness();
     if(state==='pause')drawPause();
     if(state==='dead')drawDead();
     if(deathFlash>0){ctx.fillStyle=`rgba(255,30,30,${deathFlash*.55})`;ctx.fillRect(0,0,W,H);deathFlash=Math.max(0,deathFlash-dt*3);}

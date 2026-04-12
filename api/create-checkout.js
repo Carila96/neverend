@@ -44,9 +44,6 @@ export default async function handler(req, res) {
   const { block_count, plan_type, stage_id, anchor_x, anchor_y, width, height, zone_type } = reservation;
   const amountCents = calcAmountCents(block_count, plan_type);
 
-  console.log('=== CREATE CHECKOUT ===');
-  console.log('session_key:', session_key, 'plan_type:', plan_type, 'block_count:', block_count, 'amount_cents:', amountCents);
-
   // metadata required by webhook to identify and process the reservation
   const metadata = {
     session_key,
@@ -98,8 +95,6 @@ export default async function handler(req, res) {
         cancel_url:  `${BASE_URL}/cancel.html`,
       };
     }
-
-    console.log('SESSION PARAMS:', JSON.stringify(sessionParams, null, 2));
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 

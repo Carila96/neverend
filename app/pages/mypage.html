@@ -187,6 +187,20 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
           </div>
         </div>
 
+        <!-- Your Logo -->
+        <div class="panel-card" id="logoSection">
+          <div class="panel-card-title">Your Logo</div>
+          <div class="image-preview">
+            <div class="img-box" id="logoPreviewBox">
+              <div class="img-placeholder" id="logoPreviewPlaceholder">No logo uploaded yet.</div>
+              <img id="logoPreviewImg" style="display:none" alt="Your logo">
+            </div>
+          </div>
+          <div class="actions">
+            <a href="/upload.html" class="btn-secondary" id="uploadLogoBtn">UPLOAD YOUR LOGO</a>
+          </div>
+        </div>
+
         <!-- Actions -->
         <div class="panel-card">
           <div class="panel-card-title">Actions</div>
@@ -274,6 +288,24 @@ async function init(p){
     img.src=imgData;
     img.style.display='block';
     document.getElementById('imgPlaceholder').style.display='none';
+  }
+
+  // YOUR LOGO section — fetch from placement if contract_id known
+  const uploadBtn=document.getElementById('uploadLogoBtn');
+  if(p.contract_id){
+    uploadBtn.href='/upload.html?contract_id='+encodeURIComponent(p.contract_id)+'&stage_id='+(p.stage_id||1);
+    uploadBtn.textContent='CHANGE LOGO';
+    fetch(BASE+'/api/get-placement?contract_id='+encodeURIComponent(p.contract_id))
+      .then(r=>r.json()).then(d=>{
+        const pl=(d.placements||[]).find(x=>x.stage_id===p.stage_id);
+        if(pl&&pl.image_url){
+          const img=document.getElementById('logoPreviewImg');
+          img.src=pl.image_url;
+          img.style.display='block';
+          document.getElementById('logoPreviewPlaceholder').style.display='none';
+          uploadBtn.textContent='CHANGE LOGO';
+        }
+      }).catch(()=>{});
   }
 
   // Fetch grid state and verify blocks

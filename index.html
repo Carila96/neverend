@@ -1057,9 +1057,14 @@ function loadStage(n){
   }
   player={x:s.spawn.x,y:s.spawn.y,vx:0,vy:0,w:28,h:44,onGround:false,facing:1,walkT:0};
   stageNum=n;
+  fetch('/api/grid?stage_id='+n)
+    .then(r=>r.json())
+    .then(d=>{stagePlacements=d.placements||[];})
+    .catch(()=>{stagePlacements=[];});
 }
 
 let sessionStartTime=Date.now(),sessionDeaths=0,sessionMaxStage=1;
+let stagePlacements=[],_placementImgCache={};
 function resetRun(){
   timeLeft=easyMode?60:hardMode?25:30;score=0;
   loadStage(1);damnEffect=null;damnTimer=0;floatMsgs=[];
@@ -1152,6 +1157,21 @@ function drawBg(isTitle){
       ctx.fillRect(gx*BG,gy*BG,BG,BG);
       ctx.strokeStyle='#242436';ctx.lineWidth=0.3;
       ctx.strokeRect(gx*BG,gy*BG,BG,BG);
+    }
+  }
+  // Draw placement logos
+  for(const p of stagePlacements){
+    if(!p.image_url)continue;
+    const px=p.anchor_x*BG,py=p.anchor_y*BG,pw=p.width*BG,ph=p.height*BG;
+    if(!_placementImgCache[p.image_url]){
+      const img=new Image();img.src=p.image_url;
+      _placementImgCache[p.image_url]=img;
+    }
+    const img=_placementImgCache[p.image_url];
+    if(img.complete&&img.naturalWidth>0){
+      ctx.save();ctx.globalAlpha=0.85;
+      ctx.drawImage(img,px,py,pw,ph);
+      ctx.restore();
     }
   }
 }

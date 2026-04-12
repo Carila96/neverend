@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UPLOAD YOUR LOGO — neverEND</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:#090912;color:#ccc;font-family:'Courier New',monospace;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:60px 20px 80px;}
+  h1{color:#ffe033;font-size:26px;letter-spacing:6px;text-shadow:0 0 20px #ffe033;margin-bottom:8px;}
+  .subtitle{color:rgba(180,160,100,0.5);font-size:11px;letter-spacing:3px;margin-bottom:48px;}
+  .form{width:100%;max-width:520px;display:flex;flex-direction:column;gap:22px;}
+  label{font-size:11px;letter-spacing:3px;color:rgba(180,180,200,0.7);display:block;margin-bottom:6px;}
+  input[type=text],select{width:100%;background:#0d0d1a;border:1px solid rgba(255,224,51,0.2);color:#e0e0f0;font-family:'Courier New',monospace;font-size:13px;padding:11px 14px;outline:none;}
+  input[type=text]:focus,select:focus{border-color:rgba(255,224,51,0.6);}
+  select option{background:#0d0d1a;}
+  .upload-area{border:1px dashed rgba(255,224,51,0.3);padding:28px;text-align:center;cursor:pointer;transition:border-color 0.2s;position:relative;}
+  .upload-area:hover{border-color:rgba(255,224,51,0.6);}
+  .upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+  .upload-hint{color:rgba(150,150,170,0.6);font-size:11px;letter-spacing:2px;}
+  .upload-hint span{color:rgba(255,224,51,0.7);}
+  #preview{display:none;margin-top:14px;text-align:center;}
+  #preview img{max-width:100%;max-height:180px;image-rendering:pixelated;border:1px solid rgba(255,255,255,0.1);}
+  #dimensions{font-size:10px;color:rgba(150,150,170,0.5);margin-top:6px;letter-spacing:1px;}
+  .submit-btn{background:none;border:1px solid rgba(255,224,51,0.5);color:#ffe033;font-family:'Courier New',monospace;font-size:13px;letter-spacing:4px;padding:14px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+  .submit-btn:hover{background:rgba(255,224,51,0.08);border-color:#ffe033;}
+  .submit-btn:disabled{opacity:0.4;cursor:not-allowed;}
+  #status{font-size:12px;letter-spacing:2px;text-align:center;min-height:20px;}
+  #status.ok{color:#4ade80;}
+  #status.err{color:#ff6060;}
+  .return-link{margin-top:40px;color:rgba(100,180,255,0.5);font-size:11px;letter-spacing:3px;text-decoration:none;border:1px solid rgba(100,180,255,0.15);padding:9px 22px;}
+  .return-link:hover{color:rgba(150,210,255,0.8);border-color:rgba(100,180,255,0.4);}
+</style>
+</head>
+<body>
+<h1>UPLOAD YOUR LOGO</h1>
+<p class="subtitle">Placed logos appear in the game background</p>
+
+<div class="form">
+  <div>
+    <label>CONTRACT ID</label>
+    <input type="text" id="contractId" placeholder="your-contract-uuid" />
+  </div>
+  <div>
+    <label>STAGE</label>
+    <select id="stageSelect"></select>
+  </div>
+  <div>
+    <label>IMAGE FILE (PNG / JPG / GIF — max 2MB)</label>
+    <div class="upload-area">
+      <input type="file" id="fileInput" accept="image/png,image/jpeg,image/gif" />
+      <div class="upload-hint">Click or drag to select image<br><span>PNG recommended for best quality</span></div>
+    </div>
+    <div id="preview">
+      <img id="previewImg" alt="Preview" />
+      <div id="dimensions"></div>
+    </div>
+  </div>
+  <button class="submit-btn" id="submitBtn" disabled>[ UPLOAD LOGO ]</button>
+  <div id="status"></div>
+</div>
+
+<a href="/" class="return-link">[ RETURN TO GAME ]</a>
+
+<script>
+// Populate stage dropdown
+const sel = document.getElementById('stageSelect');
+for (let i = 1; i <= 30; i++) {
+  const opt = document.createElement('option');
+  opt.value = i;
+  opt.textContent = 'Stage ' + i;
+  sel.appendChild(opt);
+}
+
+let selectedFile = null;
+let base64Data = null;
+let imageType = null;
+
+document.getElementById('fileInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  if (file.size > 2 * 1024 * 1024) {
+    setStatus('err', 'File too large — max 2MB');
+    selectedFile = null;
+    base64Data = null;
+    document.getElementById('submitBtn').disabled = true;
+    return;
+  }
+
+  selectedFile = file;
+  imageType = file.type;
+
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const dataUrl = ev.target.result;
+    // Show preview
+    const img = document.getElementById('previewImg');
+    img.src = dataUrl;
+    img.onload = function() {
+      document.getElementById('dimensions').textContent = img.naturalWidth + ' × ' + img.naturalHeight + ' px';
+    };
+    document.getElementById('preview').style.display = 'block';
+    // Strip prefix for base64
+    base64Data = dataUrl.split(',')[1];
+    document.getElementById('submitBtn').disabled = false;
+    setStatus('', '');
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('submitBtn').addEventListener('click', async function() {
+  const contractId = document.getElementById('contractId').value.trim();
+  const stageId = parseInt(document.getElementById('stageSelect').value, 10);
+
+  if (!contractId) { setStatus('err', 'Contract ID is required'); return; }
+  if (!base64Data) { setStatus('err', 'Please select an image'); return; }
+
+  const btn = this;
+  btn.disabled = true;
+  setStatus('', 'Uploading...');
+
+  try {
+    const res = await fetch('/api/upload-logo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contract_id: contractId,
+        stage_id: stageId,
+        image_data: base64Data,
+        image_type: imageType
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Upload failed');
+    setStatus('ok', 'Logo uploaded successfully!');
+  } catch (err) {
+    setStatus('err', err.message);
+    btn.disabled = false;
+  }
+});
+
+function setStatus(type, msg) {
+  const el = document.getElementById('status');
+  el.className = type;
+  el.textContent = msg;
+}
+</script>
+</body>
+</html>

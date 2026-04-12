@@ -65,5 +65,23 @@
     <a href="/app/pages/sales_page.html">RETURN TO SALES PAGE</a>
     <a href="/index.html">RETURN TO GAME</a>
   </div>
+<script>
+(function(){
+  try{
+    const stored=localStorage.getItem('neverend_placement');
+    if(stored){
+      const p=JSON.parse(stored);
+      if(p&&p.session_key){
+        fetch('/api/cancel-reservation',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({session_key:p.session_key})
+        }).catch(function(){});
+      }
+      localStorage.removeItem('neverend_placement');
+    }
+  }catch(e){}
+})();
+</script>
 </body>
 </html>

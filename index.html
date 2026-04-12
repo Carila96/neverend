@@ -334,7 +334,8 @@ setTimeout(_submitTesterData,600000); // 10 minutes
 
 // ======== TEST MODE ========
 const _urlParams=new URLSearchParams(window.location.search);
-const testMode=_urlParams.get('mode')==='test'||_urlParams.get('test')==='1';
+const testMode=_urlParams.get('mode')==='test'||_urlParams.get('test')==='1'||sessionStorage.getItem('neverend_testmode')==='1';
+if(testMode)sessionStorage.setItem('neverend_testmode','1');
 
 // ======== NAME INPUT ========
 function _getPlayerName(){try{return localStorage.getItem('neverend_playername');}catch(_){return null;}}
@@ -1611,7 +1612,7 @@ canvas.addEventListener('click',e=>{
     const cr=canvas.getBoundingClientRect();
     const scaleX=1280/cr.width,scaleY=720/cr.height;
     const rawCx=(e.clientX-cr.left)*scaleX,rawCy=(e.clientY-cr.top)*scaleY;
-    if(rawCx>W/2-80&&rawCx<W/2+80&&rawCy>H/2+130&&rawCy<H/2+152){window.open('/hall-of-legends.html','_blank');}
+    if(rawCx>W/2-80&&rawCx<W/2+80&&rawCy>H/2+130&&rawCy<H/2+152){window.open('/hall-of-legends.html'+(testMode?'?mode=test':''),'_blank');}
   } else if(state==='mypage'){
     if(cx>=mpBackBtn.x&&cx<=mpBackBtn.x+mpBackBtn.w&&cy>=mpBackBtn.y&&cy<=mpBackBtn.y+mpBackBtn.h){state='title';}
     if(cx>=mpSalesBtn.x&&cx<=mpSalesBtn.x+mpSalesBtn.w&&cy>=mpSalesBtn.y&&cy<=mpSalesBtn.y+mpSalesBtn.h){window.open('/app/pages/sales_page.html','_blank');}

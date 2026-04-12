@@ -40,6 +40,17 @@
   Contact us at: <span style="color:rgba(255,224,51,0.5);">[carila email placeholder]</span>
 </p>
 
-<a href="/" class="return-link">[ RETURN TO GAME ]</a>
+<a href="/" id="returnLink" class="return-link">[ RETURN TO GAME ]</a>
+<script>
+(function(){
+  const params=new URLSearchParams(window.location.search);
+  const isTest=params.get('mode')==='test'||params.get('test')==='1'||sessionStorage.getItem('neverend_testmode')==='1'
+    ||document.referrer.includes('mode=test')||document.referrer.includes('test=1');
+  if(isTest){
+    sessionStorage.setItem('neverend_testmode','1');
+    document.getElementById('returnLink').href='/?mode=test';
+  }
+})();
+</script>
 </body>
 </html>

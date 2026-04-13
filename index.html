@@ -1023,6 +1023,651 @@ const STAGES=[
  move:[],fall:[],ceiling:[],focusZones:[],darkness:{enabled:false},
  hg:[{x:464,y:448,w:16,h:32},{x:880,y:288,w:16,h:32}],
  goal:{x:1072,y:128,w:80,h:112},spawn:{x:48,y:592}}
+
+,
+
+// STAGE 31 — FAKE SAFE CORRIDOR
+{name:'STAGE 31',sub:'Looks safe. Wait for it.',
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:0,y:0,w:1280,h:96},
+   {x:448,y:352,w:384,h:16},
+   {x:528,y:208,w:224,h:16},
+ ],
+ spikes:[
+   {x:64,y:608,w:48,h:32},{x:208,y:608,w:48,h:32},
+   {x:1024,y:608,w:48,h:32},{x:1152,y:608,w:48,h:32},
+   {x:464,y:320,w:48,h:32},{x:736,y:320,w:48,h:32},
+ ],
+ traps:[],fall:[],ceiling:[],
+ move:[{x:528,y:208,w:112,h:16,vx:0,vy:20,rx:0,ry:64,sx:528,sy:208}],
+ mimics:[],
+ chasers:[
+   {x:-128,y:368,w:128,h:272,speed:80,triggerX:352,active:false},
+   {x:1280,y:368,w:128,h:272,speed:-80,triggerX:352,active:false},
+ ],
+ pendulums:[],lava:[],fallingSpikes:[],
+ hg:[{x:624,y:320,w:16,h:32}],
+ focusZones:[],darkness:{enabled:false},
+ goal:{x:576,y:112,w:112,h:96},
+ spawn:{x:144,y:592}}
+
+,
+
+// STAGE 32 — VERTICAL LAVA ESCAPE
+{name:'STAGE 32',sub:'Up. Fast. Never look down.',
+ plats:[
+   {x:0,y:624,w:176,h:96},
+   {x:0,y:0,w:1280,h:96},
+   {x:80,y:544,w:176,h:16},
+   {x:416,y:464,w:176,h:16,phantom:true},
+   {x:112,y:384,w:176,h:16},
+   {x:464,y:304,w:176,h:16,phantom:true},
+   {x:144,y:224,w:176,h:16},
+   {x:880,y:144,w:304,h:16},
+ ],
+ spikes:[
+   {x:96,y:512,w:32,h:32},
+   {x:128,y:352,w:32,h:32},
+   {x:160,y:192,w:32,h:32},
+ ],
+ traps:[],fall:[],ceiling:[],move:[],mimics:[],
+ chasers:[],pendulums:[],fallingSpikes:[],
+ lava:[{y:720,speed:56,color:'rgba(255,80,0,0.9)'}],
+ hg:[{x:464,y:432,w:16,h:32},{x:464,y:272,w:16,h:32}],
+ focusZones:[],darkness:{enabled:false},
+ goal:{x:944,y:96,w:192,h:96},
+ spawn:{x:32,y:576}}
+
+,
+
+// STAGE 33 — TRIPLE PENDULUM
+{name:'STAGE 33',sub:'Three beats. Find yours.',
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:0,y:0,w:1280,h:96},
+   {x:0,y:560,w:176,h:80},
+   {x:272,y:480,w:160,h:16},
+   {x:544,y:400,w:160,h:16},
+   {x:816,y:320,w:160,h:16},
+   {x:1088,y:240,w:192,h:400},
+ ],
+ spikes:[
+   {x:304,y:448,w:32,h:32},
+   {x:576,y:368,w:32,h:32},
+   {x:848,y:288,w:32,h:32},
+ ],
+ traps:[],fall:[],ceiling:[],move:[],mimics:[],
+ chasers:[],lava:[],fallingSpikes:[],
+ pendulums:[
+   {pivotX:320,pivotY:96,length:256,speed:1.0,maxAngle:0.75,angle:0},
+   {pivotX:640,pivotY:96,length:208,speed:1.5,maxAngle:0.85,angle:0},
+   {pivotX:960,pivotY:96,length:176,speed:2.2,maxAngle:0.65,angle:0},
+ ],
+ hg:[{x:352,y:448,w:16,h:32},{x:672,y:368,w:16,h:32}],
+ focusZones:[],darkness:{enabled:false},
+ goal:{x:1104,y:144,w:160,h:96},
+ spawn:{x:48,y:592}}
+
+,
+
+// STAGE 34 — TOTAL DARKNESS
+{name:'STAGE 34',sub:'You cannot see it. You know it is there.',
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:0,y:0,w:1280,h:96},
+   {x:0,y:480,w:256,h:16},
+   {x:336,y:400,w:256,h:16},
+   {x:672,y:320,w:256,h:16},
+   {x:992,y:240,w:288,h:400},
+ ],
+ spikes:[
+   {x:64,y:608,w:32,h:32},{x:192,y:608,w:32,h:32},{x:384,y:608,w:32,h:32},
+   {x:576,y:608,w:32,h:32},{x:768,y:608,w:32,h:32},
+   {x:176,y:448,w:32,h:32},
+   {x:512,y:368,w:32,h:32},
+   {x:832,y:288,w:32,h:32},
+ ],
+ traps:[
+   {x:80,y:448,w:32,h:32,tx:0,warn:false},
+   {x:416,y:368,w:32,h:32,tx:336,warn:false},
+   {x:752,y:288,w:32,h:32,tx:672,warn:false},
+ ],
+ fall:[],ceiling:[],move:[],mimics:[],
+ chasers:[],pendulums:[],lava:[],fallingSpikes:[],
+ hg:[{x:224,y:448,w:16,h:32}],
+ focusZones:[],darkness:{enabled:true,type:'radius',radius:96},
+ goal:{x:1008,y:144,w:208,h:96},
+ spawn:{x:48,y:592}}
+
+,
+
+// STAGE 35 — CREATOR ZONE: MIMIC FIELD
+{name:'STAGE 35',sub:'Which one is real?',
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:0,y:0,w:1280,h:96},
+   {x:64,y:496,w:160,h:16},
+   {x:304,y:496,w:160,h:16},
+   {x:544,y:496,w:160,h:16},
+   {x:784,y:496,w:160,h:16},
+   {x:1024,y:496,w:160,h:16},
+   {x:160,y:352,w:160,h:16},
+   {x:432,y:352,w:160,h:16},
+   {x:704,y:352,w:160,h:16},
+   {x:960,y:352,w:256,h:288},
+ ],
+ spikes:[
+   {x:64,y:608,w:32,h:32},{x:256,y:608,w:32,h:32},{x:448,y:608,w:32,h:32},{x:640,y:608,w:32,h:32},
+   {x:832,y:608,w:32,h:32},
+ ],
+ mimics:[
+   {x:80,y:464,w:64,h:32},{x:320,y:464,w:64,h:32},{x:560,y:464,w:64,h:32},
+   {x:800,y:464,w:64,h:32},{x:1040,y:464,w:64,h:32},
+   {x:176,y:320,w:64,h:32},{x:448,y:320,w:64,h:32},{x:720,y:320,w:64,h:32},
+   {x:864,y:320,w:64,h:32},
+ ],
+ traps:[],fall:[],ceiling:[],move:[],
+ chasers:[],pendulums:[],lava:[],fallingSpikes:[],
+ hg:[{x:544,y:320,w:16,h:32}],
+ focusZones:[],darkness:{enabled:false},
+ goal:{x:976,y:256,w:192,h:96},
+ spawn:{x:32,y:592}}
+
+,
+
+// STAGE 36 — PINCER ATTACK
+{name:'STAGE 36',sub:'Both sides. Right now.',
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:0,y:0,w:1280,h:96},
+   {x:560,y:352,w:160,h:16},
+   {x:560,y:208,w:160,h:16},
+ ],
+ spikes:[
+   {x:96,y:608,w:32,h:32},{x:224,y:608,w:32,h:32},{x:352,y:608,w:32,h:32},
+   {x:672,y:608,w:32,h:32},{x:800,y:608,w:32,h:32},{x:928,y:608,w:32,h:32},
+ ],
+ fallingSpikes:[
+   {x:608,y:0,w:32,h:48,triggerX:480,speed:280,triggered:false,startY:0,currentY:0},
+ ],
+ traps:[],fall:[],ceiling:[],move:[],mimics:[],
+ chasers:[
+   {x:-112,y:96,w:112,h:544,speed:240,triggerX:0,active:false},
+   {x:1280,y:96,w:112,h:544,speed:-240,triggerX:0,active:false},
+ ],
+ pendulums:[],lava:[],
+ hg:[{x:624,y:320,w:16,h:32}],
+ focusZones:[],darkness:{enabled:false},
+ goal:{x:576,y:112,w:128,h:96},
+ spawn:{x:576,y:592}}
+
+,
+
+// STAGE 37 — SPIKE RAIN
+{name:'STAGE 37',sub:'From above. All of them.',
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:0,y:0,w:1280,h:96},
+   {x:0,y:448,w:128,h:16},
+   {x:256,y:480,w:128,h:16},
+   {x:512,y:448,w:128,h:16},
+   {x:768,y:480,w:128,h:16},
+   {x:1024,y:448,w:128,h:16},
+   {x:1152,y:96,w:128,h:544},
+ ],
+ spikes:[
+   {x:128,y:608,w:32,h:32},{x:384,y:608,w:32,h:32},{x:640,y:608,w:32,h:32},{x:896,y:608,w:32,h:32},
+ ],
+ fallingSpikes:[
+   {x:48,y:0,w:32,h:48,triggerX:0,speed:200,triggered:false,startY:0,currentY:0},
+   {x:160,y:0,w:32,h:48,triggerX:128,speed:220,triggered:false,startY:0,currentY:0},
+   {x:288,y:0,w:32,h:48,triggerX:256,speed:240,triggered:false,startY:0,currentY:0},
+   {x:400,y:0,w:32,h:48,triggerX:368,speed:260,triggered:false,startY:0,currentY:0},
+   {x:528,y:0,w:32,h:48,triggerX:496,speed:220,triggered:false,startY:0,currentY:0},
+   {x:640,y:0,w:32,h:48,triggerX:608,speed:240,triggered:false,startY:0,currentY:0},
+   {x:784,y:0,w:32,h:48,triggerX:752,speed:260,triggered:false,startY:0,currentY:0},
+   {x:912,y:0,w:32,h:48,triggerX:880,speed:280,triggered:false,startY:0,currentY:0},
+ ],
+ traps:[],fall:[],ceiling:[],move:[],mimics:[],
+ chasers:[],pendulums:[],lava:[],
+ hg:[{x:544,y:416,w:16,h:32}],
+ focusZones:[],darkness:{enabled:false},
+ goal:{x:1168,y:96,w:96,h:144},
+ spawn:{x:48,y:592}}
+
+,
+
+// STAGE 38 — SINKING CHAIN
+{name:'STAGE 38',sub:'Hop. Do not wait.',
+ plats:[
+   {x:0,y:640,w:128,h:80},
+   {x:1152,y:640,w:128,h:80},
+   {x:0,y:0,w:1280,h:96},
+   {x:128,y:512,w:176,h:16,sinking:true},
+   {x:368,y:512,w:176,h:16,sinking:true},
+   {x:608,y:512,w:176,h:16,sinking:true},
+   {x:848,y:512,w:176,h:16,sinking:true},
+   {x:1088,y:512,w:64,h:16,sinking:true},
+ ],
+ spikes:[
+   {x:128,y:608,w:240,h:32},{x:368,y:608,w:240,h:32},
+   {x:608,y:608,w:240,h:32},{x:848,y:608,w:240,h:32},
+ ],
+ traps:[],fall:[],ceiling:[],move:[],mimics:[],
+ chasers:[],pendulums:[],lava:[],fallingSpikes:[],
+ hg:[{x:624,y:480,w:16,h:32}],
+ focusZones:[],darkness:{enabled:false},
+ goal:{x:1168,y:544,w:80,h:96},
+ spawn:{x:32,y:592}}
+
+,
+
+// STAGE 39 — VERTICAL MIRROR
+{name:'STAGE 39',sub:'Top and bottom agree.',
+ plats:[
+   {x:0,y:0,w:1280,h:96},
+   {x:0,y:624,w:1280,h:96},
+   {x:0,y:96,w:128,h:16},
+   {x:0,y:608,w:128,h:16},
+   {x:256,y:128,w:160,h:16},
+   {x:256,y:576,w:160,h:16},
+   {x:496,y:160,w:160,h:16},
+   {x:496,y:544,w:160,h:16},
+   {x:736,y:128,w:160,h:16},
+   {x:736,y:576,w:160,h:16},
+   {x:992,y:96,w:288,h:16},
+   {x:992,y:608,w:288,h:16},
+ ],
+ spikes:[
+   {x:128,y:608,w:128,h:32},{x:128,y:96,w:128,h:32},
+   {x:416,y:576,w:80,h:32},{x:416,y:128,w:80,h:32},
+   {x:656,y:544,w:80,h:32},{x:656,y:128,w:80,h:32},
+   {x:896,y:608,w:96,h:32},{x:896,y:96,w:96,h:32},
+ ],
+ traps:[],fall:[],ceiling:[],move:[],mimics:[],
+ chasers:[],pendulums:[],lava:[],fallingSpikes:[],
+ hg:[{x:544,y:320,w:16,h:32}],
+ focusZones:[],darkness:{enabled:false},
+ goal:{x:1072,y:272,w:192,h:176},
+ spawn:{x:32,y:320}}
+
+,
+
+// STAGE 40 — CREATOR ZONE: TRIPLE THREAT
+{name:'STAGE 40',sub:'All three. At once.',
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:0,y:0,w:1280,h:96},
+   {x:0,y:480,w:192,h:16},
+   {x:272,y:416,w:192,h:16},
+   {x:544,y:352,w:192,h:16},
+   {x:816,y:288,w:192,h:16},
+   {x:1088,y:224,w:192,h:416},
+ ],
+ spikes:[
+   {x:64,y:608,w:32,h:32},{x:224,y:608,w:32,h:32},{x:448,y:608,w:32,h:32},
+   {x:672,y:608,w:32,h:32},{x:864,y:608,w:32,h:32},
+   {x:208,y:384,w:32,h:32},{x:480,y:320,w:32,h:32},{x:752,y:256,w:32,h:32},
+ ],
+ traps:[
+   {x:96,y:448,w:32,h:32,tx:0,warn:false},
+   {x:368,y:384,w:32,h:32,tx:272,warn:false},
+ ],
+ fall:[],ceiling:[],move:[],mimics:[],
+ chasers:[],
+ pendulums:[{pivotX:640,pivotY:96,length:288,speed:1.4,maxAngle:0.9,angle:0}],
+ lava:[{y:720,speed:40,color:'rgba(255,80,0,0.85)'}],
+ fallingSpikes:[
+   {x:352,y:0,w:32,h:48,triggerX:288,speed:260,triggered:false,startY:0,currentY:0},
+   {x:800,y:0,w:32,h:48,triggerX:736,speed:300,triggered:false,startY:0,currentY:0},
+ ],
+ hg:[{x:864,y:256,w:16,h:32}],
+ focusZones:[],darkness:{enabled:true,type:'radius',radius:112},
+ goal:{x:1104,y:128,w:160,h:96},
+ spawn:{x:48,y:592}}
+
+,
+
+// STAGE 41 — FAKE FLOOR
+{name:'STAGE 41',sub:'The ground lied.',
+ plats:[
+   {x:0,y:0,w:1280,h:96},
+   {x:0,y:640,w:80,h:80},
+   {x:1200,y:640,w:80,h:80},
+   {x:576,y:400,w:128,h:16},
+ ],
+ spikes:[
+   {x:80,y:640,w:1120,h:32},
+ ],
+ fall:[
+   {x:80,y:608,w:112,h:32},{x:192,y:608,w:112,h:32},{x:304,y:608,w:112,h:32},
+   {x:416,y:608,w:112,h:32},{x:528,y:608,w:112,h:32},{x:640,y:608,w:112,h:32},
+   {x:752,y:608,w:112,h:32},{x:864,y:608,w:112,h:32},{x:976,y:608,w:112,h:32},
+   {x:1088,y:608,w:112,h:32},
+ ],
+ traps:[
+   {x:320,y:368,w:32,h:32,tx:256,warn:false},
+   {x:736,y:368,w:32,h:32,tx:576,warn:false},
+ ],
+ ceiling:[],move:[],mimics:[],
+ chasers:[],pendulums:[],lava:[],fallingSpikes:[],
+ hg:[{x:608,y:368,w:16,h:32}],
+ focusZones:[],darkness:{enabled:false},
+ goal:{x:1200,y:512,w:80,h:128},
+ spawn:{x:16,y:592}}
+
+,
+
+// STAGE 42 — SPEED GAUNTLET
+{name:'STAGE 42',sub:'No hesitation.',
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:0,y:0,w:1280,h:96},
+   {x:0,y:480,w:128,h:16},
+   {x:208,y:416,w:128,h:16},
+   {x:416,y:352,w:128,h:16},
+   {x:624,y:288,w:128,h:16},
+   {x:832,y:224,w:128,h:16},
+   {x:1040,y:160,w:240,h:480},
+ ],
+ spikes:[
+   {x:64,y:608,w:32,h:32},{x:160,y:608,w:32,h:32},{x:288,y:608,w:32,h:32},
+   {x:384,y:608,w:32,h:32},{x:496,y:608,w:32,h:32},{x:592,y:608,w:32,h:32},
+   {x:704,y:608,w:32,h:32},{x:800,y:608,w:32,h:32},{x:912,y:608,w:32,h:32},
+   {x:48,y:448,w:32,h:32},{x:256,y:384,w:32,h:32},{x:464,y:320,w:32,h:32},
+   {x:672,y:256,w:32,h:32},{x:880,y:192,w:32,h:32},
+ ],
+ traps:[
+   {x:128,y:448,w:32,h:32,tx:0,warn:false},
+   {x:336,y:384,w:32,h:32,tx:208,warn:false},
+   {x:544,y:320,w:32,h:32,tx:416,warn:false},
+   {x:752,y:256,w:32,h:32,tx:624,warn:false},
+ ],
+ fall:[],ceiling:[],move:[],mimics:[],
+ chasers:[],pendulums:[],lava:[],fallingSpikes:[],
+ hg:[{x:672,y:256,w:16,h:32}],
+ focusZones:[],darkness:{enabled:false},
+ goal:{x:1056,y:64,w:176,h:96},
+ spawn:{x:32,y:592}}
+
+,
+
+// STAGE 43 — UNSTOPPABLE BOULDER
+{name:'STAGE 43',sub:'It does not stop.',
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:0,y:0,w:1280,h:96},
+   {x:0,y:480,w:192,h:16},
+   {x:272,y:400,w:192,h:16},
+   {x:544,y:320,w:192,h:16},
+   {x:816,y:240,w:192,h:16},
+   {x:1056,y:160,w:224,h:480},
+ ],
+ spikes:[
+   {x:208,y:608,w:64,h:32},{x:480,y:608,w:64,h:32},{x:752,y:608,w:64,h:32},
+   {x:208,y:448,w:32,h:32},{x:480,y:368,w:32,h:32},{x:752,y:288,w:32,h:32},
+ ],
+ traps:[
+   {x:112,y:448,w:32,h:32,tx:0,warn:false},
+   {x:384,y:368,w:32,h:32,tx:272,warn:false},
+   {x:656,y:288,w:32,h:32,tx:544,warn:false},
+ ],
+ fall:[],ceiling:[],
+ move:[{x:272,y:400,w:96,h:16,vx:4,vy:0,rx:128,ry:0,sx:272}],
+ mimics:[],
+ chasers:[{x:-112,y:96,w:112,h:544,speed:320,triggerX:0,active:false}],
+ pendulums:[],lava:[],fallingSpikes:[],
+ hg:[{x:864,y:208,w:16,h:32}],
+ focusZones:[],darkness:{enabled:false},
+ goal:{x:1072,y:64,w:176,h:96},
+ spawn:{x:1200,y:592}}
+
+,
+
+// STAGE 44 — RHYTHM TRAPS
+{name:'STAGE 44',sub:'Listen. There is a beat.',
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:0,y:0,w:1280,h:96},
+   {x:0,y:480,w:1280,h:16},
+   {x:0,y:320,w:1280,h:16},
+   {x:1152,y:96,w:128,h:544},
+ ],
+ spikes:[
+   {x:64,y:608,w:32,h:32},{x:192,y:608,w:32,h:32},{x:320,y:608,w:32,h:32},
+   {x:512,y:608,w:32,h:32},{x:704,y:608,w:32,h:32},{x:896,y:608,w:32,h:32},
+   {x:64,y:448,w:32,h:32},{x:320,y:448,w:32,h:32},{x:576,y:448,w:32,h:32},
+   {x:832,y:448,w:32,h:32},{x:1024,y:448,w:32,h:32},
+   {x:128,y:288,w:32,h:32},{x:384,y:288,w:32,h:32},{x:640,y:288,w:32,h:32},
+   {x:896,y:288,w:32,h:32},{x:1024,y:288,w:32,h:32},
+ ],
+ ceiling:[
+   {x:160,y:480,w:32,h:32,tx:80,warn:false},{x:448,y:480,w:32,h:32,tx:320,warn:false},
+   {x:736,y:480,w:32,h:32,tx:608,warn:false},{x:960,y:480,w:32,h:32,tx:800,warn:false},
+   {x:224,y:320,w:32,h:32,tx:128,warn:false},{x:512,y:320,w:32,h:32,tx:384,warn:false},
+   {x:800,y:320,w:32,h:32,tx:672,warn:false},{x:1024,y:320,w:32,h:32,tx:896,warn:false},
+ ],
+ traps:[],fall:[],move:[],mimics:[],
+ chasers:[],pendulums:[],lava:[],fallingSpikes:[],
+ hg:[{x:608,y:288,w:16,h:32},{x:608,y:448,w:16,h:32}],
+ focusZones:[],darkness:{enabled:false},
+ goal:{x:1168,y:96,w:80,h:224},
+ spawn:{x:48,y:448}}
+
+,
+
+// STAGE 45 — CREATOR ZONE: REVERSE FIVE
+{name:'STAGE 45',sub:'You know this stage. Just backwards.',
+ plats:[
+   {x:0,y:656,w:1280,h:64},
+   {x:0,y:0,w:1280,h:96},
+   {x:0,y:96,w:32,h:560},
+   {x:608,y:96,w:32,h:560},
+ ],
+ spikes:[
+   {x:80,y:624,w:32,h:32},{x:256,y:624,w:32,h:32},{x:448,y:624,w:32,h:32},
+   {x:672,y:624,w:32,h:32},{x:864,y:624,w:32,h:32},{x:1056,y:624,w:32,h:32},
+ ],
+ traps:[],fall:[],ceiling:[],mimics:[],
+ move:[{x:832,y:480,w:128,h:16,vx:4,vy:0,rx:240,ry:0,sx:832}],
+ chasers:[{x:-112,y:96,w:112,h:560,speed:192,triggerX:640,active:false}],
+ pendulums:[],lava:[],fallingSpikes:[],
+ hg:[{x:1104,y:624,w:16,h:32}],
+ focusZones:[],darkness:{enabled:false},
+ goal:{x:1152,y:528,w:64,h:128},
+ spawn:{x:80,y:608}}
+
+,
+
+// STAGE 46 — MAZE OF THORNS
+{name:'STAGE 46',sub:'One path. Find it.',
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:0,y:0,w:1280,h:96},
+   {x:128,y:560,w:192,h:16},
+   {x:128,y:480,w:192,h:16},
+   {x:384,y:528,w:192,h:16},
+   {x:384,y:448,w:192,h:16},
+   {x:640,y:496,w:192,h:16},
+   {x:640,y:384,w:192,h:16},
+   {x:896,y:464,w:192,h:16},
+   {x:896,y:352,w:192,h:16},
+   {x:1088,y:96,w:192,h:368},
+ ],
+ spikes:[
+   {x:64,y:608,w:64,h:32},{x:320,y:608,w:64,h:32},{x:576,y:608,w:64,h:32},{x:832,y:608,w:64,h:32},
+   {x:128,y:528,w:32,h:32},{x:272,y:528,w:32,h:32},
+   {x:384,y:496,w:32,h:32},{x:528,y:496,w:32,h:32},
+   {x:640,y:352,w:32,h:32},{x:800,y:352,w:32,h:32},
+   {x:896,y:320,w:32,h:32},{x:1056,y:320,w:32,h:32},
+   {x:256,y:448,w:32,h:32},{x:512,y:448,w:32,h:32},
+   {x:768,y:432,w:32,h:32},
+ ],
+ traps:[
+   {x:192,y:448,w:32,h:32,tx:128,warn:false},
+   {x:448,y:416,w:32,h:32,tx:384,warn:false},
+   {x:704,y:464,w:32,h:32,tx:640,warn:false},
+   {x:960,y:432,w:32,h:32,tx:896,warn:false},
+ ],
+ fall:[],ceiling:[],move:[],mimics:[],
+ chasers:[],pendulums:[],lava:[],fallingSpikes:[],
+ hg:[{x:672,y:464,w:16,h:32}],
+ focusZones:[],darkness:{enabled:false},
+ goal:{x:1104,y:0,w:176,h:96},
+ spawn:{x:32,y:592}}
+
+,
+
+// STAGE 47 — HIGH LAVA
+{name:'STAGE 47',sub:'Up here. The floor is already gone.',
+ plats:[
+   {x:0,y:0,w:1280,h:96},
+   {x:0,y:176,w:192,h:16},
+   {x:256,y:208,w:192,h:16},
+   {x:512,y:176,w:192,h:16},
+   {x:768,y:208,w:192,h:16},
+   {x:1024,y:176,w:256,h:16},
+ ],
+ spikes:[
+   {x:0,y:192,w:32,h:32},{x:144,y:192,w:48,h:32},
+   {x:288,y:224,w:48,h:32},
+   {x:544,y:192,w:48,h:32},
+   {x:800,y:224,w:48,h:32},
+ ],
+ fallingSpikes:[
+   {x:160,y:0,w:32,h:48,triggerX:128,speed:240,triggered:false,startY:0,currentY:0},
+   {x:400,y:0,w:32,h:48,triggerX:352,speed:260,triggered:false,startY:0,currentY:0},
+   {x:672,y:0,w:32,h:48,triggerX:640,speed:240,triggered:false,startY:0,currentY:0},
+   {x:912,y:0,w:32,h:48,triggerX:880,speed:280,triggered:false,startY:0,currentY:0},
+ ],
+ traps:[],fall:[],ceiling:[],move:[],mimics:[],
+ chasers:[],pendulums:[],
+ lava:[{y:720,speed:80,color:'rgba(255,80,0,0.9)'}],
+ hg:[{x:528,y:144,w:16,h:32}],
+ focusZones:[],darkness:{enabled:false},
+ goal:{x:1072,y:96,w:192,h:80},
+ spawn:{x:32,y:128}}
+
+,
+
+// STAGE 48 — GAUNTLET OF ZONES
+{name:'STAGE 48',sub:'Zone by zone. No breaks.',
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:0,y:0,w:1280,h:96},
+   {x:0,y:480,w:192,h:16},
+   {x:256,y:416,w:192,h:16},
+   {x:512,y:352,w:192,h:16},
+   {x:768,y:288,w:192,h:16},
+   {x:1024,y:224,w:192,h:16},
+   {x:1184,y:96,w:96,h:528},
+ ],
+ spikes:[
+   {x:96,y:608,w:32,h:32},{x:320,y:608,w:32,h:32},{x:576,y:608,w:32,h:32},
+   {x:800,y:608,w:32,h:32},{x:992,y:608,w:32,h:32},
+   {x:192,y:384,w:32,h:32},{x:448,y:320,w:32,h:32},{x:704,y:256,w:32,h:32},
+ ],
+ chasers:[{x:-112,y:480,w:112,h:160,speed:160,triggerX:128,active:false}],
+ pendulums:[{pivotX:560,pivotY:96,length:256,speed:1.6,maxAngle:0.85,angle:0}],
+ fallingSpikes:[
+   {x:864,y:0,w:32,h:48,triggerX:800,speed:240,triggered:false,startY:0,currentY:0},
+   {x:976,y:0,w:32,h:48,triggerX:912,speed:260,triggered:false,startY:0,currentY:0},
+   {x:1088,y:0,w:32,h:48,triggerX:1024,speed:280,triggered:false,startY:0,currentY:0},
+ ],
+ traps:[
+   {x:96,y:448,w:32,h:32,tx:0,warn:false},
+   {x:352,y:384,w:32,h:32,tx:256,warn:false},
+ ],
+ fall:[],ceiling:[],move:[],mimics:[],lava:[],
+ hg:[{x:800,y:256,w:16,h:32}],
+ focusZones:[],darkness:{enabled:false},
+ goal:{x:1200,y:96,w:80,h:128},
+ spawn:{x:48,y:592}}
+
+,
+
+// STAGE 49 — MINIATURE EVERYTHING
+{name:'STAGE 49',sub:'You have seen all of this.',
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:0,y:0,w:1280,h:96},
+   {x:0,y:512,w:160,h:16},
+   {x:240,y:448,w:160,h:16,sinking:true},
+   {x:480,y:400,w:160,h:16,phantom:true},
+   {x:720,y:352,w:160,h:16},
+   {x:976,y:304,w:192,h:16},
+   {x:1136,y:96,w:144,h:528},
+ ],
+ spikes:[
+   {x:64,y:608,w:32,h:32},{x:192,y:608,w:32,h:32},{x:352,y:608,w:32,h:32},
+   {x:576,y:608,w:32,h:32},{x:768,y:608,w:32,h:32},{x:928,y:608,w:32,h:32},
+   {x:256,y:416,w:32,h:32},{x:736,y:320,w:32,h:32},
+ ],
+ fallingSpikes:[
+   {x:512,y:0,w:32,h:48,triggerX:464,speed:260,triggered:false,startY:0,currentY:0},
+ ],
+ chasers:[{x:-96,y:528,w:96,h:112,speed:128,triggerX:128,active:false}],
+ pendulums:[{pivotX:752,pivotY:96,length:224,speed:1.8,maxAngle:0.75,angle:0}],
+ lava:[{y:720,speed:32,color:'rgba(255,80,0,0.85)'}],
+ traps:[{x:128,y:480,w:32,h:32,tx:0,warn:false}],
+ fall:[],ceiling:[],move:[],mimics:[],
+ hg:[{x:752,y:320,w:16,h:32}],
+ focusZones:[],darkness:{enabled:true,type:'radius',radius:128},
+ goal:{x:1152,y:96,w:112,h:112},
+ spawn:{x:48,y:464}}
+
+,
+
+// STAGE 50 — CREATOR ZONE: FINAL RECKONING
+{name:'STAGE 50',sub:'This is what everything was for.',
+ plats:[
+   {x:0,y:640,w:192,h:80},
+   {x:0,y:0,w:1280,h:96},
+   {x:0,y:480,w:224,h:16},
+   {x:304,y:432,w:192,h:16,sinking:true},
+   {x:576,y:384,w:192,h:16},
+   {x:848,y:336,w:192,h:16,sinking:true},
+   {x:464,y:272,w:192,h:16},
+   {x:736,y:224,w:192,h:16},
+   {x:208,y:192,w:192,h:16,phantom:true},
+   {x:976,y:160,w:304,h:480},
+ ],
+ spikes:[
+   {x:208,y:608,w:32,h:32},{x:352,y:608,w:32,h:32},{x:512,y:608,w:32,h:32},
+   {x:672,y:608,w:32,h:32},{x:816,y:608,w:32,h:32},
+   {x:336,y:400,w:32,h:32},{x:608,y:352,w:32,h:32},{x:880,y:304,w:32,h:32},
+   {x:496,y:240,w:32,h:32},{x:768,y:192,w:32,h:32},
+ ],
+ traps:[
+   {x:128,y:448,w:32,h:32,tx:0,warn:false},
+   {x:400,y:400,w:32,h:32,tx:304,warn:false},
+   {x:672,y:352,w:32,h:32,tx:576,warn:false},
+   {x:944,y:304,w:32,h:32,tx:848,warn:false},
+ ],
+ fall:[],ceiling:[],
+ move:[{x:576,y:384,w:96,h:16,vx:4,vy:0,rx:176,ry:0,sx:576}],
+ mimics:[{x:240,y:160,w:64,h:48}],
+ chasers:[
+   {x:-112,y:480,w:112,h:160,speed:144,triggerX:128,active:false},
+   {x:1280,y:336,w:96,h:304,speed:-192,triggerX:640,active:false},
+ ],
+ pendulums:[
+   {pivotX:384,pivotY:96,length:256,speed:1.2,maxAngle:0.8,angle:0},
+   {pivotX:736,pivotY:96,length:208,speed:1.8,maxAngle:0.9,angle:0},
+ ],
+ lava:[{y:720,speed:28,color:'rgba(255,80,0,0.9)'}],
+ fallingSpikes:[
+   {x:304,y:0,w:32,h:48,triggerX:240,speed:240,triggered:false,startY:0,currentY:0},
+   {x:640,y:0,w:32,h:48,triggerX:576,speed:260,triggered:false,startY:0,currentY:0},
+   {x:912,y:0,w:32,h:48,triggerX:848,speed:280,triggered:false,startY:0,currentY:0},
+ ],
+ hg:[{x:496,y:240,w:16,h:32},{x:768,y:192,w:16,h:32}],
+ focusZones:[],darkness:{enabled:true,type:'radius',radius:144},
+ goal:{x:992,y:64,w:256,h:96},
+ spawn:{x:48,y:592}}
+
+
 ];
 
 

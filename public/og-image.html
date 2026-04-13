@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:1200px;height:630px;overflow:hidden;background:#000;}
+  body{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-family:'Courier New',monospace;position:relative;
+  }
+  .grid{
+    position:absolute;top:0;left:0;width:100%;height:100%;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size:40px 40px;
+  }
+  .glow{
+    position:absolute;top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    width:600px;height:300px;
+    background:radial-gradient(ellipse at center, rgba(255,40,40,0.12) 0%, transparent 70%);
+    pointer-events:none;
+  }
+  .content{position:relative;z-index:1;text-align:center;}
+  .title{
+    font-size:120px;font-weight:900;letter-spacing:-4px;
+    color:#ff2222;
+    text-shadow:0 0 40px rgba(255,34,34,0.9),0 0 80px rgba(255,34,34,0.5),0 0 160px rgba(255,34,34,0.2);
+    line-height:1;margin-bottom:28px;
+  }
+  .sub{
+    font-size:22px;letter-spacing:4px;color:rgba(200,200,200,0.75);
+    text-shadow:0 0 10px rgba(200,200,200,0.3);
+    line-height:1.5;
+  }
+  .sub span{color:rgba(255,34,34,0.7);}
+  .tag{
+    margin-top:40px;font-size:13px;letter-spacing:6px;color:rgba(80,80,120,0.8);
+    border:1px solid rgba(80,80,120,0.3);padding:6px 20px;
+    display:inline-block;
+  }
+</style>
+</head>
+<body>
+  <div class="grid"></div>
+  <div class="glow"></div>
+  <div class="content">
+    <div class="title">neverEND</div>
+    <div class="sub">Nobody finishes this game.<br><span>But everybody sees your logo.</span></div>
+    <div class="tag">neverend.vercel.app</div>
+  </div>
+</body>
+</html>

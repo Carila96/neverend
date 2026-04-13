@@ -2,6 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>neverEND — Nobody finishes this game.</title>
+<meta name="description" content="A hardcore platformer where nobody wins — but everybody sees your logo in the background. Claim your space.">
+<meta property="og:title" content="neverEND">
+<meta property="og:description" content="Nobody finishes this game. But everybody sees your logo.">
+<meta property="og:image" content="https://neverend.vercel.app/og-image.png">
+<meta property="og:url" content="https://neverend.vercel.app">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="neverEND — Nobody finishes this game.">
+<meta name="twitter:description" content="A hardcore platformer where businesses buy space in the background.">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 canvas{
@@ -80,6 +90,25 @@ body{
 #nameSkipBtn{color:#333;font-size:10px;letter-spacing:1px;cursor:pointer;text-decoration:underline;}
 #nameSkipBtn:hover{color:#555;}
 
+/* ADMIN PANEL */
+#adminPanel{
+  display:none;position:fixed;top:10px;right:10px;z-index:300;
+  font-family:'Courier New',monospace;
+}
+#adminPanel.show{display:block;}
+#adminPanel-inner{
+  background:rgba(4,4,12,0.97);border:1px solid rgba(255,220,50,0.6);
+  padding:12px 16px;min-width:240px;box-shadow:0 0 20px rgba(255,220,50,0.15);
+}
+.ap-title{color:#ffe033;font-size:11px;letter-spacing:2px;margin-bottom:10px;border-bottom:1px solid rgba(255,220,50,0.2);padding-bottom:6px;}
+.ap-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:11px;}
+.ap-label{color:#666;min-width:90px;}
+.ap-val{color:#4ab8ff;font-weight:bold;}
+.ap-btn{background:#0a0a18;border:1px solid #ffe033;color:#ffe033;font-family:'Courier New',monospace;font-size:10px;padding:3px 10px;cursor:pointer;letter-spacing:1px;}
+.ap-btn:hover{background:rgba(255,220,50,0.1);}
+.ap-danger{border-color:#ff4444;color:#ff4444;margin-top:2px;}
+.ap-danger:hover{background:rgba(255,68,68,0.1);}
+
 /* SHARE BUTTON on dead screen */
 #shareBtn{
   display:none;
@@ -104,6 +133,23 @@ body{
   <input id="nameInputField" type="text" maxlength="20" placeholder="YOUR NAME" autocomplete="off" />
   <button id="nameStartBtn">START</button>
   <span id="nameSkipBtn">skip</span>
+</div>
+<div id="adminPanel">
+  <div id="adminPanel-inner">
+    <div class="ap-title">ADMIN PANEL <span id="apStageLabel"></span></div>
+    <div class="ap-row"><span class="ap-label">Stage</span><span class="ap-val" id="apStage">--</span></div>
+    <div class="ap-row"><span class="ap-label">Owned Blocks</span><span class="ap-val" id="apOwned">--</span></div>
+    <div class="ap-row"><span class="ap-label">World Deaths</span><span class="ap-val" id="apDeaths">--</span></div>
+    <div class="ap-row" style="margin-top:8px;">
+      <span class="ap-label">Skip to Stage</span>
+      <input id="apSkipInput" type="number" min="1" max="50" value="1" style="width:50px;background:#050510;border:1px solid #ffe033;color:#ffe033;font-family:'Courier New',monospace;font-size:12px;padding:3px 5px;">
+      <button class="ap-btn" onclick="apSkipStage()">GO</button>
+    </div>
+    <div class="ap-row" style="margin-top:4px;">
+      <button class="ap-btn ap-danger" onclick="apResetStats()">RESET LOCAL STATS</button>
+    </div>
+    <div style="margin-top:8px;font-size:9px;color:#555;">TAB to close</div>
+  </div>
 </div>
 <div id="settings">
 <div id="settings-inner">
@@ -211,6 +257,43 @@ function openSettings(){
   document.getElementById('statPts').textContent=getStat('points').toLocaleString()+' PT';
 }
 function closeSettings(){document.getElementById('settings').classList.remove('open');canvas.focus();}
+
+// ======== ADMIN PANEL ========
+let _adminPanelOpen=false;
+function toggleAdminPanel(){
+  _adminPanelOpen=!_adminPanelOpen;
+  const ap=document.getElementById('adminPanel');
+  ap.classList.toggle('show',_adminPanelOpen);
+  if(_adminPanelOpen)refreshAdminPanel();
+}
+function refreshAdminPanel(){
+  document.getElementById('apStage').textContent=typeof stageNum!=='undefined'?stageNum:'--';
+  document.getElementById('apDeaths').textContent=worldDeaths!=null?worldDeaths.toLocaleString():'fetching...';
+  // Fetch owned block count for current stage
+  const s=typeof stageNum!=='undefined'?stageNum:1;
+  fetch('/api/grid?stage_id='+s)
+    .then(r=>r.json())
+    .then(d=>{
+      const count=(d.placements||d.blocks||[]).length;
+      document.getElementById('apOwned').textContent=count;
+    })
+    .catch(()=>{document.getElementById('apOwned').textContent='err';});
+}
+function apSkipStage(){
+  const n=parseInt(document.getElementById('apSkipInput').value)||1;
+  if(typeof loadStage==='function'){
+    loadStage(n);
+    if(typeof startBGM==='function'&&typeof getBGMTrack==='function')startBGM(getBGMTrack(n));
+    state='play';
+    toggleAdminPanel();
+  }
+}
+function apResetStats(){
+  const keys=Object.keys(localStorage).filter(k=>k.startsWith('neverend_')&&k!=='neverend_playername');
+  keys.forEach(k=>localStorage.removeItem(k));
+  refreshAdminPanel();
+  floatMsgs.push({txt:'LOCAL STATS RESET',x:W/2,y:H/2,life:2,color:'rgba(255,100,100,1)'});
+}
 
 // ======== AUDIO ========
 let ac=null,bgmTimer=null,bgmStep=0,bgmTempo=0.18,bgmTrack=0;
@@ -372,6 +455,7 @@ setInterval(()=>{if(state==='title')_fetchWorldDeaths();},60000);
 
 document.addEventListener('keydown',e=>{
   if(e.key==='Tab'){e.preventDefault();
+    if(adminMode){toggleAdminPanel();return;}
     if(document.getElementById('settings').classList.contains('open'))closeSettings();
     else openSettings();
     return;
@@ -2208,66 +2292,105 @@ function drawDead(){
 }
 
 function drawMyPage(){
-  ctx.fillStyle='rgba(0,0,0,0.93)';ctx.fillRect(0,0,W,H);
-  neonText('MY PAGE',W/2,62,'rgba(255,220,50,0.95)',40,18,'center');
+  ctx.fillStyle='rgba(0,0,0,0.95)';ctx.fillRect(0,0,W,H);
+  neonText('MY PAGE',W/2,52,'rgba(255,220,50,0.95)',36,16,'center');
 
-  // Stats panel
-  const px=W/2-240,pw=480;
+  // Player name
+  const playerName=_getPlayerName()||'Anonymous';
   ctx.save();
-  ctx.fillStyle='rgba(14,14,26,0.9)';ctx.fillRect(px,100,pw,126);
-  ctx.strokeStyle='rgba(74,184,255,0.3)';ctx.lineWidth=1;ctx.strokeRect(px,100,pw,126);
+  ctx.fillStyle='rgba(180,200,255,0.5)';ctx.font='10px "Courier New"';ctx.textAlign='center';
+  ctx.fillText('PLAYER',W/2,80);
+  ctx.fillStyle='rgba(74,184,255,0.95)';ctx.font='bold 16px "Courier New"';
+  ctx.fillText(playerName,W/2,98);
+  ctx.restore();
+
+  // Stats panel (left column)
+  const colL=W/2-420,colR=W/2+20,colW=380,statH=108;
+  ctx.save();
+  ctx.fillStyle='rgba(14,14,26,0.9)';ctx.fillRect(colL,112,colW,statH);
+  ctx.strokeStyle='rgba(74,184,255,0.25)';ctx.lineWidth=1;ctx.strokeRect(colL,112,colW,statH);
+  const totalSecs=getStat('totalPlayTime',0);
+  const ph=Math.floor(totalSecs/3600),pm=Math.floor((totalSecs%3600)/60);
   const rows=[
     ['TOTAL DEATHS', getStat('totalDeaths').toLocaleString()],
     ['BEST STAGE',   'Stage '+getStat('bestStage',1)],
-    ['POINTS',       getStat('points').toLocaleString()+' PT'],
+    ['PLAY TIME',    ph+'h '+pm+'m'],
   ];
   rows.forEach(function(r,i){
-    const ry=130+i*38;
-    ctx.fillStyle='rgba(120,140,180,0.65)';ctx.font='11px "Courier New"';ctx.textAlign='left';
-    ctx.fillText(r[0],px+20,ry);
-    ctx.fillStyle='rgba(74,184,255,0.95)';ctx.font='bold 13px "Courier New"';ctx.textAlign='right';
-    ctx.fillText(r[1],px+pw-20,ry);
+    const ry=136+i*32;
+    ctx.fillStyle='rgba(120,140,180,0.65)';ctx.font='10px "Courier New"';ctx.textAlign='left';
+    ctx.fillText(r[0],colL+14,ry);
+    ctx.fillStyle='rgba(74,184,255,0.95)';ctx.font='bold 12px "Courier New"';ctx.textAlign='right';
+    ctx.fillText(r[1],colL+colW-14,ry);
   });
   ctx.restore();
 
-  // Skin workshop — coming soon
-  const sy=254;
+  // Titles panel (right column)
   ctx.save();
-  ctx.fillStyle='rgba(10,10,22,0.8)';ctx.fillRect(px,sy,pw,200);
-  ctx.strokeStyle='rgba(80,80,120,0.25)';ctx.lineWidth=1;ctx.strokeRect(px,sy,pw,200);
-  ctx.fillStyle='rgba(90,90,130,0.5)';ctx.font='10px "Courier New"';ctx.textAlign='center';
-  ctx.fillText('// SKIN WORKSHOP',W/2,sy+24);
-  ctx.fillStyle='rgba(50,50,90,0.9)';ctx.fillRect(px+20,sy+38,pw-40,100);
-  ctx.strokeStyle='rgba(60,60,100,0.4)';ctx.lineWidth=1;ctx.strokeRect(px+20,sy+38,pw-40,100);
-  ctx.fillStyle='rgba(100,100,160,0.7)';ctx.font='bold 24px "Courier New"';
-  ctx.fillText('COMING SOON',W/2,sy+98);
-  ctx.fillStyle='rgba(80,80,130,0.5)';ctx.font='10px "Courier New"';
-  ctx.fillText('Unlock skins based on your death count.',W/2,sy+154);
-  ctx.fillText('Customize your player. Stand out.',W/2,sy+172);
+  ctx.fillStyle='rgba(14,14,26,0.9)';ctx.fillRect(colR,112,colW,statH);
+  ctx.strokeStyle='rgba(255,220,50,0.2)';ctx.lineWidth=1;ctx.strokeRect(colR,112,colW,statH);
+  ctx.fillStyle='rgba(180,160,60,0.55)';ctx.font='10px "Courier New"';ctx.textAlign='left';
+  ctx.fillText('TITLES EARNED',colR+14,132);
+  const earned=getTitles();
+  const titlesShort=earned.slice(0,6); // show up to 6 in this panel
+  if(titlesShort.length===0){
+    ctx.fillStyle='rgba(80,80,120,0.6)';ctx.font='10px "Courier New"';ctx.textAlign='center';
+    ctx.fillText('None yet...',colR+colW/2,168);
+  } else {
+    titlesShort.forEach(function(t,i){
+      const tx=colR+14+(i%3)*128,ty=148+Math.floor(i/3)*30;
+      ctx.fillStyle='rgba(255,220,50,0.75)';ctx.font='9px "Courier New"';ctx.textAlign='left';
+      ctx.fillText('✓ '+t,tx,ty);
+    });
+    if(earned.length>6){
+      ctx.fillStyle='rgba(150,150,180,0.5)';ctx.font='9px "Courier New"';ctx.textAlign='right';
+      ctx.fillText('+'+( earned.length-6)+' more',colR+colW-14,210);
+    }
+  }
   ctx.restore();
 
-  // Back button
+  // All titles list
+  const tlY=234,tlH=310;
   ctx.save();
-  ctx.fillStyle='rgba(0,0,0,0.6)';ctx.fillRect(mpBackBtn.x,mpBackBtn.y,mpBackBtn.w,mpBackBtn.h);
-  ctx.strokeStyle='rgba(160,185,255,0.5)';ctx.lineWidth=1.5;ctx.strokeRect(mpBackBtn.x,mpBackBtn.y,mpBackBtn.w,mpBackBtn.h);
-  ctx.fillStyle='rgba(160,185,255,0.85)';ctx.font='11px "Courier New"';ctx.textAlign='center';
-  ctx.fillText('[ BACK TO TITLE ]',mpBackBtn.x+mpBackBtn.w/2,mpBackBtn.y+24);
+  ctx.fillStyle='rgba(10,10,22,0.88)';ctx.fillRect(colL,tlY,W-2*colL,tlH);
+  ctx.strokeStyle='rgba(80,80,140,0.3)';ctx.lineWidth=1;ctx.strokeRect(colL,tlY,W-2*colL,tlH);
+  ctx.fillStyle='rgba(120,120,180,0.5)';ctx.font='10px "Courier New"';ctx.textAlign='left';
+  ctx.fillText('ALL TITLES',colL+14,tlY+18);
+  const allTitles=['First Blood','Getting Somewhere','Double Digits','Rookie','Dedicated','Obsessed','You Need Help','Are You OK?','One Hour Club','Masochist','I Give Up','Legend of Giving Up','LANDLORD','Patron','Speed Demon','No Baby','Comeback Kid','Night Owl','Persistent','Unstoppable','The 1%','Ghost'];
+  const earnedSet=new Set(getTitles());
+  const cols=4,rowH=26,startX=colL+14,startY=tlY+34;
+  allTitles.forEach(function(t,i){
+    const tx=startX+(i%cols)*((W-2*colL-28)/cols);
+    const ty=startY+Math.floor(i/cols)*rowH;
+    const has=earnedSet.has(t);
+    ctx.fillStyle=has?'rgba(255,220,50,0.9)':'rgba(60,60,90,0.6)';
+    ctx.font=(has?'bold ':'')+' 9px "Courier New"';
+    ctx.textAlign='left';
+    ctx.fillText((has?'✓ ':'○ ')+t,tx,ty);
+  });
   ctx.restore();
 
-  // Sales page button
+  // Buttons row
+  _drawMpBtn(ctx,mpBackBtn,'[ BACK ]','rgba(160,185,255,0.5)','rgba(160,185,255,0.85)');
+  _drawMpBtn(ctx,mpChangeNameBtn,'[ CHANGE NAME ]','rgba(100,200,180,0.5)','rgba(100,200,180,0.85)');
+  if(!testMode)_drawMpBtn(ctx,mpSalesBtn,'[ VISIT SALES PAGE ]','rgba(255,220,50,0.5)','rgba(255,220,50,0.9)');
+}
+
+function _drawMpBtn(ctx,btn,label,stroke,fill){
   ctx.save();
-  ctx.fillStyle='rgba(0,0,0,0.6)';ctx.fillRect(mpSalesBtn.x,mpSalesBtn.y,mpSalesBtn.w,mpSalesBtn.h);
-  ctx.shadowColor='rgba(255,220,50,0.5)';ctx.shadowBlur=8;
-  ctx.strokeStyle='rgba(255,220,50,0.5)';ctx.lineWidth=1.5;ctx.strokeRect(mpSalesBtn.x,mpSalesBtn.y,mpSalesBtn.w,mpSalesBtn.h);
-  ctx.fillStyle='rgba(255,220,50,0.85)';ctx.font='11px "Courier New"';ctx.textAlign='center';
-  ctx.fillText('[ CLAIM YOUR SPACE ]',mpSalesBtn.x+mpSalesBtn.w/2,mpSalesBtn.y+24);
+  ctx.fillStyle='rgba(0,0,0,0.6)';ctx.fillRect(btn.x,btn.y,btn.w,btn.h);
+  ctx.shadowColor=stroke;ctx.shadowBlur=6;
+  ctx.strokeStyle=stroke;ctx.lineWidth=1.5;ctx.strokeRect(btn.x,btn.y,btn.w,btn.h);
+  ctx.fillStyle=fill;ctx.font='10px "Courier New"';ctx.textAlign='center';
+  ctx.fillText(label,btn.x+btn.w/2,btn.y+btn.h/2+4);
   ctx.restore();
 }
 
 const settingsBtn={x:16,y:16,w:120,h:28};
 const mpBtn={x:W-120,y:12,w:104,h:28};
-const mpBackBtn={x:W/2-180,y:H-76,w:160,h:36};
-const mpSalesBtn={x:W/2+20,y:H-76,w:160,h:36};
+const mpBackBtn={x:W/2-270,y:H-62,w:140,h:36};
+const mpChangeNameBtn={x:W/2-70,y:H-62,w:140,h:36};
+const mpSalesBtn={x:W/2+90,y:H-62,w:180,h:36};
 canvas.addEventListener('click',e=>{
   const rect=canvas.getBoundingClientRect();
   const scaleX=W/rect.width,scaleY=H/rect.height;
@@ -2275,14 +2398,21 @@ canvas.addEventListener('click',e=>{
   if(state==='title'){
     if(cx>=settingsBtn.x&&cx<=settingsBtn.x+settingsBtn.w&&cy>=settingsBtn.y&&cy<=settingsBtn.y+settingsBtn.h){openSettings();}
     if(!testMode&&cx>=mpBtn.x&&cx<=mpBtn.x+mpBtn.w&&cy>=mpBtn.y&&cy<=mpBtn.y+mpBtn.h){state='mypage';}
-    // Hall of Legends click (approx center x, y around H/2+140 in canvas coords)
+    // Hall of Legends click
     const cr=canvas.getBoundingClientRect();
-    const scaleX=1280/cr.width,scaleY=720/cr.height;
-    const rawCx=(e.clientX-cr.left)*scaleX,rawCy=(e.clientY-cr.top)*scaleY;
+    const scaleX2=1280/cr.width,scaleY2=720/cr.height;
+    const rawCx=(e.clientX-cr.left)*scaleX2,rawCy=(e.clientY-cr.top)*scaleY2;
     if(rawCx>W/2-80&&rawCx<W/2+80&&rawCy>H/2+130&&rawCy<H/2+152){window.open('/hall-of-legends.html'+(testMode?'?mode=test':''),'_blank');}
   } else if(state==='mypage'){
-    if(cx>=mpBackBtn.x&&cx<=mpBackBtn.x+mpBackBtn.w&&cy>=mpBackBtn.y&&cy<=mpBackBtn.y+mpBackBtn.h){state='title';}
-    if(cx>=mpSalesBtn.x&&cx<=mpSalesBtn.x+mpSalesBtn.w&&cy>=mpSalesBtn.y&&cy<=mpSalesBtn.y+mpSalesBtn.h){window.open('/app/pages/sales_page.html','_blank');}
+    function _inBtn(b){return cx>=b.x&&cx<=b.x+b.w&&cy>=b.y&&cy<=b.y+b.h;}
+    if(_inBtn(mpBackBtn)){state='title';}
+    if(_inBtn(mpChangeNameBtn)){
+      localStorage.removeItem('neverend_playername');
+      const ov=document.getElementById('nameOverlay');
+      const fld=document.getElementById('nameInputField');
+      if(ov){ov.classList.add('show');setTimeout(()=>fld&&fld.focus(),50);}
+    }
+    if(!testMode&&_inBtn(mpSalesBtn)){window.open('/app/pages/sales_page.html','_blank');}
   }
 });
 

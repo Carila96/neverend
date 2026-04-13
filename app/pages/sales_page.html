@@ -3,7 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>neverEND -- Own the Background</title>
+<title>neverEND — Own the Background</title>
+<meta name="description" content="Place your logo inside the world's hardest game. Thousands of players will die staring at your brand. Permanent placement, starting at $3/block.">
+<meta property="og:title" content="neverEND">
+<meta property="og:description" content="Nobody finishes this game. But everybody sees your logo.">
+<meta property="og:image" content="https://neverend.vercel.app/og-image.png">
+<meta property="og:url" content="https://neverend.vercel.app">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="neverEND — Nobody finishes this game.">
+<meta name="twitter:description" content="A hardcore platformer where businesses buy space in the background.">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap');
 :root{
@@ -289,6 +297,7 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
       <span>BILLED ANNUALLY</span><span class="annual-amount" id="annualBilledAmt">--</span>
     </div>
   </div>
+  <div id="checkoutError" style="display:none;margin-bottom:10px;padding:10px 12px;background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.4);color:rgba(255,120,100,0.95);font-size:11px;letter-spacing:0.5px;line-height:1.5;"></div>
   <button class="cta-btn" id="ctaBtn" onclick="proceedToCheckout()">CLAIM THIS PLACEMENT</button>
   <p class="panel-note">By proceeding you agree to our <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>.<br><br>First month is prorated from purchase date. Billing auto-renews. Cancel anytime. Placement stays active until end of current billing period only — not beyond. Monthly: current month non-refundable. Annual: remaining future months refunded pro-rata. Full details in <a href="/docs/legal/terms_of_service.md">Terms of Service</a>.<br><br>EU customers: <a href="/terms#eu-cooling">statutory withdrawal rights apply</a>.</p>
 </div>
@@ -1108,8 +1117,20 @@ function setPlan(p,btn){
 
 function closePanel(){document.getElementById('purchasePanel').classList.remove('open');}
 
+function showCheckoutError(msg){
+  const el=document.getElementById('checkoutError');
+  if(!el)return;
+  el.textContent=msg;el.style.display='block';
+  el.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function clearCheckoutError(){
+  const el=document.getElementById('checkoutError');
+  if(el){el.style.display='none';el.textContent='';}
+}
+
 async function proceedToCheckout(){
-  if(!confirmedPlacement){alert('Please confirm your placement first.');return;}
+  clearCheckoutError();
+  if(!confirmedPlacement){showCheckoutError('Please confirm your placement first.');return;}
   const btn=document.getElementById('ctaBtn');
   btn.disabled=true;btn.textContent='RESERVING...';
   const s=STAGES_DATA[confirmedPlacement.stage-1];
@@ -1130,8 +1151,15 @@ async function proceedToCheckout(){
     });
     const resData=await resRes.json();
     if(!resRes.ok||!resData.session_key){
-      alert('Reservation failed: '+(resData.message||resData.error||'Unknown error'));
-      btn.disabled=false;updatePanelPrice(confirmedPlacement.blocks);return;
+      const errMsg=resData.message||resData.error||'';
+      if(errMsg.toLowerCase().includes('overlap')||errMsg.toLowerCase().includes('taken')){
+        showCheckoutError('This area is already taken. Please select a different location.');
+      } else if(errMsg.toLowerCase().includes('bound')){
+        showCheckoutError('Selection is outside the grid. Please try again.');
+      } else {
+        showCheckoutError('Reservation failed: '+errMsg);
+      }
+      btn.disabled=false;btn.textContent='CLAIM THIS PLACEMENT';updatePanelPrice(confirmedPlacement.blocks);return;
     }
     btn.textContent='CREATING CHECKOUT...';
     const coRes=await fetch(BASE+'/api/create-checkout',{
@@ -1141,8 +1169,8 @@ async function proceedToCheckout(){
     });
     const coData=await coRes.json();
     if(!coRes.ok||!coData.url){
-      alert('Checkout failed: '+(coData.error||'Unknown error'));
-      btn.disabled=false;updatePanelPrice(confirmedPlacement.blocks);return;
+      showCheckoutError('Payment setup failed. Please try again or contact support.');
+      btn.disabled=false;btn.textContent='CLAIM THIS PLACEMENT';updatePanelPrice(confirmedPlacement.blocks);return;
     }
     localStorage.setItem('neverend_placement',JSON.stringify({
       session_key:resData.session_key,
@@ -1157,8 +1185,8 @@ async function proceedToCheckout(){
     }));
     window.location.href=coData.url;
   }catch(err){
-    alert('Network error: '+err.message);
-    btn.disabled=false;updatePanelPrice(confirmedPlacement.blocks);
+    showCheckoutError('Connection error. Please check your internet and try again.');
+    btn.disabled=false;btn.textContent='CLAIM THIS PLACEMENT';updatePanelPrice(confirmedPlacement.blocks);
   }
 }
 

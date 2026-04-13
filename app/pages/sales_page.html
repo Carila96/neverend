@@ -363,22 +363,39 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
         <div id="tabDraw" style="display:none">
           <div id="paWrap">
             <div class="pa-tools">
-              <button class="pa-tool-btn active" id="paTool_pencil" onclick="setPATool('pencil')">PENCIL</button>
-              <button class="pa-tool-btn" id="paTool_eraser" onclick="setPATool('eraser')">ERASER</button>
-              <button class="pa-tool-btn" id="paTool_fill" onclick="setPATool('fill')">FILL</button>
+              <button class="pa-tool-btn active" id="paTool_pencil" onclick="setPATool('pencil')" title="Pencil">PENCIL</button>
+              <button class="pa-tool-btn" id="paTool_fill" onclick="setPATool('fill')" title="Flood fill">FILL</button>
+              <button class="pa-tool-btn" id="paTool_eraser" onclick="setPATool('eraser')" title="Eraser">ERASER</button>
+              <button class="pa-tool-btn" id="paTool_rect" onclick="setPATool('rect')" title="Rectangle">RECT</button>
+              <button class="pa-tool-btn" id="paTool_eyedrop" onclick="setPATool('eyedrop')" title="Pick color">EYE</button>
+              <button class="pa-tool-btn" onclick="paUndo()" title="Undo last action">UNDO</button>
               <button class="pa-tool-btn" onclick="clearPA()">CLEAR</button>
             </div>
+            <div style="display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:wrap;">
+              <button class="pa-tool-btn active" id="paZoomBtn1" onclick="setZoom(1)" style="padding:2px 7px;">1×</button>
+              <button class="pa-tool-btn" id="paZoomBtn2" onclick="setZoom(2)" style="padding:2px 7px;">2×</button>
+              <button class="pa-tool-btn" id="paZoomBtn4" onclick="setZoom(4)" style="padding:2px 7px;">4×</button>
+              <button class="pa-tool-btn active" id="paGridToggleBtn" onclick="togglePAGrid()" style="padding:2px 8px;">GRID</button>
+              <span class="pa-info" id="paHoverCoord" style="font-size:10px;min-width:60px;text-align:right;opacity:0.7;"></span>
+            </div>
+            <div class="pa-info" style="margin-top:7px;margin-bottom:2px;opacity:0.6;font-size:10px;">PALETTE</div>
             <div class="pa-palette" id="paPalette"></div>
-            <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+            <div class="pa-info" style="margin-top:6px;margin-bottom:2px;opacity:0.6;font-size:10px;">RECENT</div>
+            <div class="pa-palette" id="paRecentPalette" style="min-height:20px;opacity:0.9;"></div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:5px;">
               <span class="pa-info">Custom:</span>
               <input type="color" id="paCustomColor" value="#ff4444" style="width:28px;height:22px;border:none;background:none;cursor:pointer;padding:0;">
               <button class="pa-tool-btn" style="flex:none;padding:4px 10px;" onclick="selectCustomColor()">USE</button>
             </div>
-            <div style="overflow:auto;max-height:320px;">
-              <canvas id="paCanvas"></canvas>
+            <div style="overflow:auto;max-height:360px;margin-top:7px;">
+              <canvas id="paCanvas" style="display:block;"></canvas>
             </div>
-            <button class="btn-blue" id="paUseBtn" onclick="usePAAsLogo()">Use as Logo</button>
+            <button class="btn-blue" id="paUseBtn" onclick="usePAAsLogo()" style="margin-top:8px;">USE THIS LOGO</button>
             <div class="pa-info" id="paInfo"></div>
+            <div id="paGamePreview" style="display:none;margin-top:10px;">
+              <div class="pa-info" style="margin-bottom:4px;opacity:0.7;font-size:10px;">GAME GRID PREVIEW (16px/block)</div>
+              <canvas id="paPreviewCanvas" style="border:1px solid var(--border);image-rendering:pixelated;max-width:100%;"></canvas>
+            </div>
           </div>
         </div>
 
@@ -660,9 +677,21 @@ let paData=null; // 2D array [row][col] = {r,g,b,a} or null
 let paTool='pencil';
 let paColor={r:255,g:68,b:68,a:255};
 let paDrawing=false;
+let paHistory=[]; // up to 20 snapshots
+let paRecentColors=[]; // up to 8 hex strings
+let paZoom=1;
+let paShowGrid=true;
+let paRectStart=null; // {r,c} when using rect tool
+let paHoverCell=null; // {r,c}
 let activePixelCount=0;
 let totalPixelCount=0;
-const PA_PALETTE=['#000000','#ffffff','#ff4444','#ff9900','#ffee00','#44ff44','#00ccff','#4444ff','#cc44ff','#ff44cc','#993300','#336600','#003399','#990099','#444444','#aaaaaa'];
+const PA_PALETTE=[
+  '#000000','#333333','#666666','#999999','#cccccc','#ffffff',
+  '#ff0000','#ff8800','#ffff00','#00ff00','#00ffff','#0000ff','#8800ff','#ff00ff',
+  '#8b4513','#a0522d','#d2691e','#f4a460','#228b22','#556b2f',
+  '#fde3c8','#f5c89a','#d4956a','#b06040','#7c3f2a',
+  '#ff1493','#ff6600','#ccff00','#00ff88','#00ccff','#aa00ff','#ff0066'
+];
 
 // -- MOCK GRID --
 function generateMockGrid(id){
@@ -1144,31 +1173,74 @@ function switchTab(tab){
 
 // -- PIXEL ART EDITOR --
 function initPA(){
-  // Build palette
+  // Build main palette (only once)
   const pal=document.getElementById('paPalette');
-  if(pal.children.length>0)return; // already built
-  PA_PALETTE.forEach(function(col){
+  if(pal.children.length===0){
+    // Transparent swatch
+    const transp=document.createElement('div');
+    transp.className='pa-color';
+    transp.style.cssText='background:transparent;background-image:repeating-conic-gradient(#555 0% 25%,#333 0% 50%);background-size:8px 8px;';
+    transp.title='Transparent (erase)';
+    transp.onclick=function(){
+      paColor=null; // null = transparent / erase
+      document.querySelectorAll('.pa-color').forEach(function(d){d.classList.remove('selected');});
+      transp.classList.add('selected');
+    };
+    pal.appendChild(transp);
+    PA_PALETTE.forEach(function(col){
+      const div=document.createElement('div');
+      div.className='pa-color';div.style.background=col;
+      div.title=col;
+      div.onclick=function(){selectPAColor(col,div);};
+      pal.appendChild(div);
+    });
+    pal.children[1].classList.add('selected'); // default: first real color (#000000)
+    renderRecentColors();
+  }
+  resizePA();
+}
+
+function selectPAColor(hex,swatchEl){
+  const rgb=hexToRgb(hex);paColor={r:rgb.r,g:rgb.g,b:rgb.b,a:255};
+  document.querySelectorAll('.pa-color').forEach(function(d){d.classList.remove('selected');});
+  if(swatchEl)swatchEl.classList.add('selected');
+  addRecentColor(hex);
+}
+
+function addRecentColor(hex){
+  paRecentColors=paRecentColors.filter(function(c){return c!==hex;});
+  paRecentColors.unshift(hex);
+  if(paRecentColors.length>8)paRecentColors.length=8;
+  renderRecentColors();
+}
+
+function renderRecentColors(){
+  const rec=document.getElementById('paRecentPalette');
+  if(!rec)return;
+  rec.innerHTML='';
+  if(paRecentColors.length===0){
+    rec.innerHTML='<span style="font-size:10px;opacity:0.4;padding:2px;">none yet</span>';
+    return;
+  }
+  paRecentColors.forEach(function(col){
     const div=document.createElement('div');
-    div.className='pa-color';div.style.background=col;
-    div.title=col;
+    div.className='pa-color';div.style.background=col;div.title=col;
     div.onclick=function(){
       const rgb=hexToRgb(col);paColor={r:rgb.r,g:rgb.g,b:rgb.b,a:255};
       document.querySelectorAll('.pa-color').forEach(function(d){d.classList.remove('selected');});
       div.classList.add('selected');
     };
-    pal.appendChild(div);
+    rec.appendChild(div);
   });
-  pal.children[0].classList.add('selected');
-  resizePA();
 }
 
 function resizePA(){
   const{w,h}=calcLogoSize();
-  const maxCell=Math.floor(258/Math.max(w,h,1));
-  const CS=Math.max(4,Math.min(20,maxCell));
+  const baseCell=Math.max(4,Math.min(20,Math.floor(258/Math.max(w,h,1))));
+  const CS=baseCell*paZoom;
   const pac=document.getElementById('paCanvas');
   pac.width=w*CS;pac.height=h*CS;
-  pac._cs=CS;pac._pw=w;pac._ph=h;
+  pac._cs=CS;pac._pw=w;pac._ph=h;pac._base=baseCell;
   if(!paData||paData.length!==h||paData[0].length!==w){
     paData=[];
     for(let r=0;r<h;r++){paData.push([]);for(let c=0;c<w;c++)paData[r].push(null);}
@@ -1193,10 +1265,50 @@ function drawPA(){
       pctx.fillRect(c*CS,r*CS,CS,CS);
     }
   }
-  // grid lines
-  pctx.strokeStyle='rgba(255,255,255,0.06)';pctx.lineWidth=0.5;
-  for(let c=0;c<=w;c++){pctx.beginPath();pctx.moveTo(c*CS,0);pctx.lineTo(c*CS,h*CS);pctx.stroke();}
-  for(let r=0;r<=h;r++){pctx.beginPath();pctx.moveTo(0,r*CS);pctx.lineTo(w*CS,r*CS);pctx.stroke();}
+  // Rect preview overlay
+  if(paRectStart&&paHoverCell){
+    const r0=Math.min(paRectStart.r,paHoverCell.r),r1=Math.max(paRectStart.r,paHoverCell.r);
+    const c0=Math.min(paRectStart.c,paHoverCell.c),c1=Math.max(paRectStart.c,paHoverCell.c);
+    const col=paColor?('rgba('+paColor.r+','+paColor.g+','+paColor.b+',0.45)'):'rgba(255,255,255,0.15)';
+    pctx.fillStyle=col;
+    pctx.fillRect(c0*CS,r0*CS,(c1-c0+1)*CS,(r1-r0+1)*CS);
+    pctx.strokeStyle=paColor?('rgba('+paColor.r+','+paColor.g+','+paColor.b+',0.9)'):'rgba(255,255,255,0.5)';
+    pctx.lineWidth=1;
+    pctx.strokeRect(c0*CS+0.5,r0*CS+0.5,(c1-c0+1)*CS-1,(r1-r0+1)*CS-1);
+  }
+  // Hover highlight
+  if(paHoverCell&&!paRectStart){
+    pctx.strokeStyle='rgba(255,255,255,0.5)';pctx.lineWidth=1.5;
+    pctx.strokeRect(paHoverCell.c*CS+0.5,paHoverCell.r*CS+0.5,CS-1,CS-1);
+  }
+  // Grid lines
+  if(paShowGrid){
+    pctx.strokeStyle='rgba(255,255,255,0.07)';pctx.lineWidth=0.5;
+    for(let c=0;c<=w;c++){pctx.beginPath();pctx.moveTo(c*CS,0);pctx.lineTo(c*CS,h*CS);pctx.stroke();}
+    for(let r=0;r<=h;r++){pctx.beginPath();pctx.moveTo(0,r*CS);pctx.lineTo(w*CS,r*CS);pctx.stroke();}
+  }
+}
+
+function setZoom(z){
+  paZoom=z;
+  [1,2,4].forEach(function(v){
+    const b=document.getElementById('paZoomBtn'+v);
+    if(b)b.classList.toggle('active',v===z);
+  });
+  const pac=document.getElementById('paCanvas');
+  if(!pac||!pac._pw)return;
+  const w=pac._pw,h=pac._ph,base=pac._base||10;
+  const CS=base*z;
+  pac.width=w*CS;pac.height=h*CS;
+  pac._cs=CS;
+  drawPA();
+}
+
+function togglePAGrid(){
+  paShowGrid=!paShowGrid;
+  const b=document.getElementById('paGridToggleBtn');
+  if(b)b.classList.toggle('active',paShowGrid);
+  drawPA();
 }
 
 function hexToRgb(hex){
@@ -1206,20 +1318,34 @@ function hexToRgb(hex){
 
 function setPATool(t){
   paTool=t;
-  document.querySelectorAll('.pa-tool-btn').forEach(function(b){b.classList.remove('active');});
-  const btn=document.getElementById('paTool_'+t);
-  if(btn)btn.classList.add('active');
+  paRectStart=null;
+  ['pencil','fill','eraser','rect','eyedrop'].forEach(function(id){
+    const b=document.getElementById('paTool_'+id);
+    if(b)b.classList.toggle('active',id===t);
+  });
 }
 
 function selectCustomColor(){
   const hex=document.getElementById('paCustomColor').value;
-  const rgb=hexToRgb(hex);paColor={r:rgb.r,g:rgb.g,b:rgb.b,a:255};
-  document.querySelectorAll('.pa-color').forEach(function(d){d.classList.remove('selected');});
+  selectPAColor(hex,null);
 }
 
 function clearPA(){
   if(!paData)return;
+  saveHistory();
   for(let r=0;r<paData.length;r++)for(let c=0;c<paData[r].length;c++)paData[r][c]=null;
+  drawPA();
+}
+
+function saveHistory(){
+  const snapshot=paData.map(function(row){return row.map(function(px){return px?{...px}:null;});});
+  paHistory.push(snapshot);
+  if(paHistory.length>20)paHistory.shift();
+}
+
+function paUndo(){
+  if(paHistory.length===0)return;
+  paData=paHistory.pop();
   drawPA();
 }
 
@@ -1236,28 +1362,117 @@ function paFloodFill(row,col,target,fill){
   paFloodFill(row,col+1,target,fill);
 }
 
-function paPaint(e){
-  const pac=document.getElementById('paCanvas');
+function getPACell(e,pac){
   const CS=pac._cs||10,w=pac._pw||10,h=pac._ph||10;
   const rect=pac.getBoundingClientRect();
-  const c=Math.floor((e.clientX-rect.left)*(w*CS/rect.width)/CS);
-  const r=Math.floor((e.clientY-rect.top)*(h*CS/rect.height)/CS);
+  const clientX=e.touches?e.touches[0].clientX:e.clientX;
+  const clientY=e.touches?e.touches[0].clientY:e.clientY;
+  const c=Math.floor((clientX-rect.left)*(w*CS/rect.width)/CS);
+  const r=Math.floor((clientY-rect.top)*(h*CS/rect.height)/CS);
+  return{r,c,w,h};
+}
+
+function paPaint(e){
+  const pac=document.getElementById('paCanvas');
+  const{r,c,w,h}=getPACell(e,pac);
   if(c<0||c>=w||r<0||r>=h)return;
-  if(paTool==='pencil'){paData[r][c]={...paColor};}
+
+  if(paTool==='eyedrop'){
+    const px=paData[r][c];
+    if(px){
+      paColor={...px};
+      const hex='#'+[px.r,px.g,px.b].map(function(v){return v.toString(16).padStart(2,'0');}).join('');
+      document.getElementById('paCustomColor').value=hex;
+      addRecentColor(hex);
+    }else{
+      paColor=null;
+    }
+    setPATool('pencil');
+    return;
+  }
+  if(paTool==='rect'){
+    // rect start/end handled in mousedown/up
+    drawPA();
+    return;
+  }
+  if(paTool==='pencil'){paData[r][c]=paColor?{...paColor}:null;}
   else if(paTool==='eraser'){paData[r][c]=null;}
   else if(paTool==='fill'){
     const tgt=paData[r][c];
-    paFloodFill(r,c,tgt,paTool==='eraser'?null:{...paColor});
+    paFloodFill(r,c,tgt,paColor?{...paColor}:null);
   }
   drawPA();
+}
+
+function paApplyRect(r0,c0,r1,c1){
+  const rMin=Math.min(r0,r1),rMax=Math.max(r0,r1);
+  const cMin=Math.min(c0,c1),cMax=Math.max(c0,c1);
+  for(let rr=rMin;rr<=rMax;rr++){
+    for(let cc=cMin;cc<=cMax;cc++){
+      paData[rr][cc]=paColor?{...paColor}:null;
+    }
+  }
 }
 
 (function(){
   const pac=document.getElementById('paCanvas');
   if(!pac)return;
-  pac.addEventListener('mousedown',function(e){paDrawing=true;paPaint(e);});
-  pac.addEventListener('mousemove',function(e){if(paDrawing)paPaint(e);});
-  document.addEventListener('mouseup',function(){paDrawing=false;});
+
+  function onDown(e){
+    e.preventDefault();
+    const{r,c,w,h}=getPACell(e,pac);
+    if(c<0||c>=w||r<0||r>=h)return;
+    if(paTool==='rect'){
+      saveHistory();
+      paRectStart={r,c};
+      paHoverCell={r,c};
+      drawPA();
+      return;
+    }
+    saveHistory();
+    paDrawing=true;
+    paPaint(e);
+  }
+  function onMove(e){
+    e.preventDefault();
+    const{r,c,w,h}=getPACell(e,pac);
+    const coord=document.getElementById('paHoverCoord');
+    if(c>=0&&c<w&&r>=0&&r<h){
+      paHoverCell={r,c};
+      if(coord)coord.textContent='x:'+c+' y:'+r;
+    }else{
+      paHoverCell=null;
+      if(coord)coord.textContent='';
+    }
+    if(paRectStart){drawPA();return;}
+    if(paDrawing)paPaint(e);
+    else drawPA();
+  }
+  function onUp(e){
+    e.preventDefault();
+    if(paRectStart&&paHoverCell){
+      paApplyRect(paRectStart.r,paRectStart.c,paHoverCell.r,paHoverCell.c);
+      paRectStart=null;
+      drawPA();
+    }
+    paDrawing=false;
+  }
+  function onLeave(){
+    paHoverCell=null;
+    document.getElementById('paHoverCoord').textContent='';
+    drawPA();
+  }
+
+  // Mouse
+  pac.addEventListener('mousedown',onDown);
+  pac.addEventListener('mousemove',onMove);
+  pac.addEventListener('mouseleave',onLeave);
+  document.addEventListener('mouseup',onUp);
+
+  // Touch
+  pac.addEventListener('touchstart',onDown,{passive:false});
+  pac.addEventListener('touchmove',onMove,{passive:false});
+  pac.addEventListener('touchend',onUp,{passive:false});
 })();
 
 function usePAAsLogo(){
@@ -1309,6 +1524,25 @@ function usePAAsLogo(){
   document.getElementById('gridHint').textContent='Drag the logo on the grid to choose its position. Blue = valid. Red = conflict.';
   drawGrid();
   document.getElementById('paInfo').textContent='Logo set! Go to Choose Stage to position it.';
+
+  // Game grid preview: render logo at 16px per block (game resolution)
+  const BLOCK=16;
+  const prevWrap=document.getElementById('paGamePreview');
+  const prevCanvas=document.getElementById('paPreviewCanvas');
+  if(prevWrap&&prevCanvas){
+    prevCanvas.width=w*BLOCK;prevCanvas.height=h*BLOCK;
+    const pCtx2=prevCanvas.getContext('2d');
+    pCtx2.imageSmoothingEnabled=false;
+    // Draw checkerboard background (simulates game transparency)
+    for(let rr=0;rr<h;rr++){
+      for(let cc=0;cc<w;cc++){
+        pCtx2.fillStyle=(rr+cc)%2===0?'#1a1a2e':'#16213e';
+        pCtx2.fillRect(cc*BLOCK,rr*BLOCK,BLOCK,BLOCK);
+      }
+    }
+    pCtx2.drawImage(logoOffscreen,0,0,w*BLOCK,h*BLOCK);
+    prevWrap.style.display='block';
+  }
 }
 
 // -- INIT --

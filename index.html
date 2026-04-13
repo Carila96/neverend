@@ -321,6 +321,7 @@ const EASY_SEQ=['g','i','v','e','u','p'];
 // ======== TESTER CREDIT TRACKING ========
 const _sessionStart=Date.now();
 let _sessionDeaths=0,_sessionBestStage=1,_stage5ToastShown=false;
+let _sessionUsedEasyMode=false,_stageAttemptDeaths=0;
 function _submitTesterData(){
   if(!testMode)return;
   const name=_getPlayerName()||'Anonymous';
@@ -384,7 +385,7 @@ document.addEventListener('keydown',e=>{
     if(b.length>=5){
       if(HARD_SEQ.every((k,i)=>k===b.slice(-5)[i])){hardMode=!hardMode;inputBuf=[];return;}
       if(RETRO_SEQ.every((k,i)=>k===b.slice(-5)[i])){retroMode=!retroMode;inputBuf=[];return;}
-    if(b.length>=6&&EASY_SEQ.every((k,i)=>k===b.slice(-6)[i])){easyMode=!easyMode;inputBuf=[];floatMsgs.push({txt:easyMode?'BABY MODE ON':'BABY MODE OFF',x:W/2,y:H/2,life:2,color:'rgba(255,180,255,1)'});if(easyMode)grantTitle('I Give Up');return;}
+    if(b.length>=6&&EASY_SEQ.every((k,i)=>k===b.slice(-6)[i])){easyMode=!easyMode;inputBuf=[];floatMsgs.push({txt:easyMode?'BABY MODE ON':'BABY MODE OFF',x:W/2,y:H/2,life:2,color:'rgba(255,180,255,1)'});if(easyMode){grantTitle('I Give Up');_sessionUsedEasyMode=true;}return;}
     }
   }
 },{passive:false});
@@ -1676,6 +1677,7 @@ const STAGES=[
 
 
 function loadStage(n){
+  _stageAttemptDeaths=0;
   const s=STAGES[Math.min(n-1,STAGES.length-1)];
   const fallSet=new Set(s.fall.map(b=>`${b.x},${b.y}`));
   platforms=s.plats.filter(p=>!fallSet.has(`${p.x},${p.y}`)).map(p=>({...p}));
@@ -1713,7 +1715,7 @@ let stagePlacements=[],_placementImgCache={};
 function resetRun(){
   timeLeft=easyMode?60:hardMode?25:30;score=0;
   loadStage(1);damnEffect=null;damnTimer=0;floatMsgs=[];
-  sessionStartTime=Date.now();sessionDeaths=0;sessionMaxStage=1;
+  sessionStartTime=Date.now();sessionDeaths=0;sessionMaxStage=1;_sessionUsedEasyMode=false;
 }
 
 // ======== PHYSICS ========
@@ -2553,6 +2555,8 @@ function checkTitlesOnDeath(){
   if(d>=1000)grantTitle('You Need Help');
   if(d>=5000)grantTitle('Are You OK?');
   if(hardMode)grantTitle('Masochist');
+  // Persistent: 50 deaths in a single session
+  if(sessionDeaths>=50)grantTitle('Persistent');
 }
 function checkTitlesOnClear(nextStage){
   if(adminMode)return;
@@ -2560,12 +2564,32 @@ function checkTitlesOnClear(nextStage){
   if(nextStage>=5)grantTitle('Getting Somewhere');
   if(nextStage>=10)grantTitle('Double Digits');
   if(easyMode&&nextStage===21)grantTitle('Legend of Giving Up');
+  // Speed Demon: reach Stage 5 within 3 minutes of session start
+  if(nextStage===5&&(Date.now()-sessionStartTime)<180000)grantTitle('Speed Demon');
+  // No Baby: reach Stage 10 without activating Baby Mode this session
+  if(nextStage===10&&!_sessionUsedEasyMode)grantTitle('No Baby');
+  // Unstoppable: reach Stage 20
+  if(nextStage>=21)grantTitle('Unstoppable');
+  // The 1%: reach Stage 30
+  if(nextStage>=31)grantTitle('The 1%');
+  // Ghost: complete a stage without dying on that attempt
+  if(_stageAttemptDeaths===0)grantTitle('Ghost');
+  // Comeback Kid: new best stage with 5 seconds or less remaining
+  const prevBest=getStat('bestStage',1);
+  if((nextStage-1)>prevBest&&timeLeft<=5)grantTitle('Comeback Kid');
+  // Patron: has purchased a block
+  if(localStorage.getItem('neverend_contract_id'))grantTitle('Patron');
 }
 function checkTitlesOnPlayTime(){
   if(adminMode)return;
   if(getStat('totalPlayTime',0)>=3600)grantTitle('One Hour Club');
+  // Night Owl: playing between 00:00 and 05:00
+  const h=new Date().getHours();
+  if(h>=0&&h<5)grantTitle('Night Owl');
   // LANDLORD: owns an entire stage via Stage Monopoly plan
   if(localStorage.getItem('neverend_monopoly_owner')==='1')grantTitle('LANDLORD');
+  // Patron: has purchased a block
+  if(localStorage.getItem('neverend_contract_id'))grantTitle('Patron');
 }
 
 // Flash overlay for death
@@ -2597,7 +2621,7 @@ function triggerDeath(){
   checkTitlesOnDeath();
 
   // Tester tracking
-  _sessionDeaths++;
+  _sessionDeaths++;_stageAttemptDeaths++;
   if(lastDeathStage>_sessionBestStage)_sessionBestStage=lastDeathStage;
   // Session logging
   sessionDeaths++;

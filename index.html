@@ -1761,7 +1761,7 @@ const STAGES=[
 
 
 function loadStage(n){
-  _stageAttemptDeaths=0;
+  _stageAttemptDeaths=0;deathParticles=[];
   const s=STAGES[Math.min(n-1,STAGES.length-1)];
   const fallSet=new Set(s.fall.map(b=>`${b.x},${b.y}`));
   platforms=s.plats.filter(p=>!fallSet.has(`${p.x},${p.y}`)).map(p=>({...p}));
@@ -2246,8 +2246,9 @@ function drawPause(){
 
 function drawDead(){
   ctx.fillStyle='rgba(0,0,0,0.86)';ctx.fillRect(0,0,W,H);
-  // DAMN! — 中央最大
-  neonText('DAMN!',W/2,H/2-70,'rgba(255,40,40,1)',80,32,'center');
+  // DAMN! — zoom-in from small to large
+  const damnFontSize=Math.round(96*damnScale);
+  neonText('DAMN!',W/2,H/2-70,'rgba(255,40,40,1)',damnFontSize,Math.round(damnFontSize*0.38),'center');
 
   ctx.save();ctx.textAlign='center';
 
@@ -2655,6 +2656,17 @@ function update(dt){
   } else if(state==='title'){
     if(keys[' ']&&!prevKeys[' ']){resetRun();state='play';startBGM(getBGMTrack(1));}
   } else if(state==='dead'){
+    // Particle update
+    for(let i=deathParticles.length-1;i>=0;i--){
+      const p=deathParticles[i];
+      p.x+=p.vx*dt;p.y+=p.vy*dt;
+      p.vy+=200*dt;
+      p.life-=p.decay*dt;
+      if(p.life<=0)deathParticles.splice(i,1);
+    }
+    // DAMN! zoom-in with overshoot
+    if(damnScale<1.05){damnScale=Math.min(1.05,damnScale+dt*8);}
+    else if(damnScale>1.0){damnScale=Math.max(1.0,damnScale-dt*3);}
     if(keys[' ']&&!prevKeys[' ']){
       if(adminMode){loadStage(stageNum);timeLeft=hardMode?25:30;damnEffect=null;damnTimer=0;floatMsgs=[];}
       else if(easyMode){loadStage(easyModeSavedStage);timeLeft=60;damnEffect=null;damnTimer=0;floatMsgs=[];}
@@ -2722,15 +2734,30 @@ function checkTitlesOnPlayTime(){
   if(localStorage.getItem('neverend_contract_id'))grantTitle('Patron');
 }
 
-// Flash overlay for death
-let deathFlash=0;
+// Death effect state
+let deathParticles=[];
+let damnScale=1.0;
+let deathTimer=0;
 let slowTimer=0,shakeTimer=0;
 
 function triggerDeath(){
   damnEffect={x:player.x+player.w/2,y:player.y};damnTimer=1.5;state='dead';sfxDamn();stopBGM();
-  deathFlash=2.0;
-  slowTimer=0.2;
+  slowTimer=0.5;
   shakeTimer=0.5;
+  damnScale=0.1;
+  deathTimer=0;
+  deathParticles=[];
+  for(let i=0;i<24;i++){
+    const angle=(Math.PI*2/24)*i+(Math.random()-0.5)*0.3;
+    const speed=80+Math.random()*160;
+    deathParticles.push({
+      x:player.x+player.w/2,y:player.y+player.h/2,
+      vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-60,
+      size:4+Math.random()*6,life:1.0,
+      decay:0.8+Math.random()*0.4,
+      color:Math.random()>0.5?'#ff4444':'#ffaa00'
+    });
+  }
   lastDeathMsg=getDeathMsg(lastDeathCause);
   // Refresh world deaths on each death
   fetch('/api/world-stats').then(r=>r.json()).then(d=>{worldDeaths=d.total_deaths;}).catch(()=>{});
@@ -2765,7 +2792,7 @@ function loop(ts){
   let dt=Math.min((ts-last)/1000,0.05);
   last=ts;animT=ts/1000;
   // Slow motion after death
-  if(slowTimer>0){slowTimer=Math.max(0,slowTimer-dt);dt*=0.3;}
+  if(slowTimer>0){slowTimer=Math.max(0,slowTimer-dt);dt*=0.15;}
   // Screen shake
   if(shakeTimer>0){
     ctx.save();
@@ -2790,8 +2817,26 @@ function loop(ts){
     drawGoal();drawPlayer();drawFloatMsgs();drawUI();
     drawDarkness();
     if(state==='pause')drawPause();
-    if(state==='dead')drawDead();
-    if(deathFlash>0){ctx.fillStyle=`rgba(255,30,30,${deathFlash*.55})`;ctx.fillRect(0,0,W,H);deathFlash=Math.max(0,deathFlash-dt*3);}
+    if(state==='dead'){
+      drawDead();
+      // Particle explosion
+      deathParticles.forEach(p=>{
+        ctx.save();
+        ctx.globalAlpha=Math.max(0,p.life);
+        ctx.fillStyle=p.color;ctx.shadowColor=p.color;ctx.shadowBlur=8;
+        ctx.fillRect(p.x-p.size/2,p.y-p.size/2,p.size,p.size);
+        ctx.restore();
+      });
+      // Edge vignette (replaces full red flash)
+      deathTimer+=dt;
+      const vigAlpha=deathTimer>0?Math.min(0.6,(0.5-Math.min(deathTimer,0.5))*1.2):0;
+      if(vigAlpha>0){
+        const grad=ctx.createRadialGradient(W/2,H/2,H*0.3,W/2,H/2,H*0.8);
+        grad.addColorStop(0,'rgba(0,0,0,0)');
+        grad.addColorStop(1,`rgba(200,0,0,${vigAlpha})`);
+        ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
+      }
+    }
     drawDamn();
     if(retroMode)drawRetroOverlay();
   }

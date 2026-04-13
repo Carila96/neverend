@@ -1919,6 +1919,8 @@ function checkTitlesOnClear(nextStage){
 function checkTitlesOnPlayTime(){
   if(adminMode)return;
   if(getStat('totalPlayTime',0)>=3600)grantTitle('One Hour Club');
+  // LANDLORD: owns an entire stage via Stage Monopoly plan
+  if(localStorage.getItem('neverend_monopoly_owner')==='1')grantTitle('LANDLORD');
 }
 
 // Flash overlay for death

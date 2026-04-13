@@ -233,6 +233,24 @@ select.ctrl-select-inline:focus{border-color:var(--accent2);}
 
 /* FOOTER */
 footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+/* Monopoly plan */
+.monopoly-section{max-width:960px;margin:0 auto;padding:0 24px 48px;}
+.monopoly-card{background:var(--dark);border:1px solid rgba(245,200,66,0.2);padding:28px;display:flex;flex-direction:column;gap:14px;position:relative;opacity:0.65;pointer-events:none;}
+.monopoly-card.unlocked{opacity:1;pointer-events:auto;border-color:rgba(245,200,66,0.6);}
+.monopoly-lock-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(245,200,66,0.08);border:1px solid rgba(245,200,66,0.25);padding:6px 14px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gold);width:fit-content;}
+.monopoly-title{font-family:'Bebas Neue',sans-serif;font-size:38px;color:var(--gold);letter-spacing:2px;line-height:1;}
+.monopoly-sub{font-size:13px;color:var(--muted2);line-height:1.7;}
+.monopoly-price{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;}
+.monopoly-badge{display:inline-block;background:rgba(245,200,66,0.12);border:1px solid rgba(245,200,66,0.4);padding:6px 14px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gold);}
+.price-ladder{display:flex;gap:0;flex-wrap:wrap;border:1px solid var(--border);overflow:hidden;margin-bottom:48px;}
+.price-rung{flex:1;min-width:80px;padding:14px 12px;text-align:center;background:var(--dark);border-right:1px solid var(--border);font-family:'Share Tech Mono',monospace;}
+.price-rung:last-child{border-right:none;}
+.price-rung.current{background:rgba(74,222,128,0.06);border-bottom:2px solid var(--green);}
+.price-rung.monopoly-unlocks{background:rgba(245,200,66,0.05);border-bottom:2px solid var(--gold);}
+.pr-price{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#fff;line-height:1;}
+.pr-label{font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:4px;}
+.pr-tag{font-size:9px;letter-spacing:1px;margin-top:6px;}
+/* Footer */
 .footer-logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--muted);}
 .footer-logo span{color:var(--accent);}
 .footer-links{display:flex;gap:20px;flex-wrap:wrap;}
@@ -272,7 +290,7 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
     </div>
   </div>
   <button class="cta-btn" id="ctaBtn" onclick="proceedToCheckout()">CLAIM THIS PLACEMENT</button>
-  <p class="panel-note">By proceeding you agree to our <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>.<br><br>First month is prorated from purchase date. Billing auto-renews. Cancel anytime. Placement stays active until your current billing period ends. Elapsed months are non-refundable; remaining future months are refunded pro-rata. See full cancellation policy in our <a href="/docs/legal/terms_of_service.md">Terms of Service</a>.<br><br>EU customers: <a href="/terms#eu-cooling">statutory withdrawal rights apply</a>.</p>
+  <p class="panel-note">By proceeding you agree to our <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>.<br><br>First month is prorated from purchase date. Billing auto-renews. Cancel anytime. Placement stays active until end of current billing period only — not beyond. Monthly: current month non-refundable. Annual: remaining future months refunded pro-rata. Full details in <a href="/docs/legal/terms_of_service.md">Terms of Service</a>.<br><br>EU customers: <a href="/terms#eu-cooling">statutory withdrawal rights apply</a>.</p>
 </div>
 
 <header>
@@ -475,7 +493,33 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
       <span class="tier-cap">HARD LIMIT -- UNCONDITIONAL</span>
     </div>
   </div>
-  <div class="vol-section-title">VOLUME DISCOUNTS</div>
+  <!-- Price ladder reference -->
+  <div class="vol-section-title" style="margin-bottom:6px;">PRICE TIERS</div>
+  <div class="section-sub" style="margin-bottom:16px">All 6 pricing stages. Active subscriptions are never auto-increased.</div>
+  <div class="price-ladder">
+    <div class="price-rung current"><div class="pr-price">$3</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--green)">NOW</div></div>
+    <div class="price-rung"><div class="pr-price">$5</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--muted)">20% full</div></div>
+    <div class="price-rung"><div class="pr-price">$8</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--muted)">40% full</div></div>
+    <div class="price-rung monopoly-unlocks"><div class="pr-price">$10</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--gold)">Monopoly</div></div>
+    <div class="price-rung"><div class="pr-price">$12</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--muted)">70% full</div></div>
+    <div class="price-rung"><div class="pr-price">$15</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--accent)">CAP</div></div>
+  </div>
+
+  <!-- Stage Monopoly Plan -->
+  <div class="vol-section-title" style="margin-bottom:6px;">STAGE MONOPOLY</div>
+  <div class="section-sub" style="margin-bottom:16px">Own every block on a stage. Your brand on every pixel.</div>
+  <div class="monopoly-card" id="monopolyCard">
+    <div class="monopoly-lock-badge">&#128274; Unlocks when market price reaches $10/block</div>
+    <div class="monopoly-title">STAGE MONOPOLY</div>
+    <div class="monopoly-sub">Own all 3,600 blocks on a single stage at 50% off full price.<br>Your brand on every pixel of a stage.</div>
+    <div class="monopoly-price" id="monopolyPrice">3,600 blocks &times; $3 &times; 50% = <span style="color:var(--gold)">$5,400/mo</span> <span style="font-size:14px;color:var(--muted);">(locked until $10/block)</span></div>
+    <div>
+      <div class="monopoly-badge">&#127942; Includes LANDLORD achievement</div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);font-family:'Share Tech Mono',monospace;letter-spacing:0.5px;">Available once market price reaches $10/block/mo — 50% discount applied automatically.</div>
+  </div>
+
+  <div class="vol-section-title" style="margin-top:40px;margin-bottom:6px;">VOLUME DISCOUNTS</div>
   <div class="section-sub" style="margin-bottom:16px">Applied automatically at checkout.</div>
   <div class="volume-table">
     <div class="vol-row"><span class="blocks">1 -- 24 blocks</span><span class="disc none">No discount</span></div>

@@ -42,7 +42,14 @@ Grid Placements may be offered under Standard, Business, Enterprise, or other pl
 - Stripe automatically handles currency conversion for international purchasers.
 - Your first billing cycle is prorated from your purchase date to the end of the current month.
 - From the following month, billing occurs on the **1st of each month**.
-- Cancellation takes effect at the end of the current billing period. Your content remains displayed until then.
+- You may cancel your subscription at any time.
+
+Upon cancellation:
+- Your logo placement remains active and visible in the game until the end of your current billing period only. It does not continue beyond that date.
+- Monthly plans: the current month is non-refundable. No further charges are made after cancellation.
+- Annual plans: the current month is non-refundable. Remaining future months (from the next full month after cancellation) are refunded pro-rata: (annual amount paid ÷ 12) × number of full remaining months.
+- Cancellation does not extend your placement beyond the paid period.
+- Early Adopter pricing benefits are permanently forfeited upon cancellation and cannot be reinstated.
 
 ### 4.2 Pricing Tiers & Price Cap
 

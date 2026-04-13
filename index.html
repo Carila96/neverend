@@ -530,7 +530,7 @@ const STAGES=[
    {x:240,y:608,w:32,h:32,tx:176,warn:false},
    {x:1008,y:608,w:32,h:32,tx:944,warn:false},
  ],
- fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},friction:0.88,
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[{x:1040,y:0,w:32,h:48,triggerX:820,speed:300,triggered:false,startY:0,currentY:0}],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},friction:0.88,
  hg:[{x:496,y:608,w:16,h:32},{x:736,y:608,w:16,h:32}],
  goal:{x:1056,y:208,w:64,h:112},spawn:{x:48,y:592}},
 
@@ -592,9 +592,7 @@ const STAGES=[
    {x:944,y:528,w:112,h:16},
    {x:1056,y:464,w:112,h:16},
    {x:1168,y:384,w:112,h:336},
-   {x:128,y:352,w:128,h:16},
-   {x:288,y:320,w:128,h:16},
-   {x:448,y:304,w:144,h:16},
+   {x:576,y:512,w:64,h:16},
  ],
  spikes:[{x:336,y:560,w:32,h:32},{x:896,y:560,w:32,h:32}],
  traps:[{x:512,y:592,w:32,h:32,tx:448,warn:false}],
@@ -619,6 +617,7 @@ const STAGES=[
    {x:544,y:672,w:32,h:32},{x:576,y:672,w:32,h:32},{x:608,y:672,w:32,h:32},
    {x:640,y:672,w:32,h:32},{x:672,y:672,w:32,h:32},{x:704,y:672,w:32,h:32},
    {x:16,y:144,w:32,h:32},{x:16,y:320,w:32,h:32},
+   {x:512,y:512,w:32,h:32},{x:544,y:512,w:32,h:32},
  ],
  fallingSpikes:[
    {x:400,y:32,w:32,h:48,triggerX:300,speed:320,triggered:false,startY:32,currentY:32},
@@ -651,13 +650,13 @@ const STAGES=[
  plats:[
    {x:0,y:640,w:320,h:80},
    {x:320,y:576,w:128,h:16},
-   {x:512,y:512,w:128,h:16},
-   {x:960,y:512,w:128,h:16},
+   {x:512,y:448,w:128,h:16},
+   {x:960,y:448,w:128,h:16},
    {x:1152,y:576,w:128,h:16},
    {x:1152,y:640,w:128,h:80},
  ],
  spikes:[{x:320,y:544,w:32,h:32},{x:1216,y:544,w:32,h:32}],
- traps:[{x:560,y:480,w:32,h:32,tx:496,warn:false}],
+ traps:[{x:560,y:416,w:32,h:32,tx:496,warn:false}],
  pendulums:[{pivotX:752,pivotY:224,length:256,speed:1.6,maxAngle:1.05,angle:0}],
  fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],chasers:[],focusZones:[],darkness:{enabled:false},
  hg:[{x:416,y:480,w:16,h:32},{x:992,y:480,w:16,h:32}],
@@ -686,9 +685,11 @@ const STAGES=[
 {name:'STAGE 11',sub:'Not everything is equal.',
  plats:[
    {x:0,y:640,w:624,h:80},{x:656,y:640,w:624,h:80},
-   {x:608,y:0,w:64,h:720},
+   {x:608,y:0,w:64,h:160},{x:608,y:256,w:64,h:464},
    {x:80,y:512,w:128,h:16},{x:256,y:400,w:128,h:16},{x:432,y:512,w:128,h:16},
    {x:720,y:512,w:128,h:16},{x:896,y:400,w:128,h:16},{x:1072,y:512,w:128,h:16},
+   {x:432,y:320,w:128,h:16},{x:464,y:240,w:128,h:16},
+   {x:672,y:240,w:128,h:16},{x:848,y:320,w:128,h:16},
  ],
  spikes:[{x:80,y:480,w:32,h:32},{x:1136,y:480,w:32,h:32}],
  traps:[
@@ -2081,13 +2082,9 @@ function drawPendulum(p){
   ctx.fillStyle='rgba(180,180,255,0.7)';
   ctx.beginPath();ctx.arc(p.pivotX,p.pivotY,4,0,Math.PI*2);ctx.fill();
   const col='rgba(220,80,60,0.9)';
-  ctx.shadowColor=col;ctx.shadowBlur=10;
-  ctx.fillStyle='rgba(0,0,0,0.5)';ctx.strokeStyle=col;ctx.lineWidth=2;
-  ctx.beginPath();
-  ctx.moveTo(sx-p.w/2,sy-p.h/2);
-  ctx.lineTo(sx,sy+p.h/2);
-  ctx.lineTo(sx+p.w/2,sy-p.h/2);
-  ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.shadowColor=col;ctx.shadowBlur=14;
+  ctx.fillStyle=col;
+  ctx.beginPath();ctx.arc(sx,sy,16,0,Math.PI*2);ctx.fill();
   ctx.restore();
 }
 
@@ -2616,7 +2613,8 @@ function update(dt){
       const ang=Math.sin(animT*p.speed)*maxAngle;
       const sx=p.pivotX+Math.sin(ang)*p.length;
       const sy=p.pivotY+Math.cos(ang)*p.length;
-      if(overlap(player,{x:sx-p.w/2,y:sy-p.h/2,w:p.w,h:p.h})){lastDeathCause='spike';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
+      const pcx=player.x+player.w/2,pcy=player.y+player.h/2;
+      if(Math.sqrt((pcx-sx)*(pcx-sx)+(pcy-sy)*(pcy-sy))<=16){lastDeathCause='spike';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
     }
     // Phantom platforms — vanish timer
     for(const p of [...platforms,...movingPlatforms]){

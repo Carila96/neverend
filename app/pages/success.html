@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>neverEND — Placement Confirmed</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&display=swap');
+:root{--black:#090912;--dark:#0e0e1a;--panel:#13131f;--border:#262640;--accent:#e74c3c;--accent2:#4ab8ff;--gold:#f5c842;--green:#4ade80;--text:#e0e4f0;--muted:#787f90;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--black);color:var(--text);font-family:'Share Tech Mono',monospace;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 4px,rgba(0,0,0,0.025) 4px,rgba(0,0,0,0.025) 5px);pointer-events:none;z-index:9999;}
+.card{background:var(--dark);border:1px solid var(--border);padding:48px 40px;max-width:540px;width:100%;text-align:center;}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--muted);margin-bottom:40px;}
+.logo span{color:var(--accent);}
+.status-icon{font-size:48px;margin-bottom:20px;min-height:56px;display:flex;align-items:center;justify-content:center;}
+.heading{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;color:#fff;margin-bottom:12px;min-height:44px;}
+.sub{font-size:12px;color:var(--muted);letter-spacing:1px;line-height:1.8;margin-bottom:32px;min-height:40px;}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent2);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 24px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.links{display:flex;flex-direction:column;gap:12px;margin-top:8px;}
+.btn-link{display:block;padding:14px 20px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;text-decoration:none;text-transform:uppercase;transition:all 0.2s;border:1px solid var(--border);color:var(--muted);text-align:center;}
+.btn-link.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+.btn-link.primary:hover{background:#c0392b;}
+.btn-link:hover{border-color:var(--accent2);color:var(--accent2);}
+.error-box{background:rgba(231,76,60,0.07);border:1px solid rgba(231,76,60,0.3);padding:14px;font-size:11px;color:rgba(255,120,100,0.9);line-height:1.7;margin-bottom:20px;display:none;}
+.live-badge{display:inline-block;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.4);padding:6px 16px;font-size:10px;letter-spacing:3px;color:var(--green);margin-bottom:20px;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">never<span>END</span></div>
+
+  <!-- Processing state -->
+  <div id="stateProcessing">
+    <div class="spinner"></div>
+    <div class="heading">Processing...</div>
+    <div class="sub">Your payment was received.<br>Setting up your placement now.</div>
+  </div>
+
+  <!-- Live state -->
+  <div id="stateLive" style="display:none;">
+    <div class="status-icon">&#10003;</div>
+    <div class="live-badge">PLACEMENT ACTIVE</div>
+    <div class="heading">YOUR LOGO IS NOW LIVE!</div>
+    <div class="sub">Your logo is now visible in the game background.<br>Thousands of players will see it every session.</div>
+    <div class="links">
+      <a href="/" class="btn-link primary">[ PLAY THE GAME ]</a>
+      <a href="/" id="viewPlacementLink" class="btn-link">[ VIEW YOUR PLACEMENT ]</a>
+    </div>
+  </div>
+
+  <!-- Error state -->
+  <div id="stateError" style="display:none;">
+    <div class="status-icon" style="color:var(--accent);">&#33;</div>
+    <div class="heading">STILL PROCESSING</div>
+    <div class="sub" id="errorSub">Your payment was received. Placement setup is taking a moment — please check back shortly or contact support.</div>
+    <div class="links">
+      <a href="/" class="btn-link primary">[ PLAY THE GAME ]</a>
+      <a href="/app/pages/sales_page.html" class="btn-link">[ BACK TO STORE ]</a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var MAX_ATTEMPTS = 12; // 24 seconds
+  var attempt = 0;
+  var pollInterval = null;
+
+  var params = new URLSearchParams(window.location.search);
+  var sessionId = params.get('session_id');
+
+  if (!sessionId) {
+    showError('No session ID found. If you completed payment, your placement will activate shortly.');
+    return;
+  }
+
+  function showLive(stageId) {
+    document.getElementById('stateProcessing').style.display = 'none';
+    document.getElementById('stateLive').style.display = 'block';
+    if (stageId) {
+      document.getElementById('viewPlacementLink').href = '/?stage=' + stageId;
+    }
+  }
+
+  function showError(msg) {
+    document.getElementById('stateProcessing').style.display = 'none';
+    document.getElementById('stateError').style.display = 'block';
+    if (msg) document.getElementById('errorSub').textContent = msg;
+  }
+
+  function poll() {
+    attempt++;
+    fetch('/api/get-contract?session_id=' + encodeURIComponent(sessionId))
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d && d.status === 'active') {
+          clearInterval(pollInterval);
+          showLive(d.stage_id);
+        } else if (attempt >= MAX_ATTEMPTS) {
+          clearInterval(pollInterval);
+          showError('Your payment was received. Placement setup is taking a moment — please check back shortly or contact support.');
+        }
+      })
+      .catch(function(){
+        if (attempt >= MAX_ATTEMPTS) {
+          clearInterval(pollInterval);
+          showError('Could not verify placement status. Your payment was received — placement will be active shortly.');
+        }
+      });
+  }
+
+  // Start polling after 1 second
+  setTimeout(function(){
+    poll();
+    pollInterval = setInterval(poll, 2000);
+  }, 1000);
+})();
+</script>
+</body>
+</html>

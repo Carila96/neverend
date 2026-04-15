@@ -87,6 +87,31 @@ async function handleCheckoutCompleted(session) {
     .gte('x', ax).lt('x', ax + w)
     .gte('y', ay).lt('y', ay + h);
 
+  // Check for staged logo and create placement automatically
+  const { data: logoStaging } = await supabase
+    .from('logo_staging')
+    .select('*')
+    .eq('session_key', session_key)
+    .single();
+
+  if (logoStaging) {
+    await supabase.from('placements').upsert({
+      contract_id: contract.id,
+      stage_id: parseInt(stage_id, 10),
+      anchor_x: ax,
+      anchor_y: ay,
+      width: w,
+      height: h,
+      image_url: `data:${logoStaging.image_type};base64,${logoStaging.image_data}`,
+      zone_type,
+      is_active: true,
+      approved_at: new Date().toISOString(),
+    }, { onConflict: 'contract_id,stage_id' });
+
+    // Clean up staging row
+    await supabase.from('logo_staging').delete().eq('session_key', session_key);
+  }
+
   // Mark reservation session completed
   await supabase
     .from('reservation_sessions')

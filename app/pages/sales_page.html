@@ -47,62 +47,30 @@ nav a:hover{color:var(--accent2);}
 .stat-num{font-family:'Bebas Neue',sans-serif;font-size:38px;color:#fff;line-height:1;}
 .stat-label{font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-top:6px;}
 
-/* PLACEMENT TOOL -- full-width integrated section */
-.placement-section{max-width:1400px;margin:0 auto;padding:0 24px 72px;}
+/* PLACEMENT SECTION */
+.placement-section{max-width:1200px;margin:0 auto;padding:0 24px 72px;}
 .placement-title-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
 .placement-title{font-family:'Bebas Neue',sans-serif;font-size:36px;color:#fff;letter-spacing:1px;}
 .placement-subtitle{font-size:12px;color:var(--muted2);margin-top:2px;letter-spacing:0.5px;}
 
-/* Step flow indicator */
-.step-flow{display:flex;align-items:center;gap:0;margin-bottom:32px;border:1px solid var(--border);overflow:hidden;}
-.step-item{flex:1;padding:12px 16px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);background:var(--dark);text-align:center;border-right:1px solid var(--border);transition:all 0.2s;text-transform:uppercase;}
-.step-item:last-child{border-right:none;}
-.step-item.active{color:var(--accent2);background:rgba(74,184,255,0.06);}
-.step-item.done{color:var(--green);background:rgba(74,222,128,0.04);}
-.step-num{display:block;font-size:18px;font-family:'Bebas Neue',sans-serif;margin-bottom:2px;}
+/* FLOW SECTIONS */
+.flow-section{background:var(--dark);border:1px solid var(--border);margin-bottom:16px;transition:opacity 0.3s,filter 0.3s;}
+.flow-section.locked{opacity:0.35;pointer-events:none;filter:grayscale(0.3);}
+.flow-sec-hdr{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--panel);}
+.flow-sec-num{width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.flow-section.locked .flow-sec-num{background:var(--muted);}
+.flow-section.done .flow-sec-num{background:var(--green);color:#000;}
+.flow-sec-title{font-family:'Bebas Neue',sans-serif;font-size:20px;color:#fff;letter-spacing:1px;flex:1;}
+.flow-sec-done{color:var(--green);font-size:18px;font-weight:bold;}
+.flow-sec-body{padding:20px;}
+.flow-2col{display:grid;grid-template-columns:260px 1fr;gap:16px;align-items:start;}
 
-/* TWO COLUMN LAYOUT */
-.placement-layout{display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start;}
-
-/* LEFT PANEL */
-.placement-controls{background:var(--dark);border:1px solid var(--border);}
-.ctrl-section{padding:20px;border-bottom:1px solid var(--border);}
-.ctrl-section:last-child{border-bottom:none;}
-.ctrl-title{font-family:'Bebas Neue',sans-serif;font-size:16px;color:#fff;letter-spacing:1px;margin-bottom:14px;}
+/* Controls */
 .ctrl-label{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted2);display:block;margin-bottom:8px;text-transform:uppercase;}
 .ctrl-select,.ctrl-input{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:9px 12px;font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;appearance:none;margin-bottom:12px;}
 .ctrl-select:focus,.ctrl-input:focus{border-color:var(--accent2);}
 
-/* Upload zone */
-.drop-zone{border:2px dashed var(--border2);padding:24px 12px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--panel2);margin-bottom:14px;}
-.drop-zone:hover,.drop-zone.dragover{border-color:var(--accent2);background:rgba(74,184,255,0.05);}
-.drop-zone-icon{font-size:24px;margin-bottom:8px;color:var(--muted2);}
-.drop-zone-text{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);letter-spacing:1px;line-height:1.8;}
-#fileInput{display:none;}
-
-/* Pixel preview small */
-.pixel-preview-small{background:var(--panel2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;height:80px;margin-bottom:12px;overflow:hidden;}
-.pixel-preview-small canvas{max-height:76px;max-width:100%;image-rendering:pixelated;}
-.pixel-preview-placeholder{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;}
-
-/* Status badge */
-.placement-status{padding:10px 14px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;border:1px solid var(--border);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
-.placement-status.idle{color:var(--muted);background:var(--panel2);border-color:var(--border);}
-.placement-status.valid{color:var(--green);background:rgba(74,222,128,0.06);border-color:rgba(74,222,128,0.3);}
-.placement-status.invalid{color:var(--accent);background:rgba(231,76,60,0.08);border-color:rgba(231,76,60,0.3);}
-.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.placement-status.idle .status-dot{background:var(--muted);}
-.placement-status.valid .status-dot{background:var(--green);}
-.placement-status.invalid .status-dot{background:var(--accent);}
-
-/* Recommendation list */
-.rec-list{display:flex;flex-direction:column;gap:6px;}
-.rec-item{padding:8px 10px;background:var(--panel2);border:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);cursor:pointer;transition:all 0.2s;display:flex;justify-content:space-between;align-items:center;}
-.rec-item:hover{border-color:var(--accent2);color:var(--accent2);}
-.rec-item .rec-coords{color:var(--muted);font-size:9px;}
-.rec-note{font-size:10px;color:var(--muted);letter-spacing:0.5px;margin-top:8px;font-style:italic;}
-
-/* Action buttons */
+/* Buttons */
 .btn-primary{width:100%;background:var(--accent);border:none;color:#fff;padding:13px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;font-weight:700;transition:background 0.2s;margin-bottom:8px;}
 .btn-primary:hover{background:#c0392b;}
 .btn-primary:disabled{background:var(--muted);color:#555;cursor:not-allowed;}
@@ -112,29 +80,15 @@ nav a:hover{color:var(--accent2);}
 .btn-blue:hover{opacity:0.85;}
 .btn-blue:disabled{background:var(--muted);color:#555;cursor:not-allowed;}
 
-/* Placement confirmation box */
-.confirm-box{background:rgba(74,222,128,0.06);border:1px solid rgba(74,222,128,0.25);padding:14px;margin-bottom:14px;font-family:'Share Tech Mono',monospace;font-size:11px;line-height:2;}
-.confirm-box .row{display:flex;justify-content:space-between;}
-.confirm-box .val{color:var(--accent2);}
+/* Drop zone */
+.drop-zone{border:2px dashed var(--border2);padding:24px 12px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--panel2);margin-bottom:14px;}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--accent2);background:rgba(74,184,255,0.05);}
+.drop-zone-icon{font-size:24px;margin-bottom:8px;color:var(--muted2);}
+.drop-zone-text{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);letter-spacing:1px;line-height:1.8;}
+#fileInput{display:none;}
 
-/* GRID section */
-.grid-wrapper{position:relative;background:var(--dark);border:1px solid var(--border);overflow:hidden;}
-.grid-header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px;}
-.grid-info{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;}
-.grid-info strong{color:var(--accent2);}
-.grid-legend{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
-.legend-item{display:flex;gap:6px;align-items:center;font-size:10px;color:var(--muted2);letter-spacing:1px;font-family:'Share Tech Mono',monospace;}
-.legend-dot{width:11px;height:11px;border:1px solid transparent;}
-.legend-dot.empty{background:#1a1a2c;border-color:#2a2a40;}
-.legend-dot.claimed{background:#2a3a5c;border-color:#3a5a8a;}
-.legend-dot.placing{background:rgba(74,184,255,0.25);border-color:var(--accent2);}
-.legend-dot.placing-invalid{background:rgba(231,76,60,0.25);border-color:var(--accent);}
-.legend-dot.conflict{background:rgba(231,76,60,0.4);border-color:var(--accent);}
-.legend-dot.reserved{background:rgba(245,200,66,0.12);border-color:rgba(245,200,66,0.4);}
-#gridCanvas{display:block;width:100%;image-rendering:pixelated;}
-.grid-hint{padding:8px 20px;background:rgba(74,184,255,0.04);border-top:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;}
-
-/* STAGE NAV */
+/* Stage map */
+#stageMapCanvas{display:block;width:100%;height:auto;image-rendering:pixelated;border:1px solid var(--border);margin-bottom:10px;}
 .stage-nav-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
 .stage-btn{background:none;border:1px solid var(--border);color:var(--muted2);width:32px;height:32px;cursor:pointer;font-size:14px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .stage-btn:hover:not(:disabled){border-color:var(--accent2);color:var(--accent2);}
@@ -145,13 +99,37 @@ select.ctrl-select-inline:focus{border-color:var(--accent2);}
 .stage-select-wrap::after{content:'v';position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-family:'Share Tech Mono',monospace;font-size:9px;}
 .creator-badge-small{display:none;padding:6px 12px;background:rgba(245,200,66,0.07);border:1px solid rgba(245,200,66,0.22);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--gold);margin-bottom:10px;}
 .creator-badge-small.visible{display:block;}
-/* Stage map preview */
-#stageMapCanvas{display:block;width:100%;height:auto;image-rendering:pixelated;border:1px solid var(--border);margin-bottom:10px;}
-/* Tab system */
+
+/* Grid */
+.grid-wrapper{position:relative;background:var(--dark);border:1px solid var(--border);overflow:hidden;}
+.grid-header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px;}
+.grid-info{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;}
+.grid-info strong{color:var(--accent2);}
+.grid-legend{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+.legend-item{display:flex;gap:6px;align-items:center;font-size:10px;color:var(--muted2);letter-spacing:1px;font-family:'Share Tech Mono',monospace;}
+.legend-dot{width:11px;height:11px;border:1px solid transparent;}
+.legend-dot.empty{background:#1a1a2c;border-color:#2a2a40;}
+.legend-dot.claimed{background:#2a3a5c;border-color:#3a5a8a;}
+.legend-dot.selected{background:rgba(74,184,255,0.25);border-color:var(--accent2);}
+.legend-dot.conflict{background:rgba(231,76,60,0.4);border-color:var(--accent);}
+.legend-dot.reserved{background:rgba(245,200,66,0.12);border-color:rgba(245,200,66,0.4);}
+#gridCanvas{display:block;width:100%;image-rendering:pixelated;cursor:crosshair;}
+.grid-hint{padding:8px 20px;background:rgba(74,184,255,0.04);border-top:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;}
+
+/* Selection info */
+.confirm-box{background:rgba(74,222,128,0.06);border:1px solid rgba(74,222,128,0.25);padding:14px;margin-bottom:14px;font-family:'Share Tech Mono',monospace;font-size:11px;line-height:2;}
+.confirm-box .row{display:flex;justify-content:space-between;}
+.confirm-box .val{color:var(--accent2);}
+.sel-pending{background:rgba(74,184,255,0.05);border:1px solid rgba(74,184,255,0.25);padding:14px;margin-bottom:14px;font-family:'Share Tech Mono',monospace;font-size:11px;line-height:2;}
+.sel-pending .row{display:flex;justify-content:space-between;}
+.sel-pending .val{color:var(--accent2);}
+
+/* Tabs */
 .tab-btns{display:flex;gap:0;margin-bottom:14px;border:1px solid var(--border);}
 .tab-btn{flex:1;background:none;border:none;border-right:1px solid var(--border);color:var(--muted2);padding:8px 6px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
 .tab-btn:last-child{border-right:none;}
 .tab-btn.active{background:rgba(74,184,255,0.1);color:var(--accent2);}
+
 /* Pixel art editor */
 #paWrap{display:flex;flex-direction:column;gap:10px;}
 #paCanvas{display:block;image-rendering:pixelated;cursor:crosshair;border:1px solid var(--border);}
@@ -162,10 +140,26 @@ select.ctrl-select-inline:focus{border-color:var(--accent2);}
 .pa-color{width:20px;height:20px;border:2px solid transparent;cursor:pointer;}
 .pa-color.selected{border-color:#fff;}
 .pa-info{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.5px;}
-/* Transparent pixel toggle */
 .px-toggle-row{display:flex;align-items:center;gap:8px;margin-top:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);cursor:pointer;}
 .px-toggle-row input{cursor:pointer;}
 .px-stat{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--accent2);margin-top:4px;}
+.pixel-preview-small{background:var(--panel2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;height:80px;margin-bottom:12px;overflow:hidden;}
+.pixel-preview-small canvas{max-height:76px;max-width:100%;image-rendering:pixelated;}
+.pixel-preview-placeholder{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;}
+
+/* Plan toggle */
+.plan-toggle{display:flex;margin-bottom:16px;border:1px solid var(--border);}
+.plan-btn{flex:1;background:none;border:none;color:var(--muted);padding:10px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;}
+.plan-btn.active{background:var(--accent2);color:#000;font-weight:700;}
+.price-summary{background:var(--dark);border:1px solid var(--border);padding:16px;margin-bottom:20px;}
+.price-row{display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:11px;margin-bottom:8px;color:var(--muted);}
+.price-row.total{border-top:1px solid var(--border);padding-top:12px;margin-top:4px;color:#fff;font-size:14px;}
+.price-row.annual-billed{background:rgba(245,200,66,0.06);padding:8px 12px;margin:-4px -12px 8px;border-left:2px solid var(--gold);}
+.price-row .discount{color:var(--green);}
+.price-row .amount{color:var(--gold);}
+.price-row .annual-amount{color:var(--gold);}
+.panel-note{font-size:10px;color:var(--muted);line-height:1.8;letter-spacing:0.5px;}
+.panel-note a{color:var(--accent2);text-decoration:none;}
 
 /* TOOLTIP */
 #tooltip{position:fixed;background:var(--panel2);border:1px solid var(--border2);padding:10px 14px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;pointer-events:none;z-index:500;display:none;max-width:200px;line-height:1.9;}
@@ -173,38 +167,6 @@ select.ctrl-select-inline:focus{border-color:var(--accent2);}
 .tt-claimed{color:var(--accent);}
 .tt-free{color:var(--green);}
 .tt-reserved{color:var(--gold);}
-.tt-locked{color:var(--muted);}
-
-/* PURCHASE PANEL */
-#purchasePanel{position:fixed;right:0;top:0;bottom:0;width:380px;background:var(--panel2);border-left:1px solid var(--border2);z-index:200;transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.22,1,0.36,1);display:flex;flex-direction:column;padding:32px;overflow-y:auto;}
-#purchasePanel.open{transform:translateX(0);}
-.panel-close{position:absolute;top:20px;right:20px;background:none;border:1px solid var(--border);color:var(--muted);width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
-.panel-close:hover{border-color:var(--accent);color:var(--accent);}
-.panel-eyebrow{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--accent);margin-bottom:12px;}
-.panel-title{font-family:'Bebas Neue',sans-serif;font-size:34px;color:#fff;line-height:1;margin-bottom:24px;}
-.panel-block-info{background:var(--dark);border:1px solid var(--border);padding:16px;margin-bottom:24px;font-family:'Share Tech Mono',monospace;font-size:11px;line-height:2;}
-.panel-block-info .row{display:flex;justify-content:space-between;}
-.panel-block-info .val{color:var(--accent2);}
-.panel-section-title{font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;font-family:'Share Tech Mono',monospace;}
-.block-count-wrap{display:flex;align-items:center;gap:12px;margin-bottom:24px;}
-.count-btn{background:none;border:1px solid var(--border);color:var(--text);width:36px;height:36px;cursor:pointer;font-size:18px;transition:all 0.2s;font-family:'Share Tech Mono',monospace;}
-.count-btn:hover{border-color:var(--accent2);color:var(--accent2);}
-.count-display{font-family:'Bebas Neue',sans-serif;font-size:48px;color:#fff;min-width:80px;text-align:center;line-height:1;}
-.count-label{font-size:11px;color:var(--muted);letter-spacing:1px;}
-.plan-toggle{display:flex;margin-bottom:16px;border:1px solid var(--border);}
-.plan-btn{flex:1;background:none;border:none;color:var(--muted);padding:10px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;}
-.plan-btn.active{background:var(--accent2);color:#000;font-weight:700;}
-.price-summary{background:var(--dark);border:1px solid var(--border);padding:16px;margin-bottom:24px;}
-.price-row{display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:11px;margin-bottom:8px;color:var(--muted);}
-.price-row.total{border-top:1px solid var(--border);padding-top:12px;margin-top:4px;color:#fff;font-size:14px;}
-.price-row.annual-billed{background:rgba(245,200,66,0.06);padding:8px 12px;margin:-4px -12px 8px;border-left:2px solid var(--gold);}
-.price-row .discount{color:var(--green);}
-.price-row .amount{color:var(--gold);}
-.price-row .annual-amount{color:var(--gold);}
-.cta-btn{width:100%;background:var(--accent);border:none;color:#fff;padding:16px;font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:3px;cursor:pointer;text-transform:uppercase;transition:background 0.2s;margin-bottom:12px;}
-.cta-btn:hover{background:#c0392b;}
-.panel-note{font-size:10px;color:var(--muted);line-height:1.8;letter-spacing:0.5px;}
-.panel-note a{color:var(--accent2);text-decoration:none;}
 
 /* PRICING */
 .pricing-section{max-width:960px;margin:0 auto;padding:0 24px 80px;}
@@ -238,10 +200,6 @@ select.ctrl-select-inline:focus{border-color:var(--accent2);}
 .corp-size-label{font-size:12px;color:var(--muted2);letter-spacing:1px;margin-bottom:4px;}
 .corp-size-example-label{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-top:12px;text-transform:uppercase;display:block;}
 .corp-size-example{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);margin-top:3px;display:block;}
-
-/* FOOTER */
-footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
-/* Monopoly plan */
 .monopoly-section{max-width:960px;margin:0 auto;padding:0 24px 48px;}
 .monopoly-card{background:var(--dark);border:1px solid rgba(245,200,66,0.2);padding:28px;display:flex;flex-direction:column;gap:14px;position:relative;opacity:0.65;pointer-events:none;}
 .monopoly-card.unlocked{opacity:1;pointer-events:auto;border-color:rgba(245,200,66,0.6);}
@@ -258,7 +216,7 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
 .pr-price{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#fff;line-height:1;}
 .pr-label{font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:4px;}
 .pr-tag{font-size:9px;letter-spacing:1px;margin-top:6px;}
-/* Footer */
+footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
 .footer-logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--muted);}
 .footer-logo span{color:var(--accent);}
 .footer-links{display:flex;gap:20px;flex-wrap:wrap;}
@@ -270,45 +228,13 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
 <body>
 <div id="tooltip"><div class="tt-coord" id="ttCoord"></div><div id="ttStatus"></div></div>
 
-<!-- PURCHASE PANEL -->
-<div id="purchasePanel">
-  <button class="panel-close" onclick="closePanel()">x</button>
-  <div class="panel-eyebrow">GRID PLACEMENT</div>
-  <div class="panel-title">SECURE YOUR<br>PLACEMENT</div>
-  <div class="panel-block-info" id="panelInfo">
-    <div class="row"><span>STAGE</span><span class="val" id="panelStage">--</span></div>
-    <div class="row"><span>POSITION</span><span class="val" id="panelPos">--</span></div>
-    <div class="row"><span>SIZE</span><span class="val" id="panelSize">--</span></div>
-    <div class="row"><span>TYPE</span><span class="val" id="panelType">STANDARD</span></div>
-    <div class="row"><span>BLOCKS</span><span class="val" id="panelBlocks">--</span></div>
-    <div class="row"><span>PRICE</span><span class="val">$3 / block / mo</span></div>
-  </div>
-  <div class="panel-section-title">BILLING PLAN</div>
-  <div class="plan-toggle">
-    <button class="plan-btn active" onclick="setPlan('monthly',this)">MONTHLY</button>
-    <button class="plan-btn" onclick="setPlan('annual',this)">ANNUAL -- 2 MONTHS FREE</button>
-  </div>
-  <div class="price-summary">
-    <div class="price-row"><span>BASE PRICE</span><span class="amount" id="basePrice">$3.00</span></div>
-    <div class="price-row"><span>VOLUME DISCOUNT</span><span class="discount" id="discountRow">--</span></div>
-    <div class="price-row"><span>PLAN DISCOUNT</span><span class="discount" id="planRow">--</span></div>
-    <div class="price-row total"><span>MONTHLY TOTAL</span><span class="amount" id="totalPrice">$3.00</span></div>
-    <div class="price-row annual-billed" id="annualBilledRow" style="display:none">
-      <span>BILLED ANNUALLY</span><span class="annual-amount" id="annualBilledAmt">--</span>
-    </div>
-  </div>
-  <div id="checkoutError" style="display:none;margin-bottom:10px;padding:10px 12px;background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.4);color:rgba(255,120,100,0.95);font-size:11px;letter-spacing:0.5px;line-height:1.5;"></div>
-  <button class="cta-btn" id="ctaBtn" onclick="proceedToCheckout()">CLAIM THIS PLACEMENT</button>
-  <p class="panel-note">By proceeding you agree to our <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>.<br><br>First month is prorated from purchase date. Billing auto-renews. Cancel anytime. Placement stays active until end of current billing period only — not beyond. Monthly: current month non-refundable. Annual: remaining future months refunded pro-rata. Full details in <a href="/docs/legal/terms_of_service.md">Terms of Service</a>.<br><br>EU customers: <a href="/terms#eu-cooling">statutory withdrawal rights apply</a>.</p>
-</div>
-
 <header>
   <div class="logo">never<span>END</span></div>
   <nav>
     <a href="#">How It Works</a>
     <a href="#pricing">Pricing</a>
     <a href="#">Content Policy</a>
-    <a href="#" class="nav-cta">CLAIM YOUR SPACE</a>
+    <a href="#sec1" class="nav-cta">CLAIM YOUR SPACE</a>
   </nav>
 </header>
 
@@ -326,181 +252,231 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
 </div>
 
 <!-- MAIN PLACEMENT TOOL -->
-<section class="placement-section">
+<section class="placement-section" id="placementTool">
   <div class="placement-title-bar">
     <div>
       <div class="placement-title">Place Your Logo</div>
-      <div class="placement-subtitle">Upload, preview, position, and confirm before checkout.</div>
+      <div class="placement-subtitle">Select your space, design your logo, then confirm before payment.</div>
     </div>
   </div>
 
-  <!-- Step indicator -->
-  <div class="step-flow">
-    <div class="step-item active" id="step1"><span class="step-num">1</span>Upload</div>
-    <div class="step-item" id="step2"><span class="step-num">2</span>Convert</div>
-    <div class="step-item" id="step3"><span class="step-num">3</span>Position</div>
-    <div class="step-item" id="step4"><span class="step-num">4</span>Confirm</div>
-    <div class="step-item" id="step5"><span class="step-num">5</span>Checkout</div>
+  <!-- ── SECTION 1: CHOOSE YOUR STAGE ── -->
+  <div class="flow-section" id="sec1">
+    <div class="flow-sec-hdr">
+      <span class="flow-sec-num">1</span>
+      <span class="flow-sec-title">CHOOSE YOUR STAGE</span>
+      <span class="flow-sec-done" id="sec1Done" style="display:none">&#10003;</span>
+    </div>
+    <div class="flow-sec-body">
+      <div class="flow-2col">
+        <div>
+          <div class="stage-nav-row">
+            <button class="stage-btn" id="prevBtn" onclick="changeStage(-1)" disabled>&#9664;</button>
+            <div class="stage-select-wrap">
+              <select class="ctrl-select-inline" id="stageSelect" onchange="setStage(parseInt(this.value))"></select>
+            </div>
+            <button class="stage-btn" id="nextBtn" onclick="changeStage(1)">&#9654;</button>
+          </div>
+          <div class="creator-badge-small" id="creatorBadge">CREATOR ZONE -- PNG upload allowed</div>
+          <div class="pa-info" id="stageInfoText" style="margin-top:6px;line-height:1.9;color:var(--muted2);"></div>
+          <button class="btn-blue" style="margin-top:14px;" onclick="confirmStage()">SELECT THIS STAGE &#8594;</button>
+        </div>
+        <div>
+          <canvas id="stageMapCanvas" width="260" height="146"></canvas>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="placement-layout">
-    <!-- LEFT CONTROLS -->
-    <div class="placement-controls">
-
-      <!-- Step 1: Customize Logo (tabs) -->
-      <div class="ctrl-section">
-        <div class="ctrl-title">1. Customize Logo</div>
-        <div class="tab-btns">
-          <button class="tab-btn active" id="tabBtnUpload" onclick="switchTab('upload')">UPLOAD IMAGE</button>
-          <button class="tab-btn" id="tabBtnDraw" onclick="switchTab('draw')">DRAW PIXEL ART</button>
-        </div>
-
-        <!-- Tab A: Upload -->
-        <div id="tabUpload">
-          <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-            <div class="drop-zone-icon">&#8593;</div>
-            <div class="drop-zone-text" id="dropZoneText">Click or drag image here<br>PNG / JPG / SVG<br><span style="color:var(--accent2);font-size:10px">PNG transparency preserved</span></div>
-          </div>
-          <input type="file" id="fileInput" accept="image/*">
-          <div id="dropPreview" style="display:none;text-align:center;margin-top:8px;">
-            <img id="dropPreviewImg" style="max-width:100%;max-height:80px;image-rendering:pixelated;border:1px solid var(--border);" alt="preview">
-            <div class="pa-info" id="dropPreviewInfo"></div>
-          </div>
-        </div>
-
-        <!-- Tab B: Pixel Art -->
-        <div id="tabDraw" style="display:none">
-          <div id="paWrap">
-            <div class="pa-tools">
-              <button class="pa-tool-btn active" id="paTool_pencil" onclick="setPATool('pencil')" title="Pencil">PENCIL</button>
-              <button class="pa-tool-btn" id="paTool_fill" onclick="setPATool('fill')" title="Flood fill">FILL</button>
-              <button class="pa-tool-btn" id="paTool_eraser" onclick="setPATool('eraser')" title="Eraser">ERASER</button>
-              <button class="pa-tool-btn" id="paTool_rect" onclick="setPATool('rect')" title="Rectangle">RECT</button>
-              <button class="pa-tool-btn" id="paTool_eyedrop" onclick="setPATool('eyedrop')" title="Pick color">EYE</button>
-              <button class="pa-tool-btn" onclick="paUndo()" title="Undo last action">UNDO</button>
-              <button class="pa-tool-btn" onclick="clearPA()">CLEAR</button>
-            </div>
-            <div style="display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:wrap;">
-              <button class="pa-tool-btn active" id="paZoomBtn1" onclick="setZoom(1)" style="padding:2px 7px;">1×</button>
-              <button class="pa-tool-btn" id="paZoomBtn2" onclick="setZoom(2)" style="padding:2px 7px;">2×</button>
-              <button class="pa-tool-btn" id="paZoomBtn4" onclick="setZoom(4)" style="padding:2px 7px;">4×</button>
-              <button class="pa-tool-btn active" id="paGridToggleBtn" onclick="togglePAGrid()" style="padding:2px 8px;">GRID</button>
-              <span class="pa-info" id="paHoverCoord" style="font-size:10px;min-width:60px;text-align:right;opacity:0.7;"></span>
-            </div>
-            <div class="pa-info" style="margin-top:7px;margin-bottom:2px;opacity:0.6;font-size:10px;">PALETTE</div>
-            <div class="pa-palette" id="paPalette"></div>
-            <div class="pa-info" style="margin-top:6px;margin-bottom:2px;opacity:0.6;font-size:10px;">RECENT</div>
-            <div class="pa-palette" id="paRecentPalette" style="min-height:20px;opacity:0.9;"></div>
-            <div style="display:flex;align-items:center;gap:6px;margin-top:5px;">
-              <span class="pa-info">Custom:</span>
-              <input type="color" id="paCustomColor" value="#ff4444" style="width:28px;height:22px;border:none;background:none;cursor:pointer;padding:0;">
-              <button class="pa-tool-btn" style="flex:none;padding:4px 10px;" onclick="selectCustomColor()">USE</button>
-            </div>
-            <div style="overflow:auto;max-height:360px;margin-top:7px;">
-              <canvas id="paCanvas" style="display:block;"></canvas>
-            </div>
-            <button class="btn-blue" id="paUseBtn" onclick="usePAAsLogo()" style="margin-top:8px;">USE THIS LOGO</button>
-            <div class="pa-info" id="paInfo"></div>
-            <div id="paGamePreview" style="display:none;margin-top:10px;">
-              <div class="pa-info" style="margin-bottom:4px;opacity:0.7;font-size:10px;">GAME GRID PREVIEW (16px/block)</div>
-              <canvas id="paPreviewCanvas" style="border:1px solid var(--border);image-rendering:pixelated;max-width:100%;"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <!-- Shared: Size & Convert (shown in both tabs) -->
-        <div id="sizeConvertWrap" style="margin-top:12px;">
-          <label class="ctrl-label">Logo Size</label>
-          <select class="ctrl-select" id="sizePreset" onchange="onSizeChange()">
-            <option value="100">Small -- ~100 blocks (10x10)</option>
-            <option value="200" selected>Standard -- ~200 blocks (14x14)</option>
-            <option value="300">Large -- ~300 blocks (17x18)</option>
-            <option value="custom">Custom</option>
-          </select>
-          <div id="customWrap" style="display:none">
-            <label class="ctrl-label">Width (blocks)</label>
-            <input type="number" class="ctrl-input" id="customW" value="10" min="1" max="40" oninput="onSizeChange()">
-            <label class="ctrl-label">Height (blocks)</label>
-            <input type="number" class="ctrl-input" id="customH" value="10" min="1" max="22" oninput="onSizeChange()">
-          </div>
-          <div id="customizeTransparentRow" style="display:none">
-            <div class="px-stat" id="pxStat"></div>
-            <label class="px-toggle-row">
-              <input type="checkbox" id="fullBboxToggle" onchange="updateBboxMode()">
-              Include full bounding box (reserve empty space around logo)
-            </label>
-            <div class="pa-info" style="margin-top:4px;font-style:italic;">Tip: Enable 'full bounding box' if you want to keep space around your logo exclusive.</div>
-          </div>
-          <div class="pixel-preview-small" id="pixelPreviewWrap">
-            <div class="pixel-preview-placeholder" id="pixelPlaceholder">Upload or draw to preview</div>
-            <canvas id="pixelCanvas" style="display:none"></canvas>
-          </div>
-          <button class="btn-blue" id="convertBtn" onclick="runConvert()" disabled>Convert Logo</button>
-        </div>
-      </div>
-
-      <!-- Step 2: Stage & Position -->
-      <div class="ctrl-section">
-        <div class="ctrl-title">2. Choose Stage</div>
-        <div class="stage-nav-row">
-          <button class="stage-btn" id="prevBtn" onclick="changeStage(-1)" disabled>&#9664;</button>
-          <div class="stage-select-wrap">
-            <select class="ctrl-select-inline" id="stageSelect" onchange="setStage(parseInt(this.value))"></select>
-          </div>
-          <button class="stage-btn" id="nextBtn" onclick="changeStage(1)">&#9654;</button>
-        </div>
-        <canvas id="stageMapCanvas" width="260" height="146"></canvas>
-        <div class="creator-badge-small" id="creatorBadge">CREATOR ZONE -- PNG upload allowed</div>
-        <div class="placement-status idle" id="placementStatus">
-          <div class="status-dot"></div>
-          <span id="statusText">Convert your logo to begin placing</span>
-        </div>
-      </div>
-
-      <!-- Step 4: Confirm -->
-      <div class="ctrl-section" id="confirmSection" style="display:none">
-        <div class="ctrl-title">4. Confirm Placement</div>
-        <div class="confirm-box" id="confirmBox">
-          <div class="row"><span>STAGE</span><span class="val" id="cfStage">--</span></div>
-          <div class="row"><span>POSITION</span><span class="val" id="cfPos">--</span></div>
-          <div class="row"><span>SIZE</span><span class="val" id="cfSize">--</span></div>
-          <div class="row"><span>BLOCKS</span><span class="val" id="cfBlocks">--</span></div>
-        </div>
-        <button class="btn-primary" id="confirmBtn" onclick="confirmPlacement()" disabled>Confirm &amp; Proceed to Checkout</button>
-        <button class="btn-secondary" onclick="resetPlacement()">Reset Position</button>
-      </div>
-
+  <!-- ── SECTION 2: SELECT YOUR SPACE ── -->
+  <div class="flow-section locked" id="sec2">
+    <div class="flow-sec-hdr">
+      <span class="flow-sec-num">2</span>
+      <span class="flow-sec-title">SELECT YOUR SPACE</span>
+      <span class="flow-sec-done" id="sec2Done" style="display:none">&#10003;</span>
     </div>
-
-    <!-- RIGHT: GRID CANVAS -->
-    <div>
+    <div class="flow-sec-body" style="padding:0;">
       <div class="grid-wrapper">
         <div class="grid-header">
           <div class="grid-info"><strong id="gridStageName">STAGE 1</strong> &nbsp;|&nbsp; <span id="gridBlocksInfo">80 x 45 | 1 block = 16x16px | STANDARD</span></div>
           <div class="grid-legend">
             <div class="legend-item"><div class="legend-dot empty"></div>AVAILABLE</div>
             <div class="legend-item"><div class="legend-dot claimed"></div>CLAIMED</div>
-            <div class="legend-item"><div class="legend-dot placing"></div>PLACING</div>
-            <div class="legend-item"><div class="legend-dot placing-invalid"></div>CONFLICT</div>
+            <div class="legend-item"><div class="legend-dot selected"></div>SELECTED</div>
+            <div class="legend-item"><div class="legend-dot conflict"></div>CONFLICT</div>
             <div class="legend-item"><div class="legend-dot reserved"></div>RESERVED</div>
           </div>
         </div>
         <canvas id="gridCanvas" width="1280" height="720"></canvas>
-        <div class="grid-hint" id="gridHint">Select a stage and convert your logo to begin placing.</div>
+        <div class="grid-hint" id="gridHint">Click and drag on the grid to select your placement area. Release to confirm.</div>
+      </div>
+      <div style="padding:16px 20px;">
+        <div id="selPending" style="display:none;" class="sel-pending">
+          <div class="row"><span>POSITION</span><span class="val" id="selPos">--</span></div>
+          <div class="row"><span>SIZE</span><span class="val" id="selSize">--</span></div>
+          <div class="row"><span>BLOCKS</span><span class="val" id="selBlocks">--</span></div>
+          <div class="row"><span>STATUS</span><span class="val" id="selStatus">--</span></div>
+        </div>
+        <button class="btn-primary" id="confirmSelBtn" onclick="confirmSelection()" style="display:none;" disabled>CONFIRM THIS SELECTION &#8594;</button>
+        <button class="btn-secondary" id="resetSelBtn" onclick="resetSelection()" style="display:none;">RESET SELECTION</button>
       </div>
     </div>
   </div>
+
+  <!-- ── SECTION 3: DESIGN YOUR LOGO ── -->
+  <div class="flow-section locked" id="sec3">
+    <div class="flow-sec-hdr">
+      <span class="flow-sec-num">3</span>
+      <span class="flow-sec-title">DESIGN YOUR LOGO</span>
+      <span class="flow-sec-done" id="sec3Done" style="display:none">&#10003;</span>
+    </div>
+    <div class="flow-sec-body">
+      <div class="tab-btns">
+        <button class="tab-btn active" id="tabBtnUpload" onclick="switchTab('upload')">UPLOAD IMAGE</button>
+        <button class="tab-btn" id="tabBtnDraw" onclick="switchTab('draw')">DRAW PIXEL ART</button>
+      </div>
+
+      <!-- Tab A: Upload -->
+      <div id="tabUpload">
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+          <div class="drop-zone-icon">&#8593;</div>
+          <div class="drop-zone-text" id="dropZoneText">Click or drag image here<br>PNG / JPG / SVG &mdash; max 2MB<br><span style="color:var(--accent2);font-size:10px">PNG transparency preserved</span></div>
+        </div>
+        <input type="file" id="fileInput" accept="image/*">
+        <div id="dropPreview" style="display:none;text-align:center;margin-top:8px;">
+          <img id="dropPreviewImg" style="max-width:100%;max-height:100px;image-rendering:pixelated;border:1px solid var(--border);" alt="preview">
+          <div class="pa-info" id="dropPreviewInfo"></div>
+        </div>
+        <button class="btn-blue" id="useUploadBtn" onclick="useUploadedImage()" style="margin-top:8px;" disabled>USE THIS IMAGE</button>
+      </div>
+
+      <!-- Tab B: Pixel Art -->
+      <div id="tabDraw" style="display:none">
+        <div id="paWrap">
+          <div class="pa-tools">
+            <button class="pa-tool-btn active" id="paTool_pencil" onclick="setPATool('pencil')" title="Pencil">PENCIL</button>
+            <button class="pa-tool-btn" id="paTool_fill" onclick="setPATool('fill')" title="Flood fill">FILL</button>
+            <button class="pa-tool-btn" id="paTool_eraser" onclick="setPATool('eraser')" title="Eraser">ERASER</button>
+            <button class="pa-tool-btn" id="paTool_rect" onclick="setPATool('rect')" title="Rectangle">RECT</button>
+            <button class="pa-tool-btn" id="paTool_eyedrop" onclick="setPATool('eyedrop')" title="Pick color">EYE</button>
+            <button class="pa-tool-btn" onclick="paUndo()" title="Undo">UNDO</button>
+            <button class="pa-tool-btn" onclick="clearPA()">CLEAR</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:wrap;">
+            <button class="pa-tool-btn active" id="paZoomBtn1" onclick="setZoom(1)" style="padding:2px 7px;">1&times;</button>
+            <button class="pa-tool-btn" id="paZoomBtn2" onclick="setZoom(2)" style="padding:2px 7px;">2&times;</button>
+            <button class="pa-tool-btn" id="paZoomBtn4" onclick="setZoom(4)" style="padding:2px 7px;">4&times;</button>
+            <button class="pa-tool-btn active" id="paGridToggleBtn" onclick="togglePAGrid()" style="padding:2px 8px;">GRID</button>
+            <span class="pa-info" id="paHoverCoord" style="font-size:10px;min-width:60px;text-align:right;opacity:0.7;"></span>
+          </div>
+          <div class="pa-info" style="margin-top:7px;margin-bottom:2px;opacity:0.6;font-size:10px;">PALETTE</div>
+          <div class="pa-palette" id="paPalette"></div>
+          <div class="pa-info" style="margin-top:6px;margin-bottom:2px;opacity:0.6;font-size:10px;">RECENT</div>
+          <div class="pa-palette" id="paRecentPalette" style="min-height:20px;opacity:0.9;"></div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:5px;">
+            <span class="pa-info">Custom:</span>
+            <input type="color" id="paCustomColor" value="#ff4444" style="width:28px;height:22px;border:none;background:none;cursor:pointer;padding:0;">
+            <button class="pa-tool-btn" style="flex:none;padding:4px 10px;" onclick="selectCustomColor()">USE</button>
+          </div>
+          <div style="overflow:auto;max-height:360px;margin-top:7px;">
+            <canvas id="paCanvas" style="display:block;"></canvas>
+          </div>
+          <button class="btn-blue" id="paUseBtn" onclick="usePAAsLogo()" style="margin-top:8px;">USE THIS LOGO</button>
+          <div class="pa-info" id="paInfo"></div>
+          <div id="paGamePreview" style="display:none;margin-top:10px;">
+            <div class="pa-info" style="margin-bottom:4px;opacity:0.7;font-size:10px;">GAME GRID PREVIEW (16px/block)</div>
+            <canvas id="paPreviewCanvas" style="border:1px solid var(--border);image-rendering:pixelated;max-width:100%;"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logo size & preview -->
+      <div id="sizeConvertWrap" style="margin-top:16px;">
+        <label class="ctrl-label">Logo Size</label>
+        <select class="ctrl-select" id="sizePreset" onchange="onSizeChange()">
+          <option value="fit" selected>Fit to selection</option>
+          <option value="100">Small -- ~100 blocks (10x10)</option>
+          <option value="200">Standard -- ~200 blocks (14x14)</option>
+          <option value="300">Large -- ~300 blocks (17x18)</option>
+          <option value="custom">Custom</option>
+        </select>
+        <div id="customWrap" style="display:none">
+          <label class="ctrl-label">Width (blocks)</label>
+          <input type="number" class="ctrl-input" id="customW" value="10" min="1" max="40" oninput="onSizeChange()">
+          <label class="ctrl-label">Height (blocks)</label>
+          <input type="number" class="ctrl-input" id="customH" value="10" min="1" max="22" oninput="onSizeChange()">
+        </div>
+        <div id="customizeTransparentRow" style="display:none">
+          <div class="px-stat" id="pxStat"></div>
+          <label class="px-toggle-row">
+            <input type="checkbox" id="fullBboxToggle" onchange="updateBboxMode()">
+            Include full bounding box (reserve empty space around logo)
+          </label>
+          <div class="pa-info" style="margin-top:4px;font-style:italic;">Tip: Enable 'full bounding box' to keep exclusive space around your logo.</div>
+        </div>
+        <div class="pixel-preview-small" id="pixelPreviewWrap" style="margin-top:10px;">
+          <div class="pixel-preview-placeholder" id="pixelPlaceholder">Upload or draw to preview</div>
+          <canvas id="pixelCanvas" style="display:none"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 4: CONFIRM & PURCHASE ── -->
+  <div class="flow-section locked" id="sec4">
+    <div class="flow-sec-hdr">
+      <span class="flow-sec-num">4</span>
+      <span class="flow-sec-title">CONFIRM &amp; PURCHASE</span>
+    </div>
+    <div class="flow-sec-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+        <div>
+          <div class="pa-info" style="margin-bottom:8px;letter-spacing:2px;font-size:10px;opacity:0.7;">ORDER SUMMARY</div>
+          <div class="confirm-box" id="summaryBox">
+            <div class="row"><span>STAGE</span><span class="val" id="sumStage">--</span></div>
+            <div class="row"><span>POSITION</span><span class="val" id="sumPos">--</span></div>
+            <div class="row"><span>SIZE</span><span class="val" id="sumSize">--</span></div>
+            <div class="row"><span>ACTIVE PIXELS</span><span class="val" id="sumPixels">--</span></div>
+            <div class="row"><span>MONTHLY PRICE</span><span class="val" id="sumPrice">--</span></div>
+          </div>
+          <div class="pa-info" style="margin-bottom:8px;letter-spacing:2px;font-size:10px;opacity:0.7;">BILLING PLAN</div>
+          <div class="plan-toggle">
+            <button class="plan-btn active" onclick="setPlan('monthly',this)">MONTHLY</button>
+            <button class="plan-btn" onclick="setPlan('annual',this)">ANNUAL &mdash; 2 MONTHS FREE</button>
+          </div>
+          <div class="price-summary">
+            <div class="price-row"><span>BASE PRICE</span><span class="amount" id="basePrice">--</span></div>
+            <div class="price-row"><span>VOLUME DISCOUNT</span><span class="discount" id="discountRow">--</span></div>
+            <div class="price-row"><span>PLAN DISCOUNT</span><span class="discount" id="planRow">--</span></div>
+            <div class="price-row total"><span>MONTHLY TOTAL</span><span class="amount" id="totalPrice">--</span></div>
+            <div class="price-row annual-billed" id="annualBilledRow" style="display:none">
+              <span>BILLED ANNUALLY</span><span class="annual-amount" id="annualBilledAmt">--</span>
+            </div>
+          </div>
+          <div id="checkoutError" style="display:none;margin-bottom:10px;padding:10px 12px;background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.4);color:rgba(255,120,100,0.95);font-size:11px;letter-spacing:0.5px;line-height:1.5;font-family:'Share Tech Mono',monospace;"></div>
+          <button class="btn-primary" id="ctaBtn" onclick="proceedToCheckout()">PROCEED TO PAYMENT</button>
+          <p class="panel-note">By proceeding you agree to our <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>.<br><br>First month prorated from purchase date. Billing auto-renews. Cancel anytime.</p>
+        </div>
+        <div>
+          <div class="pa-info" style="margin-bottom:8px;letter-spacing:2px;font-size:10px;opacity:0.7;">LOGO PREVIEW ON GRID</div>
+          <canvas id="sec4PreviewCanvas" style="display:none;border:1px solid var(--border);image-rendering:pixelated;max-width:100%;width:100%;"></canvas>
+          <div id="sec4NoPreview" class="pa-info" style="color:var(--muted);font-style:italic;">Logo preview will appear here.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </section>
 
 <!-- PRICING -->
 <section class="pricing-section" id="pricing">
   <div class="section-title">PRICING</div>
-  <div class="section-sub">Transparent pricing. Hard cap at $15/block/mo. Always.</div>
+  <div class="section-sub">Transparent pricing. Hard cap at $20/block/mo. Always.</div>
   <div class="pricing-grid">
     <div class="price-tier">
       <div class="tier-label">Early Access Eligibility</div>
       <div class="tier-price-text">Available while the base price is below $8</div>
-      <div class="tier-note">Subscriptions started before the base price reaches $8 may transition to a minimum of $5 within up to 6 months. After that, pricing remains fixed only while the subscription stays active. If canceled, all previous pricing conditions are permanently lost. Any re-subscription uses the current price.</div>
+      <div class="tier-note">Subscriptions started before the base price reaches $8 may transition to a minimum of $5 within up to 6 months. After that, pricing remains fixed only while the subscription stays active. If canceled, all previous pricing conditions are permanently lost.</div>
     </div>
     <div class="price-tier">
       <div class="tier-label">Launch -- Standard</div>
@@ -510,7 +486,7 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
     <div class="price-tier">
       <div class="tier-label">Growth Pricing</div>
       <div class="tier-price-text">Prices increase in stages</div>
-      <div class="tier-note">Pricing increases based on demand, grid occupancy, and platform growth. Standard pricing typically operates in the lower and mid tiers, with an absolute maximum cap of $20 per block per month. Active subscriptions are never auto-increased.</div>
+      <div class="tier-note">Pricing increases based on demand, grid occupancy, and platform growth. Active subscriptions are never auto-increased.</div>
     </div>
     <div class="price-tier">
       <div class="tier-label">Absolute Cap</div>
@@ -519,7 +495,6 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
       <span class="tier-cap">HARD LIMIT -- UNCONDITIONAL</span>
     </div>
   </div>
-  <!-- Price ladder reference -->
   <div class="vol-section-title" style="margin-bottom:6px;">PRICE TIERS</div>
   <div class="section-sub" style="margin-bottom:16px">All 6 pricing stages. Active subscriptions are never auto-increased.</div>
   <div class="price-ladder">
@@ -530,21 +505,15 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
     <div class="price-rung"><div class="pr-price">$12</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--muted)">70% full</div></div>
     <div class="price-rung"><div class="pr-price">$15</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--accent)">CAP</div></div>
   </div>
-
-  <!-- Stage Monopoly Plan -->
   <div class="vol-section-title" style="margin-bottom:6px;">STAGE MONOPOLY</div>
   <div class="section-sub" style="margin-bottom:16px">Own every block on a stage. Your brand on every pixel.</div>
   <div class="monopoly-card" id="monopolyCard">
     <div class="monopoly-lock-badge">&#128274; Unlocks when market price reaches $10/block</div>
     <div class="monopoly-title">STAGE MONOPOLY</div>
-    <div class="monopoly-sub">Own all 3,600 blocks on a single stage at 50% off full price.<br>Your brand on every pixel of a stage.</div>
+    <div class="monopoly-sub">Own all 3,600 blocks on a single stage at 50% off full price.</div>
     <div class="monopoly-price" id="monopolyPrice">3,600 blocks &times; $3 &times; 50% = <span style="color:var(--gold)">$5,400/mo</span> <span style="font-size:14px;color:var(--muted);">(locked until $10/block)</span></div>
-    <div>
-      <div class="monopoly-badge">&#127942; Includes LANDLORD achievement</div>
-    </div>
-    <div style="font-size:11px;color:var(--muted);font-family:'Share Tech Mono',monospace;letter-spacing:0.5px;">Available once market price reaches $10/block/mo — 50% discount applied automatically.</div>
+    <div><div class="monopoly-badge">&#127942; Includes LANDLORD achievement</div></div>
   </div>
-
   <div class="vol-section-title" style="margin-top:40px;margin-bottom:6px;">VOLUME DISCOUNTS</div>
   <div class="section-sub" style="margin-bottom:16px">Applied automatically at checkout.</div>
   <div class="volume-table">
@@ -555,30 +524,27 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
   </div>
   <div class="corp-guidance">
     <div class="corp-guidance-title">Corporate Logo Reference Guide</div>
-    <div class="corp-guidance-note">Block counts are approximate guides. Prices shown are illustrative at current launch rates ($3/block) and will vary as pricing tiers change.</div>
+    <div class="corp-guidance-note">Block counts are approximate guides. Prices shown are illustrative at current launch rates ($3/block).</div>
     <div class="corp-sizes">
       <div class="corp-size">
-        <div class="corp-size-num">~100</div>
-        <div class="corp-size-unit">BLOCKS</div>
+        <div class="corp-size-num">~100</div><div class="corp-size-unit">BLOCKS</div>
         <div class="corp-size-label">Small Logo</div>
         <div class="corp-size-label" style="color:var(--muted);font-size:10px">approx. 10 x 10</div>
-        <span class="corp-size-example-label">Example pricing (illustrative only)</span>
+        <span class="corp-size-example-label">Example pricing</span>
         <span class="corp-size-example">~$270/mo at $3 (-10%)</span>
       </div>
       <div class="corp-size">
-        <div class="corp-size-num">~200</div>
-        <div class="corp-size-unit">BLOCKS</div>
+        <div class="corp-size-num">~200</div><div class="corp-size-unit">BLOCKS</div>
         <div class="corp-size-label">Standard Logo</div>
         <div class="corp-size-label" style="color:var(--muted);font-size:10px">approx. 14 x 14</div>
-        <span class="corp-size-example-label">Example pricing (illustrative only)</span>
+        <span class="corp-size-example-label">Example pricing</span>
         <span class="corp-size-example">~$480/mo at $3 (-20%)</span>
       </div>
       <div class="corp-size">
-        <div class="corp-size-num">~300</div>
-        <div class="corp-size-unit">BLOCKS</div>
+        <div class="corp-size-num">~300</div><div class="corp-size-unit">BLOCKS</div>
         <div class="corp-size-label">Large Logo</div>
         <div class="corp-size-label" style="color:var(--muted);font-size:10px">approx. 17 x 18</div>
-        <span class="corp-size-example-label">Example pricing (illustrative only)</span>
+        <span class="corp-size-example-label">Example pricing</span>
         <span class="corp-size-example">~$630/mo at $3 (-30%)</span>
       </div>
     </div>
@@ -594,25 +560,21 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
 </footer>
 
 <script>
-// -- FIX 1: Cancel any previous pending reservation on page load --
+// ── Cancel any previous pending reservation on page load ──
 (function(){
   var prevPlacement=localStorage.getItem('neverend_placement');
   if(prevPlacement){
     try{
       var prev=JSON.parse(prevPlacement);
       if(prev.session_key){
-        fetch('/api/cancel-reservation',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({session_key:prev.session_key})
-        }).catch(function(){});
+        fetch('/api/cancel-reservation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_key:prev.session_key})}).catch(function(){});
       }
     }catch(e){}
     localStorage.removeItem('neverend_placement');
   }
 })();
 
-// -- DATA --
+// ── Stage data ──
 const STAGES_DATA=[
   {id:1,name:'STAGE 1',sub:'Learn to survive.',type:'standard'},
   {id:2,name:'STAGE 2',sub:'The floor is a lie.',type:'standard'},
@@ -625,7 +587,6 @@ const STAGES_DATA=[
   {id:9,name:'STAGE 9',sub:"One mistake. That's all.",type:'standard'},
   {id:10,name:'STAGE 10',sub:'You made it this far?',type:'creator'},
 ];
-// Simplified stage map data for preview (platforms as [x,y,w,h] in game-px / 16)
 const STAGE_MAPS={
   1:{plats:[[0,41,80,4],[0,0,80,6]],spikes:[[20,40,2],[35,40,2],[50,40,2]],goal:[4,35,4,6],spawn:[72,35]},
   2:{plats:[[0,41,80,4],[0,0,80,4],[8,30,16,2],[32,24,16,2],[56,30,16,2]],spikes:[[12,29,4],[36,23,4],[60,29,4]],goal:[4,35,4,6],spawn:[72,37]},
@@ -640,60 +601,56 @@ const STAGE_MAPS={
 };
 
 function drawStageMap(){
-  const mc=document.getElementById('stageMapCanvas');
-  if(!mc)return;
+  const mc=document.getElementById('stageMapCanvas');if(!mc)return;
   const mctx=mc.getContext('2d');
   const MW=260,MH=146,SX=1280,SY=720;
   const sx=MW/SX,sy=MH/SY;
   mctx.fillStyle='#0a0a14';mctx.fillRect(0,0,MW,MH);
   const m=STAGE_MAPS[currentStage];
-  if(!m){
-    mctx.fillStyle='rgba(100,100,120,0.3)';mctx.font='10px monospace';mctx.textAlign='center';
-    mctx.fillText('No preview available',MW/2,MH/2);return;
-  }
-  // Platforms
+  if(!m){mctx.fillStyle='rgba(100,100,120,0.3)';mctx.font='10px monospace';mctx.textAlign='center';mctx.fillText('No preview',MW/2,MH/2);return;}
   mctx.fillStyle='rgba(120,140,200,0.7)';
   (m.plats||[]).forEach(function(p){mctx.fillRect(p[0]*16*sx,p[1]*16*sy,p[2]*16*sx,p[3]*16*sy);});
-  // Spikes (small red dots)
   mctx.fillStyle='rgba(220,60,60,0.85)';
   (m.spikes||[]).forEach(function(s){mctx.fillRect(s[0]*16*sx,s[1]*16*sy,s[2]*16*sx,4*sy);});
-  // Goal (green)
   mctx.fillStyle='rgba(80,220,120,0.8)';
   if(m.goal){const g=m.goal;mctx.fillRect(g[0]*16*sx,g[1]*16*sy,g[2]*16*sx,g[3]*16*sy);}
-  // Spawn (blue dot)
   mctx.fillStyle='rgba(74,184,255,0.9)';
   if(m.spawn){mctx.beginPath();mctx.arc(m.spawn[0]*16*sx,m.spawn[1]*16*sy,4,0,Math.PI*2);mctx.fill();}
 }
 
+// ── Constants & State ──
 const GRID_COLS=80,GRID_ROWS=45,CELL=16,BASE_PRICE=3;
-
-// -- STATE --
 let currentStage=1;
-let gridStates={};          // per stage: {col,row -> 'claimed'|'reserved'}
-let uploadedImage=null;
-let logoOffscreen=null;     // pixelated logo canvas
-let logoW=0,logoH=0;        // in blocks
-let logoConverted=false;
-let placingX=0,placingY=0;  // top-left block coordinate of logo ghost
-let isDragging=false;
-let dragOffX=0,dragOffY=0;
-let placementValid=false;
-let confirmedPlacement=null; // {stage,x,y,w,h} locked before checkout
+let gridStates={};
 let plan='monthly';
-let hoveredBlock=null;
+
+// Selection state (Section 2)
+let isDragSelecting=false;
+let selDragStart=null; // {c,r}
+let selDragEnd=null;   // {c,r}
+let pendingSelection=null; // {x,y,w,h} while drag in progress
+let selectedArea=null;    // {x,y,w,h} confirmed
+
+// Logo state (Section 3)
+let uploadedImageDataUrl=null; // full data URL from file upload
+let uploadedImageEl=null;      // Image element
+let logoOffscreen=null;        // offscreen canvas of logo pixels
+let logoW=0,logoH=0;
+let activePixelCount=0;
+let logoDataUrl=null; // data URL of final logo (set when logo is confirmed)
+
 // Pixel art editor state
-let paData=null; // 2D array [row][col] = {r,g,b,a} or null
+let paData=null;
 let paTool='pencil';
 let paColor={r:255,g:68,b:68,a:255};
 let paDrawing=false;
-let paHistory=[]; // up to 20 snapshots
-let paRecentColors=[]; // up to 8 hex strings
+let paHistory=[];
+let paRecentColors=[];
 let paZoom=1;
 let paShowGrid=true;
-let paRectStart=null; // {r,c} when using rect tool
-let paHoverCell=null; // {r,c}
-let activePixelCount=0;
-let totalPixelCount=0;
+let paRectStart=null;
+let paHoverCell=null;
+
 const PA_PALETTE=[
   '#000000','#333333','#666666','#999999','#cccccc','#ffffff',
   '#ff0000','#ff8800','#ffff00','#00ff00','#00ffff','#0000ff','#8800ff','#ff00ff',
@@ -702,7 +659,7 @@ const PA_PALETTE=[
   '#ff1493','#ff6600','#ccff00','#00ff88','#00ccff','#aa00ff','#ff0066'
 ];
 
-// -- MOCK GRID --
+// ── Mock Grid ──
 function generateMockGrid(id){
   const g={};let s=id*1337;
   for(let i=0;i<15+(id*3)%20;i++){
@@ -714,7 +671,6 @@ function generateMockGrid(id){
 }
 function getState(id,c,r){return(gridStates[id]&&gridStates[id][c+','+r])||'available';}
 function mockColor(id,c,r){return['#1a3a5c','#2a1a3a','#1a3a1a','#3a2a1a','#2a3a3a','#1e2a4a','#3a1a2a','#2a2a1a'][(id*7+c*3+r*11)%8];}
-
 STAGES_DATA.forEach(function(s){gridStates[s.id]=generateMockGrid(s.id);});
 
 // Populate stage select
@@ -724,25 +680,49 @@ STAGES_DATA.forEach(function(s){
   o.value=s.id;o.textContent=s.name+' -- '+s.sub;stageSelEl.appendChild(o);
 });
 
-// -- STAGE --
+// ── Section unlock helpers ──
+function unlockSection(n){
+  const sec=document.getElementById('sec'+n);
+  if(sec){sec.classList.remove('locked');sec.classList.add('done-prev');}
+}
+function markSectionDone(n){
+  const sec=document.getElementById('sec'+n);
+  const done=document.getElementById('sec'+n+'Done');
+  if(sec)sec.classList.add('done');
+  if(done)done.style.display='block';
+}
+function lockSection(n){
+  const sec=document.getElementById('sec'+n);
+  const done=document.getElementById('sec'+n+'Done');
+  if(sec){sec.classList.add('locked');sec.classList.remove('done');}
+  if(done)done.style.display='none';
+}
+
+// ── Stage management ──
 function setStage(id){
   currentStage=id;stageSelEl.value=id;
   document.getElementById('prevBtn').disabled=(id<=1);
   document.getElementById('nextBtn').disabled=(id>=STAGES_DATA.length);
   const s=STAGES_DATA[id-1];
-  document.getElementById('gridStageName').textContent=s.name;
   const isC=s.type==='creator';
   document.getElementById('creatorBadge').classList.toggle('visible',isC);
+  document.getElementById('stageInfoText').textContent=s.name+' — '+s.sub+(isC?' (Creator Zone)':'');
+  document.getElementById('gridStageName').textContent=s.name;
   document.getElementById('gridBlocksInfo').textContent='80 x 45 | 1 block = 16x16px | '+(isC?'CREATOR ZONE':'STANDARD');
-  if(logoConverted){
-    updatePlacementStatus();
-  }
-  drawGrid();
   drawStageMap();
+  // If returning to stage 1 from further along, reset downstream
+  resetSelection();
 }
 function changeStage(d){const n=currentStage+d;if(n>=1&&n<=STAGES_DATA.length)setStage(n);}
 
-// -- GRID CANVAS --
+function confirmStage(){
+  markSectionDone(1);
+  unlockSection(2);
+  drawGrid();
+  document.getElementById('sec2').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ── Grid canvas ──
 const canvas=document.getElementById('gridCanvas');
 const ctx=canvas.getContext('2d');
 
@@ -754,69 +734,65 @@ function getBlock(e){
   return[c,r];
 }
 
-function checkPlacementValidity(px,py){
-  if(!logoConverted)return false;
-  for(let dr=0;dr<logoH;dr++){
-    for(let dc=0;dc<logoW;dc++){
-      const gc=px+dc,gr=py+dr;
-      if(gc<0||gc>=GRID_COLS||gr<0||gr>=GRID_ROWS)return false;
-      const st=getState(currentStage,gc,gr);
-      if(st==='claimed'||st==='reserved')return false;
+function selectionHasConflict(x,y,w,h){
+  for(let dr=0;dr<h;dr++){
+    for(let dc=0;dc<w;dc++){
+      const st=getState(currentStage,x+dc,y+dr);
+      if(st==='claimed'||st==='reserved')return true;
     }
   }
-  return true;
+  return false;
+}
+
+function getCurrentDragRect(){
+  if(!selDragStart||!selDragEnd)return null;
+  const x=Math.min(selDragStart.c,selDragEnd.c);
+  const y=Math.min(selDragStart.r,selDragEnd.r);
+  const w=Math.abs(selDragEnd.c-selDragStart.c)+1;
+  const h=Math.abs(selDragEnd.r-selDragStart.r)+1;
+  return{x,y,w,h};
 }
 
 function drawGrid(){
   ctx.clearRect(0,0,1280,720);
-  const isValid=logoConverted?checkPlacementValidity(placingX,placingY):false;
+  const area=selectedArea||getCurrentDragRect();
+  const isValid=area?!selectionHasConflict(area.x,area.y,area.w,area.h):false;
 
   for(let r=0;r<GRID_ROWS;r++){
     for(let c=0;c<GRID_COLS;c++){
       const x=c*CELL,y=r*CELL;
       const state=getState(currentStage,c,r);
-      const inLogo=logoConverted&&c>=placingX&&c<placingX+logoW&&r>=placingY&&r<placingY+logoH;
-      const isHov=hoveredBlock&&hoveredBlock[0]===c&&hoveredBlock[1]===r;
+      const inSel=area&&c>=area.x&&c<area.x+area.w&&r>=area.y&&r<area.y+area.h;
 
       if(state==='claimed'){
         ctx.fillStyle=mockColor(currentStage,c,r);ctx.fillRect(x,y,CELL,CELL);
-        // highlight conflict
-        if(inLogo){
-          ctx.fillStyle='rgba(231,76,60,0.55)';ctx.fillRect(x,y,CELL,CELL);
-        }
+        if(inSel){ctx.fillStyle='rgba(231,76,60,0.5)';ctx.fillRect(x,y,CELL,CELL);}
         ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=0.5;ctx.strokeRect(x,y,CELL,CELL);
       }else if(state==='reserved'){
         ctx.fillStyle='rgba(245,200,66,0.1)';ctx.fillRect(x,y,CELL,CELL);
-        if(inLogo){ctx.fillStyle='rgba(231,76,60,0.4)';ctx.fillRect(x,y,CELL,CELL);}
+        if(inSel){ctx.fillStyle='rgba(231,76,60,0.4)';ctx.fillRect(x,y,CELL,CELL);}
         ctx.strokeStyle='rgba(245,200,66,0.35)';ctx.lineWidth=0.5;ctx.strokeRect(x,y,CELL,CELL);
-      }else if(inLogo){
-        // Draw logo pixel at this block
-        if(logoOffscreen){
-          const lc=c-placingX,lr=r-placingY;
-          const tmp=document.createElement('canvas');tmp.width=1;tmp.height=1;
-          const tCtx=tmp.getContext('2d');tCtx.imageSmoothingEnabled=false;
-          tCtx.drawImage(logoOffscreen,lc,lr,1,1,0,0,1,1);
-          const pxData=tCtx.getImageData(0,0,1,1).data;
-          const alpha=pxData[3]/255;
-          if(alpha>0.05){
-            ctx.fillStyle='rgba('+pxData[0]+','+pxData[1]+','+pxData[2]+','+alpha+')';
-            ctx.fillRect(x,y,CELL,CELL);
-          }else{
-            // transparent block -- show as available
-            ctx.fillStyle=(c+r)%2===0?'#191926':'#1b1b28';ctx.fillRect(x,y,CELL,CELL);
+      }else if(inSel){
+        // Show logo preview if we have one and area is confirmed
+        if(selectedArea&&logoOffscreen&&logoW>0){
+          const lc=c-area.x,lr=r-area.y;
+          if(lc<logoW&&lr<logoH){
+            const tmp=document.createElement('canvas');tmp.width=1;tmp.height=1;
+            const tCtx=tmp.getContext('2d');tCtx.imageSmoothingEnabled=false;
+            tCtx.drawImage(logoOffscreen,lc,lr,1,1,0,0,1,1);
+            const pxData=tCtx.getImageData(0,0,1,1).data;
+            const alpha=pxData[3]/255;
+            if(alpha>0.05){
+              ctx.fillStyle='rgba('+pxData[0]+','+pxData[1]+','+pxData[2]+','+alpha+')';
+              ctx.fillRect(x,y,CELL,CELL);
+            }else{
+              ctx.fillStyle=(c+r)%2===0?'#191926':'#1b1b28';ctx.fillRect(x,y,CELL,CELL);
+            }
           }
-        }
-        // Ghost tint
-        if(isValid){
-          ctx.fillStyle='rgba(74,184,255,0.12)';ctx.fillRect(x,y,CELL,CELL);
-          ctx.strokeStyle='rgba(74,184,255,0.6)';ctx.lineWidth=1;ctx.strokeRect(x+0.5,y+0.5,CELL-1,CELL-1);
         }else{
-          ctx.fillStyle='rgba(231,76,60,0.2)';ctx.fillRect(x,y,CELL,CELL);
-          ctx.strokeStyle='rgba(231,76,60,0.5)';ctx.lineWidth=1;ctx.strokeRect(x+0.5,y+0.5,CELL-1,CELL-1);
+          ctx.fillStyle=isValid?'rgba(74,184,255,0.18)':'rgba(231,76,60,0.18)';ctx.fillRect(x,y,CELL,CELL);
         }
-      }else if(isHov&&!logoConverted){
-        ctx.fillStyle='rgba(74,184,255,0.08)';ctx.fillRect(x,y,CELL,CELL);
-        ctx.strokeStyle='rgba(74,184,255,0.3)';ctx.lineWidth=0.5;ctx.strokeRect(x,y,CELL,CELL);
+        ctx.strokeStyle=isValid?'rgba(74,184,255,0.4)':'rgba(231,76,60,0.4)';ctx.lineWidth=0.5;ctx.strokeRect(x,y,CELL,CELL);
       }else{
         ctx.fillStyle=(c+r)%2===0?'#191926':'#1b1b28';ctx.fillRect(x,y,CELL,CELL);
         ctx.strokeStyle='#232335';ctx.lineWidth=0.5;ctx.strokeRect(x,y,CELL,CELL);
@@ -824,77 +800,120 @@ function drawGrid(){
     }
   }
 
-  // Logo bounding box border
-  if(logoConverted){
-    const bx=placingX*CELL,by=placingY*CELL,bw=logoW*CELL,bh=logoH*CELL;
+  // Selection border
+  if(area&&area.w>0&&area.h>0){
+    const bx=area.x*CELL,by=area.y*CELL,bw=area.w*CELL,bh=area.h*CELL;
     ctx.strokeStyle=isValid?'rgba(74,184,255,0.9)':'rgba(231,76,60,0.9)';
-    ctx.lineWidth=2;ctx.strokeRect(bx,by,bw,bh);
-    // Corner handles
-    const hs=6;
-    [[bx,by],[bx+bw-hs,by],[bx,by+bh-hs],[bx+bw-hs,by+bh-hs]].forEach(function(pt){
-      ctx.fillStyle=isValid?'rgba(74,184,255,0.9)':'rgba(231,76,60,0.9)';
-      ctx.fillRect(pt[0],pt[1],hs,hs);
-    });
+    ctx.lineWidth=2;
+    if(!selectedArea){ctx.setLineDash([6,4]);}
+    ctx.strokeRect(bx,by,bw,bh);
+    ctx.setLineDash([]);
+    if(selectedArea){
+      // Corner handles
+      const hs=6;
+      [[bx,by],[bx+bw-hs,by],[bx,by+bh-hs],[bx+bw-hs,by+bh-hs]].forEach(function(pt){
+        ctx.fillStyle=isValid?'rgba(74,184,255,0.9)':'rgba(231,76,60,0.9)';
+        ctx.fillRect(pt[0],pt[1],hs,hs);
+      });
+    }
   }
 }
 
-// -- MOUSE EVENTS --
+// ── Grid drag-to-select interaction ──
+canvas.addEventListener('mousedown',function(e){
+  const b=getBlock(e);if(!b)return;
+  isDragSelecting=true;
+  selDragStart={c:b[0],r:b[1]};
+  selDragEnd={c:b[0],r:b[1]};
+  pendingSelection=null;
+  canvas.style.cursor='crosshair';
+  drawGrid();
+});
+
 canvas.addEventListener('mousemove',function(e){
-  const b=getBlock(e);hoveredBlock=b;
   const tt=document.getElementById('tooltip');
+  const b=getBlock(e);
   if(b){
     const[c,r]=b;
-    if(isDragging&&logoConverted){
-      const raw=canvas.getBoundingClientRect();
-      const scX=1280/raw.width,scY=720/raw.height;
-      const mx=(e.clientX-raw.left)*scX,my=(e.clientY-raw.top)*scY;
-      let nx=Math.floor(mx/CELL)-dragOffX;
-      let ny=Math.floor(my/CELL)-dragOffY;
-      nx=Math.max(0,Math.min(GRID_COLS-logoW,nx));
-      ny=Math.max(0,Math.min(GRID_ROWS-logoH,ny));
-      placingX=nx;placingY=ny;
-      placementValid=checkPlacementValidity(placingX,placingY);
-      updatePlacementStatus();
-      updateConfirmSection();
+    if(isDragSelecting){
+      selDragEnd={c,r};
+      drawGrid();
     }
     const state=getState(currentStage,c,r);
     tt.style.display='block';
     tt.style.left=(e.clientX+16)+'px';tt.style.top=(e.clientY-10)+'px';
-    document.getElementById('ttCoord').textContent='('+( c+1)+', '+(r+1)+')';
+    document.getElementById('ttCoord').textContent='('+(c+1)+', '+(r+1)+')';
     const sm={available:'<span class="tt-free">AVAILABLE</span>',claimed:'<span class="tt-claimed">CLAIMED</span>',reserved:'<span class="tt-reserved">RESERVED</span>'};
     document.getElementById('ttStatus').innerHTML=sm[state]||'';
-  }else{tt.style.display='none';}
+  }else{
+    tt.style.display='none';
+    if(!isDragSelecting)drawGrid();
+  }
+});
+
+canvas.addEventListener('mouseup',function(e){
+  if(!isDragSelecting)return;
+  isDragSelecting=false;
+  const b=getBlock(e);
+  if(b){selDragEnd={c:b[0],r:b[1]};}
+  const rect=getCurrentDragRect();
+  if(rect&&rect.w>=1&&rect.h>=1){
+    pendingSelection=rect;
+    updateSelectionPreview(rect);
+  }
+  canvas.style.cursor='crosshair';
   drawGrid();
 });
 
 canvas.addEventListener('mouseleave',function(){
-  hoveredBlock=null;isDragging=false;
   document.getElementById('tooltip').style.display='none';
+  if(!isDragSelecting)drawGrid();
+});
+
+function updateSelectionPreview(rect){
+  const hasConflict=selectionHasConflict(rect.x,rect.y,rect.w,rect.h);
+  document.getElementById('selPending').style.display='block';
+  document.getElementById('selPos').textContent='col '+(rect.x+1)+', row '+(rect.y+1);
+  document.getElementById('selSize').textContent=rect.w+' x '+rect.h+' blocks';
+  document.getElementById('selBlocks').textContent=(rect.w*rect.h)+' blocks';
+  document.getElementById('selStatus').innerHTML=hasConflict
+    ?'<span style="color:var(--accent)">CONFLICT — overlaps claimed area</span>'
+    :'<span style="color:var(--green)">AVAILABLE</span>';
+  const confirmBtn=document.getElementById('confirmSelBtn');
+  const resetBtn=document.getElementById('resetSelBtn');
+  confirmBtn.style.display='block';
+  resetBtn.style.display='block';
+  confirmBtn.disabled=hasConflict;
+}
+
+function confirmSelection(){
+  if(!pendingSelection)return;
+  const hasConflict=selectionHasConflict(pendingSelection.x,pendingSelection.y,pendingSelection.w,pendingSelection.h);
+  if(hasConflict)return;
+  selectedArea={...pendingSelection};
+  markSectionDone(2);
+  unlockSection(3);
+  document.getElementById('gridHint').textContent='Position confirmed. Design your logo in Section 3.';
+  document.getElementById('sec3').scrollIntoView({behavior:'smooth',block:'start'});
+  // Auto-size logo to fit selection
   drawGrid();
-});
+  // If PA tab is active, re-init PA to match selection size
+  if(document.getElementById('tabDraw').style.display!=='none'){initPA();}
+}
 
-canvas.addEventListener('mousedown',function(e){
-  if(!logoConverted)return;
-  const b=getBlock(e);if(!b)return;
-  const[c,r]=b;
-  if(c>=placingX&&c<placingX+logoW&&r>=placingY&&r<placingY+logoH){
-    isDragging=true;
-    dragOffX=c-placingX;dragOffY=r-placingY;
-    canvas.style.cursor='grabbing';
-  }
-});
+function resetSelection(){
+  selectedArea=null;pendingSelection=null;
+  selDragStart=null;selDragEnd=null;
+  document.getElementById('selPending').style.display='none';
+  document.getElementById('confirmSelBtn').style.display='none';
+  document.getElementById('resetSelBtn').style.display='none';
+  lockSection(3);lockSection(4);
+  logoOffscreen=null;logoDataUrl=null;logoW=0;logoH=0;
+  document.getElementById('gridHint').textContent='Click and drag on the grid to select your placement area.';
+  drawGrid();
+}
 
-canvas.addEventListener('mouseup',function(){
-  if(isDragging){
-    isDragging=false;canvas.style.cursor='crosshair';
-    placementValid=checkPlacementValidity(placingX,placingY);
-    updatePlacementStatus();
-    updateConfirmSection();
-    drawGrid();
-  }
-});
-
-// -- UPLOAD --
+// ── Upload ──
 const dropZone=document.getElementById('dropZone');
 const fileInput=document.getElementById('fileInput');
 dropZone.addEventListener('dragover',function(e){e.preventDefault();dropZone.classList.add('dragover');});
@@ -906,217 +925,152 @@ dropZone.addEventListener('drop',function(e){
 fileInput.addEventListener('change',function(){if(fileInput.files[0])loadImg(fileInput.files[0]);});
 
 function loadImg(file){
+  if(file.size>2*1024*1024){alert('Image must be under 2MB.');return;}
   const reader=new FileReader();
   reader.onload=function(ev){
     const img=new Image();
     img.onload=function(){
-      uploadedImage=img;
-      document.getElementById('dropZoneText').innerHTML='<strong style="color:#4ab8ff">'+file.name+'</strong><br>Ready to convert';
-      // Show preview in drop zone
+      uploadedImageEl=img;
+      uploadedImageDataUrl=ev.target.result;
+      document.getElementById('dropZoneText').innerHTML='<strong style="color:#4ab8ff">'+file.name+'</strong><br>Ready to use';
       const prev=document.getElementById('dropPreview');
-      const prevImg=document.getElementById('dropPreviewImg');
-      prevImg.src=ev.target.result;
+      document.getElementById('dropPreviewImg').src=ev.target.result;
       document.getElementById('dropPreviewInfo').textContent=img.naturalWidth+' x '+img.naturalHeight+' px  |  '+file.name;
       prev.style.display='block';
-      document.getElementById('convertBtn').disabled=false;
-      setStep(2);
+      document.getElementById('useUploadBtn').disabled=false;
     };
     img.src=ev.target.result;
   };
   reader.readAsDataURL(file);
 }
 
-// -- SIZE CHANGE --
-function onSizeChange(){
-  const v=document.getElementById('sizePreset').value;
-  document.getElementById('customWrap').style.display=v==='custom'?'block':'none';
-  if(uploadedImage&&logoConverted)runConvert();
-}
-
-function calcLogoSize(){
-  const v=document.getElementById('sizePreset').value;
-  if(v==='custom'){
-    return{w:Math.min(parseInt(document.getElementById('customW').value)||10,GRID_COLS),
-           h:Math.min(parseInt(document.getElementById('customH').value)||10,GRID_ROWS)};
-  }
-  const blocks=parseInt(v);
-  const ratio=uploadedImage?uploadedImage.width/uploadedImage.height:1;
-  let h=Math.round(Math.sqrt(blocks/ratio));
-  let w=Math.round(blocks/h);
-  return{w:Math.min(w,GRID_COLS),h:Math.min(h,GRID_ROWS)};
-}
-
-// -- TRANSPARENT PIXEL HANDLING --
-function countActivePixels(offscreen){
-  const d=offscreen.getContext('2d').getImageData(0,0,offscreen.width,offscreen.height).data;
-  let active=0,total=offscreen.width*offscreen.height;
-  for(let i=3;i<d.length;i+=4){if(d[i]>10)active++;}
-  return{active:active,total:total,transparent:total-active};
-}
-
-function updateBboxMode(){
-  if(!logoConverted)return;
-  const fullBox=document.getElementById('fullBboxToggle').checked;
-  const blockCount=fullBox?(logoW*logoH):activePixelCount;
-  // Update confirm box blocks display
-  document.getElementById('cfBlocks').textContent=blockCount+' blocks'+(fullBox?'':' (non-transparent)');
-  if(confirmedPlacement){
-    confirmedPlacement.blocks=blockCount;
-    updatePanelPrice(blockCount);
-  }
-}
-
-// -- CONVERT --
-function runConvert(){
-  if(!uploadedImage)return;
+function useUploadedImage(){
+  if(!uploadedImageEl)return;
   const{w,h}=calcLogoSize();
   logoW=w;logoH=h;
-  // Create offscreen pixelated logo (preserves transparency)
   logoOffscreen=document.createElement('canvas');
   logoOffscreen.width=w;logoOffscreen.height=h;
   const oCtx=logoOffscreen.getContext('2d');
   oCtx.imageSmoothingEnabled=false;
   oCtx.clearRect(0,0,w,h);
-  oCtx.drawImage(uploadedImage,0,0,w,h);
+  oCtx.drawImage(uploadedImageEl,0,0,w,h);
+  logoDataUrl=logoOffscreen.toDataURL('image/png');
 
-  // Count transparent vs active pixels
   const px=countActivePixels(logoOffscreen);
-  activePixelCount=px.active;totalPixelCount=px.total;
+  activePixelCount=px.active;
   document.getElementById('pxStat').textContent='Active pixels: '+px.active+' (transparent: '+px.transparent+')';
   document.getElementById('customizeTransparentRow').style.display='block';
+  updateSmallPreview();
+  markSectionDone(3);
+  unlockSection(4);
+  updateSummary();
+  drawGrid();
+  document.getElementById('sec4').scrollIntoView({behavior:'smooth',block:'start'});
+}
 
-  // Small pixel preview
+// ── Size calculation ──
+function calcLogoSize(){
+  const v=document.getElementById('sizePreset').value;
+  if(v==='fit'&&selectedArea){return{w:selectedArea.w,h:selectedArea.h};}
+  if(v==='custom'){
+    return{w:Math.min(parseInt(document.getElementById('customW').value)||10,GRID_COLS),
+           h:Math.min(parseInt(document.getElementById('customH').value)||10,GRID_ROWS)};
+  }
+  const blocks=parseInt(v)||200;
+  const src=uploadedImageEl||{width:1,height:1};
+  const ratio=src.width/src.height;
+  let h=Math.round(Math.sqrt(blocks/ratio));
+  let w=Math.round(blocks/h);
+  return{w:Math.min(w,GRID_COLS),h:Math.min(h,GRID_ROWS)};
+}
+
+function onSizeChange(){
+  const v=document.getElementById('sizePreset').value;
+  document.getElementById('customWrap').style.display=v==='custom'?'block':'none';
+  if(logoOffscreen)useUploadedImage();
+}
+
+function countActivePixels(offscreen){
+  const d=offscreen.getContext('2d').getImageData(0,0,offscreen.width,offscreen.height).data;
+  let active=0,total=offscreen.width*offscreen.height;
+  for(let i=3;i<d.length;i+=4){if(d[i]>10)active++;}
+  return{active,total,transparent:total-active};
+}
+
+function updateBboxMode(){
+  updateSummary();
+}
+
+function updateSmallPreview(){
+  if(!logoOffscreen)return;
+  const w=logoOffscreen.width,h=logoOffscreen.height;
   const pc=document.getElementById('pixelCanvas');
   const DS=Math.max(1,Math.floor(76/Math.max(w,h)));
   pc.width=w*DS;pc.height=h*DS;
   const pCtx=pc.getContext('2d');pCtx.imageSmoothingEnabled=false;
   pCtx.clearRect(0,0,pc.width,pc.height);
   pCtx.drawImage(logoOffscreen,0,0,w*DS,h*DS);
-  // grid lines
-  pCtx.strokeStyle='rgba(255,255,255,0.07)';pCtx.lineWidth=0.5;
-  for(let x=0;x<=w;x++){pCtx.beginPath();pCtx.moveTo(x*DS,0);pCtx.lineTo(x*DS,h*DS);pCtx.stroke();}
-  for(let y=0;y<=h;y++){pCtx.beginPath();pCtx.moveTo(0,y*DS);pCtx.lineTo(w*DS,y*DS);pCtx.stroke();}
   document.getElementById('pixelPlaceholder').style.display='none';
   pc.style.display='block';
-
-  // Center logo initially
-  placingX=Math.floor((GRID_COLS-logoW)/2);
-  placingY=Math.floor((GRID_ROWS-logoH)/2);
-  logoConverted=true;
-  canvas.style.cursor='crosshair';
-
-  placementValid=checkPlacementValidity(placingX,placingY);
-  updatePlacementStatus();
-  updateConfirmSection();
-  setStep(3);
-  document.getElementById('confirmSection').style.display='block';
-  document.getElementById('gridHint').textContent='Drag the logo on the grid to choose its position. Blue = valid. Red = conflict.';
-  drawGrid();
 }
 
-// -- PLACEMENT STATUS --
-function updatePlacementStatus(){
-  const el=document.getElementById('placementStatus');
-  const txt=document.getElementById('statusText');
-  if(!logoConverted){
-    el.className='placement-status idle';txt.textContent='Convert your logo to begin placing';return;
-  }
-  if(placementValid){
-    el.className='placement-status valid';txt.textContent='Placement available';
-  }else{
-    el.className='placement-status invalid';txt.textContent='Cannot place here -- overlaps claimed blocks';
-  }
-}
-
-// -- CONFIRM SECTION --
-function updateConfirmSection(){
-  if(!logoConverted)return;
+// ── Summary update (Section 4) ──
+function updateSummary(){
+  if(!selectedArea||!logoOffscreen)return;
   const s=STAGES_DATA[currentStage-1];
   const fullBox=document.getElementById('fullBboxToggle')&&document.getElementById('fullBboxToggle').checked;
   const blockCount=fullBox?(logoW*logoH):activePixelCount||logoW*logoH;
-  document.getElementById('cfStage').textContent=s.name;
-  document.getElementById('cfPos').textContent='col '+(placingX+1)+', row '+(placingY+1);
-  document.getElementById('cfSize').textContent=logoW+' x '+logoH+' blocks';
-  document.getElementById('cfBlocks').textContent=blockCount+(fullBox?'':' (non-transparent)')+' blocks';
-  document.getElementById('confirmBtn').disabled=!placementValid;
-  if(placementValid)setStep(4);
-}
-
-// -- CONFIRM PLACEMENT --
-function confirmPlacement(){
-  if(!placementValid)return;
-  const fullBox=document.getElementById('fullBboxToggle')&&document.getElementById('fullBboxToggle').checked;
-  const blockCount=fullBox?(logoW*logoH):activePixelCount||logoW*logoH;
-  confirmedPlacement={
-    stage:currentStage,
-    x:placingX,y:placingY,
-    w:logoW,h:logoH,
-    blocks:blockCount
-  };
-  const s=STAGES_DATA[currentStage-1];
-  // Fill purchase panel
-  document.getElementById('panelStage').textContent=s.name;
-  document.getElementById('panelPos').textContent='col '+(placingX+1)+', row '+(placingY+1);
-  document.getElementById('panelSize').textContent=logoW+' x '+logoH+' blocks';
-  document.getElementById('panelType').textContent=s.type==='creator'?'CREATOR ZONE':'STANDARD';
-  document.getElementById('panelBlocks').textContent=confirmedPlacement.blocks+' blocks';
-  updatePanelPrice(confirmedPlacement.blocks);
-  setStep(5);
-  document.getElementById('purchasePanel').classList.add('open');
-}
-
-function resetPlacement(){
-  placingX=Math.floor((GRID_COLS-logoW)/2);
-  placingY=Math.floor((GRID_ROWS-logoH)/2);
-  confirmedPlacement=null;
-  placementValid=checkPlacementValidity(placingX,placingY);
-  updatePlacementStatus();updateConfirmSection();drawGrid();
-}
-
-// -- STEP INDICATOR --
-function setStep(n){
-  for(let i=1;i<=5;i++){
-    const el=document.getElementById('step'+i);
-    if(i<n)el.className='step-item done';
-    else if(i===n)el.className='step-item active';
-    else el.className='step-item';
-  }
-}
-
-// -- PRICING --
-function calcTotal(n,p){
-  let d=0;if(n>=250)d=0.30;else if(n>=100)d=0.20;else if(n>=25)d=0.10;
-  const pd=p==='annual'?(1/6):0;
-  const base=BASE_PRICE*n,av=base*(1-d),total=av*(1-pd);
-  return{base:base,disc:d,planDisc:pd,total:total,annual:total*10};
-}
-
-function updatePanelPrice(n){
-  const r=calcTotal(n,plan);
+  const r=calcTotal(blockCount,plan);
+  document.getElementById('sumStage').textContent=s.name;
+  document.getElementById('sumPos').textContent='col '+(selectedArea.x+1)+', row '+(selectedArea.y+1);
+  document.getElementById('sumSize').textContent=logoW+' x '+logoH+' blocks';
+  document.getElementById('sumPixels').textContent=blockCount+(fullBox?'':' (non-transparent)')+' blocks';
+  document.getElementById('sumPrice').textContent='$'+r.total.toFixed(2)+'/mo';
   document.getElementById('basePrice').textContent='$'+r.base.toFixed(2);
   document.getElementById('discountRow').textContent=r.disc>0?'-'+(r.disc*100).toFixed(0)+'%':'--';
   document.getElementById('planRow').textContent=r.planDisc>0?'-'+(r.planDisc*100).toFixed(1)+'%':'--';
   document.getElementById('totalPrice').textContent='$'+r.total.toFixed(2);
   const annRow=document.getElementById('annualBilledRow');
-  if(plan==='annual'){
-    annRow.style.display='flex';
-    document.getElementById('annualBilledAmt').textContent='$'+r.annual.toFixed(2)+' / yr';
-    document.getElementById('ctaBtn').textContent='SECURE THIS PLACEMENT';
-  }else{
-    annRow.style.display='none';
-    document.getElementById('ctaBtn').textContent='CLAIM THIS PLACEMENT';
+  if(plan==='annual'){annRow.style.display='flex';document.getElementById('annualBilledAmt').textContent='$'+r.annual.toFixed(2)+' / yr';}
+  else annRow.style.display='none';
+  renderSec4Preview();
+}
+
+function renderSec4Preview(){
+  if(!logoOffscreen||!logoW||!logoH)return;
+  const BLOCK=16;
+  const prev=document.getElementById('sec4PreviewCanvas');
+  const noPreview=document.getElementById('sec4NoPreview');
+  prev.width=logoW*BLOCK;prev.height=logoH*BLOCK;
+  const pCtx=prev.getContext('2d');
+  pCtx.imageSmoothingEnabled=false;
+  for(let rr=0;rr<logoH;rr++){
+    for(let cc=0;cc<logoW;cc++){
+      pCtx.fillStyle=(rr+cc)%2===0?'#1a1a2e':'#16213e';
+      pCtx.fillRect(cc*BLOCK,rr*BLOCK,BLOCK,BLOCK);
+    }
   }
+  pCtx.drawImage(logoOffscreen,0,0,logoW*BLOCK,logoH*BLOCK);
+  prev.style.display='block';
+  if(noPreview)noPreview.style.display='none';
+}
+
+// ── Pricing ──
+function calcTotal(n,p){
+  let d=0;if(n>=250)d=0.30;else if(n>=100)d=0.20;else if(n>=25)d=0.10;
+  const pd=p==='annual'?(1/6):0;
+  const base=BASE_PRICE*n,av=base*(1-d),total=av*(1-pd);
+  return{base,disc:d,planDisc:pd,total,annual:total*10};
 }
 
 function setPlan(p,btn){
   plan=p;
   document.querySelectorAll('.plan-btn').forEach(function(b){b.classList.remove('active');});
   btn.classList.add('active');
-  if(confirmedPlacement)updatePanelPrice(confirmedPlacement.blocks);
+  updateSummary();
 }
 
-function closePanel(){document.getElementById('purchasePanel').classList.remove('open');}
-
+// ── Checkout error helpers ──
 function showCheckoutError(msg){
   const el=document.getElementById('checkoutError');
   if(!el)return;
@@ -1128,23 +1082,27 @@ function clearCheckoutError(){
   if(el){el.style.display='none';el.textContent='';}
 }
 
+// ── Proceed to checkout (Task 5) ──
 async function proceedToCheckout(){
   clearCheckoutError();
-  if(!confirmedPlacement){showCheckoutError('Please confirm your placement first.');return;}
+  if(!selectedArea){showCheckoutError('Please select a grid area first.');return;}
+  if(!logoDataUrl){showCheckoutError('Please upload or draw your logo first.');return;}
   const btn=document.getElementById('ctaBtn');
   btn.disabled=true;btn.textContent='RESERVING...';
-  const s=STAGES_DATA[confirmedPlacement.stage-1];
+  const s=STAGES_DATA[currentStage-1];
+  const fullBox=document.getElementById('fullBboxToggle')&&document.getElementById('fullBboxToggle').checked;
   const BASE='https://neverend.vercel.app';
   try{
+    // 1. Reserve the blocks
     const resRes=await fetch(BASE+'/api/reserve',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        stage_id:confirmedPlacement.stage,
-        anchor_x:confirmedPlacement.x,
-        anchor_y:confirmedPlacement.y,
-        width:confirmedPlacement.w,
-        height:confirmedPlacement.h,
+        stage_id:currentStage,
+        anchor_x:selectedArea.x,
+        anchor_y:selectedArea.y,
+        width:logoW||selectedArea.w,
+        height:logoH||selectedArea.h,
         zone_type:s.type,
         plan_type:plan
       })
@@ -1152,45 +1110,56 @@ async function proceedToCheckout(){
     const resData=await resRes.json();
     if(!resRes.ok||!resData.session_key){
       const errMsg=resData.message||resData.error||'';
-      if(errMsg.toLowerCase().includes('overlap')||errMsg.toLowerCase().includes('taken')){
+      if(errMsg.toLowerCase().includes('overlap')||errMsg.toLowerCase().includes('conflict')){
         showCheckoutError('This area is already taken. Please select a different location.');
-      } else if(errMsg.toLowerCase().includes('bound')){
+      }else if(errMsg.toLowerCase().includes('bound')){
         showCheckoutError('Selection is outside the grid. Please try again.');
-      } else {
+      }else{
         showCheckoutError('Reservation failed: '+errMsg);
       }
-      btn.disabled=false;btn.textContent='CLAIM THIS PLACEMENT';updatePanelPrice(confirmedPlacement.blocks);return;
+      btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';return;
     }
+    const session_key=resData.session_key;
+
+    // 2. Stage the logo data
+    if(logoDataUrl){
+      btn.textContent='UPLOADING LOGO...';
+      const parts=logoDataUrl.split(',');
+      const image_type=parts[0].split(':')[1].split(';')[0];
+      const image_data=parts[1];
+      await fetch(BASE+'/api/stage-logo',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({session_key,image_data,image_type})
+      }).catch(function(){});
+    }
+
+    // 3. Create checkout
     btn.textContent='CREATING CHECKOUT...';
     const coRes=await fetch(BASE+'/api/create-checkout',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({session_key:resData.session_key,plan_type:plan})
+      body:JSON.stringify({session_key,plan_type:plan})
     });
     const coData=await coRes.json();
-    if(!coRes.ok||!coData.url){
+    if(!coRes.ok||(!coData.url&&!coData.subscription_url&&!coData.payment_url)){
       showCheckoutError('Payment setup failed. Please try again or contact support.');
-      btn.disabled=false;btn.textContent='CLAIM THIS PLACEMENT';updatePanelPrice(confirmedPlacement.blocks);return;
+      btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';return;
     }
-    localStorage.setItem('neverend_placement',JSON.stringify({
-      session_key:resData.session_key,
-      stage_id:confirmedPlacement.stage,
-      anchor_x:confirmedPlacement.x,
-      anchor_y:confirmedPlacement.y,
-      width:confirmedPlacement.w,
-      height:confirmedPlacement.h,
-      plan_type:plan,
-      zone_type:s.type,
-      reserved_at:new Date().toISOString()
-    }));
-    window.location.href=coData.url;
+
+    // 4. Save session_key to localStorage
+    localStorage.setItem('neverend_placement',JSON.stringify({session_key}));
+
+    // 5. Redirect to Stripe
+    window.location.href=coData.subscription_url||coData.payment_url||coData.url;
+
   }catch(err){
     showCheckoutError('Connection error. Please check your internet and try again.');
-    btn.disabled=false;btn.textContent='CLAIM THIS PLACEMENT';updatePanelPrice(confirmedPlacement.blocks);
+    btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';
   }
 }
 
-// -- TAB SWITCHING --
+// ── Tab switching ──
 function switchTab(tab){
   document.getElementById('tabUpload').style.display=tab==='upload'?'block':'none';
   document.getElementById('tabDraw').style.display=tab==='draw'?'block':'none';
@@ -1199,30 +1168,27 @@ function switchTab(tab){
   if(tab==='draw')initPA();
 }
 
-// -- PIXEL ART EDITOR --
+// ── Pixel Art Editor ──
 function initPA(){
-  // Build main palette (only once)
   const pal=document.getElementById('paPalette');
   if(pal.children.length===0){
-    // Transparent swatch
     const transp=document.createElement('div');
     transp.className='pa-color';
     transp.style.cssText='background:transparent;background-image:repeating-conic-gradient(#555 0% 25%,#333 0% 50%);background-size:8px 8px;';
     transp.title='Transparent (erase)';
     transp.onclick=function(){
-      paColor=null; // null = transparent / erase
+      paColor=null;
       document.querySelectorAll('.pa-color').forEach(function(d){d.classList.remove('selected');});
       transp.classList.add('selected');
     };
     pal.appendChild(transp);
     PA_PALETTE.forEach(function(col){
       const div=document.createElement('div');
-      div.className='pa-color';div.style.background=col;
-      div.title=col;
+      div.className='pa-color';div.style.background=col;div.title=col;
       div.onclick=function(){selectPAColor(col,div);};
       pal.appendChild(div);
     });
-    pal.children[1].classList.add('selected'); // default: first real color (#000000)
+    pal.children[1].classList.add('selected');
     renderRecentColors();
   }
   resizePA();
@@ -1234,22 +1200,16 @@ function selectPAColor(hex,swatchEl){
   if(swatchEl)swatchEl.classList.add('selected');
   addRecentColor(hex);
 }
-
 function addRecentColor(hex){
   paRecentColors=paRecentColors.filter(function(c){return c!==hex;});
   paRecentColors.unshift(hex);
   if(paRecentColors.length>8)paRecentColors.length=8;
   renderRecentColors();
 }
-
 function renderRecentColors(){
-  const rec=document.getElementById('paRecentPalette');
-  if(!rec)return;
+  const rec=document.getElementById('paRecentPalette');if(!rec)return;
   rec.innerHTML='';
-  if(paRecentColors.length===0){
-    rec.innerHTML='<span style="font-size:10px;opacity:0.4;padding:2px;">none yet</span>';
-    return;
-  }
+  if(paRecentColors.length===0){rec.innerHTML='<span style="font-size:10px;opacity:0.4;padding:2px;">none yet</span>';return;}
   paRecentColors.forEach(function(col){
     const div=document.createElement('div');
     div.className='pa-color';div.style.background=col;div.title=col;
@@ -1261,7 +1221,6 @@ function renderRecentColors(){
     rec.appendChild(div);
   });
 }
-
 function resizePA(){
   const{w,h}=calcLogoSize();
   const baseCell=Math.max(4,Math.min(20,Math.floor(258/Math.max(w,h,1))));
@@ -1275,108 +1234,67 @@ function resizePA(){
   }
   drawPA();
 }
-
 function drawPA(){
-  const pac=document.getElementById('paCanvas');
-  if(!pac)return;
+  const pac=document.getElementById('paCanvas');if(!pac)return;
   const CS=pac._cs||10,w=pac._pw||10,h=pac._ph||10;
   const pctx=pac.getContext('2d');
   pctx.clearRect(0,0,pac.width,pac.height);
   for(let r=0;r<h;r++){
     for(let c=0;c<w;c++){
       const px=paData&&paData[r]&&paData[r][c];
-      if(px){
-        pctx.fillStyle='rgba('+px.r+','+px.g+','+px.b+','+px.a/255+')';
-      }else{
-        pctx.fillStyle=(c+r)%2===0?'#1c1c28':'#242436';
-      }
+      if(px){pctx.fillStyle='rgba('+px.r+','+px.g+','+px.b+','+px.a/255+')';}
+      else{pctx.fillStyle=(c+r)%2===0?'#1c1c28':'#242436';}
       pctx.fillRect(c*CS,r*CS,CS,CS);
     }
   }
-  // Rect preview overlay
   if(paRectStart&&paHoverCell){
     const r0=Math.min(paRectStart.r,paHoverCell.r),r1=Math.max(paRectStart.r,paHoverCell.r);
     const c0=Math.min(paRectStart.c,paHoverCell.c),c1=Math.max(paRectStart.c,paHoverCell.c);
     const col=paColor?('rgba('+paColor.r+','+paColor.g+','+paColor.b+',0.45)'):'rgba(255,255,255,0.15)';
-    pctx.fillStyle=col;
-    pctx.fillRect(c0*CS,r0*CS,(c1-c0+1)*CS,(r1-r0+1)*CS);
+    pctx.fillStyle=col;pctx.fillRect(c0*CS,r0*CS,(c1-c0+1)*CS,(r1-r0+1)*CS);
     pctx.strokeStyle=paColor?('rgba('+paColor.r+','+paColor.g+','+paColor.b+',0.9)'):'rgba(255,255,255,0.5)';
-    pctx.lineWidth=1;
-    pctx.strokeRect(c0*CS+0.5,r0*CS+0.5,(c1-c0+1)*CS-1,(r1-r0+1)*CS-1);
+    pctx.lineWidth=1;pctx.strokeRect(c0*CS+0.5,r0*CS+0.5,(c1-c0+1)*CS-1,(r1-r0+1)*CS-1);
   }
-  // Hover highlight
-  if(paHoverCell&&!paRectStart){
-    pctx.strokeStyle='rgba(255,255,255,0.5)';pctx.lineWidth=1.5;
-    pctx.strokeRect(paHoverCell.c*CS+0.5,paHoverCell.r*CS+0.5,CS-1,CS-1);
-  }
-  // Grid lines
+  if(paHoverCell&&!paRectStart){pctx.strokeStyle='rgba(255,255,255,0.5)';pctx.lineWidth=1.5;pctx.strokeRect(paHoverCell.c*CS+0.5,paHoverCell.r*CS+0.5,CS-1,CS-1);}
   if(paShowGrid){
     pctx.strokeStyle='rgba(255,255,255,0.07)';pctx.lineWidth=0.5;
     for(let c=0;c<=w;c++){pctx.beginPath();pctx.moveTo(c*CS,0);pctx.lineTo(c*CS,h*CS);pctx.stroke();}
     for(let r=0;r<=h;r++){pctx.beginPath();pctx.moveTo(0,r*CS);pctx.lineTo(w*CS,r*CS);pctx.stroke();}
   }
 }
-
 function setZoom(z){
   paZoom=z;
-  [1,2,4].forEach(function(v){
-    const b=document.getElementById('paZoomBtn'+v);
-    if(b)b.classList.toggle('active',v===z);
-  });
-  const pac=document.getElementById('paCanvas');
-  if(!pac||!pac._pw)return;
+  [1,2,4].forEach(function(v){const b=document.getElementById('paZoomBtn'+v);if(b)b.classList.toggle('active',v===z);});
+  const pac=document.getElementById('paCanvas');if(!pac||!pac._pw)return;
   const w=pac._pw,h=pac._ph,base=pac._base||10;
-  const CS=base*z;
-  pac.width=w*CS;pac.height=h*CS;
-  pac._cs=CS;
-  drawPA();
+  const CS=base*z;pac.width=w*CS;pac.height=h*CS;pac._cs=CS;drawPA();
 }
-
 function togglePAGrid(){
   paShowGrid=!paShowGrid;
-  const b=document.getElementById('paGridToggleBtn');
-  if(b)b.classList.toggle('active',paShowGrid);
-  drawPA();
+  const b=document.getElementById('paGridToggleBtn');if(b)b.classList.toggle('active',paShowGrid);drawPA();
 }
-
 function hexToRgb(hex){
   const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
-  return{r:r,g:g,b:b};
+  return{r,g,b};
 }
-
 function setPATool(t){
-  paTool=t;
-  paRectStart=null;
+  paTool=t;paRectStart=null;
   ['pencil','fill','eraser','rect','eyedrop'].forEach(function(id){
-    const b=document.getElementById('paTool_'+id);
-    if(b)b.classList.toggle('active',id===t);
+    const b=document.getElementById('paTool_'+id);if(b)b.classList.toggle('active',id===t);
   });
 }
-
 function selectCustomColor(){
-  const hex=document.getElementById('paCustomColor').value;
-  selectPAColor(hex,null);
+  const hex=document.getElementById('paCustomColor').value;selectPAColor(hex,null);
 }
-
 function clearPA(){
-  if(!paData)return;
-  saveHistory();
-  for(let r=0;r<paData.length;r++)for(let c=0;c<paData[r].length;c++)paData[r][c]=null;
-  drawPA();
+  if(!paData)return;saveHistory();
+  for(let r=0;r<paData.length;r++)for(let c=0;c<paData[r].length;c++)paData[r][c]=null;drawPA();
 }
-
 function saveHistory(){
   const snapshot=paData.map(function(row){return row.map(function(px){return px?{...px}:null;});});
-  paHistory.push(snapshot);
-  if(paHistory.length>20)paHistory.shift();
+  paHistory.push(snapshot);if(paHistory.length>20)paHistory.shift();
 }
-
-function paUndo(){
-  if(paHistory.length===0)return;
-  paData=paHistory.pop();
-  drawPA();
-}
-
+function paUndo(){if(paHistory.length===0)return;paData=paHistory.pop();drawPA();}
 function paFloodFill(row,col,target,fill){
   if(row<0||row>=paData.length||col<0||col>=paData[0].length)return;
   const cur=paData[row][col];
@@ -1384,12 +1302,9 @@ function paFloodFill(row,col,target,fill){
   if(!sameAsTgt)return;
   if(fill===null){if(cur===null)return;}else{if(cur&&cur.r===fill.r&&cur.g===fill.g&&cur.b===fill.b&&cur.a===fill.a)return;}
   paData[row][col]=fill?{...fill}:null;
-  paFloodFill(row-1,col,target,fill);
-  paFloodFill(row+1,col,target,fill);
-  paFloodFill(row,col-1,target,fill);
-  paFloodFill(row,col+1,target,fill);
+  paFloodFill(row-1,col,target,fill);paFloodFill(row+1,col,target,fill);
+  paFloodFill(row,col-1,target,fill);paFloodFill(row,col+1,target,fill);
 }
-
 function getPACell(e,pac){
   const CS=pac._cs||10,w=pac._pw||10,h=pac._ph||10;
   const rect=pac.getBoundingClientRect();
@@ -1399,181 +1314,103 @@ function getPACell(e,pac){
   const r=Math.floor((clientY-rect.top)*(h*CS/rect.height)/CS);
   return{r,c,w,h};
 }
-
 function paPaint(e){
   const pac=document.getElementById('paCanvas');
   const{r,c,w,h}=getPACell(e,pac);
   if(c<0||c>=w||r<0||r>=h)return;
-
   if(paTool==='eyedrop'){
     const px=paData[r][c];
-    if(px){
-      paColor={...px};
-      const hex='#'+[px.r,px.g,px.b].map(function(v){return v.toString(16).padStart(2,'0');}).join('');
-      document.getElementById('paCustomColor').value=hex;
-      addRecentColor(hex);
-    }else{
-      paColor=null;
-    }
-    setPATool('pencil');
-    return;
+    if(px){paColor={...px};const hex='#'+[px.r,px.g,px.b].map(function(v){return v.toString(16).padStart(2,'0');}).join('');document.getElementById('paCustomColor').value=hex;addRecentColor(hex);}
+    else paColor=null;
+    setPATool('pencil');return;
   }
-  if(paTool==='rect'){
-    // rect start/end handled in mousedown/up
-    drawPA();
-    return;
-  }
-  if(paTool==='pencil'){paData[r][c]=paColor?{...paColor}:null;}
-  else if(paTool==='eraser'){paData[r][c]=null;}
-  else if(paTool==='fill'){
-    const tgt=paData[r][c];
-    paFloodFill(r,c,tgt,paColor?{...paColor}:null);
-  }
+  if(paTool==='rect'){drawPA();return;}
+  if(paTool==='pencil')paData[r][c]=paColor?{...paColor}:null;
+  else if(paTool==='eraser')paData[r][c]=null;
+  else if(paTool==='fill'){const tgt=paData[r][c];paFloodFill(r,c,tgt,paColor?{...paColor}:null);}
   drawPA();
 }
-
 function paApplyRect(r0,c0,r1,c1){
   const rMin=Math.min(r0,r1),rMax=Math.max(r0,r1);
   const cMin=Math.min(c0,c1),cMax=Math.max(c0,c1);
-  for(let rr=rMin;rr<=rMax;rr++){
-    for(let cc=cMin;cc<=cMax;cc++){
-      paData[rr][cc]=paColor?{...paColor}:null;
-    }
-  }
+  for(let rr=rMin;rr<=rMax;rr++)for(let cc=cMin;cc<=cMax;cc++)paData[rr][cc]=paColor?{...paColor}:null;
 }
-
 (function(){
-  const pac=document.getElementById('paCanvas');
-  if(!pac)return;
-
+  const pac=document.getElementById('paCanvas');if(!pac)return;
   function onDown(e){
     e.preventDefault();
     const{r,c,w,h}=getPACell(e,pac);
     if(c<0||c>=w||r<0||r>=h)return;
-    if(paTool==='rect'){
-      saveHistory();
-      paRectStart={r,c};
-      paHoverCell={r,c};
-      drawPA();
-      return;
-    }
-    saveHistory();
-    paDrawing=true;
-    paPaint(e);
+    if(paTool==='rect'){saveHistory();paRectStart={r,c};paHoverCell={r,c};drawPA();return;}
+    saveHistory();paDrawing=true;paPaint(e);
   }
   function onMove(e){
     e.preventDefault();
     const{r,c,w,h}=getPACell(e,pac);
     const coord=document.getElementById('paHoverCoord');
-    if(c>=0&&c<w&&r>=0&&r<h){
-      paHoverCell={r,c};
-      if(coord)coord.textContent='x:'+c+' y:'+r;
-    }else{
-      paHoverCell=null;
-      if(coord)coord.textContent='';
-    }
+    if(c>=0&&c<w&&r>=0&&r<h){paHoverCell={r,c};if(coord)coord.textContent='x:'+c+' y:'+r;}
+    else{paHoverCell=null;if(coord)coord.textContent='';}
     if(paRectStart){drawPA();return;}
-    if(paDrawing)paPaint(e);
-    else drawPA();
+    if(paDrawing)paPaint(e);else drawPA();
   }
   function onUp(e){
     e.preventDefault();
-    if(paRectStart&&paHoverCell){
-      paApplyRect(paRectStart.r,paRectStart.c,paHoverCell.r,paHoverCell.c);
-      paRectStart=null;
-      drawPA();
-    }
+    if(paRectStart&&paHoverCell){paApplyRect(paRectStart.r,paRectStart.c,paHoverCell.r,paHoverCell.c);paRectStart=null;drawPA();}
     paDrawing=false;
   }
-  function onLeave(){
-    paHoverCell=null;
-    document.getElementById('paHoverCoord').textContent='';
-    drawPA();
-  }
-
-  // Mouse
-  pac.addEventListener('mousedown',onDown);
-  pac.addEventListener('mousemove',onMove);
-  pac.addEventListener('mouseleave',onLeave);
-  document.addEventListener('mouseup',onUp);
-
-  // Touch
-  pac.addEventListener('touchstart',onDown,{passive:false});
-  pac.addEventListener('touchmove',onMove,{passive:false});
+  function onLeave(){paHoverCell=null;const c=document.getElementById('paHoverCoord');if(c)c.textContent='';drawPA();}
+  pac.addEventListener('mousedown',onDown);pac.addEventListener('mousemove',onMove);
+  pac.addEventListener('mouseleave',onLeave);document.addEventListener('mouseup',onUp);
+  pac.addEventListener('touchstart',onDown,{passive:false});pac.addEventListener('touchmove',onMove,{passive:false});
   pac.addEventListener('touchend',onUp,{passive:false});
 })();
 
 function usePAAsLogo(){
   const pac=document.getElementById('paCanvas');
   if(!pac||!paData)return;
-  const w=pac._pw,h=pac._ph;
-  if(!w||!h)return;
-  // Build offscreen canvas from paData
+  const w=pac._pw,h=pac._ph;if(!w||!h)return;
   logoOffscreen=document.createElement('canvas');
   logoOffscreen.width=w;logoOffscreen.height=h;
   const oCtx=logoOffscreen.getContext('2d');
   const imgData=oCtx.createImageData(w,h);
   for(let r=0;r<h;r++){
     for(let c=0;c<w;c++){
-      const px=paData[r][c];
-      const i=(r*w+c)*4;
+      const px=paData[r][c];const i=(r*w+c)*4;
       if(px){imgData.data[i]=px.r;imgData.data[i+1]=px.g;imgData.data[i+2]=px.b;imgData.data[i+3]=px.a;}
-      else{imgData.data[i+3]=0;}
+      else imgData.data[i+3]=0;
     }
   }
   oCtx.putImageData(imgData,0,0);
   logoW=w;logoH=h;
-  uploadedImage={width:w,height:h,_pa:true};
+  logoDataUrl=logoOffscreen.toDataURL('image/png');
 
-  // Count active pixels
   const px=countActivePixels(logoOffscreen);
-  activePixelCount=px.active;totalPixelCount=px.total;
+  activePixelCount=px.active;
   document.getElementById('pxStat').textContent='Active pixels: '+px.active+' (transparent: '+px.transparent+')';
   document.getElementById('customizeTransparentRow').style.display='block';
+  updateSmallPreview();
 
-  // Small preview
-  const pc=document.getElementById('pixelCanvas');
-  const DS=Math.max(1,Math.floor(76/Math.max(w,h)));
-  pc.width=w*DS;pc.height=h*DS;
-  const pCtx=pc.getContext('2d');pCtx.imageSmoothingEnabled=false;
-  pCtx.clearRect(0,0,pc.width,pc.height);
-  pCtx.drawImage(logoOffscreen,0,0,w*DS,h*DS);
-  document.getElementById('pixelPlaceholder').style.display='none';
-  pc.style.display='block';
-
-  placingX=Math.floor((GRID_COLS-logoW)/2);
-  placingY=Math.floor((GRID_ROWS-logoH)/2);
-  logoConverted=true;
-  canvas.style.cursor='crosshair';
-  placementValid=checkPlacementValidity(placingX,placingY);
-  updatePlacementStatus();
-  updateConfirmSection();
-  document.getElementById('confirmSection').style.display='block';
-  document.getElementById('gridHint').textContent='Drag the logo on the grid to choose its position. Blue = valid. Red = conflict.';
-  drawGrid();
-  document.getElementById('paInfo').textContent='Logo set! Go to Choose Stage to position it.';
-
-  // Game grid preview: render logo at 16px per block (game resolution)
+  // Game preview
   const BLOCK=16;
   const prevWrap=document.getElementById('paGamePreview');
   const prevCanvas=document.getElementById('paPreviewCanvas');
   if(prevWrap&&prevCanvas){
     prevCanvas.width=w*BLOCK;prevCanvas.height=h*BLOCK;
-    const pCtx2=prevCanvas.getContext('2d');
-    pCtx2.imageSmoothingEnabled=false;
-    // Draw checkerboard background (simulates game transparency)
-    for(let rr=0;rr<h;rr++){
-      for(let cc=0;cc<w;cc++){
-        pCtx2.fillStyle=(rr+cc)%2===0?'#1a1a2e':'#16213e';
-        pCtx2.fillRect(cc*BLOCK,rr*BLOCK,BLOCK,BLOCK);
-      }
-    }
+    const pCtx2=prevCanvas.getContext('2d');pCtx2.imageSmoothingEnabled=false;
+    for(let rr=0;rr<h;rr++)for(let cc=0;cc<w;cc++){pCtx2.fillStyle=(rr+cc)%2===0?'#1a1a2e':'#16213e';pCtx2.fillRect(cc*BLOCK,rr*BLOCK,BLOCK,BLOCK);}
     pCtx2.drawImage(logoOffscreen,0,0,w*BLOCK,h*BLOCK);
     prevWrap.style.display='block';
   }
+  document.getElementById('paInfo').textContent='Logo set!';
+
+  markSectionDone(3);
+  unlockSection(4);
+  updateSummary();
+  drawGrid();
+  document.getElementById('sec4').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-// -- INIT --
+// ── Init ──
 setStage(1);
 drawGrid();
 drawStageMap();

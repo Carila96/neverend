@@ -4,14 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>neverEND — Own the Background</title>
-<meta name="description" content="Place your logo inside the world's hardest game. Thousands of players will die staring at your brand. Permanent placement, starting at $3/block.">
+<meta name="description" content="Place your logo inside the world's hardest game. Thousands of players will die staring at your brand.">
 <meta property="og:title" content="neverEND">
 <meta property="og:description" content="Nobody finishes this game. But everybody sees your logo.">
 <meta property="og:image" content="https://neverend.vercel.app/og-image.png">
 <meta property="og:url" content="https://neverend.vercel.app">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="neverEND — Nobody finishes this game.">
-<meta name="twitter:description" content="A hardcore platformer where businesses buy space in the background.">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quantize/1.0.2/quantize.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap');
 :root{
@@ -24,7 +23,6 @@
 body{background:var(--black);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden;line-height:1.6;}
 body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 4px,rgba(0,0,0,0.025) 4px,rgba(0,0,0,0.025) 5px);pointer-events:none;z-index:9999;}
 
-/* HEADER */
 header{display:flex;align-items:center;justify-content:space-between;padding:18px 48px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(9,9,18,0.97);backdrop-filter:blur(12px);z-index:100;}
 .logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:#fff;}
 .logo span{color:var(--accent);}
@@ -33,29 +31,33 @@ nav a{color:var(--muted2);text-decoration:none;font-size:11px;letter-spacing:2px
 nav a:hover{color:var(--accent2);}
 .nav-cta{background:var(--accent);color:#fff !important;padding:8px 20px;}
 
-/* HERO */
 .hero{text-align:center;padding:72px 48px 40px;}
 .hero-eyebrow{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:4px;color:var(--muted2);margin-bottom:20px;text-transform:uppercase;}
 .hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(44px,7vw,88px);line-height:0.92;color:#fff;margin-bottom:24px;}
 .hero h1 em{color:var(--accent);font-style:normal;}
 .hero p{font-size:15px;color:var(--muted2);max-width:500px;margin:0 auto 48px;line-height:1.75;font-weight:300;}
 
-/* STATS */
 .stats-bar{display:flex;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:48px;background:var(--dark);}
 .stat-item{text-align:center;padding:28px 40px;border-right:1px solid var(--border);flex:1;max-width:220px;}
 .stat-item:last-child{border-right:none;}
 .stat-num{font-family:'Bebas Neue',sans-serif;font-size:38px;color:#fff;line-height:1;}
 .stat-label{font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-top:6px;}
 
-/* PLACEMENT SECTION */
-.placement-section{max-width:1200px;margin:0 auto;padding:0 24px 72px;}
-.placement-title-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+.placement-section{max-width:1100px;margin:0 auto;padding:0 24px 72px;}
+.placement-title-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
 .placement-title{font-family:'Bebas Neue',sans-serif;font-size:36px;color:#fff;letter-spacing:1px;}
-.placement-subtitle{font-size:12px;color:var(--muted2);margin-top:2px;letter-spacing:0.5px;}
+.placement-subtitle{font-size:12px;color:var(--muted2);margin-top:2px;}
+
+/* PROGRESS */
+.progress-track{display:flex;align-items:center;gap:0;margin-bottom:24px;background:var(--dark);border:1px solid var(--border);overflow:hidden;}
+.prog-step{flex:1;text-align:center;padding:12px 6px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--muted);border-right:1px solid var(--border);transition:all 0.3s;white-space:nowrap;}
+.prog-step:last-child{border-right:none;}
+.prog-step.active{background:rgba(74,184,255,0.08);color:var(--accent2);}
+.prog-step.done{background:rgba(74,222,128,0.06);color:var(--green);}
 
 /* FLOW SECTIONS */
-.flow-section{background:var(--dark);border:1px solid var(--border);margin-bottom:16px;transition:opacity 0.3s,filter 0.3s;}
-.flow-section.locked{opacity:0.35;pointer-events:none;filter:grayscale(0.3);}
+.flow-section{background:var(--dark);border:1px solid var(--border);margin-bottom:12px;transition:opacity 0.3s,filter 0.3s;}
+.flow-section.locked{opacity:0.3;pointer-events:none;filter:grayscale(0.4);}
 .flow-sec-hdr{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--panel);}
 .flow-sec-num{width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .flow-section.locked .flow-sec-num{background:var(--muted);}
@@ -63,151 +65,148 @@ nav a:hover{color:var(--accent2);}
 .flow-sec-title{font-family:'Bebas Neue',sans-serif;font-size:20px;color:#fff;letter-spacing:1px;flex:1;}
 .flow-sec-done{color:var(--green);font-size:18px;font-weight:bold;}
 .flow-sec-body{padding:20px;}
-.flow-2col{display:grid;grid-template-columns:260px 1fr;gap:16px;align-items:start;}
-
-/* Controls */
-.ctrl-label{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted2);display:block;margin-bottom:8px;text-transform:uppercase;}
-.ctrl-select,.ctrl-input{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:9px 12px;font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;appearance:none;margin-bottom:12px;}
-.ctrl-select:focus,.ctrl-input:focus{border-color:var(--accent2);}
 
 /* Buttons */
 .btn-primary{width:100%;background:var(--accent);border:none;color:#fff;padding:13px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;font-weight:700;transition:background 0.2s;margin-bottom:8px;}
 .btn-primary:hover{background:#c0392b;}
 .btn-primary:disabled{background:var(--muted);color:#555;cursor:not-allowed;}
-.btn-secondary{width:100%;background:none;border:1px solid var(--border);color:var(--muted2);padding:10px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;margin-bottom:8px;}
-.btn-secondary:hover{border-color:var(--accent2);color:var(--accent2);}
-.btn-blue{width:100%;background:var(--accent2);border:none;color:#000;padding:12px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;font-weight:700;transition:opacity 0.2s;margin-bottom:8px;}
+.btn-blue{background:var(--accent2);border:none;color:#000;padding:12px 20px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;font-weight:700;transition:opacity 0.2s;}
 .btn-blue:hover{opacity:0.85;}
 .btn-blue:disabled{background:var(--muted);color:#555;cursor:not-allowed;}
+.btn-secondary{background:none;border:1px solid var(--border);color:var(--muted2);padding:9px 16px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;}
+.btn-secondary:hover{border-color:var(--accent2);color:var(--accent2);}
+.w100{width:100%;display:block;margin-bottom:8px;}
 
-/* Drop zone */
-.drop-zone{border:2px dashed var(--border2);padding:24px 12px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--panel2);margin-bottom:14px;}
-.drop-zone:hover,.drop-zone.dragover{border-color:var(--accent2);background:rgba(74,184,255,0.05);}
-.drop-zone-icon{font-size:24px;margin-bottom:8px;color:var(--muted2);}
-.drop-zone-text{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);letter-spacing:1px;line-height:1.8;}
+/* SECTION 1: UPLOAD */
+.upload-zone{border:2px dashed var(--border2);padding:48px 24px;text-align:center;cursor:pointer;transition:all 0.25s;background:var(--panel2);position:relative;}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--accent2);background:rgba(74,184,255,0.04);}
+.upload-icon{font-size:40px;margin-bottom:16px;color:var(--muted);}
+.upload-title{font-family:'Bebas Neue',sans-serif;font-size:24px;color:#fff;margin-bottom:8px;letter-spacing:1px;}
+.upload-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);letter-spacing:1px;line-height:2;}
 #fileInput{display:none;}
+.upload-preview{display:flex;align-items:center;gap:16px;background:var(--panel);border:1px solid var(--border);padding:14px;margin-top:16px;}
+.upload-preview img{max-height:80px;max-width:120px;image-rendering:pixelated;border:1px solid var(--border);}
+.upload-preview-info{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted2);line-height:1.8;}
+.upload-preview-info strong{color:var(--accent2);}
 
-/* Stage map */
-#stageMapCanvas{display:block;width:100%;height:auto;image-rendering:pixelated;border:1px solid var(--border);margin-bottom:10px;}
-.stage-nav-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
-.stage-btn{background:none;border:1px solid var(--border);color:var(--muted2);width:32px;height:32px;cursor:pointer;font-size:14px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.stage-btn:hover:not(:disabled){border-color:var(--accent2);color:var(--accent2);}
-.stage-btn:disabled{opacity:0.2;cursor:not-allowed;}
-.stage-select-wrap{position:relative;flex:1;}
-select.ctrl-select-inline{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:8px 32px 8px 12px;font-family:'Share Tech Mono',monospace;font-size:11px;cursor:pointer;appearance:none;outline:none;}
-select.ctrl-select-inline:focus{border-color:var(--accent2);}
-.stage-select-wrap::after{content:'v';position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-family:'Share Tech Mono',monospace;font-size:9px;}
-.creator-badge-small{display:none;padding:6px 12px;background:rgba(245,200,66,0.07);border:1px solid rgba(245,200,66,0.22);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--gold);margin-bottom:10px;}
-.creator-badge-small.visible{display:block;}
+/* SECTION 2: SIZE */
+.size-btns{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-bottom:20px;}
+.size-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);padding:16px 12px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;text-align:center;line-height:2;}
+.size-btn:hover{border-color:var(--accent2);}
+.size-btn.active{border-color:var(--accent2);background:rgba(74,184,255,0.08);color:var(--accent2);}
+.size-btn .sb-label{font-family:'Bebas Neue',sans-serif;font-size:18px;color:#fff;display:block;letter-spacing:1px;}
+.size-btn.active .sb-label{color:var(--accent2);}
+.custom-size-row{display:flex;gap:8px;align-items:center;margin-bottom:12px;}
+.custom-size-row input{width:70px;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:8px;font-family:'Share Tech Mono',monospace;font-size:12px;text-align:center;outline:none;}
+.custom-size-row input:focus{border-color:var(--accent2);}
+.custom-size-row span{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted);}
+.previews-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+.preview-box{flex:1;min-width:160px;background:var(--panel2);border:1px solid var(--border);overflow:hidden;}
+.preview-box-label{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted2);padding:6px 10px;border-bottom:1px solid var(--border);background:var(--panel);}
+.preview-box-inner{display:flex;align-items:center;justify-content:center;padding:8px;min-height:80px;overflow:hidden;}
+.preview-box canvas{image-rendering:pixelated;max-width:100%;}
+.size-stats{background:rgba(74,184,255,0.04);border:1px solid rgba(74,184,255,0.15);padding:12px 16px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted2);line-height:2;margin-bottom:16px;}
+.size-stats strong{color:var(--accent2);}
 
-/* Grid */
-.grid-wrapper{position:relative;background:var(--dark);border:1px solid var(--border);overflow:hidden;}
-.grid-header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px;}
+/* SECTION 3: COLOR EDITOR */
+.color-toolbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+.color-tool-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);padding:8px 14px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+.color-tool-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(74,184,255,0.08);}
+.color-tool-btn:hover:not(.active){border-color:var(--muted2);}
+.color-palette-row{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px;min-height:28px;align-items:center;}
+.color-palette-row .pal-label{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);margin-right:4px;flex-shrink:0;}
+.pal-chip{width:24px;height:24px;cursor:pointer;border:2px solid transparent;transition:transform 0.1s;}
+.pal-chip:hover{transform:scale(1.2);}
+.pal-chip.selected{border-color:#fff;}
+.pal-transp{background-image:repeating-conic-gradient(#555 0% 25%,#333 0% 50%);background-size:8px 8px;}
+.edit-canvas-wrap{overflow:auto;max-height:400px;border:1px solid var(--border);background:var(--panel2);margin-bottom:14px;}
+#editCanvas{display:block;image-rendering:pixelated;cursor:crosshair;}
+
+/* COLOR PICKER POPUP */
+#colorPickerPopup{position:fixed;z-index:2000;background:var(--panel);border:1px solid var(--border2);padding:14px;width:220px;display:none;box-shadow:0 8px 32px rgba(0,0,0,0.6);}
+.cp-sv-wrap{position:relative;cursor:crosshair;margin-bottom:10px;}
+#cpSVCanvas{display:block;border:1px solid var(--border);}
+#cpSVCursor{position:absolute;width:10px;height:10px;border:2px solid #fff;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;box-shadow:0 0 0 1px #000;}
+.cp-hue-wrap{position:relative;cursor:pointer;margin-bottom:10px;}
+#cpHueCanvas{display:block;border:1px solid var(--border);}
+#cpHueCursor{position:absolute;top:0;width:4px;height:100%;background:#fff;transform:translateX(-50%);pointer-events:none;border:1px solid #000;}
+.cp-hex-row{display:flex;gap:6px;align-items:center;margin-bottom:10px;}
+.cp-hex-row label{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;flex-shrink:0;}
+#cpHexInput{flex:1;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:5px 8px;font-family:'Share Tech Mono',monospace;font-size:11px;outline:none;}
+#cpHexInput:focus{border-color:var(--accent2);}
+.cp-preview-row{display:flex;gap:6px;align-items:center;margin-bottom:10px;}
+.cp-swatch{width:32px;height:32px;border:1px solid var(--border);}
+.cp-swatch-label{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;}
+.cp-btns{display:flex;gap:6px;}
+.cp-btn{flex:1;background:var(--accent2);border:none;color:#000;padding:7px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;cursor:pointer;font-weight:700;}
+.cp-btn.cancel{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);}
+
+/* SECTION 4: STAGE */
+.stage-sel-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.stage-arrow{background:none;border:1px solid var(--border);color:var(--muted2);width:36px;height:36px;cursor:pointer;font-size:14px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.stage-arrow:hover:not(:disabled){border-color:var(--accent2);color:var(--accent2);}
+.stage-arrow:disabled{opacity:0.2;cursor:not-allowed;}
+.stage-sel-wrap{flex:1;position:relative;}
+.stage-sel-wrap select{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:9px 32px 9px 12px;font-family:'Share Tech Mono',monospace;font-size:11px;cursor:pointer;appearance:none;outline:none;}
+.stage-sel-wrap select:focus{border-color:var(--accent2);}
+.stage-sel-wrap::after{content:'v';position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-family:'Share Tech Mono',monospace;font-size:9px;}
+.stage-info{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted2);line-height:1.8;margin-bottom:14px;}
+#stageMapCanvas{display:block;image-rendering:pixelated;border:1px solid var(--border);margin-bottom:14px;max-width:100%;}
+
+/* SECTION 5: GRID */
+.grid-wrapper{background:var(--dark);border:1px solid var(--border);}
+.grid-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;}
 .grid-info{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;}
 .grid-info strong{color:var(--accent2);}
-.grid-legend{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
-.legend-item{display:flex;gap:6px;align-items:center;font-size:10px;color:var(--muted2);letter-spacing:1px;font-family:'Share Tech Mono',monospace;}
-.legend-dot{width:11px;height:11px;border:1px solid transparent;}
-.legend-dot.empty{background:#1a1a2c;border-color:#2a2a40;}
-.legend-dot.claimed{background:#2a3a5c;border-color:#3a5a8a;}
-.legend-dot.selected{background:rgba(74,184,255,0.25);border-color:var(--accent2);}
-.legend-dot.conflict{background:rgba(231,76,60,0.4);border-color:var(--accent);}
-.legend-dot.reserved{background:rgba(245,200,66,0.12);border-color:rgba(245,200,66,0.4);}
+.grid-legend{display:flex;gap:12px;flex-wrap:wrap;}
+.legend-item{display:flex;gap:5px;align-items:center;font-size:9px;color:var(--muted2);letter-spacing:1px;font-family:'Share Tech Mono',monospace;}
+.legend-dot{width:10px;height:10px;border:1px solid transparent;}
+.legend-dot.ld-avail{background:rgba(255,255,255,0.05);border-color:#2a2a40;}
+.legend-dot.ld-claimed{background:rgba(50,100,200,0.5);border-color:rgba(50,100,200,0.8);}
+.legend-dot.ld-reserved{background:rgba(200,130,0,0.5);border-color:rgba(200,130,0,0.7);}
+.legend-dot.ld-selected{background:rgba(0,200,255,0.3);border-color:var(--accent2);}
+.legend-dot.ld-conflict{background:rgba(231,76,60,0.5);border-color:var(--accent);}
 #gridCanvas{display:block;width:100%;image-rendering:pixelated;cursor:crosshair;}
-.grid-hint{padding:8px 20px;background:rgba(74,184,255,0.04);border-top:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;}
+.grid-hint{padding:8px 16px;background:rgba(74,184,255,0.03);border-top:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;}
+.placement-info{background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.2);padding:12px 16px;margin:12px 0;font-family:'Share Tech Mono',monospace;font-size:11px;line-height:2;}
+.placement-info .row{display:flex;justify-content:space-between;}
+.placement-info .val{color:var(--accent2);}
 
-/* Selection info */
-.confirm-box{background:rgba(74,222,128,0.06);border:1px solid rgba(74,222,128,0.25);padding:14px;margin-bottom:14px;font-family:'Share Tech Mono',monospace;font-size:11px;line-height:2;}
-.confirm-box .row{display:flex;justify-content:space-between;}
-.confirm-box .val{color:var(--accent2);}
-.sel-pending{background:rgba(74,184,255,0.05);border:1px solid rgba(74,184,255,0.25);padding:14px;margin-bottom:14px;font-family:'Share Tech Mono',monospace;font-size:11px;line-height:2;}
-.sel-pending .row{display:flex;justify-content:space-between;}
-.sel-pending .val{color:var(--accent2);}
-
-/* Tabs */
-.tab-btns{display:flex;gap:0;margin-bottom:14px;border:1px solid var(--border);}
-.tab-btn{flex:1;background:none;border:none;border-right:1px solid var(--border);color:var(--muted2);padding:8px 6px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
-.tab-btn:last-child{border-right:none;}
-.tab-btn.active{background:rgba(74,184,255,0.1);color:var(--accent2);}
-
-/* Pixel art editor */
-#paWrap{display:flex;flex-direction:column;gap:10px;}
-#paCanvas{display:block;image-rendering:pixelated;cursor:crosshair;border:1px solid var(--border);}
-.pa-tools{display:flex;gap:6px;}
-.pa-tool-btn{flex:1;background:none;border:1px solid var(--border);color:var(--muted2);padding:6px 4px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
-.pa-tool-btn.active{border-color:var(--accent2);color:var(--accent2);}
-.pa-palette{display:flex;flex-wrap:wrap;gap:4px;}
-.pa-color{width:20px;height:20px;border:2px solid transparent;cursor:pointer;}
-.pa-color.selected{border-color:#fff;}
-.pa-info{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.5px;}
-.px-toggle-row{display:flex;align-items:center;gap:8px;margin-top:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);cursor:pointer;}
-.px-toggle-row input{cursor:pointer;}
-.px-stat{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--accent2);margin-top:4px;}
-.pixel-preview-small{background:var(--panel2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;height:80px;margin-bottom:12px;overflow:hidden;}
-.pixel-preview-small canvas{max-height:76px;max-width:100%;image-rendering:pixelated;}
-.pixel-preview-placeholder{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;}
-
-/* Plan toggle */
-.plan-toggle{display:flex;margin-bottom:16px;border:1px solid var(--border);}
+/* SECTION 6: CONFIRM */
+.summary-box{background:var(--panel2);border:1px solid var(--border);padding:16px;margin-bottom:16px;font-family:'Share Tech Mono',monospace;font-size:11px;line-height:2.2;}
+.summary-box .srow{display:flex;justify-content:space-between;}
+.summary-box .sval{color:var(--accent2);}
+.plan-toggle{display:flex;margin-bottom:14px;border:1px solid var(--border);}
 .plan-btn{flex:1;background:none;border:none;color:var(--muted);padding:10px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;}
 .plan-btn.active{background:var(--accent2);color:#000;font-weight:700;}
-.price-summary{background:var(--dark);border:1px solid var(--border);padding:16px;margin-bottom:20px;}
+.price-summary{border:1px solid var(--border);padding:14px;margin-bottom:16px;}
 .price-row{display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:11px;margin-bottom:8px;color:var(--muted);}
-.price-row.total{border-top:1px solid var(--border);padding-top:12px;margin-top:4px;color:#fff;font-size:14px;}
-.price-row.annual-billed{background:rgba(245,200,66,0.06);padding:8px 12px;margin:-4px -12px 8px;border-left:2px solid var(--gold);}
-.price-row .discount{color:var(--green);}
+.price-row.total{border-top:1px solid var(--border);padding-top:10px;margin-top:4px;color:#fff;font-size:13px;}
+.price-row.annual-row{background:rgba(245,200,66,0.06);padding:6px 10px;margin:-4px -10px 8px;border-left:2px solid var(--gold);display:none;}
+.price-row .disc{color:var(--green);}
 .price-row .amount{color:var(--gold);}
-.price-row .annual-amount{color:var(--gold);}
+.sec6-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
+#sec6Preview{display:none;border:1px solid var(--border);image-rendering:pixelated;max-width:100%;width:100%;}
 .panel-note{font-size:10px;color:var(--muted);line-height:1.8;letter-spacing:0.5px;}
 .panel-note a{color:var(--accent2);text-decoration:none;}
+#checkoutError{display:none;margin-bottom:10px;padding:10px 12px;background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.4);color:rgba(255,120,100,0.95);font-size:11px;letter-spacing:0.5px;line-height:1.5;font-family:'Share Tech Mono',monospace;}
 
 /* TOOLTIP */
-#tooltip{position:fixed;background:var(--panel2);border:1px solid var(--border2);padding:10px 14px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;pointer-events:none;z-index:500;display:none;max-width:200px;line-height:1.9;}
-.tt-coord{color:var(--accent2);}
-.tt-claimed{color:var(--accent);}
-.tt-free{color:var(--green);}
-.tt-reserved{color:var(--gold);}
+#tooltip{position:fixed;background:var(--panel2);border:1px solid var(--border2);padding:8px 12px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;pointer-events:none;z-index:500;display:none;max-width:180px;line-height:1.8;}
 
 /* PRICING */
 .pricing-section{max-width:960px;margin:0 auto;padding:0 24px 80px;}
 .section-title{font-family:'Bebas Neue',sans-serif;font-size:44px;color:#fff;margin-bottom:6px;}
 .section-sub{font-size:13px;color:var(--muted2);margin-bottom:40px;letter-spacing:1px;line-height:1.6;}
-.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:48px;align-items:stretch;}
-.price-tier{background:var(--dark);padding:24px 20px;transition:background 0.2s;display:flex;flex-direction:column;}
-.price-tier:hover{background:var(--panel);}
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:48px;}
+.price-tier{background:var(--dark);padding:24px 20px;}
 .tier-label{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--muted2);margin-bottom:12px;text-transform:uppercase;}
 .tier-price{font-family:'Bebas Neue',sans-serif;font-size:44px;color:#fff;line-height:1;}
 .tier-price sup{font-size:18px;vertical-align:top;margin-top:8px;display:inline-block;}
 .tier-price sub{font-size:12px;color:var(--muted);font-family:'Share Tech Mono',monospace;}
 .tier-price-text{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--text);line-height:1.5;margin-bottom:4px;letter-spacing:0.5px;padding:10px 0;}
-.tier-note{font-size:11px;color:var(--muted2);margin-top:10px;line-height:1.75;flex:1;}
+.tier-note{font-size:11px;color:var(--muted2);margin-top:10px;line-height:1.75;}
 .tier-cap{color:var(--gold);font-size:10px;letter-spacing:2px;margin-top:10px;display:block;font-family:'Share Tech Mono',monospace;}
-.vol-section-title{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;margin-bottom:6px;}
-.volume-table{border:1px solid var(--border);overflow:hidden;margin-bottom:48px;}
-.vol-row{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:12px;transition:background 0.15s;}
-.vol-row:last-child{border-bottom:none;}
-.vol-row:hover{background:var(--panel);}
-.vol-row .blocks{color:var(--text);letter-spacing:1px;}
-.vol-row .disc{color:var(--green);font-weight:600;}
-.vol-row .disc.none{color:var(--muted);}
-.corp-guidance{background:var(--panel);border:1px solid var(--border);padding:24px;margin-bottom:48px;}
-.corp-guidance-title{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--muted2);text-transform:uppercase;margin-bottom:6px;}
-.corp-guidance-note{font-size:11px;color:var(--muted);margin-bottom:20px;letter-spacing:0.5px;line-height:1.6;}
-.corp-sizes{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);}
-.corp-size{background:var(--dark);padding:22px 16px;text-align:center;}
-.corp-size-num{font-family:'Bebas Neue',sans-serif;font-size:48px;color:#fff;line-height:1;}
-.corp-size-unit{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted2);letter-spacing:3px;margin-bottom:10px;text-transform:uppercase;}
-.corp-size-label{font-size:12px;color:var(--muted2);letter-spacing:1px;margin-bottom:4px;}
-.corp-size-example-label{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-top:12px;text-transform:uppercase;display:block;}
-.corp-size-example{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);margin-top:3px;display:block;}
-.monopoly-section{max-width:960px;margin:0 auto;padding:0 24px 48px;}
-.monopoly-card{background:var(--dark);border:1px solid rgba(245,200,66,0.2);padding:28px;display:flex;flex-direction:column;gap:14px;position:relative;opacity:0.65;pointer-events:none;}
-.monopoly-card.unlocked{opacity:1;pointer-events:auto;border-color:rgba(245,200,66,0.6);}
-.monopoly-lock-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(245,200,66,0.08);border:1px solid rgba(245,200,66,0.25);padding:6px 14px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gold);width:fit-content;}
-.monopoly-title{font-family:'Bebas Neue',sans-serif;font-size:38px;color:var(--gold);letter-spacing:2px;line-height:1;}
-.monopoly-sub{font-size:13px;color:var(--muted2);line-height:1.7;}
-.monopoly-price{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;}
-.monopoly-badge{display:inline-block;background:rgba(245,200,66,0.12);border:1px solid rgba(245,200,66,0.4);padding:6px 14px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gold);}
 .price-ladder{display:flex;gap:0;flex-wrap:wrap;border:1px solid var(--border);overflow:hidden;margin-bottom:48px;}
 .price-rung{flex:1;min-width:80px;padding:14px 12px;text-align:center;background:var(--dark);border-right:1px solid var(--border);font-family:'Share Tech Mono',monospace;}
 .price-rung:last-child{border-right:none;}
@@ -216,6 +215,15 @@ select.ctrl-select-inline:focus{border-color:var(--accent2);}
 .pr-price{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#fff;line-height:1;}
 .pr-label{font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:4px;}
 .pr-tag{font-size:9px;letter-spacing:1px;margin-top:6px;}
+.volume-table{border:1px solid var(--border);overflow:hidden;margin-bottom:48px;}
+.vol-row{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:12px;transition:background 0.15s;}
+.vol-row:last-child{border-bottom:none;}
+.vol-row:hover{background:var(--panel);}
+.vol-row .blocks{color:var(--text);letter-spacing:1px;}
+.vol-row .disc{color:var(--green);font-weight:600;}
+.vol-row .disc.none{color:var(--muted);}
+.vol-section-title{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;margin-bottom:6px;}
+
 footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
 .footer-logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--muted);}
 .footer-logo span{color:var(--accent);}
@@ -223,10 +231,46 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
 .footer-links a{font-size:11px;color:var(--muted);text-decoration:none;letter-spacing:1px;}
 .footer-links a:hover{color:var(--accent2);}
 .footer-copy{font-size:10px;color:#333;letter-spacing:1px;}
+
+@media(max-width:700px){
+  header{padding:14px 20px;}
+  nav{gap:14px;}
+  .hero{padding:40px 20px 24px;}
+  .stats-bar{flex-wrap:wrap;}
+  .stat-item{min-width:50%;border-right:none;border-bottom:1px solid var(--border);}
+  .sec6-grid{grid-template-columns:1fr;}
+  footer{padding:20px;}
+}
 </style>
 </head>
 <body>
-<div id="tooltip"><div class="tt-coord" id="ttCoord"></div><div id="ttStatus"></div></div>
+
+<div id="tooltip"><span id="ttCoord" style="color:var(--accent2)"></span> <span id="ttStatus"></span></div>
+
+<!-- COLOR PICKER POPUP -->
+<div id="colorPickerPopup">
+  <div class="cp-sv-wrap" id="cpSVWrap">
+    <canvas id="cpSVCanvas" width="192" height="150"></canvas>
+    <div id="cpSVCursor"></div>
+  </div>
+  <div class="cp-hue-wrap" id="cpHueWrap">
+    <canvas id="cpHueCanvas" width="192" height="16"></canvas>
+    <div id="cpHueCursor"></div>
+  </div>
+  <div class="cp-hex-row">
+    <label>HEX</label>
+    <input type="text" id="cpHexInput" maxlength="7" placeholder="#ff0000">
+  </div>
+  <div class="cp-preview-row">
+    <div class="cp-swatch" id="cpPreviewSwatch"></div>
+    <div><div class="cp-swatch-label">FROM</div><div class="cp-swatch" id="cpFromSwatch"></div></div>
+    <div class="cp-swatch-label" id="cpReplaceCount" style="color:var(--muted2);font-size:10px;"></div>
+  </div>
+  <div class="cp-btns">
+    <button class="cp-btn" onclick="applyColorReplace()">REPLACE ALL</button>
+    <button class="cp-btn cancel" onclick="closeColorPicker()">CANCEL</button>
+  </div>
+</div>
 
 <header>
   <div class="logo">never<span>END</span></div>
@@ -241,7 +285,7 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
 <section class="hero">
   <div class="hero-eyebrow">// BACKGROUND GRID PLACEMENT MARKETPLACE</div>
   <h1>YOUR BRAND<br>LIVES IN THE <em>GAME</em></h1>
-  <p>neverEND is a hardcore browser platformer. Every death, every stream, every share -- your placement is right there. Claim a piece of the background before it is gone.</p>
+  <p>neverEND is a hardcore browser platformer. Every death, every stream, every share &mdash; your placement is right there. Claim a piece of the background before it is gone.</p>
 </section>
 
 <div class="stats-bar">
@@ -251,216 +295,248 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
   <div class="stat-item"><div class="stat-num">$3</div><div class="stat-label">Per Block / Mo</div></div>
 </div>
 
-<!-- MAIN PLACEMENT TOOL -->
 <section class="placement-section" id="placementTool">
   <div class="placement-title-bar">
     <div>
       <div class="placement-title">Place Your Logo</div>
-      <div class="placement-subtitle">Select your space, design your logo, then confirm before payment.</div>
+      <div class="placement-subtitle">Upload your image, choose a size, then place it on a stage.</div>
     </div>
   </div>
 
-  <!-- ── SECTION 1: CHOOSE YOUR STAGE ── -->
+  <!-- Progress indicator -->
+  <div class="progress-track">
+    <div class="prog-step active" id="prog1">&#9312; UPLOAD</div>
+    <div class="prog-step" id="prog2">&#9313; SIZE</div>
+    <div class="prog-step" id="prog3">&#9314; EDIT</div>
+    <div class="prog-step" id="prog4">&#9315; STAGE</div>
+    <div class="prog-step" id="prog5">&#9316; PLACE</div>
+    <div class="prog-step" id="prog6">&#9317; PAY</div>
+  </div>
+
+  <!-- ── SECTION 1: UPLOAD ── -->
   <div class="flow-section" id="sec1">
     <div class="flow-sec-hdr">
       <span class="flow-sec-num">1</span>
-      <span class="flow-sec-title">CHOOSE YOUR STAGE</span>
+      <span class="flow-sec-title">UPLOAD YOUR IMAGE</span>
       <span class="flow-sec-done" id="sec1Done" style="display:none">&#10003;</span>
     </div>
     <div class="flow-sec-body">
-      <div class="flow-2col">
-        <div>
-          <div class="stage-nav-row">
-            <button class="stage-btn" id="prevBtn" onclick="changeStage(-1)" disabled>&#9664;</button>
-            <div class="stage-select-wrap">
-              <select class="ctrl-select-inline" id="stageSelect" onchange="setStage(parseInt(this.value))"></select>
-            </div>
-            <button class="stage-btn" id="nextBtn" onclick="changeStage(1)">&#9654;</button>
-          </div>
-          <div class="creator-badge-small" id="creatorBadge">CREATOR ZONE -- PNG upload allowed</div>
-          <div class="pa-info" id="stageInfoText" style="margin-top:6px;line-height:1.9;color:var(--muted2);"></div>
-          <button class="btn-blue" style="margin-top:14px;" onclick="confirmStage()">SELECT THIS STAGE &#8594;</button>
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-icon">&#8679;</div>
+        <div class="upload-title">Drop your image here</div>
+        <div class="upload-sub">Click to browse &nbsp;&bull;&nbsp; PNG, JPG, GIF &nbsp;&bull;&nbsp; max 2MB<br><span style="color:var(--accent2)">PNG transparency is preserved</span></div>
+      </div>
+      <input type="file" id="fileInput" accept="image/png,image/jpeg,image/gif,image/*">
+      <div id="uploadPreview" style="display:none;" class="upload-preview">
+        <img id="uploadPreviewImg" alt="preview">
+        <div class="upload-preview-info">
+          <div id="uploadFileName"></div>
+          <div id="uploadDimensions"></div>
         </div>
-        <div>
-          <canvas id="stageMapCanvas" width="260" height="146"></canvas>
-        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;justify-content:flex-end;">
+        <button class="btn-blue" id="uploadContinueBtn" onclick="goToSection2()" disabled>CONTINUE TO SIZE &#8594;</button>
       </div>
     </div>
   </div>
 
-  <!-- ── SECTION 2: SELECT YOUR SPACE ── -->
+  <!-- ── SECTION 2: SIZE ── -->
   <div class="flow-section locked" id="sec2">
     <div class="flow-sec-hdr">
       <span class="flow-sec-num">2</span>
-      <span class="flow-sec-title">SELECT YOUR SPACE</span>
+      <span class="flow-sec-title">CHOOSE SIZE &amp; PREVIEW</span>
       <span class="flow-sec-done" id="sec2Done" style="display:none">&#10003;</span>
     </div>
-    <div class="flow-sec-body" style="padding:0;">
-      <div class="grid-wrapper">
-        <div class="grid-header">
-          <div class="grid-info"><strong id="gridStageName">STAGE 1</strong> &nbsp;|&nbsp; <span id="gridBlocksInfo">80 x 45 | 1 block = 16x16px | STANDARD</span></div>
-          <div class="grid-legend">
-            <div class="legend-item"><div class="legend-dot empty"></div>AVAILABLE</div>
-            <div class="legend-item"><div class="legend-dot claimed"></div>CLAIMED</div>
-            <div class="legend-item"><div class="legend-dot selected"></div>SELECTED</div>
-            <div class="legend-item"><div class="legend-dot conflict"></div>CONFLICT</div>
-            <div class="legend-item"><div class="legend-dot reserved"></div>RESERVED</div>
+    <div class="flow-sec-body">
+      <div class="size-btns">
+        <button class="size-btn" onclick="selectSize(5,5,this)">
+          <span class="sb-label">TINY</span>
+          5 &times; 5 blocks &nbsp;&bull;&nbsp; ~25 blocks<br>
+          <span style="color:var(--green)">from $67/mo</span>
+        </button>
+        <button class="size-btn" onclick="selectSize(10,10,this)">
+          <span class="sb-label">SMALL</span>
+          10 &times; 10 blocks &nbsp;&bull;&nbsp; ~100 blocks<br>
+          <span style="color:var(--green)">from $240/mo</span>
+        </button>
+        <button class="size-btn" onclick="selectSize(15,15,this)">
+          <span class="sb-label">MEDIUM</span>
+          15 &times; 15 blocks &nbsp;&bull;&nbsp; ~225 blocks<br>
+          <span style="color:var(--green)">from $540/mo</span>
+        </button>
+        <button class="size-btn" onclick="selectSize(20,20,this)">
+          <span class="sb-label">LARGE</span>
+          20 &times; 20 blocks &nbsp;&bull;&nbsp; ~400 blocks<br>
+          <span style="color:var(--green)">from $840/mo</span>
+        </button>
+        <button class="size-btn" id="customSizeBtn" onclick="selectSize(0,0,this)">
+          <span class="sb-label">CUSTOM</span>
+          <span id="customSizeLabelInner">Enter dimensions below</span>
+        </button>
+      </div>
+      <div id="customSizeInputs" style="display:none;margin-bottom:14px;">
+        <div class="custom-size-row">
+          <input type="number" id="customW" value="12" min="1" max="40" placeholder="W">
+          <span>&#215;</span>
+          <input type="number" id="customH" value="12" min="1" max="40" placeholder="H">
+          <span>blocks</span>
+          <button class="btn-secondary" onclick="applyCustomSize()">APPLY</button>
+        </div>
+      </div>
+      <div id="sec2Converting" style="display:none;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted2);margin-bottom:12px;letter-spacing:1px;">Converting image...</div>
+      <div id="sec2PreviewWrap" style="display:none;">
+        <div class="previews-row">
+          <div class="preview-box">
+            <div class="preview-box-label">ON GRID (1:1)</div>
+            <div class="preview-box-inner"><canvas id="prev1x"></canvas></div>
+          </div>
+          <div class="preview-box">
+            <div class="preview-box-label">PREVIEW (2&#215;)</div>
+            <div class="preview-box-inner"><canvas id="prev2x"></canvas></div>
+          </div>
+          <div class="preview-box">
+            <div class="preview-box-label">DETAIL (4&#215;)</div>
+            <div class="preview-box-inner"><canvas id="prev4x"></canvas></div>
           </div>
         </div>
-        <canvas id="gridCanvas" width="1280" height="720"></canvas>
-        <div class="grid-hint" id="gridHint">Click and drag on the grid to select your placement area. Release to confirm.</div>
-      </div>
-      <div style="padding:16px 20px;">
-        <div id="selPending" style="display:none;" class="sel-pending">
-          <div class="row"><span>POSITION</span><span class="val" id="selPos">--</span></div>
-          <div class="row"><span>SIZE</span><span class="val" id="selSize">--</span></div>
-          <div class="row"><span>BLOCKS</span><span class="val" id="selBlocks">--</span></div>
-          <div class="row"><span>STATUS</span><span class="val" id="selStatus">--</span></div>
+        <div class="size-stats" id="sec2Stats"></div>
+        <p style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:14px;">Only colored (non-transparent) blocks are charged.</p>
+        <div style="display:flex;justify-content:flex-end;">
+          <button class="btn-blue" id="sec2ContinueBtn" onclick="goToSection3()">CONTINUE TO EDIT COLORS &#8594;</button>
         </div>
-        <button class="btn-primary" id="confirmSelBtn" onclick="confirmSelection()" style="display:none;" disabled>CONFIRM THIS SELECTION &#8594;</button>
-        <button class="btn-secondary" id="resetSelBtn" onclick="resetSelection()" style="display:none;">RESET SELECTION</button>
       </div>
     </div>
   </div>
 
-  <!-- ── SECTION 3: DESIGN YOUR LOGO ── -->
+  <!-- ── SECTION 3: EDIT COLORS ── -->
   <div class="flow-section locked" id="sec3">
     <div class="flow-sec-hdr">
       <span class="flow-sec-num">3</span>
-      <span class="flow-sec-title">DESIGN YOUR LOGO</span>
+      <span class="flow-sec-title">EDIT COLORS</span>
       <span class="flow-sec-done" id="sec3Done" style="display:none">&#10003;</span>
     </div>
     <div class="flow-sec-body">
-      <div class="tab-btns">
-        <button class="tab-btn active" id="tabBtnUpload" onclick="switchTab('upload')">UPLOAD IMAGE</button>
-        <button class="tab-btn" id="tabBtnDraw" onclick="switchTab('draw')">DRAW PIXEL ART</button>
+      <div class="color-toolbar">
+        <button class="color-tool-btn active" id="toolReplace" onclick="setColorTool('replace')">COLOR REPLACE</button>
+        <button class="color-tool-btn" id="toolTransparent" onclick="setColorTool('transparent')">MAKE TRANSPARENT</button>
+        <button class="btn-secondary" onclick="resetEditPixels()" style="margin-left:auto;">RESET</button>
       </div>
-
-      <!-- Tab A: Upload -->
-      <div id="tabUpload">
-        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-          <div class="drop-zone-icon">&#8593;</div>
-          <div class="drop-zone-text" id="dropZoneText">Click or drag image here<br>PNG / JPG / SVG &mdash; max 2MB<br><span style="color:var(--accent2);font-size:10px">PNG transparency preserved</span></div>
-        </div>
-        <input type="file" id="fileInput" accept="image/*">
-        <div id="dropPreview" style="display:none;text-align:center;margin-top:8px;">
-          <img id="dropPreviewImg" style="max-width:100%;max-height:100px;image-rendering:pixelated;border:1px solid var(--border);" alt="preview">
-          <div class="pa-info" id="dropPreviewInfo"></div>
-        </div>
-        <button class="btn-blue" id="useUploadBtn" onclick="useUploadedImage()" style="margin-top:8px;" disabled>USE THIS IMAGE</button>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:10px;letter-spacing:1px;">
+        COLOR REPLACE: click a block to replace all pixels of that color.<br>
+        MAKE TRANSPARENT: click a block to remove it (no charge).
       </div>
-
-      <!-- Tab B: Pixel Art -->
-      <div id="tabDraw" style="display:none">
-        <div id="paWrap">
-          <div class="pa-tools">
-            <button class="pa-tool-btn active" id="paTool_pencil" onclick="setPATool('pencil')" title="Pencil">PENCIL</button>
-            <button class="pa-tool-btn" id="paTool_fill" onclick="setPATool('fill')" title="Flood fill">FILL</button>
-            <button class="pa-tool-btn" id="paTool_eraser" onclick="setPATool('eraser')" title="Eraser">ERASER</button>
-            <button class="pa-tool-btn" id="paTool_rect" onclick="setPATool('rect')" title="Rectangle">RECT</button>
-            <button class="pa-tool-btn" id="paTool_eyedrop" onclick="setPATool('eyedrop')" title="Pick color">EYE</button>
-            <button class="pa-tool-btn" onclick="paUndo()" title="Undo">UNDO</button>
-            <button class="pa-tool-btn" onclick="clearPA()">CLEAR</button>
-          </div>
-          <div style="display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:wrap;">
-            <button class="pa-tool-btn active" id="paZoomBtn1" onclick="setZoom(1)" style="padding:2px 7px;">1&times;</button>
-            <button class="pa-tool-btn" id="paZoomBtn2" onclick="setZoom(2)" style="padding:2px 7px;">2&times;</button>
-            <button class="pa-tool-btn" id="paZoomBtn4" onclick="setZoom(4)" style="padding:2px 7px;">4&times;</button>
-            <button class="pa-tool-btn active" id="paGridToggleBtn" onclick="togglePAGrid()" style="padding:2px 8px;">GRID</button>
-            <span class="pa-info" id="paHoverCoord" style="font-size:10px;min-width:60px;text-align:right;opacity:0.7;"></span>
-          </div>
-          <div class="pa-info" style="margin-top:7px;margin-bottom:2px;opacity:0.6;font-size:10px;">PALETTE</div>
-          <div class="pa-palette" id="paPalette"></div>
-          <div class="pa-info" style="margin-top:6px;margin-bottom:2px;opacity:0.6;font-size:10px;">RECENT</div>
-          <div class="pa-palette" id="paRecentPalette" style="min-height:20px;opacity:0.9;"></div>
-          <div style="display:flex;align-items:center;gap:6px;margin-top:5px;">
-            <span class="pa-info">Custom:</span>
-            <input type="color" id="paCustomColor" value="#ff4444" style="width:28px;height:22px;border:none;background:none;cursor:pointer;padding:0;">
-            <button class="pa-tool-btn" style="flex:none;padding:4px 10px;" onclick="selectCustomColor()">USE</button>
-          </div>
-          <div style="overflow:auto;max-height:360px;margin-top:7px;">
-            <canvas id="paCanvas" style="display:block;"></canvas>
-          </div>
-          <button class="btn-blue" id="paUseBtn" onclick="usePAAsLogo()" style="margin-top:8px;">USE THIS LOGO</button>
-          <div class="pa-info" id="paInfo"></div>
-          <div id="paGamePreview" style="display:none;margin-top:10px;">
-            <div class="pa-info" style="margin-bottom:4px;opacity:0.7;font-size:10px;">GAME GRID PREVIEW (16px/block)</div>
-            <canvas id="paPreviewCanvas" style="border:1px solid var(--border);image-rendering:pixelated;max-width:100%;"></canvas>
-          </div>
-        </div>
+      <div style="margin-bottom:8px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;">PALETTE</div>
+      <div class="color-palette-row" id="colorPaletteRow"></div>
+      <div class="edit-canvas-wrap">
+        <canvas id="editCanvas"></canvas>
       </div>
-
-      <!-- Logo size & preview -->
-      <div id="sizeConvertWrap" style="margin-top:16px;">
-        <label class="ctrl-label">Logo Size</label>
-        <select class="ctrl-select" id="sizePreset" onchange="onSizeChange()">
-          <option value="fit" selected>Fit to selection</option>
-          <option value="100">Small -- ~100 blocks (10x10)</option>
-          <option value="200">Standard -- ~200 blocks (14x14)</option>
-          <option value="300">Large -- ~300 blocks (17x18)</option>
-          <option value="custom">Custom</option>
-        </select>
-        <div id="customWrap" style="display:none">
-          <label class="ctrl-label">Width (blocks)</label>
-          <input type="number" class="ctrl-input" id="customW" value="10" min="1" max="40" oninput="onSizeChange()">
-          <label class="ctrl-label">Height (blocks)</label>
-          <input type="number" class="ctrl-input" id="customH" value="10" min="1" max="22" oninput="onSizeChange()">
-        </div>
-        <div id="customizeTransparentRow" style="display:none">
-          <div class="px-stat" id="pxStat"></div>
-          <label class="px-toggle-row">
-            <input type="checkbox" id="fullBboxToggle" onchange="updateBboxMode()">
-            Include full bounding box (reserve empty space around logo)
-          </label>
-          <div class="pa-info" style="margin-top:4px;font-style:italic;">Tip: Enable 'full bounding box' to keep exclusive space around your logo.</div>
-        </div>
-        <div class="pixel-preview-small" id="pixelPreviewWrap" style="margin-top:10px;">
-          <div class="pixel-preview-placeholder" id="pixelPlaceholder">Upload or draw to preview</div>
-          <canvas id="pixelCanvas" style="display:none"></canvas>
-        </div>
+      <div id="editStats" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted2);margin-bottom:14px;"></div>
+      <div style="display:flex;justify-content:flex-end;">
+        <button class="btn-blue" onclick="goToSection4()">CONTINUE TO SELECT STAGE &#8594;</button>
       </div>
     </div>
   </div>
 
-  <!-- ── SECTION 4: CONFIRM & PURCHASE ── -->
+  <!-- ── SECTION 4: SELECT STAGE ── -->
   <div class="flow-section locked" id="sec4">
     <div class="flow-sec-hdr">
       <span class="flow-sec-num">4</span>
-      <span class="flow-sec-title">CONFIRM &amp; PURCHASE</span>
+      <span class="flow-sec-title">SELECT STAGE</span>
+      <span class="flow-sec-done" id="sec4Done" style="display:none">&#10003;</span>
     </div>
     <div class="flow-sec-body">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
         <div>
-          <div class="pa-info" style="margin-bottom:8px;letter-spacing:2px;font-size:10px;opacity:0.7;">ORDER SUMMARY</div>
-          <div class="confirm-box" id="summaryBox">
-            <div class="row"><span>STAGE</span><span class="val" id="sumStage">--</span></div>
-            <div class="row"><span>POSITION</span><span class="val" id="sumPos">--</span></div>
-            <div class="row"><span>SIZE</span><span class="val" id="sumSize">--</span></div>
-            <div class="row"><span>ACTIVE PIXELS</span><span class="val" id="sumPixels">--</span></div>
-            <div class="row"><span>MONTHLY PRICE</span><span class="val" id="sumPrice">--</span></div>
+          <div class="stage-sel-row">
+            <button class="stage-arrow" id="stagePrevBtn" onclick="changeStage(-1)" disabled>&#9664;</button>
+            <div class="stage-sel-wrap">
+              <select id="stageSelect" onchange="setStage(parseInt(this.value))"></select>
+            </div>
+            <button class="stage-arrow" id="stageNextBtn" onclick="changeStage(1)">&#9654;</button>
           </div>
-          <div class="pa-info" style="margin-bottom:8px;letter-spacing:2px;font-size:10px;opacity:0.7;">BILLING PLAN</div>
+          <div class="stage-info" id="stageInfoText"></div>
+          <button class="btn-blue w100" onclick="confirmStage()">SELECT THIS STAGE &#8594;</button>
+        </div>
+        <div>
+          <canvas id="stageMapCanvas" width="400" height="225"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 5: PLACE ON GRID ── -->
+  <div class="flow-section locked" id="sec5">
+    <div class="flow-sec-hdr">
+      <span class="flow-sec-num">5</span>
+      <span class="flow-sec-title">PLACE ON GRID</span>
+      <span class="flow-sec-done" id="sec5Done" style="display:none">&#10003;</span>
+    </div>
+    <div class="flow-sec-body" style="padding:0;">
+      <div class="grid-wrapper">
+        <div class="grid-header">
+          <div class="grid-info"><strong id="gridStageName">STAGE 1</strong> &nbsp;|&nbsp; 80 &times; 45 blocks &nbsp;|&nbsp; 1 block = 16&times;16px</div>
+          <div class="grid-legend">
+            <div class="legend-item"><div class="legend-dot ld-avail"></div>AVAILABLE</div>
+            <div class="legend-item"><div class="legend-dot ld-claimed"></div>CLAIMED</div>
+            <div class="legend-item"><div class="legend-dot ld-reserved"></div>RESERVED</div>
+            <div class="legend-item"><div class="legend-dot ld-selected"></div>YOUR LOGO</div>
+            <div class="legend-item"><div class="legend-dot ld-conflict"></div>CONFLICT</div>
+          </div>
+        </div>
+        <canvas id="gridCanvas" width="1280" height="720"></canvas>
+        <div class="grid-hint" id="gridHint">Move your mouse over the grid to position your logo. Click to place it.</div>
+      </div>
+      <div style="padding:14px 16px;">
+        <div class="placement-info" id="placementInfo" style="display:none;">
+          <div class="row"><span>POSITION</span><span class="val" id="placementPos">--</span></div>
+          <div class="row"><span>SIZE</span><span class="val" id="placementSize">--</span></div>
+          <div class="row"><span>STATUS</span><span class="val" id="placementStatus">--</span></div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+          <button class="btn-secondary" id="resetPlacementBtn" onclick="resetPlacement()" style="display:none;">RESET</button>
+          <button class="btn-blue" id="confirmPlacementBtn" onclick="confirmPlacement()" style="display:none;" disabled>CONFIRM PLACEMENT &#8594;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 6: CONFIRM & PAY ── -->
+  <div class="flow-section locked" id="sec6">
+    <div class="flow-sec-hdr">
+      <span class="flow-sec-num">6</span>
+      <span class="flow-sec-title">CONFIRM &amp; PURCHASE</span>
+    </div>
+    <div class="flow-sec-body">
+      <div class="sec6-grid">
+        <div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:8px;">ORDER SUMMARY</div>
+          <div class="summary-box">
+            <div class="srow"><span>STAGE</span><span class="sval" id="sumStage">--</span></div>
+            <div class="srow"><span>POSITION</span><span class="sval" id="sumPos">--</span></div>
+            <div class="srow"><span>SIZE</span><span class="sval" id="sumSize">--</span></div>
+            <div class="srow"><span>ACTIVE BLOCKS</span><span class="sval" id="sumBlocks">--</span></div>
+            <div class="srow"><span>EST. MONTHLY</span><span class="sval" id="sumPrice">--</span></div>
+          </div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:8px;">BILLING PLAN</div>
           <div class="plan-toggle">
             <button class="plan-btn active" onclick="setPlan('monthly',this)">MONTHLY</button>
             <button class="plan-btn" onclick="setPlan('annual',this)">ANNUAL &mdash; 2 MONTHS FREE</button>
           </div>
           <div class="price-summary">
-            <div class="price-row"><span>BASE PRICE</span><span class="amount" id="basePrice">--</span></div>
-            <div class="price-row"><span>VOLUME DISCOUNT</span><span class="discount" id="discountRow">--</span></div>
-            <div class="price-row"><span>PLAN DISCOUNT</span><span class="discount" id="planRow">--</span></div>
-            <div class="price-row total"><span>MONTHLY TOTAL</span><span class="amount" id="totalPrice">--</span></div>
-            <div class="price-row annual-billed" id="annualBilledRow" style="display:none">
-              <span>BILLED ANNUALLY</span><span class="annual-amount" id="annualBilledAmt">--</span>
-            </div>
+            <div class="price-row"><span>BASE PRICE</span><span class="amount" id="priceBase">--</span></div>
+            <div class="price-row"><span>VOLUME DISCOUNT</span><span class="disc" id="priceDisc">--</span></div>
+            <div class="price-row"><span>PLAN DISCOUNT</span><span class="disc" id="pricePlanDisc">--</span></div>
+            <div class="price-row total"><span>MONTHLY TOTAL</span><span class="amount" id="priceTotal">--</span></div>
+            <div class="price-row annual-row" id="annualRow"><span>BILLED ANNUALLY</span><span class="amount" id="priceAnnual">--</span></div>
           </div>
-          <div id="checkoutError" style="display:none;margin-bottom:10px;padding:10px 12px;background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.4);color:rgba(255,120,100,0.95);font-size:11px;letter-spacing:0.5px;line-height:1.5;font-family:'Share Tech Mono',monospace;"></div>
+          <div id="checkoutError"></div>
           <button class="btn-primary" id="ctaBtn" onclick="proceedToCheckout()">PROCEED TO PAYMENT</button>
-          <p class="panel-note">By proceeding you agree to our <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>.<br><br>First month prorated from purchase date. Billing auto-renews. Cancel anytime.</p>
+          <p class="panel-note">By proceeding you agree to our <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>.<br>First month prorated from purchase date. Billing auto-renews. Cancel anytime.</p>
         </div>
         <div>
-          <div class="pa-info" style="margin-bottom:8px;letter-spacing:2px;font-size:10px;opacity:0.7;">LOGO PREVIEW ON GRID</div>
-          <canvas id="sec4PreviewCanvas" style="display:none;border:1px solid var(--border);image-rendering:pixelated;max-width:100%;width:100%;"></canvas>
-          <div id="sec4NoPreview" class="pa-info" style="color:var(--muted);font-style:italic;">Logo preview will appear here.</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:8px;">LOGO PREVIEW ON GRID</div>
+          <canvas id="sec6Preview"></canvas>
+          <div id="sec6NoPreview" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);font-style:italic;">Preview will appear here.</div>
         </div>
       </div>
     </div>
@@ -475,13 +551,13 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
   <div class="pricing-grid">
     <div class="price-tier">
       <div class="tier-label">Early Access Eligibility</div>
-      <div class="tier-price-text">Available while the base price is below $8</div>
-      <div class="tier-note">Subscriptions started before the base price reaches $8 may transition to a minimum of $5 within up to 6 months. After that, pricing remains fixed only while the subscription stays active. If canceled, all previous pricing conditions are permanently lost.</div>
+      <div class="tier-price-text">Available while base price is below $8</div>
+      <div class="tier-note">Subscriptions started before the base price reaches $8 may transition to a minimum of $5 within up to 6 months. After that, pricing remains fixed while the subscription stays active.</div>
     </div>
     <div class="price-tier">
-      <div class="tier-label">Launch -- Standard</div>
+      <div class="tier-label">Launch &mdash; Standard</div>
       <div class="tier-price"><sup>$</sup>3<sub>/block/mo</sub></div>
-      <div class="tier-note">Current price. Lock in your placement now at the lowest available rate.</div>
+      <div class="tier-note">Current price. Lock in your placement at the lowest available rate.</div>
     </div>
     <div class="price-tier">
       <div class="tier-label">Growth Pricing</div>
@@ -492,11 +568,11 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
       <div class="tier-label">Absolute Cap</div>
       <div class="tier-price"><sup>$</sup>20<sub>/block/mo</sub></div>
       <div class="tier-note">Standard pricing will never exceed $20 per block per month.</div>
-      <span class="tier-cap">HARD LIMIT -- UNCONDITIONAL</span>
+      <span class="tier-cap">HARD LIMIT &mdash; UNCONDITIONAL</span>
     </div>
   </div>
   <div class="vol-section-title" style="margin-bottom:6px;">PRICE TIERS</div>
-  <div class="section-sub" style="margin-bottom:16px">All 6 pricing stages. Active subscriptions are never auto-increased.</div>
+  <div class="section-sub" style="margin-bottom:16px;">All 6 pricing stages. Active subscriptions are never auto-increased.</div>
   <div class="price-ladder">
     <div class="price-rung current"><div class="pr-price">$3</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--green)">NOW</div></div>
     <div class="price-rung"><div class="pr-price">$5</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--muted)">20% full</div></div>
@@ -505,73 +581,29 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
     <div class="price-rung"><div class="pr-price">$12</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--muted)">70% full</div></div>
     <div class="price-rung"><div class="pr-price">$15</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--accent)">CAP</div></div>
   </div>
-  <div class="vol-section-title" style="margin-bottom:6px;">STAGE MONOPOLY</div>
-  <div class="section-sub" style="margin-bottom:16px">Own every block on a stage. Your brand on every pixel.</div>
-  <div class="monopoly-card" id="monopolyCard">
-    <div class="monopoly-lock-badge">&#128274; Unlocks when market price reaches $10/block</div>
-    <div class="monopoly-title">STAGE MONOPOLY</div>
-    <div class="monopoly-sub">Own all 3,600 blocks on a single stage at 50% off full price.</div>
-    <div class="monopoly-price" id="monopolyPrice">3,600 blocks &times; $3 &times; 50% = <span style="color:var(--gold)">$5,400/mo</span> <span style="font-size:14px;color:var(--muted);">(locked until $10/block)</span></div>
-    <div><div class="monopoly-badge">&#127942; Includes LANDLORD achievement</div></div>
-  </div>
-  <div class="vol-section-title" style="margin-top:40px;margin-bottom:6px;">VOLUME DISCOUNTS</div>
-  <div class="section-sub" style="margin-bottom:16px">Applied automatically at checkout.</div>
+  <div class="vol-section-title" style="margin-bottom:6px;">VOLUME DISCOUNTS</div>
+  <div class="section-sub" style="margin-bottom:16px;">Applied automatically at checkout.</div>
   <div class="volume-table">
-    <div class="vol-row"><span class="blocks">1 -- 24 blocks</span><span class="disc none">No discount</span></div>
-    <div class="vol-row"><span class="blocks">25 -- 99 blocks</span><span class="disc">-10%</span></div>
-    <div class="vol-row"><span class="blocks">100 -- 249 blocks</span><span class="disc">-20%</span></div>
+    <div class="vol-row"><span class="blocks">1 &ndash; 24 blocks</span><span class="disc none">No discount</span></div>
+    <div class="vol-row"><span class="blocks">25 &ndash; 99 blocks</span><span class="disc">-10%</span></div>
+    <div class="vol-row"><span class="blocks">100 &ndash; 249 blocks</span><span class="disc">-20%</span></div>
     <div class="vol-row"><span class="blocks">250+ blocks</span><span class="disc">-30%</span></div>
-  </div>
-  <div class="corp-guidance">
-    <div class="corp-guidance-title">Corporate Logo Reference Guide</div>
-    <div class="corp-guidance-note">Block counts are approximate guides. Prices shown are illustrative at current launch rates ($3/block).</div>
-    <div class="corp-sizes">
-      <div class="corp-size">
-        <div class="corp-size-num">~100</div><div class="corp-size-unit">BLOCKS</div>
-        <div class="corp-size-label">Small Logo</div>
-        <div class="corp-size-label" style="color:var(--muted);font-size:10px">approx. 10 x 10</div>
-        <span class="corp-size-example-label">Example pricing</span>
-        <span class="corp-size-example">~$270/mo at $3 (-10%)</span>
-      </div>
-      <div class="corp-size">
-        <div class="corp-size-num">~200</div><div class="corp-size-unit">BLOCKS</div>
-        <div class="corp-size-label">Standard Logo</div>
-        <div class="corp-size-label" style="color:var(--muted);font-size:10px">approx. 14 x 14</div>
-        <span class="corp-size-example-label">Example pricing</span>
-        <span class="corp-size-example">~$480/mo at $3 (-20%)</span>
-      </div>
-      <div class="corp-size">
-        <div class="corp-size-num">~300</div><div class="corp-size-unit">BLOCKS</div>
-        <div class="corp-size-label">Large Logo</div>
-        <div class="corp-size-label" style="color:var(--muted);font-size:10px">approx. 17 x 18</div>
-        <span class="corp-size-example-label">Example pricing</span>
-        <span class="corp-size-example">~$630/mo at $3 (-30%)</span>
-      </div>
-    </div>
   </div>
 </section>
 
 <footer>
   <div class="footer-logo">never<span>END</span></div>
   <div class="footer-links">
-    <a href="#">Terms of Service</a><a href="#">Privacy Policy</a><a href="#">Cookie Policy</a><a href="#">IP / DMCA</a><a href="#">Content Policy</a>
+    <a href="#">Terms of Service</a><a href="#">Privacy Policy</a><a href="#">Cookie Policy</a><a href="#">Content Policy</a>
   </div>
   <div class="footer-copy">2025 Carila. All rights reserved.</div>
 </footer>
 
 <script>
-// ── Cancel any previous pending reservation on page load ──
+// ── Cancel previous reservation ──
 (function(){
-  var prevPlacement=localStorage.getItem('neverend_placement');
-  if(prevPlacement){
-    try{
-      var prev=JSON.parse(prevPlacement);
-      if(prev.session_key){
-        fetch('/api/cancel-reservation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_key:prev.session_key})}).catch(function(){});
-      }
-    }catch(e){}
-    localStorage.removeItem('neverend_placement');
-  }
+  var prev=localStorage.getItem('neverend_placement');
+  if(prev){try{var p=JSON.parse(prev);if(p.session_key)fetch('/api/cancel-reservation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_key:p.session_key})}).catch(function(){});}catch(e){}localStorage.removeItem('neverend_placement');}
 })();
 
 // ── Stage data ──
@@ -586,7 +618,18 @@ const STAGES_DATA=[
   {id:8,name:'STAGE 8',sub:'Nothing is safe.',type:'standard'},
   {id:9,name:'STAGE 9',sub:"One mistake. That's all.",type:'standard'},
   {id:10,name:'STAGE 10',sub:'You made it this far?',type:'creator'},
+  {id:11,name:'STAGE 11',sub:'The wall.',type:'standard'},
+  {id:12,name:'STAGE 12',sub:'Sink or swim.',type:'standard'},
+  {id:13,name:'STAGE 13',sub:'No floor.',type:'standard'},
+  {id:14,name:'STAGE 14',sub:'Mirrors.',type:'standard'},
+  {id:15,name:'STAGE 15',sub:'Fire and ice.',type:'creator'},
+  {id:16,name:'STAGE 16',sub:'The gauntlet.',type:'standard'},
+  {id:17,name:'STAGE 17',sub:'Descent.',type:'standard'},
+  {id:18,name:'STAGE 18',sub:'Labyrinth.',type:'standard'},
+  {id:19,name:'STAGE 19',sub:'Almost there.',type:'standard'},
+  {id:20,name:'STAGE 20',sub:'The final test.',type:'creator'},
 ];
+
 const STAGE_MAPS={
   1:{plats:[[0,41,80,4],[0,0,80,6]],spikes:[[20,40,2],[35,40,2],[50,40,2]],goal:[4,35,4,6],spawn:[72,35]},
   2:{plats:[[0,41,80,4],[0,0,80,4],[8,30,16,2],[32,24,16,2],[56,30,16,2]],spikes:[[12,29,4],[36,23,4],[60,29,4]],goal:[4,35,4,6],spawn:[72,37]},
@@ -600,467 +643,701 @@ const STAGE_MAPS={
   10:{plats:[[0,41,80,4],[0,0,80,4],[8,32,14,2],[30,24,20,2],[58,32,14,2],[30,14,20,2]],spikes:[[10,31,4],[32,23,5],[60,31,4],[32,13,5]],goal:[36,8,4,6],spawn:[72,37]},
 };
 
-function drawStageMap(){
-  const mc=document.getElementById('stageMapCanvas');if(!mc)return;
-  const mctx=mc.getContext('2d');
-  const MW=260,MH=146,SX=1280,SY=720;
-  const sx=MW/SX,sy=MH/SY;
-  mctx.fillStyle='#0a0a14';mctx.fillRect(0,0,MW,MH);
-  const m=STAGE_MAPS[currentStage];
-  if(!m){mctx.fillStyle='rgba(100,100,120,0.3)';mctx.font='10px monospace';mctx.textAlign='center';mctx.fillText('No preview',MW/2,MH/2);return;}
-  mctx.fillStyle='rgba(120,140,200,0.7)';
-  (m.plats||[]).forEach(function(p){mctx.fillRect(p[0]*16*sx,p[1]*16*sy,p[2]*16*sx,p[3]*16*sy);});
-  mctx.fillStyle='rgba(220,60,60,0.85)';
-  (m.spikes||[]).forEach(function(s){mctx.fillRect(s[0]*16*sx,s[1]*16*sy,s[2]*16*sx,4*sy);});
-  mctx.fillStyle='rgba(80,220,120,0.8)';
-  if(m.goal){const g=m.goal;mctx.fillRect(g[0]*16*sx,g[1]*16*sy,g[2]*16*sx,g[3]*16*sy);}
-  mctx.fillStyle='rgba(74,184,255,0.9)';
-  if(m.spawn){mctx.beginPath();mctx.arc(m.spawn[0]*16*sx,m.spawn[1]*16*sy,4,0,Math.PI*2);mctx.fill();}
-}
-
-// ── Constants & State ──
+// ── State ──
 const GRID_COLS=80,GRID_ROWS=45,CELL=16,BASE_PRICE=3;
+let uploadedImage=null;
+let uploadedImageDataUrl=null;
+let chosenW=0,chosenH=0;
+let pixelArtOriginal=null; // 2D array of {r,g,b}|null
+let pixelArtEdit=null;     // 2D array (editable copy)
+let colorTool='replace';
 let currentStage=1;
 let gridStates={};
+let logoGridX=0,logoGridY=0;
+let logoPlaced=false;
+let selectedArea=null;
 let plan='monthly';
+// Color picker state
+let cpH=0,cpS=1,cpV=1;
+let cpTargetColor=null; // {r,g,b} color to replace
+let cpDraggingSV=false,cpDraggingHue=false;
 
-// Selection state (Section 2)
-let isDragSelecting=false;
-let selDragStart=null; // {c,r}
-let selDragEnd=null;   // {c,r}
-let pendingSelection=null; // {x,y,w,h} while drag in progress
-let selectedArea=null;    // {x,y,w,h} confirmed
+// ── Section helpers ──
+function unlockSection(n){const s=document.getElementById('sec'+n);if(s){s.classList.remove('locked');}}
+function lockSection(n){const s=document.getElementById('sec'+n);if(s){s.classList.add('locked');s.classList.remove('done');document.getElementById('sec'+n+'Done').style.display='none';}}
+function markSectionDone(n){const s=document.getElementById('sec'+n);const d=document.getElementById('sec'+n+'Done');if(s)s.classList.add('done');if(d)d.style.display='block';}
+function setProgress(activeStep){
+  for(let i=1;i<=6;i++){
+    const el=document.getElementById('prog'+i);
+    if(i<activeStep)el.className='prog-step done';
+    else if(i===activeStep)el.className='prog-step active';
+    else el.className='prog-step';
+  }
+}
 
-// Logo state (Section 3)
-let uploadedImageDataUrl=null; // full data URL from file upload
-let uploadedImageEl=null;      // Image element
-let logoOffscreen=null;        // offscreen canvas of logo pixels
-let logoW=0,logoH=0;
-let activePixelCount=0;
-let logoDataUrl=null; // data URL of final logo (set when logo is confirmed)
+// ── Stage setup ──
+const stageSelEl=document.getElementById('stageSelect');
+STAGES_DATA.forEach(function(s){
+  const o=document.createElement('option');o.value=s.id;o.textContent=s.name+' \u2014 '+s.sub;stageSelEl.appendChild(o);
+});
 
-// Pixel art editor state
-let paData=null;
-let paTool='pencil';
-let paColor={r:255,g:68,b:68,a:255};
-let paDrawing=false;
-let paHistory=[];
-let paRecentColors=[];
-let paZoom=1;
-let paShowGrid=true;
-let paRectStart=null;
-let paHoverCell=null;
+function setStage(id){
+  currentStage=id;stageSelEl.value=id;
+  document.getElementById('stagePrevBtn').disabled=(id<=1);
+  document.getElementById('stageNextBtn').disabled=(id>=STAGES_DATA.length);
+  const s=STAGES_DATA[id-1];
+  document.getElementById('stageInfoText').textContent=s.name+' \u2014 '+s.sub+(s.type==='creator'?' (Creator Zone)':'');
+  drawStageMap();
+}
+function changeStage(d){const n=currentStage+d;if(n>=1&&n<=STAGES_DATA.length)setStage(n);}
 
-const PA_PALETTE=[
-  '#000000','#333333','#666666','#999999','#cccccc','#ffffff',
-  '#ff0000','#ff8800','#ffff00','#00ff00','#00ffff','#0000ff','#8800ff','#ff00ff',
-  '#8b4513','#a0522d','#d2691e','#f4a460','#228b22','#556b2f',
-  '#fde3c8','#f5c89a','#d4956a','#b06040','#7c3f2a',
-  '#ff1493','#ff6600','#ccff00','#00ff88','#00ccff','#aa00ff','#ff0066'
-];
+function drawStageMap(){
+  const mc=document.getElementById('stageMapCanvas');
+  const mctx=mc.getContext('2d');
+  const MW=400,MH=225,SX=1280,SY=720;
+  const sx=MW/SX,sy=MH/SY;
+  mctx.fillStyle='#07070f';mctx.fillRect(0,0,MW,MH);
+  const m=STAGE_MAPS[currentStage];
+  if(!m){
+    mctx.fillStyle='rgba(100,100,120,0.5)';mctx.font='13px monospace';mctx.textAlign='center';
+    mctx.fillText('Stage '+currentStage,MW/2,MH/2-8);
+    mctx.fillStyle='rgba(80,80,100,0.4)';mctx.font='11px monospace';
+    mctx.fillText('Preview not available',MW/2,MH/2+14);
+    return;
+  }
+  mctx.fillStyle='rgba(80,100,140,0.8)';
+  (m.plats||[]).forEach(function(p){mctx.fillRect(p[0]*16*sx,p[1]*16*sy,p[2]*16*sx,p[3]*16*sy);});
+  mctx.fillStyle='rgba(220,60,60,0.9)';
+  (m.spikes||[]).forEach(function(s){mctx.fillRect(s[0]*16*sx,s[1]*16*sy,s[2]*16*sx,5*sy);});
+  mctx.fillStyle='rgba(60,220,100,0.9)';
+  if(m.goal){const g=m.goal;mctx.fillRect(g[0]*16*sx,g[1]*16*sy,g[2]*16*sx,g[3]*16*sy);}
+  mctx.fillStyle='rgba(100,180,255,0.9)';
+  if(m.spawn){mctx.beginPath();mctx.arc(m.spawn[0]*16*sx,m.spawn[1]*16*sy,5,0,Math.PI*2);mctx.fill();}
+}
+setStage(1);
 
-// ── Mock Grid ──
+// ── Mock grid ──
 function generateMockGrid(id){
   const g={};let s=id*1337;
-  for(let i=0;i<15+(id*3)%20;i++){
+  for(let i=0;i<12+(id*3)%18;i++){
     s=(s*1664525+1013904223)&0x7fffffff;const c=s%GRID_COLS;
     s=(s*1664525+1013904223)&0x7fffffff;const r=s%GRID_ROWS;
     g[c+','+r]='claimed';
   }
   return g;
 }
-function getState(id,c,r){return(gridStates[id]&&gridStates[id][c+','+r])||'available';}
-function mockColor(id,c,r){return['#1a3a5c','#2a1a3a','#1a3a1a','#3a2a1a','#2a3a3a','#1e2a4a','#3a1a2a','#2a2a1a'][(id*7+c*3+r*11)%8];}
 STAGES_DATA.forEach(function(s){gridStates[s.id]=generateMockGrid(s.id);});
+function getBlockState(c,r){return(gridStates[currentStage]&&gridStates[currentStage][c+','+r])||'available';}
 
-// Populate stage select
-const stageSelEl=document.getElementById('stageSelect');
-STAGES_DATA.forEach(function(s){
-  const o=document.createElement('option');
-  o.value=s.id;o.textContent=s.name+' -- '+s.sub;stageSelEl.appendChild(o);
-});
-
-// ── Section unlock helpers ──
-function unlockSection(n){
-  const sec=document.getElementById('sec'+n);
-  if(sec){sec.classList.remove('locked');sec.classList.add('done-prev');}
-}
-function markSectionDone(n){
-  const sec=document.getElementById('sec'+n);
-  const done=document.getElementById('sec'+n+'Done');
-  if(sec)sec.classList.add('done');
-  if(done)done.style.display='block';
-}
-function lockSection(n){
-  const sec=document.getElementById('sec'+n);
-  const done=document.getElementById('sec'+n+'Done');
-  if(sec){sec.classList.add('locked');sec.classList.remove('done');}
-  if(done)done.style.display='none';
-}
-
-// ── Stage management ──
-function setStage(id){
-  currentStage=id;stageSelEl.value=id;
-  document.getElementById('prevBtn').disabled=(id<=1);
-  document.getElementById('nextBtn').disabled=(id>=STAGES_DATA.length);
-  const s=STAGES_DATA[id-1];
-  const isC=s.type==='creator';
-  document.getElementById('creatorBadge').classList.toggle('visible',isC);
-  document.getElementById('stageInfoText').textContent=s.name+' — '+s.sub+(isC?' (Creator Zone)':'');
-  document.getElementById('gridStageName').textContent=s.name;
-  document.getElementById('gridBlocksInfo').textContent='80 x 45 | 1 block = 16x16px | '+(isC?'CREATOR ZONE':'STANDARD');
-  drawStageMap();
-  // If returning to stage 1 from further along, reset downstream
-  resetSelection();
-}
-function changeStage(d){const n=currentStage+d;if(n>=1&&n<=STAGES_DATA.length)setStage(n);}
-
-function confirmStage(){
-  markSectionDone(1);
-  unlockSection(2);
-  drawGrid();
-  document.getElementById('sec2').scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-// ── Grid canvas ──
-const canvas=document.getElementById('gridCanvas');
-const ctx=canvas.getContext('2d');
-
-function getBlock(e){
-  const rect=canvas.getBoundingClientRect();
-  const c=Math.floor((e.clientX-rect.left)*(1280/rect.width)/CELL);
-  const r=Math.floor((e.clientY-rect.top)*(720/rect.height)/CELL);
-  if(c<0||c>=GRID_COLS||r<0||r>=GRID_ROWS)return null;
-  return[c,r];
-}
-
-function selectionHasConflict(x,y,w,h){
-  for(let dr=0;dr<h;dr++){
-    for(let dc=0;dc<w;dc++){
-      const st=getState(currentStage,x+dc,y+dr);
-      if(st==='claimed'||st==='reserved')return true;
-    }
-  }
-  return false;
-}
-
-function getCurrentDragRect(){
-  if(!selDragStart||!selDragEnd)return null;
-  const x=Math.min(selDragStart.c,selDragEnd.c);
-  const y=Math.min(selDragStart.r,selDragEnd.r);
-  const w=Math.abs(selDragEnd.c-selDragStart.c)+1;
-  const h=Math.abs(selDragEnd.r-selDragStart.r)+1;
-  return{x,y,w,h};
-}
-
-function drawGrid(){
-  ctx.clearRect(0,0,1280,720);
-  const area=selectedArea||getCurrentDragRect();
-  const isValid=area?!selectionHasConflict(area.x,area.y,area.w,area.h):false;
-
-  for(let r=0;r<GRID_ROWS;r++){
-    for(let c=0;c<GRID_COLS;c++){
-      const x=c*CELL,y=r*CELL;
-      const state=getState(currentStage,c,r);
-      const inSel=area&&c>=area.x&&c<area.x+area.w&&r>=area.y&&r<area.y+area.h;
-
-      if(state==='claimed'){
-        ctx.fillStyle=mockColor(currentStage,c,r);ctx.fillRect(x,y,CELL,CELL);
-        if(inSel){ctx.fillStyle='rgba(231,76,60,0.5)';ctx.fillRect(x,y,CELL,CELL);}
-        ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=0.5;ctx.strokeRect(x,y,CELL,CELL);
-      }else if(state==='reserved'){
-        ctx.fillStyle='rgba(245,200,66,0.1)';ctx.fillRect(x,y,CELL,CELL);
-        if(inSel){ctx.fillStyle='rgba(231,76,60,0.4)';ctx.fillRect(x,y,CELL,CELL);}
-        ctx.strokeStyle='rgba(245,200,66,0.35)';ctx.lineWidth=0.5;ctx.strokeRect(x,y,CELL,CELL);
-      }else if(inSel){
-        // Show logo preview if we have one and area is confirmed
-        if(selectedArea&&logoOffscreen&&logoW>0){
-          const lc=c-area.x,lr=r-area.y;
-          if(lc<logoW&&lr<logoH){
-            const tmp=document.createElement('canvas');tmp.width=1;tmp.height=1;
-            const tCtx=tmp.getContext('2d');tCtx.imageSmoothingEnabled=false;
-            tCtx.drawImage(logoOffscreen,lc,lr,1,1,0,0,1,1);
-            const pxData=tCtx.getImageData(0,0,1,1).data;
-            const alpha=pxData[3]/255;
-            if(alpha>0.05){
-              ctx.fillStyle='rgba('+pxData[0]+','+pxData[1]+','+pxData[2]+','+alpha+')';
-              ctx.fillRect(x,y,CELL,CELL);
-            }else{
-              ctx.fillStyle=(c+r)%2===0?'#191926':'#1b1b28';ctx.fillRect(x,y,CELL,CELL);
-            }
-          }
-        }else{
-          ctx.fillStyle=isValid?'rgba(74,184,255,0.18)':'rgba(231,76,60,0.18)';ctx.fillRect(x,y,CELL,CELL);
-        }
-        ctx.strokeStyle=isValid?'rgba(74,184,255,0.4)':'rgba(231,76,60,0.4)';ctx.lineWidth=0.5;ctx.strokeRect(x,y,CELL,CELL);
-      }else{
-        ctx.fillStyle=(c+r)%2===0?'#191926':'#1b1b28';ctx.fillRect(x,y,CELL,CELL);
-        ctx.strokeStyle='#232335';ctx.lineWidth=0.5;ctx.strokeRect(x,y,CELL,CELL);
+// Try to load real grid data when stage is confirmed
+function fetchGridStates(stageId){
+  fetch('/api/grid?stage_id='+stageId)
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d&&d.blocks){
+        const g={};
+        d.blocks.forEach(function(b){g[b.x+','+b.y]=b.status;});
+        gridStates[stageId]=g;
+        if(currentStage===stageId)drawGrid();
       }
-    }
-  }
-
-  // Selection border
-  if(area&&area.w>0&&area.h>0){
-    const bx=area.x*CELL,by=area.y*CELL,bw=area.w*CELL,bh=area.h*CELL;
-    ctx.strokeStyle=isValid?'rgba(74,184,255,0.9)':'rgba(231,76,60,0.9)';
-    ctx.lineWidth=2;
-    if(!selectedArea){ctx.setLineDash([6,4]);}
-    ctx.strokeRect(bx,by,bw,bh);
-    ctx.setLineDash([]);
-    if(selectedArea){
-      // Corner handles
-      const hs=6;
-      [[bx,by],[bx+bw-hs,by],[bx,by+bh-hs],[bx+bw-hs,by+bh-hs]].forEach(function(pt){
-        ctx.fillStyle=isValid?'rgba(74,184,255,0.9)':'rgba(231,76,60,0.9)';
-        ctx.fillRect(pt[0],pt[1],hs,hs);
-      });
-    }
-  }
+    }).catch(function(){});
 }
 
-// ── Grid drag-to-select interaction ──
-canvas.addEventListener('mousedown',function(e){
-  const b=getBlock(e);if(!b)return;
-  isDragSelecting=true;
-  selDragStart={c:b[0],r:b[1]};
-  selDragEnd={c:b[0],r:b[1]};
-  pendingSelection=null;
-  canvas.style.cursor='crosshair';
-  drawGrid();
-});
-
-canvas.addEventListener('mousemove',function(e){
-  const tt=document.getElementById('tooltip');
-  const b=getBlock(e);
-  if(b){
-    const[c,r]=b;
-    if(isDragSelecting){
-      selDragEnd={c,r};
-      drawGrid();
-    }
-    const state=getState(currentStage,c,r);
-    tt.style.display='block';
-    tt.style.left=(e.clientX+16)+'px';tt.style.top=(e.clientY-10)+'px';
-    document.getElementById('ttCoord').textContent='('+(c+1)+', '+(r+1)+')';
-    const sm={available:'<span class="tt-free">AVAILABLE</span>',claimed:'<span class="tt-claimed">CLAIMED</span>',reserved:'<span class="tt-reserved">RESERVED</span>'};
-    document.getElementById('ttStatus').innerHTML=sm[state]||'';
-  }else{
-    tt.style.display='none';
-    if(!isDragSelecting)drawGrid();
-  }
-});
-
-canvas.addEventListener('mouseup',function(e){
-  if(!isDragSelecting)return;
-  isDragSelecting=false;
-  const b=getBlock(e);
-  if(b){selDragEnd={c:b[0],r:b[1]};}
-  const rect=getCurrentDragRect();
-  if(rect&&rect.w>=1&&rect.h>=1){
-    pendingSelection=rect;
-    updateSelectionPreview(rect);
-  }
-  canvas.style.cursor='crosshair';
-  drawGrid();
-});
-
-canvas.addEventListener('mouseleave',function(){
-  document.getElementById('tooltip').style.display='none';
-  if(!isDragSelecting)drawGrid();
-});
-
-function updateSelectionPreview(rect){
-  const hasConflict=selectionHasConflict(rect.x,rect.y,rect.w,rect.h);
-  document.getElementById('selPending').style.display='block';
-  document.getElementById('selPos').textContent='col '+(rect.x+1)+', row '+(rect.y+1);
-  document.getElementById('selSize').textContent=rect.w+' x '+rect.h+' blocks';
-  document.getElementById('selBlocks').textContent=(rect.w*rect.h)+' blocks';
-  document.getElementById('selStatus').innerHTML=hasConflict
-    ?'<span style="color:var(--accent)">CONFLICT — overlaps claimed area</span>'
-    :'<span style="color:var(--green)">AVAILABLE</span>';
-  const confirmBtn=document.getElementById('confirmSelBtn');
-  const resetBtn=document.getElementById('resetSelBtn');
-  confirmBtn.style.display='block';
-  resetBtn.style.display='block';
-  confirmBtn.disabled=hasConflict;
-}
-
-function confirmSelection(){
-  if(!pendingSelection)return;
-  const hasConflict=selectionHasConflict(pendingSelection.x,pendingSelection.y,pendingSelection.w,pendingSelection.h);
-  if(hasConflict)return;
-  selectedArea={...pendingSelection};
-  markSectionDone(2);
-  unlockSection(3);
-  document.getElementById('gridHint').textContent='Position confirmed. Design your logo in Section 3.';
-  document.getElementById('sec3').scrollIntoView({behavior:'smooth',block:'start'});
-  // Auto-size logo to fit selection
-  drawGrid();
-  // If PA tab is active, re-init PA to match selection size
-  if(document.getElementById('tabDraw').style.display!=='none'){initPA();}
-}
-
-function resetSelection(){
-  selectedArea=null;pendingSelection=null;
-  selDragStart=null;selDragEnd=null;
-  document.getElementById('selPending').style.display='none';
-  document.getElementById('confirmSelBtn').style.display='none';
-  document.getElementById('resetSelBtn').style.display='none';
-  lockSection(3);lockSection(4);
-  logoOffscreen=null;logoDataUrl=null;logoW=0;logoH=0;
-  document.getElementById('gridHint').textContent='Click and drag on the grid to select your placement area.';
-  drawGrid();
-}
-
-// ── Upload ──
-const dropZone=document.getElementById('dropZone');
+// ── Upload (Section 1) ──
+const uploadZone=document.getElementById('uploadZone');
 const fileInput=document.getElementById('fileInput');
-dropZone.addEventListener('dragover',function(e){e.preventDefault();dropZone.classList.add('dragover');});
-dropZone.addEventListener('dragleave',function(){dropZone.classList.remove('dragover');});
-dropZone.addEventListener('drop',function(e){
-  e.preventDefault();dropZone.classList.remove('dragover');
-  const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadImg(f);
+uploadZone.addEventListener('dragover',function(e){e.preventDefault();uploadZone.classList.add('dragover');});
+uploadZone.addEventListener('dragleave',function(){uploadZone.classList.remove('dragover');});
+uploadZone.addEventListener('drop',function(e){
+  e.preventDefault();uploadZone.classList.remove('dragover');
+  const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadImageFile(f);
 });
-fileInput.addEventListener('change',function(){if(fileInput.files[0])loadImg(fileInput.files[0]);});
+fileInput.addEventListener('change',function(){if(fileInput.files[0])loadImageFile(fileInput.files[0]);});
 
-function loadImg(file){
+function loadImageFile(file){
   if(file.size>2*1024*1024){alert('Image must be under 2MB.');return;}
   const reader=new FileReader();
   reader.onload=function(ev){
     const img=new Image();
     img.onload=function(){
-      uploadedImageEl=img;
+      uploadedImage=img;
       uploadedImageDataUrl=ev.target.result;
-      document.getElementById('dropZoneText').innerHTML='<strong style="color:#4ab8ff">'+file.name+'</strong><br>Ready to use';
-      const prev=document.getElementById('dropPreview');
-      document.getElementById('dropPreviewImg').src=ev.target.result;
-      document.getElementById('dropPreviewInfo').textContent=img.naturalWidth+' x '+img.naturalHeight+' px  |  '+file.name;
-      prev.style.display='block';
-      document.getElementById('useUploadBtn').disabled=false;
+      document.getElementById('uploadPreviewImg').src=ev.target.result;
+      document.getElementById('uploadFileName').innerHTML='<strong style="color:var(--accent2)">'+file.name+'</strong>';
+      document.getElementById('uploadDimensions').textContent=img.naturalWidth+' \xd7 '+img.naturalHeight+' px';
+      document.getElementById('uploadPreview').style.display='flex';
+      document.getElementById('uploadContinueBtn').disabled=false;
     };
     img.src=ev.target.result;
   };
   reader.readAsDataURL(file);
 }
 
-function useUploadedImage(){
-  if(!uploadedImageEl)return;
-  const{w,h}=calcLogoSize();
-  logoW=w;logoH=h;
-  logoOffscreen=document.createElement('canvas');
-  logoOffscreen.width=w;logoOffscreen.height=h;
-  const oCtx=logoOffscreen.getContext('2d');
-  oCtx.imageSmoothingEnabled=false;
-  oCtx.clearRect(0,0,w,h);
-  oCtx.drawImage(uploadedImageEl,0,0,w,h);
-  logoDataUrl=logoOffscreen.toDataURL('image/png');
+function goToSection2(){
+  if(!uploadedImage)return;
+  markSectionDone(1);
+  unlockSection(2);
+  setProgress(2);
+  document.getElementById('sec2').scrollIntoView({behavior:'smooth',block:'start'});
+}
 
-  const px=countActivePixels(logoOffscreen);
-  activePixelCount=px.active;
-  document.getElementById('pxStat').textContent='Active pixels: '+px.active+' (transparent: '+px.transparent+')';
-  document.getElementById('customizeTransparentRow').style.display='block';
-  updateSmallPreview();
+// ── Size & Preview (Section 2) ──
+let activeSizeBtn=null;
+function selectSize(w,h,btn){
+  if(activeSizeBtn)activeSizeBtn.classList.remove('active');
+  activeSizeBtn=btn;btn.classList.add('active');
+  const isCustom=(w===0&&h===0);
+  document.getElementById('customSizeInputs').style.display=isCustom?'block':'none';
+  if(!isCustom)convertAndPreview(w,h);
+}
+
+function applyCustomSize(){
+  const w=Math.max(1,Math.min(40,parseInt(document.getElementById('customW').value)||10));
+  const h=Math.max(1,Math.min(40,parseInt(document.getElementById('customH').value)||10));
+  convertAndPreview(w,h);
+}
+
+function convertAndPreview(w,h){
+  if(!uploadedImage)return;
+  chosenW=w;chosenH=h;
+  document.getElementById('sec2Converting').style.display='block';
+  document.getElementById('sec2PreviewWrap').style.display='none';
+  setTimeout(function(){doConvert(w,h);},30);
+}
+
+function doConvert(w,h){
+  // Draw image at target size
+  const off=document.createElement('canvas');
+  off.width=w;off.height=h;
+  const oc=off.getContext('2d');
+  oc.imageSmoothingEnabled=true;
+  oc.imageSmoothingQuality='high';
+  oc.drawImage(uploadedImage,0,0,w,h);
+
+  const imgData=oc.getImageData(0,0,w,h);
+  const data=imgData.data;
+
+  // Collect opaque pixels for quantization
+  const pixelArr=[];
+  for(let i=0;i<data.length;i+=4){
+    if(data[i+3]>=30)pixelArr.push([data[i],data[i+1],data[i+2]]);
+  }
+
+  let colorMap=null;
+  if(pixelArr.length>0&&typeof quantize==='function'){
+    try{colorMap=quantize(pixelArr,16);}catch(e){}
+  }
+
+  // Build 2D pixel array
+  const pixels=[];
+  for(let y=0;y<h;y++){
+    const row=[];
+    for(let x=0;x<w;x++){
+      const idx=(y*w+x)*4;
+      const a=data[idx+3];
+      if(a<30){row.push(null);}
+      else{
+        let r=data[idx],g=data[idx+1],b=data[idx+2];
+        if(colorMap){
+          const mapped=colorMap.map([r,g,b]);
+          if(mapped){r=mapped[0];g=mapped[1];b=mapped[2];}
+        }
+        row.push({r,g,b});
+      }
+    }
+    pixels.push(row);
+  }
+
+  pixelArtOriginal=pixels;
+  pixelArtEdit=deepCopyPixels(pixels);
+
+  // Render 3 previews
+  renderPreviewCanvas(document.getElementById('prev1x'),pixels,w,h,16);
+  renderPreviewCanvas(document.getElementById('prev2x'),pixels,w,h,32);
+  renderPreviewCanvas(document.getElementById('prev4x'),pixels,w,h,64);
+
+  const active=countActivePixels(pixels);
+  const total=w*h;
+  const r=calcPrice(active,plan);
+  document.getElementById('sec2Stats').innerHTML=
+    'Active blocks: <strong>'+active+'</strong> &nbsp;&bull;&nbsp; '+
+    'Transparent: <strong>'+(total-active)+'</strong> &nbsp;&bull;&nbsp; '+
+    'Est. monthly price: <strong>$'+r.total.toFixed(2)+'</strong>';
+
+  document.getElementById('sec2Converting').style.display='none';
+  document.getElementById('sec2PreviewWrap').style.display='block';
+}
+
+function renderPreviewCanvas(canvas,pixels,w,h,blockPx){
+  canvas.width=w*blockPx;canvas.height=h*blockPx;
+  const ctx2=canvas.getContext('2d');
+  ctx2.imageSmoothingEnabled=false;
+  // Checkerboard for transparent
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x++){
+      const px=pixels[y][x];
+      if(px){
+        ctx2.fillStyle='rgb('+px.r+','+px.g+','+px.b+')';
+      }else{
+        ctx2.fillStyle=(x+y)%2===0?'#1c1c28':'#242436';
+      }
+      ctx2.fillRect(x*blockPx,y*blockPx,blockPx,blockPx);
+    }
+  }
+}
+
+function deepCopyPixels(p){
+  return p.map(function(row){return row.map(function(px){return px?{r:px.r,g:px.g,b:px.b}:null;});});
+}
+
+function countActivePixels(pixels){
+  let n=0;
+  pixels.forEach(function(row){row.forEach(function(px){if(px!==null)n++;});});
+  return n;
+}
+
+function goToSection3(){
+  if(!pixelArtEdit)return;
+  markSectionDone(2);
+  unlockSection(3);
+  setProgress(3);
+  initEditCanvas();
+  buildColorPalette();
+  updateEditStats();
+  document.getElementById('sec3').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ── Color Editor (Section 3) ──
+const editCanvas=document.getElementById('editCanvas');
+const editCtx=editCanvas.getContext('2d');
+let editZoom=1;
+
+function initEditCanvas(){
+  if(!pixelArtEdit)return;
+  const w=chosenW,h=chosenH;
+  const maxDim=Math.max(w,h,1);
+  editZoom=Math.max(4,Math.min(24,Math.floor(340/maxDim)));
+  editCanvas.width=w*editZoom;editCanvas.height=h*editZoom;
+  drawEditCanvas();
+}
+
+function drawEditCanvas(){
+  if(!pixelArtEdit)return;
+  const w=chosenW,h=chosenH,z=editZoom;
+  editCtx.clearRect(0,0,editCanvas.width,editCanvas.height);
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x++){
+      const px=pixelArtEdit[y][x];
+      if(px){editCtx.fillStyle='rgb('+px.r+','+px.g+','+px.b+')';}
+      else{editCtx.fillStyle=(x+y)%2===0?'#1c1c28':'#242436';}
+      editCtx.fillRect(x*z,y*z,z,z);
+    }
+  }
+  // Grid lines
+  editCtx.strokeStyle='rgba(255,255,255,0.06)';editCtx.lineWidth=0.5;
+  for(let x=0;x<=w;x++){editCtx.beginPath();editCtx.moveTo(x*z,0);editCtx.lineTo(x*z,h*z);editCtx.stroke();}
+  for(let y=0;y<=h;y++){editCtx.beginPath();editCtx.moveTo(0,y*z);editCtx.lineTo(w*z,y*z);editCtx.stroke();}
+}
+
+function buildColorPalette(){
+  const seen={};
+  (pixelArtEdit||[]).forEach(function(row){
+    row.forEach(function(px){
+      if(px){const k=px.r+','+px.g+','+px.b;if(!seen[k])seen[k]={r:px.r,g:px.g,b:px.b};}
+    });
+  });
+  const row=document.getElementById('colorPaletteRow');
+  row.innerHTML='<span class="pal-label">COLORS</span>';
+  Object.values(seen).forEach(function(c){
+    const chip=document.createElement('div');
+    chip.className='pal-chip';
+    chip.style.background='rgb('+c.r+','+c.g+','+c.b+')';
+    chip.title='rgb('+c.r+','+c.g+','+c.b+')';
+    chip.onclick=function(){
+      if(colorTool==='replace'){openColorPicker(c);}
+      else{replaceColorWithTransparent(c);}
+    };
+    row.appendChild(chip);
+  });
+}
+
+function updateEditStats(){
+  if(!pixelArtEdit)return;
+  const active=countActivePixels(pixelArtEdit);
+  const total=chosenW*chosenH;
+  const r=calcPrice(active,plan);
+  document.getElementById('editStats').textContent=
+    'Active: '+active+' / '+total+' blocks \u2014 Est. $'+r.total.toFixed(2)+'/mo';
+}
+
+function setColorTool(t){
+  colorTool=t;
+  document.getElementById('toolReplace').classList.toggle('active',t==='replace');
+  document.getElementById('toolTransparent').classList.toggle('active',t==='transparent');
+}
+
+editCanvas.addEventListener('click',function(e){
+  if(!pixelArtEdit)return;
+  const rect=editCanvas.getBoundingClientRect();
+  const x=Math.floor((e.clientX-rect.left)*chosenW/editCanvas.offsetWidth);
+  const y=Math.floor((e.clientY-rect.top)*chosenH/editCanvas.offsetHeight);
+  if(x<0||x>=chosenW||y<0||y>=chosenH)return;
+  const px=pixelArtEdit[y][x];
+  if(colorTool==='transparent'){
+    if(px!==null){pixelArtEdit[y][x]=null;drawEditCanvas();buildColorPalette();updateEditStats();}
+  }else{
+    if(px){openColorPicker(px,e.clientX,e.clientY);}
+  }
+});
+
+function replaceColorWithTransparent(target){
+  (pixelArtEdit||[]).forEach(function(row){
+    row.forEach(function(px,i,arr){
+      if(px&&px.r===target.r&&px.g===target.g&&px.b===target.b)arr[i]=null;
+    });
+  });
+  drawEditCanvas();buildColorPalette();updateEditStats();
+}
+
+function resetEditPixels(){
+  if(pixelArtOriginal){pixelArtEdit=deepCopyPixels(pixelArtOriginal);drawEditCanvas();buildColorPalette();updateEditStats();}
+}
+
+function goToSection4(){
   markSectionDone(3);
   unlockSection(4);
-  updateSummary();
-  drawGrid();
+  setProgress(4);
   document.getElementById('sec4').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-// ── Size calculation ──
-function calcLogoSize(){
-  const v=document.getElementById('sizePreset').value;
-  if(v==='fit'&&selectedArea){return{w:selectedArea.w,h:selectedArea.h};}
-  if(v==='custom'){
-    return{w:Math.min(parseInt(document.getElementById('customW').value)||10,GRID_COLS),
-           h:Math.min(parseInt(document.getElementById('customH').value)||10,GRID_ROWS)};
+// ── Color Picker ──
+function openColorPicker(color,clientX,clientY){
+  cpTargetColor={r:color.r,g:color.g,b:color.b};
+  const hsv=rgbToHsv(color.r,color.g,color.b);
+  cpH=hsv.h;cpS=hsv.s;cpV=hsv.v;
+  renderHuePicker();
+  renderSVPicker();
+  updateCPCursors();
+  updateCPHex();
+  document.getElementById('cpFromSwatch').style.background='rgb('+color.r+','+color.g+','+color.b+')';
+  const count=countColorInstances(color);
+  document.getElementById('cpReplaceCount').textContent=count+' block'+(count!==1?'s':'');
+  const popup=document.getElementById('colorPickerPopup');
+  popup.style.display='block';
+  const px=clientX||window.innerWidth/2-110;
+  const py=clientY||window.innerHeight/2-150;
+  popup.style.left=Math.min(px,window.innerWidth-240)+'px';
+  popup.style.top=Math.max(10,Math.min(py-20,window.innerHeight-340))+'px';
+}
+
+function closeColorPicker(){document.getElementById('colorPickerPopup').style.display='none';cpTargetColor=null;}
+
+function countColorInstances(c){
+  let n=0;
+  (pixelArtEdit||[]).forEach(function(row){row.forEach(function(px){if(px&&px.r===c.r&&px.g===c.g&&px.b===c.b)n++;});});
+  return n;
+}
+
+function applyColorReplace(){
+  if(!cpTargetColor)return;
+  const newRgb=hsvToRgb(cpH,cpS,cpV);
+  const t=cpTargetColor;
+  (pixelArtEdit||[]).forEach(function(row){
+    row.forEach(function(px,i,arr){
+      if(px&&px.r===t.r&&px.g===t.g&&px.b===t.b)arr[i]={r:newRgb.r,g:newRgb.g,b:newRgb.b};
+    });
+  });
+  closeColorPicker();
+  drawEditCanvas();buildColorPalette();updateEditStats();
+}
+
+function renderHuePicker(){
+  const canvas=document.getElementById('cpHueCanvas');
+  const ctx2=canvas.getContext('2d');
+  const grad=ctx2.createLinearGradient(0,0,canvas.width,0);
+  for(let i=0;i<=12;i++){
+    const rgb=hsvToRgb(i/12,1,1);
+    grad.addColorStop(i/12,'rgb('+rgb.r+','+rgb.g+','+rgb.b+')');
   }
-  const blocks=parseInt(v)||200;
-  const src=uploadedImageEl||{width:1,height:1};
-  const ratio=src.width/src.height;
-  let h=Math.round(Math.sqrt(blocks/ratio));
-  let w=Math.round(blocks/h);
-  return{w:Math.min(w,GRID_COLS),h:Math.min(h,GRID_ROWS)};
+  ctx2.fillStyle=grad;ctx2.fillRect(0,0,canvas.width,canvas.height);
 }
 
-function onSizeChange(){
-  const v=document.getElementById('sizePreset').value;
-  document.getElementById('customWrap').style.display=v==='custom'?'block':'none';
-  if(logoOffscreen)useUploadedImage();
+function renderSVPicker(){
+  const canvas=document.getElementById('cpSVCanvas');
+  const ctx2=canvas.getContext('2d');
+  const w=canvas.width,h=canvas.height;
+  const baseRgb=hsvToRgb(cpH,1,1);
+  const grad1=ctx2.createLinearGradient(0,0,w,0);
+  grad1.addColorStop(0,'rgba(255,255,255,1)');
+  grad1.addColorStop(1,'rgba('+baseRgb.r+','+baseRgb.g+','+baseRgb.b+',1)');
+  ctx2.fillStyle=grad1;ctx2.fillRect(0,0,w,h);
+  const grad2=ctx2.createLinearGradient(0,0,0,h);
+  grad2.addColorStop(0,'rgba(0,0,0,0)');
+  grad2.addColorStop(1,'rgba(0,0,0,1)');
+  ctx2.fillStyle=grad2;ctx2.fillRect(0,0,w,h);
+  updateCPPreview();
 }
 
-function countActivePixels(offscreen){
-  const d=offscreen.getContext('2d').getImageData(0,0,offscreen.width,offscreen.height).data;
-  let active=0,total=offscreen.width*offscreen.height;
-  for(let i=3;i<d.length;i+=4){if(d[i]>10)active++;}
-  return{active,total,transparent:total-active};
+function updateCPCursors(){
+  const svC=document.getElementById('cpSVCursor');
+  const hC=document.getElementById('cpHueCursor');
+  const svW=document.getElementById('cpSVCanvas').width;
+  const svH=document.getElementById('cpSVCanvas').height;
+  const hW=document.getElementById('cpHueCanvas').width;
+  svC.style.left=(cpS*svW)+'px';svC.style.top=((1-cpV)*svH)+'px';
+  hC.style.left=(cpH*hW)+'px';
 }
 
-function updateBboxMode(){
-  updateSummary();
+function updateCPPreview(){
+  const rgb=hsvToRgb(cpH,cpS,cpV);
+  document.getElementById('cpPreviewSwatch').style.background='rgb('+rgb.r+','+rgb.g+','+rgb.b+')';
 }
 
-function updateSmallPreview(){
-  if(!logoOffscreen)return;
-  const w=logoOffscreen.width,h=logoOffscreen.height;
-  const pc=document.getElementById('pixelCanvas');
-  const DS=Math.max(1,Math.floor(76/Math.max(w,h)));
-  pc.width=w*DS;pc.height=h*DS;
-  const pCtx=pc.getContext('2d');pCtx.imageSmoothingEnabled=false;
-  pCtx.clearRect(0,0,pc.width,pc.height);
-  pCtx.drawImage(logoOffscreen,0,0,w*DS,h*DS);
-  document.getElementById('pixelPlaceholder').style.display='none';
-  pc.style.display='block';
+function updateCPHex(){
+  const rgb=hsvToRgb(cpH,cpS,cpV);
+  document.getElementById('cpHexInput').value=rgbToHex(rgb.r,rgb.g,rgb.b);
+  updateCPPreview();
 }
 
-// ── Summary update (Section 4) ──
-function updateSummary(){
-  if(!selectedArea||!logoOffscreen)return;
-  const s=STAGES_DATA[currentStage-1];
-  const fullBox=document.getElementById('fullBboxToggle')&&document.getElementById('fullBboxToggle').checked;
-  const blockCount=fullBox?(logoW*logoH):activePixelCount||logoW*logoH;
-  const r=calcTotal(blockCount,plan);
-  document.getElementById('sumStage').textContent=s.name;
-  document.getElementById('sumPos').textContent='col '+(selectedArea.x+1)+', row '+(selectedArea.y+1);
-  document.getElementById('sumSize').textContent=logoW+' x '+logoH+' blocks';
-  document.getElementById('sumPixels').textContent=blockCount+(fullBox?'':' (non-transparent)')+' blocks';
-  document.getElementById('sumPrice').textContent='$'+r.total.toFixed(2)+'/mo';
-  document.getElementById('basePrice').textContent='$'+r.base.toFixed(2);
-  document.getElementById('discountRow').textContent=r.disc>0?'-'+(r.disc*100).toFixed(0)+'%':'--';
-  document.getElementById('planRow').textContent=r.planDisc>0?'-'+(r.planDisc*100).toFixed(1)+'%':'--';
-  document.getElementById('totalPrice').textContent='$'+r.total.toFixed(2);
-  const annRow=document.getElementById('annualBilledRow');
-  if(plan==='annual'){annRow.style.display='flex';document.getElementById('annualBilledAmt').textContent='$'+r.annual.toFixed(2)+' / yr';}
-  else annRow.style.display='none';
-  renderSec4Preview();
+// CP interactions
+const cpSVCanvas=document.getElementById('cpSVCanvas');
+const cpHueCanvas=document.getElementById('cpHueCanvas');
+
+cpSVCanvas.addEventListener('mousedown',function(e){cpDraggingSV=true;updateSVFromEvent(e);});
+cpHueCanvas.addEventListener('mousedown',function(e){cpDraggingHue=true;updateHueFromEvent(e);});
+document.addEventListener('mousemove',function(e){
+  if(cpDraggingSV)updateSVFromEvent(e);
+  if(cpDraggingHue)updateHueFromEvent(e);
+});
+document.addEventListener('mouseup',function(){cpDraggingSV=false;cpDraggingHue=false;});
+
+function updateSVFromEvent(e){
+  const rect=cpSVCanvas.getBoundingClientRect();
+  const x=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
+  const y=Math.max(0,Math.min(1,(e.clientY-rect.top)/rect.height));
+  cpS=x;cpV=1-y;
+  updateCPCursors();updateCPHex();
 }
 
-function renderSec4Preview(){
-  if(!logoOffscreen||!logoW||!logoH)return;
-  const BLOCK=16;
-  const prev=document.getElementById('sec4PreviewCanvas');
-  const noPreview=document.getElementById('sec4NoPreview');
-  prev.width=logoW*BLOCK;prev.height=logoH*BLOCK;
-  const pCtx=prev.getContext('2d');
-  pCtx.imageSmoothingEnabled=false;
-  for(let rr=0;rr<logoH;rr++){
-    for(let cc=0;cc<logoW;cc++){
-      pCtx.fillStyle=(rr+cc)%2===0?'#1a1a2e':'#16213e';
-      pCtx.fillRect(cc*BLOCK,rr*BLOCK,BLOCK,BLOCK);
+function updateHueFromEvent(e){
+  const rect=cpHueCanvas.getBoundingClientRect();
+  cpH=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
+  renderSVPicker();updateCPCursors();updateCPHex();
+}
+
+document.getElementById('cpHexInput').addEventListener('input',function(){
+  const hex=this.value;
+  if(/^#[0-9a-fA-F]{6}$/.test(hex)){
+    const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+    const hsv=rgbToHsv(r,g,b);cpH=hsv.h;cpS=hsv.s;cpV=hsv.v;
+    renderSVPicker();updateCPCursors();
+  }
+});
+
+// Close popup on outside click
+document.addEventListener('mousedown',function(e){
+  const popup=document.getElementById('colorPickerPopup');
+  if(popup.style.display!=='none'&&!popup.contains(e.target)&&e.target!==editCanvas){
+    closeColorPicker();
+  }
+});
+
+// ── Stage confirm (Section 4) ──
+function confirmStage(){
+  markSectionDone(4);
+  unlockSection(5);
+  setProgress(5);
+  document.getElementById('gridStageName').textContent=STAGES_DATA[currentStage-1].name;
+  initGrid();
+  fetchGridStates(currentStage);
+  document.getElementById('sec5').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ── Grid (Section 5) ──
+const gridCanvas=document.getElementById('gridCanvas');
+const gridCtx=gridCanvas.getContext('2d');
+let gridHoverX=-1,gridHoverY=-1;
+
+function initGrid(){
+  logoPlaced=false;selectedArea=null;
+  logoGridX=Math.max(0,Math.floor((GRID_COLS-chosenW)/2));
+  logoGridY=Math.max(0,Math.floor((GRID_ROWS-chosenH)/2));
+  document.getElementById('placementInfo').style.display='none';
+  document.getElementById('confirmPlacementBtn').style.display='none';
+  document.getElementById('resetPlacementBtn').style.display='none';
+  document.getElementById('gridHint').textContent='Move your mouse over the grid to position your logo. Click to place it.';
+  drawGrid();
+}
+
+function hasConflict(x,y,w,h){
+  for(let dr=0;dr<h;dr++)for(let dc=0;dc<w;dc++){const st=getBlockState(x+dc,y+dr);if(st==='claimed'||st==='reserved')return true;}
+  return false;
+}
+
+function drawGrid(){
+  gridCtx.clearRect(0,0,1280,720);
+  const lx=logoPlaced?selectedArea.x:logoGridX;
+  const ly=logoPlaced?selectedArea.y:logoGridY;
+  const lw=chosenW||1,lh=chosenH||1;
+  const conflict=hasConflict(lx,ly,lw,lh);
+
+  for(let r=0;r<GRID_ROWS;r++){
+    for(let c=0;c<GRID_COLS;c++){
+      const px=c*CELL,py=r*CELL;
+      const state=getBlockState(c,r);
+      const inLogo=c>=lx&&c<lx+lw&&r>=ly&&r<ly+lh;
+
+      if(state==='claimed'){
+        gridCtx.fillStyle=inLogo?'rgba(231,76,60,0.7)':'rgba(50,100,200,0.45)';gridCtx.fillRect(px,py,CELL,CELL);
+        gridCtx.strokeStyle='rgba(255,255,255,0.04)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);
+      }else if(state==='reserved'){
+        gridCtx.fillStyle=inLogo?'rgba(231,76,60,0.5)':'rgba(200,130,0,0.45)';gridCtx.fillRect(px,py,CELL,CELL);
+        gridCtx.strokeStyle='rgba(200,130,0,0.3)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);
+      }else if(inLogo){
+        // Draw logo pixel
+        const lc=c-lx,lr=r-ly;
+        const lpx=pixelArtEdit&&pixelArtEdit[lr]&&pixelArtEdit[lr][lc];
+        if(lpx){
+          const alpha=logoPlaced?1:0.7;
+          gridCtx.fillStyle='rgba('+lpx.r+','+lpx.g+','+lpx.b+','+alpha+')';gridCtx.fillRect(px,py,CELL,CELL);
+        }else{
+          gridCtx.fillStyle=(c+r)%2===0?'rgba(74,184,255,0.06)':'rgba(74,184,255,0.03)';gridCtx.fillRect(px,py,CELL,CELL);
+        }
+        gridCtx.strokeStyle=conflict?'rgba(231,76,60,0.3)':'rgba(74,184,255,0.15)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);
+      }else{
+        gridCtx.fillStyle=(c+r)%2===0?'#191926':'#1b1b28';gridCtx.fillRect(px,py,CELL,CELL);
+        gridCtx.strokeStyle='#232335';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);
+      }
     }
   }
-  pCtx.drawImage(logoOffscreen,0,0,logoW*BLOCK,logoH*BLOCK);
-  prev.style.display='block';
-  if(noPreview)noPreview.style.display='none';
+
+  // Logo border
+  const bx=lx*CELL,by=ly*CELL,bw=lw*CELL,bh=lh*CELL;
+  gridCtx.strokeStyle=conflict?'rgba(231,76,60,0.9)':'rgba(0,200,255,0.8)';
+  gridCtx.lineWidth=2;
+  if(!logoPlaced)gridCtx.setLineDash([6,3]);
+  gridCtx.strokeRect(bx,by,bw,bh);
+  gridCtx.setLineDash([]);
 }
 
-// ── Pricing ──
-function calcTotal(n,p){
+gridCanvas.addEventListener('mousemove',function(e){
+  const rect=gridCanvas.getBoundingClientRect();
+  const sc=1280/rect.width;
+  const c=Math.floor((e.clientX-rect.left)*sc/CELL);
+  const r=Math.floor((e.clientY-rect.top)*sc/CELL);
+  const tt=document.getElementById('tooltip');
+  if(c>=0&&c<GRID_COLS&&r>=0&&r<GRID_ROWS){
+    gridHoverX=c;gridHoverY=r;
+    if(!logoPlaced){
+      logoGridX=Math.max(0,Math.min(GRID_COLS-chosenW,c-Math.floor(chosenW/2)));
+      logoGridY=Math.max(0,Math.min(GRID_ROWS-chosenH,r-Math.floor(chosenH/2)));
+      drawGrid();
+    }
+    const state=getBlockState(c,r);
+    tt.style.display='block';tt.style.left=(e.clientX+14)+'px';tt.style.top=(e.clientY-10)+'px';
+    document.getElementById('ttCoord').textContent='('+(c+1)+','+(r+1)+')';
+    const stMap={available:'<span style="color:var(--green)">AVAILABLE</span>',claimed:'<span style="color:var(--accent)">CLAIMED</span>',reserved:'<span style="color:var(--gold)">RESERVED</span>'};
+    document.getElementById('ttStatus').innerHTML=stMap[state]||'';
+  }else{
+    tt.style.display='none';
+  }
+});
+
+gridCanvas.addEventListener('mouseleave',function(){document.getElementById('tooltip').style.display='none';});
+
+gridCanvas.addEventListener('click',function(e){
+  const rect=gridCanvas.getBoundingClientRect();
+  const sc=1280/rect.width;
+  const c=Math.floor((e.clientX-rect.left)*sc/CELL);
+  const r=Math.floor((e.clientY-rect.top)*sc/CELL);
+  if(c<0||c>=GRID_COLS||r<0||r>=GRID_ROWS)return;
+  const px=Math.max(0,Math.min(GRID_COLS-chosenW,c-Math.floor(chosenW/2)));
+  const py=Math.max(0,Math.min(GRID_ROWS-chosenH,r-Math.floor(chosenH/2)));
+  const conflict=hasConflict(px,py,chosenW,chosenH);
+  logoGridX=px;logoGridY=py;
+
+  document.getElementById('placementInfo').style.display='block';
+  document.getElementById('placementPos').textContent='col '+(px+1)+', row '+(py+1);
+  document.getElementById('placementSize').textContent=chosenW+' \xd7 '+chosenH+' blocks';
+  document.getElementById('placementStatus').innerHTML=conflict
+    ?'<span style="color:var(--accent)">CONFLICT \u2014 overlaps claimed area. Try a different spot.</span>'
+    :'<span style="color:var(--green)">AVAILABLE \u2014 this area is free.</span>';
+
+  const confirmBtn=document.getElementById('confirmPlacementBtn');
+  confirmBtn.style.display='block';
+  confirmBtn.disabled=conflict;
+  document.getElementById('resetPlacementBtn').style.display='block';
+  drawGrid();
+});
+
+function resetPlacement(){
+  logoPlaced=false;selectedArea=null;
+  document.getElementById('placementInfo').style.display='none';
+  document.getElementById('confirmPlacementBtn').style.display='none';
+  document.getElementById('resetPlacementBtn').style.display='none';
+  document.getElementById('gridHint').textContent='Move your mouse over the grid to position your logo. Click to place it.';
+  drawGrid();
+}
+
+function confirmPlacement(){
+  if(hasConflict(logoGridX,logoGridY,chosenW,chosenH))return;
+  logoPlaced=true;
+  selectedArea={x:logoGridX,y:logoGridY,w:chosenW,h:chosenH};
+  document.getElementById('gridHint').textContent='Placement confirmed. Proceed to Section 6 to complete your order.';
+  document.getElementById('confirmPlacementBtn').style.display='none';
+  markSectionDone(5);
+  unlockSection(6);
+  setProgress(6);
+  updateSummary();
+  drawGrid();
+  document.getElementById('sec6').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ── Summary & pricing (Section 6) ──
+function calcPrice(n,p){
   let d=0;if(n>=250)d=0.30;else if(n>=100)d=0.20;else if(n>=25)d=0.10;
-  const pd=p==='annual'?(1/6):0;
-  const base=BASE_PRICE*n,av=base*(1-d),total=av*(1-pd);
+  const pd=(p==='annual')?1/6:0;
+  const base=BASE_PRICE*n;
+  const total=base*(1-d)*(1-pd);
   return{base,disc:d,planDisc:pd,total,annual:total*10};
+}
+
+function updateSummary(){
+  if(!selectedArea||!pixelArtEdit)return;
+  const s=STAGES_DATA[currentStage-1];
+  const active=countActivePixels(pixelArtEdit);
+  const r=calcPrice(active,plan);
+  document.getElementById('sumStage').textContent=s.name;
+  document.getElementById('sumPos').textContent='col '+(selectedArea.x+1)+', row '+(selectedArea.y+1);
+  document.getElementById('sumSize').textContent=chosenW+' \xd7 '+chosenH+' blocks';
+  document.getElementById('sumBlocks').textContent=active+' active blocks';
+  document.getElementById('sumPrice').textContent='$'+r.total.toFixed(2)+'/mo';
+  document.getElementById('priceBase').textContent='$'+r.base.toFixed(2);
+  document.getElementById('priceDisc').textContent=r.disc>0?'-'+(r.disc*100).toFixed(0)+'%':'--';
+  document.getElementById('pricePlanDisc').textContent=r.planDisc>0?'-'+(r.planDisc*100*10/10).toFixed(1)+'%':'--';
+  document.getElementById('priceTotal').textContent='$'+r.total.toFixed(2);
+  const annRow=document.getElementById('annualRow');
+  if(plan==='annual'){annRow.style.display='flex';document.getElementById('priceAnnual').textContent='$'+r.annual.toFixed(2)+' / yr';}
+  else annRow.style.display='none';
+  renderSec6Preview();
+}
+
+function renderSec6Preview(){
+  if(!pixelArtEdit||!selectedArea)return;
+  const prev=document.getElementById('sec6Preview');
+  const noP=document.getElementById('sec6NoPreview');
+  const BS=16;
+  prev.width=chosenW*BS;prev.height=chosenH*BS;
+  const pCtx=prev.getContext('2d');pCtx.imageSmoothingEnabled=false;
+  for(let y=0;y<chosenH;y++){
+    for(let x=0;x<chosenW;x++){
+      const px=pixelArtEdit[y]&&pixelArtEdit[y][x];
+      pCtx.fillStyle=px?'rgb('+px.r+','+px.g+','+px.b+')':((x+y)%2===0?'#1a1a2e':'#16213e');
+      pCtx.fillRect(x*BS,y*BS,BS,BS);
+    }
+  }
+  prev.style.display='block';
+  if(noP)noP.style.display='none';
 }
 
 function setPlan(p,btn){
@@ -1070,75 +1347,64 @@ function setPlan(p,btn){
   updateSummary();
 }
 
-// ── Checkout error helpers ──
-function showCheckoutError(msg){
-  const el=document.getElementById('checkoutError');
-  if(!el)return;
-  el.textContent=msg;el.style.display='block';
-  el.scrollIntoView({behavior:'smooth',block:'nearest'});
-}
-function clearCheckoutError(){
-  const el=document.getElementById('checkoutError');
-  if(el){el.style.display='none';el.textContent='';}
+// ── Checkout ──
+function showCheckoutError(msg){const el=document.getElementById('checkoutError');el.textContent=msg;el.style.display='block';}
+function clearCheckoutError(){const el=document.getElementById('checkoutError');el.style.display='none';el.textContent='';}
+
+// Build final logo data URL from pixelArtEdit
+function buildLogoDataUrl(){
+  if(!pixelArtEdit||!chosenW||!chosenH)return null;
+  const off=document.createElement('canvas');off.width=chosenW;off.height=chosenH;
+  const oc=off.getContext('2d');oc.imageSmoothingEnabled=false;
+  for(let y=0;y<chosenH;y++){
+    for(let x=0;x<chosenW;x++){
+      const px=pixelArtEdit[y]&&pixelArtEdit[y][x];
+      if(px){oc.fillStyle='rgb('+px.r+','+px.g+','+px.b+')';oc.fillRect(x,y,1,1);}
+    }
+  }
+  return off.toDataURL('image/png');
 }
 
-// ── Proceed to checkout (Task 5) ──
 async function proceedToCheckout(){
   clearCheckoutError();
-  if(!selectedArea){showCheckoutError('Please select a grid area first.');return;}
-  if(!logoDataUrl){showCheckoutError('Please upload or draw your logo first.');return;}
+  if(!selectedArea){showCheckoutError('Please complete all steps first.');return;}
   const btn=document.getElementById('ctaBtn');
   btn.disabled=true;btn.textContent='RESERVING...';
   const s=STAGES_DATA[currentStage-1];
-  const fullBox=document.getElementById('fullBboxToggle')&&document.getElementById('fullBboxToggle').checked;
   const BASE='https://neverend.vercel.app';
   try{
-    // 1. Reserve the blocks
     const resRes=await fetch(BASE+'/api/reserve',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
+      method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        stage_id:currentStage,
-        anchor_x:selectedArea.x,
-        anchor_y:selectedArea.y,
-        width:logoW||selectedArea.w,
-        height:logoH||selectedArea.h,
-        zone_type:s.type,
-        plan_type:plan
+        stage_id:currentStage,anchor_x:selectedArea.x,anchor_y:selectedArea.y,
+        width:chosenW,height:chosenH,zone_type:s.type,plan_type:plan
       })
     });
     const resData=await resRes.json();
     if(!resRes.ok||!resData.session_key){
-      const errMsg=resData.message||resData.error||'';
-      if(errMsg.toLowerCase().includes('overlap')||errMsg.toLowerCase().includes('conflict')){
-        showCheckoutError('This area is already taken. Please select a different location.');
-      }else if(errMsg.toLowerCase().includes('bound')){
-        showCheckoutError('Selection is outside the grid. Please try again.');
-      }else{
-        showCheckoutError('Reservation failed: '+errMsg);
-      }
+      const msg=resData.message||resData.error||'';
+      showCheckoutError(msg.toLowerCase().includes('overlap')||msg.toLowerCase().includes('conflict')
+        ?'This area is already taken. Please select a different location.'
+        :'Reservation failed: '+msg);
       btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';return;
     }
     const session_key=resData.session_key;
 
-    // 2. Stage the logo data
-    if(logoDataUrl){
-      btn.textContent='UPLOADING LOGO...';
-      const parts=logoDataUrl.split(',');
+    btn.textContent='UPLOADING LOGO...';
+    const logoUrl=buildLogoDataUrl();
+    if(logoUrl){
+      const parts=logoUrl.split(',');
       const image_type=parts[0].split(':')[1].split(';')[0];
       const image_data=parts[1];
       await fetch(BASE+'/api/stage-logo',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
+        method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({session_key,image_data,image_type})
       }).catch(function(){});
     }
 
-    // 3. Create checkout
     btn.textContent='CREATING CHECKOUT...';
     const coRes=await fetch(BASE+'/api/create-checkout',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
+      method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({session_key,plan_type:plan})
     });
     const coData=await coRes.json();
@@ -1146,274 +1412,40 @@ async function proceedToCheckout(){
       showCheckoutError('Payment setup failed. Please try again or contact support.');
       btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';return;
     }
-
-    // 4. Save session_key to localStorage
     localStorage.setItem('neverend_placement',JSON.stringify({session_key}));
-
-    // 5. Redirect to Stripe
     window.location.href=coData.subscription_url||coData.payment_url||coData.url;
-
   }catch(err){
-    showCheckoutError('Connection error. Please check your internet and try again.');
+    showCheckoutError('Connection error. Please check your connection and try again.');
     btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';
   }
 }
 
-// ── Tab switching ──
-function switchTab(tab){
-  document.getElementById('tabUpload').style.display=tab==='upload'?'block':'none';
-  document.getElementById('tabDraw').style.display=tab==='draw'?'block':'none';
-  document.getElementById('tabBtnUpload').classList.toggle('active',tab==='upload');
-  document.getElementById('tabBtnDraw').classList.toggle('active',tab==='draw');
-  if(tab==='draw')initPA();
+// ── Color math utilities ──
+function hsvToRgb(h,s,v){
+  const i=Math.floor(h*6),f=h*6-i;
+  const p=v*(1-s),q=v*(1-f*s),t=v*(1-(1-f)*s);
+  let r,g,b;
+  switch(i%6){
+    case 0:r=v;g=t;b=p;break;case 1:r=q;g=v;b=p;break;case 2:r=p;g=v;b=t;break;
+    case 3:r=p;g=q;b=v;break;case 4:r=t;g=p;b=v;break;case 5:r=v;g=p;b=q;break;
+  }
+  return{r:Math.round(r*255),g:Math.round(g*255),b:Math.round(b*255)};
 }
 
-// ── Pixel Art Editor ──
-function initPA(){
-  const pal=document.getElementById('paPalette');
-  if(pal.children.length===0){
-    const transp=document.createElement('div');
-    transp.className='pa-color';
-    transp.style.cssText='background:transparent;background-image:repeating-conic-gradient(#555 0% 25%,#333 0% 50%);background-size:8px 8px;';
-    transp.title='Transparent (erase)';
-    transp.onclick=function(){
-      paColor=null;
-      document.querySelectorAll('.pa-color').forEach(function(d){d.classList.remove('selected');});
-      transp.classList.add('selected');
-    };
-    pal.appendChild(transp);
-    PA_PALETTE.forEach(function(col){
-      const div=document.createElement('div');
-      div.className='pa-color';div.style.background=col;div.title=col;
-      div.onclick=function(){selectPAColor(col,div);};
-      pal.appendChild(div);
-    });
-    pal.children[1].classList.add('selected');
-    renderRecentColors();
+function rgbToHsv(r,g,b){
+  r/=255;g/=255;b/=255;
+  const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min;
+  let h=0,s=max===0?0:d/max,v=max;
+  if(d!==0){
+    if(max===r)h=(g-b)/d+(g<b?6:0);
+    else if(max===g)h=(b-r)/d+2;
+    else h=(r-g)/d+4;
+    h/=6;
   }
-  resizePA();
+  return{h,s,v};
 }
 
-function selectPAColor(hex,swatchEl){
-  const rgb=hexToRgb(hex);paColor={r:rgb.r,g:rgb.g,b:rgb.b,a:255};
-  document.querySelectorAll('.pa-color').forEach(function(d){d.classList.remove('selected');});
-  if(swatchEl)swatchEl.classList.add('selected');
-  addRecentColor(hex);
-}
-function addRecentColor(hex){
-  paRecentColors=paRecentColors.filter(function(c){return c!==hex;});
-  paRecentColors.unshift(hex);
-  if(paRecentColors.length>8)paRecentColors.length=8;
-  renderRecentColors();
-}
-function renderRecentColors(){
-  const rec=document.getElementById('paRecentPalette');if(!rec)return;
-  rec.innerHTML='';
-  if(paRecentColors.length===0){rec.innerHTML='<span style="font-size:10px;opacity:0.4;padding:2px;">none yet</span>';return;}
-  paRecentColors.forEach(function(col){
-    const div=document.createElement('div');
-    div.className='pa-color';div.style.background=col;div.title=col;
-    div.onclick=function(){
-      const rgb=hexToRgb(col);paColor={r:rgb.r,g:rgb.g,b:rgb.b,a:255};
-      document.querySelectorAll('.pa-color').forEach(function(d){d.classList.remove('selected');});
-      div.classList.add('selected');
-    };
-    rec.appendChild(div);
-  });
-}
-function resizePA(){
-  const{w,h}=calcLogoSize();
-  const baseCell=Math.max(4,Math.min(20,Math.floor(258/Math.max(w,h,1))));
-  const CS=baseCell*paZoom;
-  const pac=document.getElementById('paCanvas');
-  pac.width=w*CS;pac.height=h*CS;
-  pac._cs=CS;pac._pw=w;pac._ph=h;pac._base=baseCell;
-  if(!paData||paData.length!==h||paData[0].length!==w){
-    paData=[];
-    for(let r=0;r<h;r++){paData.push([]);for(let c=0;c<w;c++)paData[r].push(null);}
-  }
-  drawPA();
-}
-function drawPA(){
-  const pac=document.getElementById('paCanvas');if(!pac)return;
-  const CS=pac._cs||10,w=pac._pw||10,h=pac._ph||10;
-  const pctx=pac.getContext('2d');
-  pctx.clearRect(0,0,pac.width,pac.height);
-  for(let r=0;r<h;r++){
-    for(let c=0;c<w;c++){
-      const px=paData&&paData[r]&&paData[r][c];
-      if(px){pctx.fillStyle='rgba('+px.r+','+px.g+','+px.b+','+px.a/255+')';}
-      else{pctx.fillStyle=(c+r)%2===0?'#1c1c28':'#242436';}
-      pctx.fillRect(c*CS,r*CS,CS,CS);
-    }
-  }
-  if(paRectStart&&paHoverCell){
-    const r0=Math.min(paRectStart.r,paHoverCell.r),r1=Math.max(paRectStart.r,paHoverCell.r);
-    const c0=Math.min(paRectStart.c,paHoverCell.c),c1=Math.max(paRectStart.c,paHoverCell.c);
-    const col=paColor?('rgba('+paColor.r+','+paColor.g+','+paColor.b+',0.45)'):'rgba(255,255,255,0.15)';
-    pctx.fillStyle=col;pctx.fillRect(c0*CS,r0*CS,(c1-c0+1)*CS,(r1-r0+1)*CS);
-    pctx.strokeStyle=paColor?('rgba('+paColor.r+','+paColor.g+','+paColor.b+',0.9)'):'rgba(255,255,255,0.5)';
-    pctx.lineWidth=1;pctx.strokeRect(c0*CS+0.5,r0*CS+0.5,(c1-c0+1)*CS-1,(r1-r0+1)*CS-1);
-  }
-  if(paHoverCell&&!paRectStart){pctx.strokeStyle='rgba(255,255,255,0.5)';pctx.lineWidth=1.5;pctx.strokeRect(paHoverCell.c*CS+0.5,paHoverCell.r*CS+0.5,CS-1,CS-1);}
-  if(paShowGrid){
-    pctx.strokeStyle='rgba(255,255,255,0.07)';pctx.lineWidth=0.5;
-    for(let c=0;c<=w;c++){pctx.beginPath();pctx.moveTo(c*CS,0);pctx.lineTo(c*CS,h*CS);pctx.stroke();}
-    for(let r=0;r<=h;r++){pctx.beginPath();pctx.moveTo(0,r*CS);pctx.lineTo(w*CS,r*CS);pctx.stroke();}
-  }
-}
-function setZoom(z){
-  paZoom=z;
-  [1,2,4].forEach(function(v){const b=document.getElementById('paZoomBtn'+v);if(b)b.classList.toggle('active',v===z);});
-  const pac=document.getElementById('paCanvas');if(!pac||!pac._pw)return;
-  const w=pac._pw,h=pac._ph,base=pac._base||10;
-  const CS=base*z;pac.width=w*CS;pac.height=h*CS;pac._cs=CS;drawPA();
-}
-function togglePAGrid(){
-  paShowGrid=!paShowGrid;
-  const b=document.getElementById('paGridToggleBtn');if(b)b.classList.toggle('active',paShowGrid);drawPA();
-}
-function hexToRgb(hex){
-  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
-  return{r,g,b};
-}
-function setPATool(t){
-  paTool=t;paRectStart=null;
-  ['pencil','fill','eraser','rect','eyedrop'].forEach(function(id){
-    const b=document.getElementById('paTool_'+id);if(b)b.classList.toggle('active',id===t);
-  });
-}
-function selectCustomColor(){
-  const hex=document.getElementById('paCustomColor').value;selectPAColor(hex,null);
-}
-function clearPA(){
-  if(!paData)return;saveHistory();
-  for(let r=0;r<paData.length;r++)for(let c=0;c<paData[r].length;c++)paData[r][c]=null;drawPA();
-}
-function saveHistory(){
-  const snapshot=paData.map(function(row){return row.map(function(px){return px?{...px}:null;});});
-  paHistory.push(snapshot);if(paHistory.length>20)paHistory.shift();
-}
-function paUndo(){if(paHistory.length===0)return;paData=paHistory.pop();drawPA();}
-function paFloodFill(row,col,target,fill){
-  if(row<0||row>=paData.length||col<0||col>=paData[0].length)return;
-  const cur=paData[row][col];
-  const sameAsTgt=target===null?(cur===null):(cur&&cur.r===target.r&&cur.g===target.g&&cur.b===target.b&&cur.a===target.a);
-  if(!sameAsTgt)return;
-  if(fill===null){if(cur===null)return;}else{if(cur&&cur.r===fill.r&&cur.g===fill.g&&cur.b===fill.b&&cur.a===fill.a)return;}
-  paData[row][col]=fill?{...fill}:null;
-  paFloodFill(row-1,col,target,fill);paFloodFill(row+1,col,target,fill);
-  paFloodFill(row,col-1,target,fill);paFloodFill(row,col+1,target,fill);
-}
-function getPACell(e,pac){
-  const CS=pac._cs||10,w=pac._pw||10,h=pac._ph||10;
-  const rect=pac.getBoundingClientRect();
-  const clientX=e.touches?e.touches[0].clientX:e.clientX;
-  const clientY=e.touches?e.touches[0].clientY:e.clientY;
-  const c=Math.floor((clientX-rect.left)*(w*CS/rect.width)/CS);
-  const r=Math.floor((clientY-rect.top)*(h*CS/rect.height)/CS);
-  return{r,c,w,h};
-}
-function paPaint(e){
-  const pac=document.getElementById('paCanvas');
-  const{r,c,w,h}=getPACell(e,pac);
-  if(c<0||c>=w||r<0||r>=h)return;
-  if(paTool==='eyedrop'){
-    const px=paData[r][c];
-    if(px){paColor={...px};const hex='#'+[px.r,px.g,px.b].map(function(v){return v.toString(16).padStart(2,'0');}).join('');document.getElementById('paCustomColor').value=hex;addRecentColor(hex);}
-    else paColor=null;
-    setPATool('pencil');return;
-  }
-  if(paTool==='rect'){drawPA();return;}
-  if(paTool==='pencil')paData[r][c]=paColor?{...paColor}:null;
-  else if(paTool==='eraser')paData[r][c]=null;
-  else if(paTool==='fill'){const tgt=paData[r][c];paFloodFill(r,c,tgt,paColor?{...paColor}:null);}
-  drawPA();
-}
-function paApplyRect(r0,c0,r1,c1){
-  const rMin=Math.min(r0,r1),rMax=Math.max(r0,r1);
-  const cMin=Math.min(c0,c1),cMax=Math.max(c0,c1);
-  for(let rr=rMin;rr<=rMax;rr++)for(let cc=cMin;cc<=cMax;cc++)paData[rr][cc]=paColor?{...paColor}:null;
-}
-(function(){
-  const pac=document.getElementById('paCanvas');if(!pac)return;
-  function onDown(e){
-    e.preventDefault();
-    const{r,c,w,h}=getPACell(e,pac);
-    if(c<0||c>=w||r<0||r>=h)return;
-    if(paTool==='rect'){saveHistory();paRectStart={r,c};paHoverCell={r,c};drawPA();return;}
-    saveHistory();paDrawing=true;paPaint(e);
-  }
-  function onMove(e){
-    e.preventDefault();
-    const{r,c,w,h}=getPACell(e,pac);
-    const coord=document.getElementById('paHoverCoord');
-    if(c>=0&&c<w&&r>=0&&r<h){paHoverCell={r,c};if(coord)coord.textContent='x:'+c+' y:'+r;}
-    else{paHoverCell=null;if(coord)coord.textContent='';}
-    if(paRectStart){drawPA();return;}
-    if(paDrawing)paPaint(e);else drawPA();
-  }
-  function onUp(e){
-    e.preventDefault();
-    if(paRectStart&&paHoverCell){paApplyRect(paRectStart.r,paRectStart.c,paHoverCell.r,paHoverCell.c);paRectStart=null;drawPA();}
-    paDrawing=false;
-  }
-  function onLeave(){paHoverCell=null;const c=document.getElementById('paHoverCoord');if(c)c.textContent='';drawPA();}
-  pac.addEventListener('mousedown',onDown);pac.addEventListener('mousemove',onMove);
-  pac.addEventListener('mouseleave',onLeave);document.addEventListener('mouseup',onUp);
-  pac.addEventListener('touchstart',onDown,{passive:false});pac.addEventListener('touchmove',onMove,{passive:false});
-  pac.addEventListener('touchend',onUp,{passive:false});
-})();
-
-function usePAAsLogo(){
-  const pac=document.getElementById('paCanvas');
-  if(!pac||!paData)return;
-  const w=pac._pw,h=pac._ph;if(!w||!h)return;
-  logoOffscreen=document.createElement('canvas');
-  logoOffscreen.width=w;logoOffscreen.height=h;
-  const oCtx=logoOffscreen.getContext('2d');
-  const imgData=oCtx.createImageData(w,h);
-  for(let r=0;r<h;r++){
-    for(let c=0;c<w;c++){
-      const px=paData[r][c];const i=(r*w+c)*4;
-      if(px){imgData.data[i]=px.r;imgData.data[i+1]=px.g;imgData.data[i+2]=px.b;imgData.data[i+3]=px.a;}
-      else imgData.data[i+3]=0;
-    }
-  }
-  oCtx.putImageData(imgData,0,0);
-  logoW=w;logoH=h;
-  logoDataUrl=logoOffscreen.toDataURL('image/png');
-
-  const px=countActivePixels(logoOffscreen);
-  activePixelCount=px.active;
-  document.getElementById('pxStat').textContent='Active pixels: '+px.active+' (transparent: '+px.transparent+')';
-  document.getElementById('customizeTransparentRow').style.display='block';
-  updateSmallPreview();
-
-  // Game preview
-  const BLOCK=16;
-  const prevWrap=document.getElementById('paGamePreview');
-  const prevCanvas=document.getElementById('paPreviewCanvas');
-  if(prevWrap&&prevCanvas){
-    prevCanvas.width=w*BLOCK;prevCanvas.height=h*BLOCK;
-    const pCtx2=prevCanvas.getContext('2d');pCtx2.imageSmoothingEnabled=false;
-    for(let rr=0;rr<h;rr++)for(let cc=0;cc<w;cc++){pCtx2.fillStyle=(rr+cc)%2===0?'#1a1a2e':'#16213e';pCtx2.fillRect(cc*BLOCK,rr*BLOCK,BLOCK,BLOCK);}
-    pCtx2.drawImage(logoOffscreen,0,0,w*BLOCK,h*BLOCK);
-    prevWrap.style.display='block';
-  }
-  document.getElementById('paInfo').textContent='Logo set!';
-
-  markSectionDone(3);
-  unlockSection(4);
-  updateSummary();
-  drawGrid();
-  document.getElementById('sec4').scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-// ── Init ──
-setStage(1);
-drawGrid();
-drawStageMap();
+function rgbToHex(r,g,b){return'#'+[r,g,b].map(function(v){return v.toString(16).padStart(2,'0');}).join('');}
 </script>
 </body>
 </html>

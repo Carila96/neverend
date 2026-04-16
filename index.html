@@ -813,7 +813,7 @@ const STAGES=[
  traps:[{x:640,y:512,w:32,h:32,tx:576,warn:false}],
  move:[
    {x:192,y:528,w:144,h:16,vx:3.5,vy:0,rx:192,ry:0,sx:192,sy:528},
-   {x:640,y:464,w:144,h:16,vx:3.5,vy:0,rx:192,ry:0,sx:640,sy:464},
+   {x:640,y:464,w:144,h:16,vx:3.5,vy:0,rx:-192,ry:0,sx:832,sy:464},
  ],
  fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
  hg:[{x:352,y:496,w:16,h:32},{x:800,y:432,w:16,h:32}],
@@ -828,6 +828,7 @@ const STAGES=[
    {x:704,y:384,w:192,h:16,sinking:true},
    {x:960,y:320,w:128,h:16},
    {x:1152,y:256,w:128,h:464},
+   {x:0,y:656,w:1280,h:64},
  ],
  spikes:[
    {x:240,y:688,w:32,h:32},{x:272,y:688,w:32,h:32},{x:304,y:688,w:32,h:32},{x:336,y:688,w:32,h:32},{x:368,y:688,w:32,h:32},{x:400,y:688,w:32,h:32},
@@ -968,9 +969,9 @@ const STAGES=[
  spikes:[
    {x:96,y:96,w:32,h:32},{x:128,y:96,w:32,h:32},
    {x:1088,y:96,w:32,h:32},{x:1120,y:96,w:32,h:32},
-   {x:576,y:608,w:32,h:32},{x:640,y:608,w:32,h:32},
+   {x:576,y:608,w:32,h:32},
  ],
- traps:[{x:256,y:608,w:32,h:32,tx:192,warn:false}],
+ traps:[{x:256,y:608,w:32,h:32,tx:192,warn:false},{x:544,y:320,w:32,h:32,tx:480,warn:false}],
  chasers:[
    {x:-96,y:544,w:96,h:96,speed:200,triggerX:0,active:false},
    {x:1376,y:544,w:96,h:96,speed:-200,triggerX:0,active:false},

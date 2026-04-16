@@ -46,6 +46,8 @@ body{
 .s-keyval{font-size:10px;color:#888;letter-spacing:1px;}
 .s-close{padding:8px 24px;background:#0a0a12;color:#666;border:1px solid #222;font-family:'Courier New';font-size:11px;letter-spacing:2px;cursor:pointer;margin-top:8px;}
 .s-close:hover{border-color:#4af;color:#4af;}
+.s-reset{padding:8px 24px;background:#0a0a12;color:#e74c3c;border:1px solid #e74c3c;font-family:'Courier New';font-size:11px;letter-spacing:2px;cursor:pointer;margin-top:4px;}
+.s-reset:hover{background:rgba(231,76,60,0.1);}
 
 /* COOKIE BANNER */
 #cookieBanner{
@@ -133,6 +135,7 @@ body{
   <input id="nameInputField" type="text" maxlength="20" placeholder="YOUR NAME" autocomplete="off" />
   <button id="nameStartBtn">START</button>
   <span id="nameSkipBtn">skip</span>
+  <p style="color:#333;font-size:10px;max-width:420px;text-align:center;letter-spacing:0.5px;line-height:1.6;margin-top:4px;">Note: Names are not verified. For Hall of Legends registration, screenshot proof is required.</p>
 </div>
 <div id="adminPanel">
   <div id="adminPanel-inner">
@@ -157,24 +160,8 @@ body{
   <div class="s-section">AUDIO</div>
   <div class="s-row"><span class="s-label">BGM VOLUME</span><input class="s-slider" type="range" id="volBGM" min="0" max="100" value="80"><span class="s-val" id="volBGMVal">80</span></div>
   <div class="s-row"><span class="s-label">SFX VOLUME</span><input class="s-slider" type="range" id="volSFX" min="0" max="100" value="80"><span class="s-val" id="volSFXVal">80</span></div>
-  <div class="s-section">KEY BINDINGS</div>
-  <div class="s-keybind"><span class="s-key">MOVE LEFT / RIGHT</span><span class="s-keyval">← →</span></div>
-  <div class="s-keybind"><span class="s-key">JUMP</span><span class="s-keyval">SPACE</span></div>
-  <div class="s-keybind"><span class="s-key">PAUSE</span><span class="s-keyval">F &nbsp;/&nbsp; ESC</span></div>
-  <div class="s-keybind"><span class="s-key">BACK TO TITLE</span><span class="s-keyval">T</span></div>
-  <div class="s-keybind"><span class="s-key">SETTINGS</span><span class="s-keyval">TAB &nbsp;/&nbsp; Click SETTINGS</span></div>
-  <div class="s-section">STATS</div>
-  <div class="s-row" style="justify-content:space-between;width:360px;padding:4px 0;">
-    <span class="s-label">総死亡数</span><span class="s-val" id="statDeaths" style="width:auto;color:#e74c3c;">0</span>
-  </div>
-  <div class="s-row" style="justify-content:space-between;width:360px;padding:4px 0;">
-    <span class="s-label">最高到達ステージ</span><span class="s-val" id="statBest" style="width:auto;">1</span>
-  </div>
-
-  <div class="s-row" style="justify-content:space-between;width:360px;padding:4px 0;">
-    <span class="s-label">累計ポイント</span><span class="s-val" id="statPts" style="width:auto;color:#f5c842;">0 PT</span>
-  </div>
   <button class="s-close" onclick="closeSettings()">[ CLOSE ]</button>
+  <button class="s-reset" onclick="resetAllData()">[ RESET ALL DATA ]</button>
 </div>
 </div>
 <script>
@@ -252,11 +239,15 @@ document.getElementById('volSFX').oninput=e=>{volSFX=e.target.value/100;document
 
 function openSettings(){
   document.getElementById('settings').classList.add('open');
-  document.getElementById('statDeaths').textContent=getStat('totalDeaths').toLocaleString()+'回';
-  document.getElementById('statBest').textContent='Stage '+getStat('bestStage',1);
-  document.getElementById('statPts').textContent=getStat('points').toLocaleString()+' PT';
 }
 function closeSettings(){document.getElementById('settings').classList.remove('open');canvas.focus();}
+function resetAllData(){
+  if(confirm('This will reset all your stats and titles. Are you sure?')){
+    const keys=Object.keys(localStorage).filter(k=>k.startsWith('neverend_')&&k!=='neverend_worlddeaths');
+    keys.forEach(k=>localStorage.removeItem(k));
+    location.reload();
+  }
+}
 
 // ======== ADMIN PANEL ========
 let _adminPanelOpen=false;
@@ -2299,9 +2290,9 @@ function drawDead(){
   ctx.shadowBlur=4;
   ctx.fillStyle='rgba(160,185,255,0.85)';ctx.font='16px "Courier New"';
   ctx.fillText('[ SPACE ] Try Again',W/2,H/2+88);
-  ctx.fillStyle='rgba(100,120,180,0.5)';ctx.font='13px "Courier New"';
+  ctx.fillStyle='rgba(100,120,180,0.5)';ctx.font='14px "Courier New"';
   ctx.fillText('[ T ] Title',W/2,H/2+114);
-  ctx.fillStyle='rgba(74,184,255,0.6)';ctx.font='11px "Courier New"';
+  ctx.fillStyle='rgba(74,184,255,0.6)';ctx.font='13px "Courier New"';
   ctx.fillText('[ S ] Share on X / Twitter',W/2,H/2+138);
 
   // 右下：累計死亡数
@@ -2311,7 +2302,7 @@ function drawDead(){
 
   // 左下：世界累計死亡数
   if(worldDeaths!==null){
-    ctx.fillStyle='rgba(120,120,160,0.4)';ctx.font='9px "Courier New"';ctx.textAlign='left';
+    ctx.fillStyle='rgba(120,120,160,0.6)';ctx.font='11px "Courier New"';ctx.textAlign='left';
     ctx.fillText('World: '+Number(worldDeaths).toLocaleString()+' deaths',16,H-12);
   }
 
@@ -2343,88 +2334,102 @@ function drawTestComplete(){
   ctx.fillText('[ BACK TO TITLE ]',W/2,_tcBtn.y+_tcBtn.h/2);
   ctx.restore();
 }
-function drawMyPage(){
-  ctx.fillStyle='rgba(0,0,0,0.95)';ctx.fillRect(0,0,W,H);
-  neonText('MY PAGE',W/2,52,'rgba(255,220,50,0.95)',36,16,'center');
-
-  // Player name
-  const playerName=_getPlayerName()||'Anonymous';
-  ctx.save();
-  ctx.fillStyle='rgba(180,200,255,0.5)';ctx.font='10px "Courier New"';ctx.textAlign='center';
-  ctx.fillText('PLAYER',W/2,80);
-  ctx.fillStyle='rgba(74,184,255,0.95)';ctx.font='bold 16px "Courier New"';
-  ctx.fillText(playerName,W/2,98);
+function _drawTrophyIcon(cx,cy,sz,col){
+  ctx.save();ctx.fillStyle=col;ctx.strokeStyle=col;ctx.lineWidth=Math.max(1,sz*0.12);
+  ctx.beginPath();
+  ctx.moveTo(cx-sz*0.3,cy-sz*0.42);ctx.lineTo(cx+sz*0.3,cy-sz*0.42);
+  ctx.lineTo(cx+sz*0.2,cy+sz*0.08);ctx.lineTo(cx-sz*0.2,cy+sz*0.08);
+  ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.arc(cx-sz*0.36,cy-sz*0.18,sz*0.14,Math.PI*0.45,Math.PI*1.55,true);ctx.stroke();
+  ctx.beginPath();ctx.arc(cx+sz*0.36,cy-sz*0.18,sz*0.14,Math.PI*1.45,Math.PI*2.55,false);ctx.stroke();
+  ctx.fillRect(cx-sz*0.06,cy+sz*0.08,sz*0.12,sz*0.22);
+  ctx.fillRect(cx-sz*0.22,cy+sz*0.3,sz*0.44,sz*0.09);
   ctx.restore();
+}
 
-  // Stats panel (left column)
-  const colL=W/2-420,colR=W/2+20,colW=380,statH=108;
-  ctx.save();
-  ctx.fillStyle='rgba(14,14,26,0.9)';ctx.fillRect(colL,112,colW,statH);
-  ctx.strokeStyle='rgba(74,184,255,0.25)';ctx.lineWidth=1;ctx.strokeRect(colL,112,colW,statH);
+function drawMyPage(){
+  ctx.fillStyle='rgba(0,0,0,0.97)';ctx.fillRect(0,0,W,H);
+  neonText('TROPHY ROOM',W/2,40,'rgba(255,220,50,0.95)',28,12,'center');
+
+  const playerName=_getPlayerName()||'Anonymous';
   const totalSecs=getStat('totalPlayTime',0);
   const ph=Math.floor(totalSecs/3600),pm=Math.floor((totalSecs%3600)/60);
-  const rows=[
-    ['TOTAL DEATHS', getStat('totalDeaths').toLocaleString()],
-    ['BEST STAGE',   'Stage '+getStat('bestStage',1)],
-    ['PLAY TIME',    ph+'h '+pm+'m'],
+  ctx.save();
+  ctx.fillStyle='rgba(74,184,255,0.95)';ctx.font='bold 18px "Courier New"';ctx.textAlign='center';
+  ctx.fillText(playerName,W/2,68);
+  ctx.fillStyle='rgba(160,180,220,0.6)';ctx.font='11px "Courier New"';
+  ctx.fillText('Deaths: '+getStat('totalDeaths').toLocaleString()+'   |   Best: Stage '+getStat('bestStage',1)+'   |   Time: '+ph+'h '+pm+'m',W/2,86);
+  ctx.restore();
+
+  ctx.save();ctx.fillStyle='rgba(160,140,60,0.5)';ctx.font='10px "Courier New"';ctx.textAlign='left';
+  ctx.fillText('TROPHY SHELF',22,105);ctx.restore();
+
+  const TROPHY_DATA=[
+    ['First Blood','Reach Stage 2'],
+    ['Getting Somewhere','Reach Stage 5'],
+    ['Double Digits','Reach Stage 10'],
+    ['Rookie','Die 10 times'],
+    ['Dedicated','Die 100 times'],
+    ['Obsessed','Die 500 times'],
+    ['You Need Help','Die 1,000 times'],
+    ['Are You OK?','Die 5,000 times'],
+    ['I Give Up','Activate Baby Mode'],
+    ['Legend of Giving Up','Clear Stage 20 in Baby Mode'],
+    ['Masochist','First death in Hard Mode'],
+    ['One Hour Club','Play for 60 minutes'],
+    ['Speed Demon','Reach Stage 5 in under 3 min'],
+    ['No Baby','Reach Stage 10 without Baby Mode'],
+    ['Comeback Kid','New best with 5 seconds left'],
+    ['Night Owl','Play between midnight and 5am'],
+    ['Persistent','Die 50 times in one session'],
+    ['Unstoppable','Reach Stage 20'],
+    ['The 1%','Reach Stage 30'],
+    ['Ghost','Clear a stage without dying'],
+    ['LANDLORD','Own an entire stage grid'],
+    ['Patron','Purchase a grid block'],
   ];
-  rows.forEach(function(r,i){
-    const ry=136+i*32;
-    ctx.fillStyle='rgba(120,140,180,0.65)';ctx.font='10px "Courier New"';ctx.textAlign='left';
-    ctx.fillText(r[0],colL+14,ry);
-    ctx.fillStyle='rgba(74,184,255,0.95)';ctx.font='bold 12px "Courier New"';ctx.textAlign='right';
-    ctx.fillText(r[1],colL+colW-14,ry);
-  });
-  ctx.restore();
 
-  // Titles panel (right column)
-  ctx.save();
-  ctx.fillStyle='rgba(14,14,26,0.9)';ctx.fillRect(colR,112,colW,statH);
-  ctx.strokeStyle='rgba(255,220,50,0.2)';ctx.lineWidth=1;ctx.strokeRect(colR,112,colW,statH);
-  ctx.fillStyle='rgba(180,160,60,0.55)';ctx.font='10px "Courier New"';ctx.textAlign='left';
-  ctx.fillText('TITLES EARNED',colR+14,132);
-  const earned=getTitles();
-  const titlesShort=earned.slice(0,6); // show up to 6 in this panel
-  if(titlesShort.length===0){
-    ctx.fillStyle='rgba(80,80,120,0.6)';ctx.font='10px "Courier New"';ctx.textAlign='center';
-    ctx.fillText('None yet...',colR+colW/2,168);
-  } else {
-    titlesShort.forEach(function(t,i){
-      const tx=colR+14+(i%3)*128,ty=148+Math.floor(i/3)*30;
-      ctx.fillStyle='rgba(255,220,50,0.75)';ctx.font='9px "Courier New"';ctx.textAlign='left';
-      ctx.fillText('✓ '+t,tx,ty);
-    });
-    if(earned.length>6){
-      ctx.fillStyle='rgba(150,150,180,0.5)';ctx.font='9px "Courier New"';ctx.textAlign='right';
-      ctx.fillText('+'+( earned.length-6)+' more',colR+colW-14,210);
-    }
-  }
-  ctx.restore();
-
-  // All titles list
-  const tlY=234,tlH=310;
-  ctx.save();
-  ctx.fillStyle='rgba(10,10,22,0.88)';ctx.fillRect(colL,tlY,W-2*colL,tlH);
-  ctx.strokeStyle='rgba(80,80,140,0.3)';ctx.lineWidth=1;ctx.strokeRect(colL,tlY,W-2*colL,tlH);
-  ctx.fillStyle='rgba(120,120,180,0.5)';ctx.font='10px "Courier New"';ctx.textAlign='left';
-  ctx.fillText('ALL TITLES',colL+14,tlY+18);
-  const allTitles=['First Blood','Getting Somewhere','Double Digits','Rookie','Dedicated','Obsessed','You Need Help','Are You OK?','One Hour Club','Masochist','I Give Up','Legend of Giving Up','LANDLORD','Patron','Speed Demon','No Baby','Comeback Kid','Night Owl','Persistent','Unstoppable','The 1%','Ghost'];
   const earnedSet=new Set(getTitles());
-  const cols=4,rowH=26,startX=colL+14,startY=tlY+34;
-  allTitles.forEach(function(t,i){
-    const tx=startX+(i%cols)*((W-2*colL-28)/cols);
-    const ty=startY+Math.floor(i/cols)*rowH;
-    const has=earnedSet.has(t);
-    ctx.fillStyle=has?'rgba(255,220,50,0.9)':'rgba(60,60,90,0.6)';
-    ctx.font=(has?'bold ':'')+' 9px "Courier New"';
+  const COLS=4,GX=20,GY=112,CW=310,CH=72;
+
+  TROPHY_DATA.forEach(function(t,i){
+    const col=i%COLS,row=Math.floor(i/COLS);
+    const tx=GX+col*CW,ty=GY+row*CH;
+    const has=earnedSet.has(t[0]);
+    ctx.fillStyle=has?'rgba(20,16,6,0.85)':'rgba(10,10,18,0.85)';
+    ctx.fillRect(tx,ty,CW-4,CH-4);
+    ctx.strokeStyle=has?'rgba(255,220,50,0.18)':'rgba(50,50,70,0.35)';
+    ctx.lineWidth=1;ctx.strokeRect(tx,ty,CW-4,CH-4);
+    _drawTrophyIcon(tx+22,ty+CH/2-4,16,has?'#f5c842':'#333344');
     ctx.textAlign='left';
-    ctx.fillText((has?'✓ ':'○ ')+t,tx,ty);
+    ctx.fillStyle=has?'rgba(255,220,50,0.92)':'rgba(70,70,95,0.8)';
+    ctx.font=(has?'bold ':'')+'11px "Courier New"';
+    ctx.fillText(has?t[0]:'???',tx+44,ty+24);
+    ctx.fillStyle=has?'rgba(180,200,255,0.5)':'rgba(55,55,75,0.6)';
+    ctx.font='9px "Courier New"';
+    ctx.fillText(t[1],tx+44,ty+40);
+    if(has){
+      ctx.fillStyle='rgba(74,222,128,0.85)';ctx.font='bold 13px "Courier New"';
+      ctx.textAlign='right';ctx.fillText('\u2713',tx+CW-8,ty+24);
+    }
   });
+
+  // Skins section
+  const skinsY=GY+Math.ceil(TROPHY_DATA.length/COLS)*CH+6;
+  ctx.save();
+  ctx.fillStyle='rgba(160,140,60,0.5)';ctx.font='10px "Courier New"';ctx.textAlign='left';
+  ctx.fillText('SKINS',22,skinsY);
+  ctx.fillStyle='rgba(12,12,22,0.85)';ctx.fillRect(20,skinsY+6,200,32);
+  ctx.strokeStyle='rgba(50,50,70,0.4)';ctx.lineWidth=1;ctx.strokeRect(20,skinsY+6,200,32);
+  ctx.fillStyle='rgba(74,184,255,0.75)';ctx.font='11px "Courier New"';ctx.textAlign='center';
+  ctx.fillText('DEFAULT',120,skinsY+26);
+  ctx.fillStyle='rgba(70,70,110,0.5)';ctx.font='10px "Courier New"';ctx.textAlign='left';
+  ctx.fillText('More skins coming soon...',228,skinsY+26);
   ctx.restore();
 
-  // Buttons row
+  // Buttons
   _drawMpBtn(ctx,mpBackBtn,'[ BACK ]','rgba(160,185,255,0.5)','rgba(160,185,255,0.85)');
-  _drawMpBtn(ctx,mpChangeNameBtn,'[ CHANGE NAME ]','rgba(100,200,180,0.5)','rgba(100,200,180,0.85)');
+  _drawMpBtn(ctx,mpResetBtn,'[ RESET DATA ]','rgba(231,76,60,0.5)','rgba(231,76,60,0.85)');
   if(!testMode)_drawMpBtn(ctx,mpSalesBtn,'[ VISIT SALES PAGE ]','rgba(255,220,50,0.5)','rgba(255,220,50,0.9)');
 }
 
@@ -2441,7 +2446,7 @@ function _drawMpBtn(ctx,btn,label,stroke,fill){
 const settingsBtn={x:16,y:16,w:120,h:28};
 const mpBtn={x:W-120,y:12,w:104,h:28};
 const mpBackBtn={x:W/2-270,y:H-62,w:140,h:36};
-const mpChangeNameBtn={x:W/2-70,y:H-62,w:140,h:36};
+const mpResetBtn={x:W/2-70,y:H-62,w:140,h:36};
 const mpSalesBtn={x:W/2+90,y:H-62,w:180,h:36};
 canvas.addEventListener('click',e=>{
   const rect=canvas.getBoundingClientRect();
@@ -2460,12 +2465,7 @@ canvas.addEventListener('click',e=>{
   } else if(state==='mypage'){
     function _inBtn(b){return cx>=b.x&&cx<=b.x+b.w&&cy>=b.y&&cy<=b.y+b.h;}
     if(_inBtn(mpBackBtn)){state='title';}
-    if(_inBtn(mpChangeNameBtn)){
-      localStorage.removeItem('neverend_playername');
-      const ov=document.getElementById('nameOverlay');
-      const fld=document.getElementById('nameInputField');
-      if(ov){ov.classList.add('show');setTimeout(()=>fld&&fld.focus(),50);}
-    }
+    if(_inBtn(mpResetBtn)){resetAllData();}
     if(!testMode&&_inBtn(mpSalesBtn)){window.open('/app/pages/sales_page.html','_blank');}
   }
 });
@@ -2500,14 +2500,14 @@ function drawTitle(){
   ctx.shadowColor='rgba(255,50,50,0.9)';ctx.shadowBlur=28;ctx.fillStyle='#e74c3c';
   ctx.fillText('END',sx+nw+gap,H/2-30);ctx.restore();
   neonText('30 seconds to live. Forever.',W/2,H/2+24,'rgba(160,185,255,0.75)',20,8,'center');
-  ctx.save();ctx.fillStyle='rgba(140,140,160,0.4)';ctx.font='13px "Courier New"';ctx.textAlign='center';
+  ctx.save();ctx.fillStyle='rgba(140,140,160,0.4)';ctx.font='14px "Courier New"';ctx.textAlign='center';
   ctx.fillText('How far can you get in 1 hour?',W/2,H/2+50);ctx.restore();
   const pulse=Math.sin(animT*2)*.3+.7;
   neonText('[ SPACE ] START',W/2,H/2+90,`rgba(255,255,255,${pulse})`,24,14,'center');
-  ctx.save();ctx.fillStyle='rgba(100,120,160,0.6)';ctx.font='12px "Courier New"';ctx.textAlign='center';
+  ctx.save();ctx.fillStyle='rgba(100,120,160,0.6)';ctx.font='13px "Courier New"';ctx.textAlign='center';
   ctx.fillText('← →  MOVE    SPACE  JUMP    F / ESC  PAUSE',W/2,H-36);ctx.restore();
   if(adminMode)neonText('[ ADMIN MODE ON ]',W/2,H-16,'rgba(255,220,50,0.5)',10,4,'center');
-  ctx.save();ctx.fillStyle='rgba(120,120,150,0.45)';ctx.font='9px "Courier New"';ctx.textAlign='center';
+  ctx.save();ctx.fillStyle='rgba(120,120,150,0.6)';ctx.font='11px "Courier New"';ctx.textAlign='center';
   ctx.fillText('By playing you agree to our Terms of Service  |  neverend.vercel.app/terms',W/2,H-6);
   ctx.restore();
   // タイトルに累計情報をさりげなく
@@ -2527,13 +2527,13 @@ function drawTitle(){
   if(easyMode)neonText('BABY MODE ON — Progress saved. Dignity lost.',W/2,H-32,'rgba(255,180,255,0.7)',10,4,'center');
   if(retroMode)neonText('RETRO MODE ON',W-160,H-16,'rgba(100,255,120,0.6)',10,4);
   // World deaths display
-  if(worldDeaths!=null){
-    ctx.save();ctx.fillStyle='rgba(120,80,80,0.45)';ctx.font='10px "Courier New"';ctx.textAlign='center';
-    ctx.fillText('WORLD DEATHS: '+worldDeaths.toLocaleString(),W/2,H/2+120);ctx.restore();
-  }
   // Hall of Legends link
   ctx.save();ctx.fillStyle='rgba(100,140,200,0.4)';ctx.font='9px "Courier New"';ctx.textAlign='center';
-  ctx.fillText('[ HALL OF LEGENDS ]',W/2,H/2+140);ctx.restore();
+  ctx.fillText('[ HALL OF LEGENDS ]',W/2,H/2+120);ctx.restore();
+  if(worldDeaths!=null){
+    ctx.save();ctx.fillStyle='rgba(120,80,80,0.7)';ctx.font='11px "Courier New"';ctx.textAlign='center';
+    ctx.fillText('⚡ WORLD DEATHS: '+Number(worldDeaths).toLocaleString(),W/2,H-20);ctx.restore();
+  }
   // TEST MODE badge
   if(testMode){
     ctx.save();ctx.fillStyle='rgba(255,40,40,0.9)';ctx.font='bold 11px "Courier New"';ctx.textAlign='right';

@@ -417,13 +417,13 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
     </div>
     <div class="flow-sec-body">
       <div class="color-toolbar">
-        <button class="color-tool-btn active" id="toolReplace" onclick="setColorTool('replace')">COLOR REPLACE</button>
-        <button class="color-tool-btn" id="toolTransparent" onclick="setColorTool('transparent')">MAKE TRANSPARENT</button>
+        <button class="color-tool-btn active" id="toolReplace" onclick="setColorTool('replace')">REPLACE</button>
+        <button class="color-tool-btn" id="toolTransparent" onclick="setColorTool('transparent')">TRANSPARENT</button>
+        <button class="color-tool-btn" id="toolEyedropper" onclick="setColorTool('eyedropper')">EYEDROPPER</button>
         <button class="btn-secondary" onclick="resetEditPixels()" style="margin-left:auto;">RESET</button>
       </div>
-      <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:10px;letter-spacing:1px;">
-        COLOR REPLACE: click a block to replace all pixels of that color.<br>
-        MAKE TRANSPARENT: click a block to remove it (no charge).
+      <div id="toolHint" style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:10px;letter-spacing:1px;">
+        REPLACE: select a color from the palette below, then click pixels to recolor them. Click a palette swatch to edit all of that color at once.
       </div>
       <div style="margin-bottom:8px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;">PALETTE</div>
       <div class="color-palette-row" id="colorPaletteRow"></div>
@@ -651,6 +651,8 @@ let chosenW=0,chosenH=0;
 let pixelArtOriginal=null; // 2D array of {r,g,b}|null
 let pixelArtEdit=null;     // 2D array (editable copy)
 let colorTool='replace';
+let selectedPaletteColor=null; // {r,g,b} or 'transparent'
+let selectedPaletteKey=null;
 let currentStage=1;
 let gridStates={};
 let logoGridX=0,logoGridY=0;
@@ -852,9 +854,9 @@ function doConvert(w,h){
   pixelArtEdit=deepCopyPixels(pixels);
 
   // Render 3 previews
-  renderPreviewCanvas(document.getElementById('prev1x'),pixels,w,h,16);
-  renderPreviewCanvas(document.getElementById('prev2x'),pixels,w,h,32);
-  renderPreviewCanvas(document.getElementById('prev4x'),pixels,w,h,64);
+  renderPreviewCanvas(document.getElementById('prev1x'),pixels,w,h,16,false);
+  renderPreviewCanvas(document.getElementById('prev2x'),pixels,w,h,32,false);
+  renderPreviewCanvas(document.getElementById('prev4x'),pixels,w,h,64,false);
 
   const active=countActivePixels(pixels);
   const total=w*h;
@@ -868,20 +870,21 @@ function doConvert(w,h){
   document.getElementById('sec2PreviewWrap').style.display='block';
 }
 
-function renderPreviewCanvas(canvas,pixels,w,h,blockPx){
+function renderPreviewCanvas(canvas,pixels,w,h,blockPx,checkerboard){
   canvas.width=w*blockPx;canvas.height=h*blockPx;
   const ctx2=canvas.getContext('2d');
   ctx2.imageSmoothingEnabled=false;
-  // Checkerboard for transparent
+  if(!checkerboard){ctx2.fillStyle='#000000';ctx2.fillRect(0,0,canvas.width,canvas.height);}
   for(let y=0;y<h;y++){
     for(let x=0;x<w;x++){
       const px=pixels[y][x];
       if(px){
         ctx2.fillStyle='rgb('+px.r+','+px.g+','+px.b+')';
-      }else{
+        ctx2.fillRect(x*blockPx,y*blockPx,blockPx,blockPx);
+      }else if(checkerboard){
         ctx2.fillStyle=(x+y)%2===0?'#1c1c28':'#242436';
+        ctx2.fillRect(x*blockPx,y*blockPx,blockPx,blockPx);
       }
-      ctx2.fillRect(x*blockPx,y*blockPx,blockPx,blockPx);
     }
   }
 }
@@ -948,14 +951,31 @@ function buildColorPalette(){
   });
   const row=document.getElementById('colorPaletteRow');
   row.innerHTML='<span class="pal-label">COLORS</span>';
+  // Transparent chip
+  const tChip=document.createElement('div');
+  tChip.className='pal-chip pal-transp';
+  tChip.title='Transparent (erases pixel)';
+  if(selectedPaletteKey==='transparent')tChip.classList.add('selected');
+  tChip.onclick=function(){
+    selectedPaletteKey='transparent';
+    selectedPaletteColor='transparent';
+    buildColorPalette();
+  };
+  row.appendChild(tChip);
+  // Color chips
   Object.values(seen).forEach(function(c){
+    const k=c.r+','+c.g+','+c.b;
     const chip=document.createElement('div');
     chip.className='pal-chip';
     chip.style.background='rgb('+c.r+','+c.g+','+c.b+')';
-    chip.title='rgb('+c.r+','+c.g+','+c.b+')';
-    chip.onclick=function(){
-      if(colorTool==='replace'){openColorPicker(c);}
-      else{replaceColorWithTransparent(c);}
+    chip.title='rgb('+c.r+','+c.g+','+c.b+') \u2014 click to select, opens editor for bulk replace';
+    if(selectedPaletteKey===k)chip.classList.add('selected');
+    chip.onclick=function(e){
+      selectedPaletteKey=k;
+      selectedPaletteColor={r:c.r,g:c.g,b:c.b};
+      buildColorPalette();
+      const rect=chip.getBoundingClientRect();
+      openColorPicker(c,rect.left,rect.bottom+8);
     };
     row.appendChild(chip);
   });
@@ -974,6 +994,13 @@ function setColorTool(t){
   colorTool=t;
   document.getElementById('toolReplace').classList.toggle('active',t==='replace');
   document.getElementById('toolTransparent').classList.toggle('active',t==='transparent');
+  document.getElementById('toolEyedropper').classList.toggle('active',t==='eyedropper');
+  const hints={
+    replace:'REPLACE: select a color from the palette below, then click pixels to recolor them. Click a palette swatch to edit all of that color at once.',
+    transparent:'TRANSPARENT: click any pixel to make it transparent (removed from charge).',
+    eyedropper:'EYEDROPPER: click any pixel to pick its color as the active palette color, then switch to REPLACE.'
+  };
+  document.getElementById('toolHint').textContent=hints[t]||'';
 }
 
 editCanvas.addEventListener('click',function(e){
@@ -983,10 +1010,23 @@ editCanvas.addEventListener('click',function(e){
   const y=Math.floor((e.clientY-rect.top)*chosenH/editCanvas.offsetHeight);
   if(x<0||x>=chosenW||y<0||y>=chosenH)return;
   const px=pixelArtEdit[y][x];
-  if(colorTool==='transparent'){
+  if(colorTool==='eyedropper'){
+    if(px){
+      selectedPaletteKey=px.r+','+px.g+','+px.b;
+      selectedPaletteColor={r:px.r,g:px.g,b:px.b};
+      buildColorPalette();
+      setColorTool('replace');
+    }
+  }else if(colorTool==='transparent'){
     if(px!==null){pixelArtEdit[y][x]=null;drawEditCanvas();buildColorPalette();updateEditStats();}
   }else{
-    if(px){openColorPicker(px,e.clientX,e.clientY);}
+    // replace tool
+    if(selectedPaletteColor==='transparent'){
+      if(px!==null){pixelArtEdit[y][x]=null;drawEditCanvas();buildColorPalette();updateEditStats();}
+    }else if(selectedPaletteColor){
+      pixelArtEdit[y][x]={r:selectedPaletteColor.r,g:selectedPaletteColor.g,b:selectedPaletteColor.b};
+      drawEditCanvas();buildColorPalette();updateEditStats();
+    }
   }
 });
 
@@ -1047,6 +1087,8 @@ function applyColorReplace(){
       if(px&&px.r===t.r&&px.g===t.g&&px.b===t.b)arr[i]={r:newRgb.r,g:newRgb.g,b:newRgb.b};
     });
   });
+  selectedPaletteColor={r:newRgb.r,g:newRgb.g,b:newRgb.b};
+  selectedPaletteKey=newRgb.r+','+newRgb.g+','+newRgb.b;
   closeColorPicker();
   drawEditCanvas();buildColorPalette();updateEditStats();
 }
@@ -1134,10 +1176,10 @@ document.getElementById('cpHexInput').addEventListener('input',function(){
   }
 });
 
-// Close popup on outside click
+// Close popup on outside click (canvas clicks close picker, then pixel action fires on 'click')
 document.addEventListener('mousedown',function(e){
   const popup=document.getElementById('colorPickerPopup');
-  if(popup.style.display!=='none'&&!popup.contains(e.target)&&e.target!==editCanvas){
+  if(popup.style.display!=='none'&&!popup.contains(e.target)){
     closeColorPicker();
   }
 });

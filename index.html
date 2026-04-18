@@ -3077,11 +3077,9 @@ let _loginMode='login';
 
 async function initSupabase(){
   try{
-    const r=await fetch('/api/config');
-    if(!r.ok)return;
-    const cfg=await r.json();
-    if(!cfg.supabaseUrl||!cfg.supabaseAnonKey)return;
-    supabaseClient=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey);
+    const _SURL='https://cokcftutqkwhfbmdnhgl.supabase.co';
+    const _SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNva2NmdHV0cWt3aGZibWRuaGdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjk1NjIsImV4cCI6MjA5MDY0NTU2Mn0.FkDkRI8Ec5P07EKEZiGMA_kQ44rK0Pu6Hy_yeWBO3cQ';
+    supabaseClient=window.supabase.createClient(_SURL,_SKEY);
     supabaseClient.auth.onAuthStateChange(function(_event,session){
       _currentUser=session?session.user:null;
     });

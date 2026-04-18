@@ -2369,74 +2369,51 @@ function drawMyPage(){
   ctx.save();ctx.fillStyle='rgba(160,140,60,0.5)';ctx.font='10px "Courier New"';ctx.textAlign='left';
   ctx.fillText('TROPHY SHELF',22,105);ctx.restore();
 
-  const TROPHY_DATA=[
-    // id, display name, condition text
-    ['welcome','Welcome to Hell','Start the game'],
-    ['firstDeath','First Death','Die for the first time'],
-    ['again','Again.','Die twice'],
-    ['stillHere','Still Here','Survive 10 seconds'],
-    ['firstBlood','First Blood','Reach Stage 2'],
-    ['gettingSomewhere','Getting Somewhere','Reach Stage 5'],
-    ['doubleDigits','Double Digits','Reach Stage 10'],
-    ['gettingSerious','Getting Serious','Reach Stage 20'],
-    ['oneThird','One Third','Reach Stage 30'],
-    ['legend','Legend','Reach Stage 100'],
-    ['ghost','Ghost','Clear a stage without dying'],
-    ['comebackKid','Comeback Kid','New best with 5s left'],
-    ['speedDemon','Speed Demon','Reach Stage 5 in under 3 min'],
-    ['noBaby','No Baby','Reach Stage 10 without Baby Mode'],
-    ['closeOne','Close One','Grab timer with <1s left'],
-    ['persistent','Persistent','Die 500 times'],
-    ['unbreakable','Unbreakable','Die 1,000 times'],
-    ['oneHourClub','One Hour Club','Play for 60 minutes'],
-    ['youNeedHelp','You Need Help','Die 5,000 times'],
-    ['stuckInStage1','Stuck in Stage 1','Die 50 times in Stage 1'],
-    ['instantRegret','Instant Regret','Die within 3 seconds'],
-    ['justOneMoreTry','Just One More Try','Retry 20 times in a row'],
-    ['nightOwl','Night Owl','Play midnight to 5am'],
-    ['iGiveUp','I Give Up','Activate Baby Mode'],
-    ['legendOfGivingUp','Legend of Giving Up','Clear Stage 20 in Baby Mode'],
-    ['masochist','Masochist','Die in Hard Mode'],
-    ['firstPurchase','First Purchase','Buy grid blocks'],
-    ['landlord','Landlord','Own 500 blocks'],
-  ];
-
   const earnedSet=new Set(getTitles());
-  const COLS=4,GX=20,GY=112,CW=310,CH=72;
+  const COLS=5,GX=16,GY=94;
+  const CW=Math.floor((W-GX*2)/COLS); // ~249
+  const CH=48;
+  // helper: truncate text to fit maxW px at current font
+  function _trunc(txt,maxW){
+    if(ctx.measureText(txt).width<=maxW)return txt;
+    while(txt.length>1&&ctx.measureText(txt+'…').width>maxW)txt=txt.slice(0,-1);
+    return txt+'…';
+  }
 
-  TROPHY_DATA.forEach(function(t,i){
+  TITLES.forEach(function(t,i){
     const col=i%COLS,row=Math.floor(i/COLS);
     const tx=GX+col*CW,ty=GY+row*CH;
-    const has=earnedSet.has(t[0]);
+    const has=earnedSet.has(t.id);
     ctx.fillStyle=has?'rgba(20,16,6,0.85)':'rgba(10,10,18,0.85)';
-    ctx.fillRect(tx,ty,CW-4,CH-4);
+    ctx.fillRect(tx,ty,CW-3,CH-3);
     ctx.strokeStyle=has?'rgba(255,220,50,0.18)':'rgba(50,50,70,0.35)';
-    ctx.lineWidth=1;ctx.strokeRect(tx,ty,CW-4,CH-4);
-    _drawTrophyIcon(tx+22,ty+CH/2-4,16,has?'#f5c842':'#333344');
+    ctx.lineWidth=1;ctx.strokeRect(tx,ty,CW-3,CH-3);
+    _drawTrophyIcon(tx+16,ty+CH/2-2,13,has?'#f5c842':'#333344');
+    const maxTW=CW-38-6;
     ctx.textAlign='left';
     ctx.fillStyle=has?'rgba(255,220,50,0.92)':'rgba(70,70,95,0.8)';
-    ctx.font=(has?'bold ':'')+'11px "Courier New"';
-    ctx.fillText(has?t[1]:'???',tx+44,ty+24);
+    ctx.font=(has?'bold ':'')+'10px "Courier New"';
+    ctx.fillText(_trunc(has?t.name:'???',maxTW),tx+34,ty+19);
     ctx.fillStyle=has?'rgba(180,200,255,0.5)':'rgba(55,55,75,0.6)';
-    ctx.font='9px "Courier New"';
-    ctx.fillText(t[2],tx+44,ty+40);
+    ctx.font='8px "Courier New"';
+    ctx.fillText(_trunc(t.desc,maxTW),tx+34,ty+33);
     if(has){
-      ctx.fillStyle='rgba(74,222,128,0.85)';ctx.font='bold 13px "Courier New"';
-      ctx.textAlign='right';ctx.fillText('\u2713',tx+CW-8,ty+24);
+      ctx.fillStyle='rgba(74,222,128,0.85)';ctx.font='bold 11px "Courier New"';
+      ctx.textAlign='right';ctx.fillText('\u2713',tx+CW-5,ty+19);
     }
   });
 
   // Skins section
-  const skinsY=GY+Math.ceil(TROPHY_DATA.length/COLS)*CH+6;
+  const skinsY=GY+Math.ceil(TITLES.length/COLS)*CH+4;
   ctx.save();
   ctx.fillStyle='rgba(160,140,60,0.5)';ctx.font='10px "Courier New"';ctx.textAlign='left';
-  ctx.fillText('SKINS',22,skinsY);
-  ctx.fillStyle='rgba(12,12,22,0.85)';ctx.fillRect(20,skinsY+6,200,32);
-  ctx.strokeStyle='rgba(50,50,70,0.4)';ctx.lineWidth=1;ctx.strokeRect(20,skinsY+6,200,32);
+  ctx.fillText('SKINS',GX,skinsY);
+  ctx.fillStyle='rgba(12,12,22,0.85)';ctx.fillRect(GX,skinsY+6,200,30);
+  ctx.strokeStyle='rgba(50,50,70,0.4)';ctx.lineWidth=1;ctx.strokeRect(GX,skinsY+6,200,30);
   ctx.fillStyle='rgba(74,184,255,0.75)';ctx.font='11px "Courier New"';ctx.textAlign='center';
-  ctx.fillText('DEFAULT',120,skinsY+26);
+  ctx.fillText('DEFAULT',GX+100,skinsY+24);
   ctx.fillStyle='rgba(70,70,110,0.5)';ctx.font='10px "Courier New"';ctx.textAlign='left';
-  ctx.fillText('More skins coming soon...',228,skinsY+26);
+  ctx.fillText('More skins coming soon...',GX+210,skinsY+24);
   ctx.restore();
 
   // Buttons

@@ -396,6 +396,7 @@ const EASY_SEQ=['g','i','v','e','u','p'];
 const _sessionStart=Date.now();
 let _sessionDeaths=0,_sessionBestStage=1,_stage5ToastShown=false;
 let _sessionUsedEasyMode=false,_stageAttemptDeaths=0;
+let _retryStreak=0,_attemptStartMs=Date.now(),_recentDeathTimes=[];
 function _submitTesterData(){
   if(!testMode)return;
   const name=_getPlayerName()||'Anonymous';
@@ -443,6 +444,8 @@ let worldDeaths=null;
 function _fetchWorldDeaths(){fetch('/api/death').then(r=>r.json()).then(d=>{if(d.total_deaths!=null)worldDeaths=d.total_deaths;}).catch(()=>{});}
 _fetchWorldDeaths();
 setInterval(()=>{if(state==='title')_fetchWorldDeaths();},60000);
+// Track session count & night owl on load
+(function(){incStat('totalSessions');const h=new Date().getHours();if(h>=0&&h<5)setStat('nightOwl',1);})();
 
 document.addEventListener('keydown',e=>{
   if(e.key==='Tab'){e.preventDefault();
@@ -460,7 +463,7 @@ document.addEventListener('keydown',e=>{
     if(b.length>=5){
       if(HARD_SEQ.every((k,i)=>k===b.slice(-5)[i])){hardMode=!hardMode;inputBuf=[];return;}
       if(RETRO_SEQ.every((k,i)=>k===b.slice(-5)[i])){retroMode=!retroMode;inputBuf=[];return;}
-    if(b.length>=6&&EASY_SEQ.every((k,i)=>k===b.slice(-6)[i])){easyMode=!easyMode;inputBuf=[];floatMsgs.push({txt:easyMode?'BABY MODE ON':'BABY MODE OFF',x:W/2,y:H/2,life:2,color:'rgba(255,180,255,1)'});if(easyMode){grantTitle('I Give Up');_sessionUsedEasyMode=true;}return;}
+    if(b.length>=6&&EASY_SEQ.every((k,i)=>k===b.slice(-6)[i])){easyMode=!easyMode;inputBuf=[];floatMsgs.push({txt:easyMode?'BABY MODE ON':'BABY MODE OFF',x:W/2,y:H/2,life:2,color:'rgba(255,180,255,1)'});if(easyMode){incStat('babyModeUses');_sessionUsedEasyMode=true;checkAllTitles();}return;}
     }
   }
 },{passive:false});
@@ -1768,7 +1771,7 @@ const STAGES=[
 
 
 function loadStage(n){
-  _stageAttemptDeaths=0;deathParticles=[];
+  _stageAttemptDeaths=0;deathParticles=[];_attemptStartMs=Date.now();
   const s=STAGES[Math.min(n-1,STAGES.length-1)];
   const fallSet=new Set(s.fall.map(b=>`${b.x},${b.y}`));
   platforms=s.plats.filter(p=>!fallSet.has(`${p.x},${p.y}`)).map(p=>({...p}));
@@ -1815,6 +1818,8 @@ function resetRun(){
   timeLeft=easyMode?60:hardMode?25:30;score=0;
   loadStage(1);damnEffect=null;damnTimer=0;floatMsgs=[];
   sessionStartTime=Date.now();sessionDeaths=0;sessionMaxStage=1;_sessionUsedEasyMode=false;
+  incStat('gamesStarted');
+  checkAllTitles();
 }
 
 // ======== PHYSICS ========
@@ -2365,28 +2370,35 @@ function drawMyPage(){
   ctx.fillText('TROPHY SHELF',22,105);ctx.restore();
 
   const TROPHY_DATA=[
-    ['First Blood','Reach Stage 2'],
-    ['Getting Somewhere','Reach Stage 5'],
-    ['Double Digits','Reach Stage 10'],
-    ['Rookie','Die 10 times'],
-    ['Dedicated','Die 100 times'],
-    ['Obsessed','Die 500 times'],
-    ['You Need Help','Die 1,000 times'],
-    ['Are You OK?','Die 5,000 times'],
-    ['I Give Up','Activate Baby Mode'],
-    ['Legend of Giving Up','Clear Stage 20 in Baby Mode'],
-    ['Masochist','First death in Hard Mode'],
-    ['One Hour Club','Play for 60 minutes'],
-    ['Speed Demon','Reach Stage 5 in under 3 min'],
-    ['No Baby','Reach Stage 10 without Baby Mode'],
-    ['Comeback Kid','New best with 5 seconds left'],
-    ['Night Owl','Play between midnight and 5am'],
-    ['Persistent','Die 50 times in one session'],
-    ['Unstoppable','Reach Stage 20'],
-    ['The 1%','Reach Stage 30'],
-    ['Ghost','Clear a stage without dying'],
-    ['LANDLORD','Own an entire stage grid'],
-    ['Patron','Purchase a grid block'],
+    // id, display name, condition text
+    ['welcome','Welcome to Hell','Start the game'],
+    ['firstDeath','First Death','Die for the first time'],
+    ['again','Again.','Die twice'],
+    ['stillHere','Still Here','Survive 10 seconds'],
+    ['firstBlood','First Blood','Reach Stage 2'],
+    ['gettingSomewhere','Getting Somewhere','Reach Stage 5'],
+    ['doubleDigits','Double Digits','Reach Stage 10'],
+    ['gettingSerious','Getting Serious','Reach Stage 20'],
+    ['oneThird','One Third','Reach Stage 30'],
+    ['legend','Legend','Reach Stage 100'],
+    ['ghost','Ghost','Clear a stage without dying'],
+    ['comebackKid','Comeback Kid','New best with 5s left'],
+    ['speedDemon','Speed Demon','Reach Stage 5 in under 3 min'],
+    ['noBaby','No Baby','Reach Stage 10 without Baby Mode'],
+    ['closeOne','Close One','Grab timer with <1s left'],
+    ['persistent','Persistent','Die 500 times'],
+    ['unbreakable','Unbreakable','Die 1,000 times'],
+    ['oneHourClub','One Hour Club','Play for 60 minutes'],
+    ['youNeedHelp','You Need Help','Die 5,000 times'],
+    ['stuckInStage1','Stuck in Stage 1','Die 50 times in Stage 1'],
+    ['instantRegret','Instant Regret','Die within 3 seconds'],
+    ['justOneMoreTry','Just One More Try','Retry 20 times in a row'],
+    ['nightOwl','Night Owl','Play midnight to 5am'],
+    ['iGiveUp','I Give Up','Activate Baby Mode'],
+    ['legendOfGivingUp','Legend of Giving Up','Clear Stage 20 in Baby Mode'],
+    ['masochist','Masochist','Die in Hard Mode'],
+    ['firstPurchase','First Purchase','Buy grid blocks'],
+    ['landlord','Landlord','Own 500 blocks'],
   ];
 
   const earnedSet=new Set(getTitles());
@@ -2404,10 +2416,10 @@ function drawMyPage(){
     ctx.textAlign='left';
     ctx.fillStyle=has?'rgba(255,220,50,0.92)':'rgba(70,70,95,0.8)';
     ctx.font=(has?'bold ':'')+'11px "Courier New"';
-    ctx.fillText(has?t[0]:'???',tx+44,ty+24);
+    ctx.fillText(has?t[1]:'???',tx+44,ty+24);
     ctx.fillStyle=has?'rgba(180,200,255,0.5)':'rgba(55,55,75,0.6)';
     ctx.font='9px "Courier New"';
-    ctx.fillText(t[1],tx+44,ty+40);
+    ctx.fillText(t[2],tx+44,ty+40);
     if(has){
       ctx.fillStyle='rgba(74,222,128,0.85)';ctx.font='bold 13px "Courier New"';
       ctx.textAlign='right';ctx.fillText('\u2713',tx+CW-8,ty+24);
@@ -2598,7 +2610,7 @@ function update(dt){
     }
     for(const h of hourglasses){
       if(!h.taken&&overlap(player,{x:h.x,y:h.y,w:h.w,h:h.h})){
-        h.taken=true;timeLeft=Math.min(MAX_TIME,timeLeft+5);score+=50;
+        h.taken=true;if(timeLeft<1)incStat('closeGrabs');timeLeft=Math.min(MAX_TIME,timeLeft+5);score+=50;
         floatMsgs.push({txt:'+5s!',x:h.x+12,y:h.y,life:1.2});sfxHourglass();
       }
     }
@@ -2713,7 +2725,7 @@ function update(dt){
     if(keys['Escape']&&!prevKeys['Escape']){state='title';}
     if(keys['t']&&!prevKeys['t']){state='title';}
   } else if(state==='title'){
-    if(keys[' ']&&!prevKeys[' ']){resetRun();state='play';startBGM(getBGMTrack(1));}
+    if(keys[' ']&&!prevKeys[' ']){_retryStreak=0;resetRun();state='play';startBGM(getBGMTrack(1));}
   } else if(state==='dead'){
     // Particle update
     for(let i=deathParticles.length-1;i>=0;i--){
@@ -2727,70 +2739,117 @@ function update(dt){
     if(damnScale<1.05){damnScale=Math.min(1.05,damnScale+dt*8);}
     else if(damnScale>1.0){damnScale=Math.max(1.0,damnScale-dt*3);}
     if(keys[' ']&&!prevKeys[' ']){
+      _retryStreak++;if(_retryStreak>getStat('maxRetryStreak'))setStat('maxRetryStreak',_retryStreak);
       if(adminMode){loadStage(stageNum);timeLeft=hardMode?25:30;damnEffect=null;damnTimer=0;floatMsgs=[];}
       else if(easyMode){loadStage(easyModeSavedStage);timeLeft=60;damnEffect=null;damnTimer=0;floatMsgs=[];}
       else resetRun();
       state='play';startBGM(getBGMTrack(stageNum));
     }
-    if(keys['t']&&!prevKeys['t']){resetRun();stopBGM();state='title';}
+    if(keys['t']&&!prevKeys['t']){_retryStreak=0;resetRun();stopBGM();state='title';}
     if(keys['s']&&!prevKeys['s'])shareDeathCount();
   }
   Object.keys(keys).forEach(k=>{if(keys[k])prevKeys[k]=true;else delete prevKeys[k];});
 }
 
 // ── TITLE SYSTEM ──
+const TITLES=[
+  // TIER 1: Instant unlock (dopamine hook)
+  {id:'welcome',name:'Welcome to Hell',desc:'Start the game for the first time',condition:()=>getStat('totalDeaths')>=0&&getStat('gamesStarted')>=1},
+  {id:'firstDeath',name:'First Death',desc:'Die for the first time',condition:()=>getStat('totalDeaths')>=1},
+  {id:'again',name:'Again.',desc:'Die twice',condition:()=>getStat('totalDeaths')>=2},
+  {id:'stillHere',name:'Still Here',desc:'Survive for 10 seconds',condition:()=>getStat('longestSurvival')>=10},
+  // TIER 2: Habit forming
+  {id:'gettingUsed',name:'Getting Used to It',desc:'Die 10 times',condition:()=>getStat('totalDeaths')>=10},
+  {id:'notGivingUp',name:'Not Giving Up',desc:'Die 50 times',condition:()=>getStat('totalDeaths')>=50},
+  {id:'stillPlaying',name:'Still Playing?',desc:'Die 100 times',condition:()=>getStat('totalDeaths')>=100},
+  {id:'timeSink',name:'Time Sink',desc:'Play for 5 minutes total',condition:()=>getStat('totalPlayTime')>=300},
+  {id:'cantStop',name:"Can't Stop",desc:'Play for 10 minutes total',condition:()=>getStat('totalPlayTime')>=600},
+  // TIER 3: Stage milestones
+  {id:'firstBlood',name:'First Blood',desc:'Reach Stage 2',condition:()=>getStat('bestStage',0)>=2},
+  {id:'gettingSomewhere',name:'Getting Somewhere',desc:'Reach Stage 5',condition:()=>getStat('bestStage',0)>=5},
+  {id:'doubleDigits',name:'Double Digits',desc:'Reach Stage 10',condition:()=>getStat('bestStage',0)>=10},
+  {id:'gettingSerious',name:'Getting Serious',desc:'Reach Stage 20',condition:()=>getStat('bestStage',0)>=20},
+  {id:'oneThird',name:'One Third',desc:'Reach Stage 30',condition:()=>getStat('bestStage',0)>=30},
+  {id:'halfway',name:'Halfway',desc:'Reach Stage 50',condition:()=>getStat('bestStage',0)>=50},
+  {id:'almostThere',name:'Almost There',desc:'Reach Stage 70',condition:()=>getStat('bestStage',0)>=70},
+  {id:'soClose',name:'So Close',desc:'Reach Stage 90',condition:()=>getStat('bestStage',0)>=90},
+  {id:'legend',name:'Legend',desc:'Reach Stage 100',condition:()=>getStat('bestStage',0)>=100},
+  {id:'closeOne',name:'Close One',desc:'Grab a timer with less than 1 second left',condition:()=>getStat('closeGrabs')>=1},
+  {id:'comebackKid',name:'Comeback Kid',desc:'Reach a new best stage with 5 seconds or less remaining',condition:()=>getStat('comebackCount')>=1},
+  {id:'speedDemon',name:'Speed Demon',desc:'Reach Stage 5 in under 3 minutes',condition:()=>getStat('speedDemon')>=1},
+  {id:'noBaby',name:'No Baby',desc:'Reach Stage 10 without activating Baby Mode',condition:()=>getStat('bestStage',0)>=10&&getStat('babyModeUses')===0},
+  {id:'ghost',name:'Ghost',desc:'Clear a stage without dying on that attempt',condition:()=>getStat('ghostClears')>=1},
+  // TIER 4: Hardcore
+  {id:'persistent',name:'Persistent',desc:'Die 500 times',condition:()=>getStat('totalDeaths')>=500},
+  {id:'unbreakable',name:'Unbreakable',desc:'Die 1,000 times',condition:()=>getStat('totalDeaths')>=1000},
+  {id:'oneHourClub',name:'One Hour Club',desc:'Play for 60 minutes total',condition:()=>getStat('totalPlayTime')>=3600},
+  // TIER 5: Madness
+  {id:'addicted',name:'Addicted',desc:'Die 2,000 times',condition:()=>getStat('totalDeaths')>=2000},
+  {id:'obsessed',name:'Obsessed',desc:'Play for 1 hour total',condition:()=>getStat('totalPlayTime')>=3600},
+  {id:'whyStillPlaying',name:'Why Are You Still Playing?',desc:'Play for 2 hours total',condition:()=>getStat('totalPlayTime')>=7200},
+  {id:'thereIsNoEnd',name:'There Is No End',desc:'Play for 5 hours total',condition:()=>getStat('totalPlayTime')>=18000},
+  {id:'youNeedHelp',name:'You Need Help',desc:'Die 5,000 times',condition:()=>getStat('totalDeaths')>=5000},
+  {id:'areYouOk',name:'Are You OK?',desc:'Die 10,000 times',condition:()=>getStat('totalDeaths')>=10000},
+  {id:'youBelongHere',name:'You Belong Here',desc:'Play for 10 hours total',condition:()=>getStat('totalPlayTime')>=36000},
+  // TIER 6: Meme / SNS viral
+  {id:'stuckInStage1',name:'Stuck in Stage 1',desc:'Die 50 times in Stage 1',condition:()=>getStat('stage1Deaths')>=50},
+  {id:'hopeless',name:'Hopeless',desc:'Die 100 times in Stage 1',condition:()=>getStat('stage1Deaths')>=100},
+  {id:'instantRegret',name:'Instant Regret',desc:'Die within 3 seconds of starting',condition:()=>getStat('instantDeaths')>=1},
+  {id:'speedrunToDeath',name:'Speedrun to Death',desc:'Die 5 times within 1 minute',condition:()=>getStat('rapidDeaths')>=1},
+  {id:'justOneMoreTry',name:'Just One More Try',desc:'Retry 20 times in a row',condition:()=>getStat('maxRetryStreak')>=20},
+  // TIER 7: Play style
+  {id:'nightOwl',name:'Night Owl',desc:'Play between midnight and 5am',condition:()=>getStat('nightOwl')>=1},
+  {id:'backAgain',name:'Back Again',desc:'Return to play a second session',condition:()=>getStat('totalSessions')>=2},
+  {id:'iGiveUp',name:'I Give Up',desc:'Activate Baby Mode',condition:()=>getStat('babyModeUses')>=1},
+  {id:'legendOfGivingUp',name:'Legend of Giving Up',desc:'Clear Stage 20 in Baby Mode',condition:()=>getStat('babyClear')>=1},
+  {id:'masochist',name:'Masochist',desc:'Die for the first time in Hard Mode',condition:()=>getStat('hardModeDeaths')>=1},
+  // TIER 8: Purchase (monetization)
+  {id:'firstPurchase',name:'First Purchase',desc:'Buy your first grid blocks',condition:()=>localStorage.getItem('neverend_contract_id')!==null},
+  {id:'gridOwner',name:'Grid Owner',desc:'Own 4 blocks',condition:()=>getStat('ownedBlocks')>=4},
+  {id:'expandingTerritory',name:'Expanding Territory',desc:'Own 20 blocks',condition:()=>getStat('ownedBlocks')>=20},
+  {id:'collector',name:'Collector',desc:'Own 50 blocks',condition:()=>getStat('ownedBlocks')>=50},
+  {id:'dominator',name:'Dominator',desc:'Own 200 blocks',condition:()=>getStat('ownedBlocks')>=200},
+  {id:'landlord',name:'Landlord',desc:'Own 500 blocks',condition:()=>getStat('ownedBlocks')>=500},
+  {id:'monopolist',name:'Monopolist',desc:"Own 50% of a stage",condition:()=>localStorage.getItem('neverend_monopoly_50')==='1'},
+  {id:'stageConqueror',name:'Stage Conqueror',desc:'Own an entire stage',condition:()=>localStorage.getItem('neverend_monopoly_owner')==='1'},
+  {id:'godOfGrid',name:'God of Grid',desc:'Conquer multiple stages',condition:()=>localStorage.getItem('neverend_multi_stage')==='1'},
+];
 function getTitles(){try{return JSON.parse(localStorage.getItem('neverend_titles'))||[];}catch(_){return[];}}
-function hasTitle(t){return getTitles().includes(t);}
-function grantTitle(t){
-  if(hasTitle(t)||adminMode)return;
-  const arr=getTitles();arr.push(t);
+function hasTitle(id){return getTitles().includes(id);}
+function grantTitle(id){
+  if(hasTitle(id)||adminMode)return;
+  const arr=getTitles();arr.push(id);
   try{localStorage.setItem('neverend_titles',JSON.stringify(arr));}catch(_){}
-  floatMsgs.push({txt:'TITLE UNLOCKED: '+t,x:W/2,y:H/2-90,life:4,color:'rgba(255,220,50,1)'});
+  const def=TITLES.find(t=>t.id===id);
+  floatMsgs.push({txt:'TITLE UNLOCKED: '+(def?def.name:id),x:W/2,y:H/2-90,life:4,color:'rgba(255,220,50,1)'});
+}
+function checkAllTitles(){
+  if(adminMode)return;
+  try{TITLES.forEach(function(t){if(!hasTitle(t.id)&&t.condition())grantTitle(t.id);});}catch(_){}
 }
 function checkTitlesOnDeath(){
   if(adminMode)return;
-  const d=getStat('totalDeaths');
-  if(d>=10)grantTitle('Rookie');
-  if(d>=100)grantTitle('Dedicated');
-  if(d>=500)grantTitle('Obsessed');
-  if(d>=1000)grantTitle('You Need Help');
-  if(d>=5000)grantTitle('Are You OK?');
-  if(hardMode)grantTitle('Masochist');
-  // Persistent: 50 deaths in a single session
-  if(sessionDeaths>=50)grantTitle('Persistent');
+  // Track session deaths for 'Persistent' equivalent — now handled by stats
+  checkAllTitles();
 }
 function checkTitlesOnClear(nextStage){
   if(adminMode)return;
-  if(nextStage>=2)grantTitle('First Blood');
-  if(nextStage>=5)grantTitle('Getting Somewhere');
-  if(nextStage>=10)grantTitle('Double Digits');
-  if(easyMode&&nextStage===21)grantTitle('Legend of Giving Up');
-  // Speed Demon: reach Stage 5 within 3 minutes of session start
-  if(nextStage===5&&(Date.now()-sessionStartTime)<180000)grantTitle('Speed Demon');
-  // No Baby: reach Stage 10 without activating Baby Mode this session
-  if(nextStage===10&&!_sessionUsedEasyMode)grantTitle('No Baby');
-  // Unstoppable: reach Stage 20
-  if(nextStage>=21)grantTitle('Unstoppable');
-  // The 1%: reach Stage 30
-  if(nextStage>=31)grantTitle('The 1%');
-  // Ghost: complete a stage without dying on that attempt
-  if(_stageAttemptDeaths===0)grantTitle('Ghost');
-  // Comeback Kid: new best stage with 5 seconds or less remaining
-  const prevBest=getStat('bestStage',1);
-  if((nextStage-1)>prevBest&&timeLeft<=5)grantTitle('Comeback Kid');
-  // Patron: has purchased a block
-  if(localStorage.getItem('neverend_contract_id'))grantTitle('Patron');
+  // Track stats before updating bestStage
+  const curBest=getStat('bestStage',1);
+  if(nextStage>curBest&&timeLeft<=5)incStat('comebackCount');
+  if(_stageAttemptDeaths===0)incStat('ghostClears');
+  if(nextStage===5&&(Date.now()-sessionStartTime)<180000)setStat('speedDemon',1);
+  if(easyMode&&nextStage===21)incStat('babyClear');
+  // Update bestStage to include cleared stages
+  if(nextStage>curBest)setStat('bestStage',nextStage);
+  checkAllTitles();
 }
 function checkTitlesOnPlayTime(){
   if(adminMode)return;
-  if(getStat('totalPlayTime',0)>=3600)grantTitle('One Hour Club');
-  // Night Owl: playing between 00:00 and 05:00
   const h=new Date().getHours();
-  if(h>=0&&h<5)grantTitle('Night Owl');
-  // LANDLORD: owns an entire stage via Stage Monopoly plan
-  if(localStorage.getItem('neverend_monopoly_owner')==='1')grantTitle('LANDLORD');
-  // Patron: has purchased a block
-  if(localStorage.getItem('neverend_contract_id'))grantTitle('Patron');
+  if(h>=0&&h<5)setStat('nightOwl',1);
+  if(localStorage.getItem('neverend_monopoly_owner')==='1')setStat('ownedBlocks',Math.max(getStat('ownedBlocks'),3600));
+  checkAllTitles();
 }
 
 // Death effect state
@@ -2825,10 +2884,20 @@ function triggerDeath(){
   // Stats
   incStat('totalDeaths');
   incStat('deaths_stage_'+lastDeathStage);
+  if(lastDeathStage===1)incStat('stage1Deaths');
+  if(hardMode)incStat('hardModeDeaths');
   fetch('/api/death',{method:'POST'}).catch(()=>{});
   const best=getStat('bestStage',1);
   if(lastDeathStage>best)setStat('bestStage',lastDeathStage);
   incStat('totalStagesReached',lastDeathStage);
+  // Longest survival per stage attempt
+  const _survivalSecs=(Date.now()-_attemptStartMs)/1000;
+  if(_survivalSecs>getStat('longestSurvival'))setStat('longestSurvival',Math.round(_survivalSecs));
+  // Instant death (within 3s of stage start)
+  if(_survivalSecs<3)incStat('instantDeaths');
+  // Rapid deaths (5 in 60s)
+  const _now=Date.now();_recentDeathTimes.push(_now);_recentDeathTimes=_recentDeathTimes.filter(t=>_now-t<60000);
+  if(_recentDeathTimes.length>=5)incStat('rapidDeaths');
 
   // Points: 1pt per death, bonus for stage reached
   incStat('points',1);

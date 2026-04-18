@@ -1806,6 +1806,7 @@ const STAGES=[
 
 
 function loadStage(n){
+  keys={};prevKeys={};
   _stageAttemptDeaths=0;deathParticles=[];_attemptStartMs=Date.now();
   const s=STAGES[Math.min(n-1,STAGES.length-1)];
   const fallSet=new Set(s.fall.map(b=>`${b.x},${b.y}`));
@@ -1816,6 +1817,13 @@ function loadStage(n){
   trapSpikes=s.traps.map(t=>({...t,triggered:false,visible:false,
     timer:hardMode?0.1:0.4,
     warn:hardMode?false:t.warn}));
+  // BUG 3: Remove spikes/hg overlapping goal
+  {const g=s.goal;
+  spikes=spikes.filter(o=>!(o.x<g.x+g.w&&o.x+(o.w||32)>g.x&&o.y<g.y+g.h&&o.y+(o.h||32)>g.y));
+  hourglasses=hourglasses.filter(o=>!(o.x<g.x+g.w&&o.x+(o.w||16)>g.x&&o.y<g.y+g.h&&o.y+(o.h||32)>g.y));}
+  // BUG 4: Remove traps within 64px of spawn
+  {const sp=s.spawn;
+  trapSpikes=trapSpikes.filter(t=>!(Math.abs(t.x-sp.x)<64&&Math.abs(t.y-sp.y)<64));}
   fallingBlocks=s.fall.map(b=>({...b,falling:false,vy:0,shakeT:0,triggered:false,gone:false}));
   movingPlatforms=s.move?s.move.map(p=>({...p,phase:0})):[];
   mimics=s.mimics?s.mimics.map(m=>({...m,triggered:false,exploded:false,timer:0})):[];
@@ -2116,8 +2124,7 @@ function drawChaser(c){
 }
 
 function drawPendulum(p){
-  const maxAngle=p.maxAngle||Math.PI/4;
-  const ang=Math.sin(animT*p.speed)*maxAngle;
+  const ang=p.angle!==undefined?p.angle:Math.sin(animT*p.speed)*(p.maxAngle||Math.PI/4);
   const sx=p.pivotX+Math.sin(ang)*p.length;
   const sy=p.pivotY+Math.cos(ang)*p.length;
   ctx.save();
@@ -2686,14 +2693,13 @@ function update(dt){
       if(c.active){c.x+=c.speed*dt;}
       if(c.active&&overlap(player,c)){lastDeathCause='crush';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
     }
-    // Pendulums
+    // Pendulums — angle stored on object each frame so draw and collision always match
     for(const p of pendulums){
-      const maxAngle=p.maxAngle||Math.PI/4;
-      const ang=Math.sin(animT*p.speed)*maxAngle;
-      const sx=p.pivotX+Math.sin(ang)*p.length;
-      const sy=p.pivotY+Math.cos(ang)*p.length;
+      p.angle=Math.sin(animT*p.speed)*(p.maxAngle||Math.PI/4);
+      const tipX=p.pivotX+Math.sin(p.angle)*p.length;
+      const tipY=p.pivotY+Math.cos(p.angle)*p.length;
       const pcx=player.x+player.w/2,pcy=player.y+player.h/2;
-      if(Math.sqrt((pcx-sx)*(pcx-sx)+(pcy-sy)*(pcy-sy))<=16){lastDeathCause='spike';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
+      if(Math.sqrt((pcx-tipX)*(pcx-tipX)+(pcy-tipY)*(pcy-tipY))<=16){lastDeathCause='spike';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
     }
     // Phantom platforms — vanish timer
     for(const p of [...platforms,...movingPlatforms]){

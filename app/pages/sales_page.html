@@ -113,6 +113,10 @@ nav a:hover{color:var(--accent2);}
 .color-tool-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);padding:8px 14px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
 .color-tool-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(74,184,255,0.08);}
 .color-tool-btn:hover:not(.active){border-color:var(--muted2);}
+.ctool-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);padding:5px 10px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+.ctool-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(74,184,255,0.08);}
+.ctool-btn:hover:not(.active){border-color:var(--muted2);}
+.color-sidebar{position:sticky;top:80px;align-self:start;}
 .color-palette-row{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px;min-height:28px;align-items:center;}
 .color-palette-row .pal-label{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);margin-right:4px;flex-shrink:0;}
 .pal-chip{width:24px;height:24px;cursor:pointer;border:2px solid transparent;transition:transform 0.1s;}
@@ -295,6 +299,12 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
   <div class="stat-item"><div class="stat-num">From $5</div><div class="stat-label">Per Month</div></div>
 </div>
 
+<div style="background:#0a0a18;border-bottom:1px solid #1e1e35;padding:10px 40px;text-align:center;font-family:'Share Tech Mono',monospace;font-size:10px;color:#6e7585;letter-spacing:1px;">
+  STANDARD STAGE: <span style="color:#4ab8ff">160×90 dots</span> &nbsp;|&nbsp;
+  CREATOR ZONE (every 5th stage): <span style="color:#f5c842">320×180 dots</span> &nbsp;|&nbsp;
+  GAME RESOLUTION: <span style="color:#9aa2b5">1280×720px</span>
+</div>
+
 <section class="placement-section" id="placementTool">
   <div class="placement-title-bar">
     <div>
@@ -430,6 +440,12 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
         <button class="color-tool-btn" id="toolTransparent" onclick="setColorTool('transparent')">TRANSPARENT</button>
         <button class="color-tool-btn" id="toolEyedropper" onclick="setColorTool('eyedropper')">EYEDROPPER</button>
         <button class="btn-secondary" onclick="resetEditPixels()" style="margin-left:auto;">RESET</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;">BRUSH SIZE</span>
+        <button class="ctool-btn active" id="brush1" onclick="setBrushSize(1,this)">1px</button>
+        <button class="ctool-btn" id="brush3" onclick="setBrushSize(3,this)">3px</button>
+        <button class="ctool-btn" id="brush5" onclick="setBrushSize(5,this)">5px</button>
       </div>
       <div id="toolHint" style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:10px;letter-spacing:1px;">
         REPLACE: select a color from the palette below, then click pixels to recolor them. Click a palette swatch to edit all of that color at once.
@@ -685,6 +701,7 @@ let chosenW=0,chosenH=0;
 let pixelArtOriginal=null; // 2D array of {r,g,b}|null
 let pixelArtEdit=null;     // 2D array (editable copy)
 let colorTool='replace';
+let brushSize=1;
 let selectedPaletteColor=null; // {r,g,b} or 'transparent'
 let selectedPaletteKey=null;
 let currentStage=1;
@@ -873,10 +890,14 @@ function selectMonopoly(btn){
   activeSizeBtn=btn;btn.classList.add('active');
   document.getElementById('customSizeInputs').style.display='none';
   chosenW=GRID_COLS;chosenH=GRID_ROWS;
-  const mp=isCreatorStage(currentStage)?'$3,300/mo':'$3,000/mo';
-  document.getElementById('sec2Stats').innerHTML='<strong>FULL STAGE MONOPOLY</strong> &mdash; Entire stage claimed. Price: <strong>'+mp+'</strong>';
-  document.getElementById('sec2Converting').style.display='none';
-  document.getElementById('sec2PreviewWrap').style.display='block';
+  if(uploadedImage){
+    convertAndPreview(GRID_COLS,GRID_ROWS);
+  }else{
+    const mp=isCreatorStage(currentStage)?'$3,300/mo':'$3,000/mo';
+    document.getElementById('sec2Stats').innerHTML='<strong>FULL STAGE MONOPOLY</strong> \u2014 '+GRID_COLS+'\xd7'+GRID_ROWS+'='+(GRID_COLS*GRID_ROWS).toLocaleString()+' blocks. Price: <strong>'+mp+'</strong><br><span style="color:var(--muted2);font-size:9px;">Upload an image first to continue.</span>';
+    document.getElementById('sec2Converting').style.display='none';
+    document.getElementById('sec2PreviewWrap').style.display='none';
+  }
 }
 function updateCustomBlocksInfo(){
   const n=Math.max(4,Math.min(3600,parseInt(document.getElementById('customBlocks').value)||50));
@@ -1100,6 +1121,32 @@ function setColorTool(t){
   document.getElementById('toolHint').textContent=hints[t]||'';
 }
 
+function setBrushSize(s,btn){
+  brushSize=s;
+  document.querySelectorAll('#brush1,#brush3,#brush5').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+}
+function applyEditToPixel(x,y){
+  if(!pixelArtEdit||x<0||x>=chosenW||y<0||y>=chosenH)return;
+  if(colorTool==='transparent'){
+    if(pixelArtEdit[y][x]!==null)pixelArtEdit[y][x]=null;
+  }else if(colorTool==='replace'){
+    if(selectedPaletteColor==='transparent'){
+      if(pixelArtEdit[y][x]!==null)pixelArtEdit[y][x]=null;
+    }else if(selectedPaletteColor){
+      pixelArtEdit[y][x]={r:selectedPaletteColor.r,g:selectedPaletteColor.g,b:selectedPaletteColor.b};
+    }
+  }
+}
+function applyEditBrush(cx,cy){
+  const r=Math.floor(brushSize/2);
+  for(let dy=-r;dy<=r;dy++){
+    for(let dx=-r;dx<=r;dx++){
+      applyEditToPixel(cx+dx,cy+dy);
+    }
+  }
+}
+
 editCanvas.addEventListener('click',function(e){
   if(!pixelArtEdit)return;
   const rect=editCanvas.getBoundingClientRect();
@@ -1114,16 +1161,9 @@ editCanvas.addEventListener('click',function(e){
       buildColorPalette();
       setColorTool('replace');
     }
-  }else if(colorTool==='transparent'){
-    if(px!==null){pixelArtEdit[y][x]=null;drawEditCanvas();buildColorPalette();updateEditStats();}
   }else{
-    // replace tool
-    if(selectedPaletteColor==='transparent'){
-      if(px!==null){pixelArtEdit[y][x]=null;drawEditCanvas();buildColorPalette();updateEditStats();}
-    }else if(selectedPaletteColor){
-      pixelArtEdit[y][x]={r:selectedPaletteColor.r,g:selectedPaletteColor.g,b:selectedPaletteColor.b};
-      drawEditCanvas();buildColorPalette();updateEditStats();
-    }
+    applyEditBrush(x,y);
+    drawEditCanvas();buildColorPalette();updateEditStats();
   }
 });
 

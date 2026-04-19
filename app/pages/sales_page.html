@@ -2,319 +2,239 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>neverEND — Own the Background</title>
-<meta name="description" content="Place your logo inside the world's hardest game. Thousands of players will die staring at your brand.">
-<meta property="og:title" content="neverEND">
-<meta property="og:description" content="Nobody finishes this game. But everybody sees your logo.">
-<meta property="og:image" content="https://neverend.vercel.app/og-image.png">
-<meta property="og:url" content="https://neverend.vercel.app">
-<meta name="twitter:card" content="summary_large_image">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quantize/1.0.2/quantize.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap');
-:root{
-  --black:#090912;--dark:#0e0e1a;--panel:#13131f;--panel2:#17172a;
-  --border:#262640;--border2:#303050;
-  --accent:#e74c3c;--accent2:#4ab8ff;--gold:#f5c842;--green:#4ade80;
-  --text:#e0e4f0;--muted:#787f90;--muted2:#a0a8b8;
-}
+:root{--black:#07070f;--dark:#0d0d1a;--panel:#121220;--panel2:#161626;--border:#1e1e35;--border2:#282845;--accent:#e74c3c;--accent2:#4ab8ff;--gold:#f5c842;--green:#4ade80;--text:#dde2f0;--muted:#6e7585;--muted2:#9aa2b5;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--black);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden;line-height:1.6;}
-body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 4px,rgba(0,0,0,0.025) 4px,rgba(0,0,0,0.025) 5px);pointer-events:none;z-index:9999;}
-
-header{display:flex;align-items:center;justify-content:space-between;padding:18px 48px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(9,9,18,0.97);backdrop-filter:blur(12px);z-index:100;}
-.logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:#fff;}
-.logo span{color:var(--accent);}
-nav{display:flex;gap:28px;align-items:center;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.03) 3px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:9999;}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 40px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(7,7,15,0.97);backdrop-filter:blur(12px);z-index:100;}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;color:#fff;}.logo span{color:var(--accent);}
+nav{display:flex;gap:24px;align-items:center;}
 nav a{color:var(--muted2);text-decoration:none;font-size:11px;letter-spacing:2px;text-transform:uppercase;transition:color 0.2s;}
 nav a:hover{color:var(--accent2);}
-.nav-cta{background:var(--accent);color:#fff !important;padding:8px 20px;}
-
-.hero{text-align:center;padding:72px 48px 40px;}
-.hero-eyebrow{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:4px;color:var(--muted2);margin-bottom:20px;text-transform:uppercase;}
-.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(44px,7vw,88px);line-height:0.92;color:#fff;margin-bottom:24px;}
+.nav-cta{background:var(--accent);color:#fff!important;padding:8px 18px;}
+.hero{text-align:center;padding:60px 40px 32px;}
+.hero-eyebrow{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:4px;color:var(--muted2);margin-bottom:16px;text-transform:uppercase;}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,6vw,80px);line-height:0.92;color:#fff;margin-bottom:20px;}
 .hero h1 em{color:var(--accent);font-style:normal;}
-.hero p{font-size:15px;color:var(--muted2);max-width:500px;margin:0 auto 48px;line-height:1.75;font-weight:300;}
-
-.stats-bar{display:flex;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:48px;background:var(--dark);}
-.stat-item{text-align:center;padding:28px 40px;border-right:1px solid var(--border);flex:1;max-width:220px;}
+.hero p{font-size:14px;color:var(--muted2);max-width:480px;margin:0 auto 36px;line-height:1.8;font-weight:300;}
+.stats-bar{display:flex;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--dark);}
+.stat-item{text-align:center;padding:24px 32px;border-right:1px solid var(--border);flex:1;}
 .stat-item:last-child{border-right:none;}
-.stat-num{font-family:'Bebas Neue',sans-serif;font-size:38px;color:#fff;line-height:1;}
-.stat-label{font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-top:6px;}
-
-.placement-section{max-width:1100px;margin:0 auto;padding:0 24px 72px;}
-.placement-title-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
-.placement-title{font-family:'Bebas Neue',sans-serif;font-size:36px;color:#fff;letter-spacing:1px;}
-.placement-subtitle{font-size:12px;color:var(--muted2);margin-top:2px;}
-
-/* PROGRESS */
-.progress-track{display:flex;align-items:center;gap:0;margin-bottom:24px;background:var(--dark);border:1px solid var(--border);overflow:hidden;}
-.prog-step{flex:1;text-align:center;padding:12px 6px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--muted);border-right:1px solid var(--border);transition:all 0.3s;white-space:nowrap;}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:34px;color:#fff;line-height:1;}
+.stat-label{font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-top:4px;}
+.res-bar{background:#0a0a18;border-bottom:1px solid var(--border);padding:10px 40px;text-align:center;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;}
+.main-wrap{max-width:1080px;margin:0 auto;padding:48px 24px 80px;}
+.section-hdr{margin-bottom:32px;}
+.section-hdr h2{font-family:'Bebas Neue',sans-serif;font-size:32px;color:#fff;letter-spacing:1px;}
+.section-hdr p{font-size:12px;color:var(--muted2);margin-top:4px;letter-spacing:1px;}
+.progress-wrap{display:flex;margin-bottom:32px;background:var(--dark);border:1px solid var(--border);}
+.prog-step{flex:1;text-align:center;padding:10px 4px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--muted);border-right:1px solid var(--border);transition:all 0.3s;white-space:nowrap;}
 .prog-step:last-child{border-right:none;}
 .prog-step.active{background:rgba(74,184,255,0.08);color:var(--accent2);}
 .prog-step.done{background:rgba(74,222,128,0.06);color:var(--green);}
-
-/* FLOW SECTIONS */
-.flow-section{background:var(--dark);border:1px solid var(--border);margin-bottom:12px;transition:opacity 0.3s,filter 0.3s;}
-.flow-section.locked{opacity:0.3;pointer-events:none;filter:grayscale(0.4);}
-.flow-sec-hdr{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--panel);}
-.flow-sec-num{width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.flow-section.locked .flow-sec-num{background:var(--muted);}
-.flow-section.done .flow-sec-num{background:var(--green);color:#000;}
-.flow-sec-title{font-family:'Bebas Neue',sans-serif;font-size:20px;color:#fff;letter-spacing:1px;flex:1;}
-.flow-sec-done{color:var(--green);font-size:18px;font-weight:bold;}
-.flow-sec-body{padding:20px;}
-
-/* Buttons */
-.btn-primary{width:100%;background:var(--accent);border:none;color:#fff;padding:13px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;font-weight:700;transition:background 0.2s;margin-bottom:8px;}
+.flow-panel{background:var(--dark);border:1px solid var(--border);margin-bottom:10px;transition:opacity 0.3s;}
+.flow-panel.locked{opacity:0.28;pointer-events:none;}
+.flow-panel.done .panel-num{background:var(--green);color:#000;}
+.panel-hdr{display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border);background:var(--panel);}
+.panel-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.flow-panel.locked .panel-num{background:var(--muted);}
+.panel-title{font-family:'Bebas Neue',sans-serif;font-size:18px;color:#fff;letter-spacing:1px;flex:1;}
+.panel-check{color:var(--green);font-size:16px;font-weight:bold;}
+.panel-body{padding:18px;}
+.btn-primary{background:var(--accent);border:none;color:#fff;padding:12px 20px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;font-weight:700;transition:background 0.2s;}
 .btn-primary:hover{background:#c0392b;}
-.btn-primary:disabled{background:var(--muted);color:#555;cursor:not-allowed;}
-.btn-blue{background:var(--accent2);border:none;color:#000;padding:12px 20px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;font-weight:700;transition:opacity 0.2s;}
+.btn-primary:disabled{background:var(--muted);color:#444;cursor:not-allowed;}
+.btn-blue{background:var(--accent2);border:none;color:#000;padding:10px 18px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;font-weight:700;transition:opacity 0.2s;}
 .btn-blue:hover{opacity:0.85;}
 .btn-blue:disabled{background:var(--muted);color:#555;cursor:not-allowed;}
-.btn-secondary{background:none;border:1px solid var(--border);color:var(--muted2);padding:9px 16px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;}
-.btn-secondary:hover{border-color:var(--accent2);color:var(--accent2);}
+.btn-ghost{background:none;border:1px solid var(--border2);color:var(--muted2);padding:7px 12px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;}
+.btn-ghost:hover{border-color:var(--accent2);color:var(--accent2);}
+.btn-warn{background:none;border:1px solid rgba(245,200,66,0.4);color:var(--gold);padding:7px 12px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;}
+.btn-warn:hover{background:rgba(245,200,66,0.08);}
 .w100{width:100%;display:block;margin-bottom:8px;}
-
-/* SECTION 1: UPLOAD */
-.upload-zone{border:2px dashed var(--border2);padding:48px 24px;text-align:center;cursor:pointer;transition:all 0.25s;background:var(--panel2);position:relative;}
-.upload-zone:hover,.upload-zone.dragover{border-color:var(--accent2);background:rgba(74,184,255,0.04);}
-.upload-icon{font-size:40px;margin-bottom:16px;color:var(--muted);}
-.upload-title{font-family:'Bebas Neue',sans-serif;font-size:24px;color:#fff;margin-bottom:8px;letter-spacing:1px;}
-.upload-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);letter-spacing:1px;line-height:2;}
+.upload-layout{display:grid;grid-template-columns:180px 1fr;gap:16px;align-items:start;}
+.upload-drop{border:2px dashed var(--border2);padding:16px 10px;text-align:center;cursor:pointer;transition:all 0.25s;background:var(--panel2);}
+.upload-drop:hover{border-color:var(--accent2);background:rgba(74,184,255,0.04);}
+.upload-icon{font-size:20px;margin-bottom:6px;color:var(--muted);}
+.upload-drop h3{font-family:'Bebas Neue',sans-serif;font-size:14px;color:#fff;margin-bottom:3px;}
+.upload-drop p{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted2);letter-spacing:1px;line-height:1.8;}
 #fileInput{display:none;}
-.upload-preview{display:flex;align-items:center;gap:16px;background:var(--panel);border:1px solid var(--border);padding:14px;margin-top:16px;}
-.upload-preview img{max-height:80px;max-width:120px;image-rendering:pixelated;border:1px solid var(--border);}
-.upload-preview-info{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted2);line-height:1.8;}
-.upload-preview-info strong{color:var(--accent2);}
-
-/* SECTION 2: SIZE */
-.size-btns{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-bottom:20px;}
-.size-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);padding:16px 12px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;text-align:center;line-height:2;}
+.sq-canvas-wrap{position:relative;background:#000;border:1px solid var(--border);overflow:hidden;cursor:grab;aspect-ratio:1/1;}
+.sq-canvas-wrap:active{cursor:grabbing;}
+#trimCanvas{display:block;width:100%;height:100%;}
+.trim-ctrl{display:flex;align-items:center;gap:6px;margin-top:5px;}
+.trim-ctrl label{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;width:24px;flex-shrink:0;}
+.trim-ctrl input[type=range]{flex:1;accent-color:var(--accent2);}
+.trim-val{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--accent2);min-width:26px;text-align:right;}
+.size-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.size-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);padding:8px 10px;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;text-align:center;line-height:1.7;flex:1;min-width:90px;}
 .size-btn:hover{border-color:var(--accent2);}
 .size-btn.active{border-color:var(--accent2);background:rgba(74,184,255,0.08);color:var(--accent2);}
-.size-btn .sb-label{font-family:'Bebas Neue',sans-serif;font-size:18px;color:#fff;display:block;letter-spacing:1px;}
-.size-btn.active .sb-label{color:var(--accent2);}
-.custom-size-row{display:flex;gap:8px;align-items:center;margin-bottom:12px;}
-.custom-size-row input{width:70px;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:8px;font-family:'Share Tech Mono',monospace;font-size:12px;text-align:center;outline:none;}
-.custom-size-row input:focus{border-color:var(--accent2);}
-.custom-size-row span{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted);}
-.previews-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
-.preview-box{flex:1;min-width:160px;background:var(--panel2);border:1px solid var(--border);overflow:hidden;}
-.preview-box-label{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted2);padding:6px 10px;border-bottom:1px solid var(--border);background:var(--panel);}
-.preview-box-inner{display:flex;align-items:center;justify-content:center;padding:8px;min-height:80px;overflow:hidden;}
-.preview-box canvas{image-rendering:pixelated;max-width:100%;}
-.size-stats{background:rgba(74,184,255,0.04);border:1px solid rgba(74,184,255,0.15);padding:12px 16px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted2);line-height:2;margin-bottom:16px;}
-.size-stats strong{color:var(--accent2);}
-
-/* SECTION 3: COLOR EDITOR */
-.color-toolbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
-.color-tool-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);padding:8px 14px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
-.color-tool-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(74,184,255,0.08);}
-.color-tool-btn:hover:not(.active){border-color:var(--muted2);}
-.ctool-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);padding:5px 10px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+.size-btn .sb-name{font-family:'Bebas Neue',sans-serif;font-size:13px;color:#fff;display:block;letter-spacing:1px;}
+.size-btn.active .sb-name{color:var(--accent2);}
+.custom-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;}
+.custom-row input{width:80px;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:6px;font-family:'Share Tech Mono',monospace;font-size:11px;text-align:center;outline:none;}
+.size-stat{background:rgba(74,184,255,0.04);border:1px solid rgba(74,184,255,0.12);padding:8px 12px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);line-height:2;margin-bottom:12px;}
+.size-stat strong{color:var(--accent2);}
+.prev-single{background:var(--panel2);border:1px solid var(--border);margin-bottom:12px;}
+.prev-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted2);padding:4px 8px;border-bottom:1px solid var(--border);background:var(--panel);}
+.prev-inner{display:flex;align-items:center;justify-content:center;padding:8px;min-height:60px;}
+.prev-inner canvas{image-rendering:pixelated;max-width:100%;}
+.color-main-layout{display:grid;grid-template-columns:1fr 200px;gap:12px;align-items:start;}
+.color-toolbar{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center;}
+.ctool-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);padding:6px 10px;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
 .ctool-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(74,184,255,0.08);}
-.ctool-btn:hover:not(.active){border-color:var(--muted2);}
-.color-sidebar{position:sticky;top:80px;align-self:start;}
-.color-palette-row{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px;min-height:28px;align-items:center;}
-.color-palette-row .pal-label{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);margin-right:4px;flex-shrink:0;}
-.pal-chip{width:24px;height:24px;cursor:pointer;border:2px solid transparent;transition:transform 0.1s;}
-.pal-chip:hover{transform:scale(1.2);}
-.pal-chip.selected{border-color:#fff;}
-.pal-transp{background-image:repeating-conic-gradient(#555 0% 25%,#333 0% 50%);background-size:8px 8px;}
-.edit-canvas-wrap{overflow:auto;max-height:400px;border:1px solid var(--border);background:var(--panel2);margin-bottom:14px;}
+.edit-zoom-bar{display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+.edit-zoom-bar label{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;}
+.edit-zoom-bar input{width:70px;accent-color:var(--accent2);}
+.edit-zoom-val{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--accent2);}
+.edit-canvas-wrap{overflow:auto;max-height:360px;border:1px solid var(--border);background:var(--panel2);margin-bottom:8px;}
 #editCanvas{display:block;image-rendering:pixelated;cursor:crosshair;}
-
-/* COLOR PICKER POPUP */
-#colorPickerPopup{position:fixed;z-index:2000;background:var(--panel);border:1px solid var(--border2);padding:14px;width:220px;display:none;box-shadow:0 8px 32px rgba(0,0,0,0.6);}
-.cp-sv-wrap{position:relative;cursor:crosshair;margin-bottom:10px;}
-#cpSVCanvas{display:block;border:1px solid var(--border);}
-#cpSVCursor{position:absolute;width:10px;height:10px;border:2px solid #fff;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;box-shadow:0 0 0 1px #000;}
-.cp-hue-wrap{position:relative;cursor:pointer;margin-bottom:10px;}
-#cpHueCanvas{display:block;border:1px solid var(--border);}
-#cpHueCursor{position:absolute;top:0;width:4px;height:100%;background:#fff;transform:translateX(-50%);pointer-events:none;border:1px solid #000;}
-.cp-hex-row{display:flex;gap:6px;align-items:center;margin-bottom:10px;}
-.cp-hex-row label{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;flex-shrink:0;}
-#cpHexInput{flex:1;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:5px 8px;font-family:'Share Tech Mono',monospace;font-size:11px;outline:none;}
-#cpHexInput:focus{border-color:var(--accent2);}
-.cp-preview-row{display:flex;gap:6px;align-items:center;margin-bottom:10px;}
-.cp-swatch{width:32px;height:32px;border:1px solid var(--border);}
-.cp-swatch-label{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;}
-.cp-btns{display:flex;gap:6px;}
-.cp-btn{flex:1;background:var(--accent2);border:none;color:#000;padding:7px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;cursor:pointer;font-weight:700;}
-.cp-btn.cancel{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);}
-
-/* SECTION 4: STAGE */
-.stage-sel-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
-.stage-arrow{background:none;border:1px solid var(--border);color:var(--muted2);width:36px;height:36px;cursor:pointer;font-size:14px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.stage-arrow:hover:not(:disabled){border-color:var(--accent2);color:var(--accent2);}
-.stage-arrow:disabled{opacity:0.2;cursor:not-allowed;}
+.edit-stat{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);margin-bottom:8px;}
+.color-sidebar{background:var(--panel2);border:1px solid var(--border);padding:10px;position:sticky;top:80px;align-self:start;}
+.cs-title{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);margin-bottom:8px;}
+.pal-groups{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
+.pal-group{display:flex;flex-direction:column;gap:3px;}
+.pal-group-lbl{font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:1px;color:var(--muted);}
+.pal-chips-row{display:flex;flex-wrap:wrap;gap:3px;}
+.pal-chip{width:18px;height:18px;cursor:pointer;border:2px solid transparent;transition:transform 0.1s,border-color 0.1s;flex-shrink:0;}
+.pal-chip:hover{transform:scale(1.2);}
+.pal-chip.sel{border-color:#fff;}
+.pal-transp{background-image:repeating-conic-gradient(#555 0% 25%,#333 0% 50%);background-size:6px 6px;}
+.cs-divider{border:none;border-top:1px solid var(--border);margin:8px 0;}
+.cs-add-title{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);margin-bottom:6px;}
+.mini-hue{position:relative;cursor:pointer;margin-bottom:6px;}
+#miniHueCanvas{display:block;border:1px solid var(--border);}
+#miniHueCursor{position:absolute;top:0;width:3px;height:100%;background:#fff;transform:translateX(-50%);pointer-events:none;border:1px solid #000;}
+.mini-sv{position:relative;cursor:crosshair;margin-bottom:6px;}
+#miniSVCanvas{display:block;border:1px solid var(--border);}
+#miniSVCursor{position:absolute;width:8px;height:8px;border:2px solid #fff;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;box-shadow:0 0 0 1px #000;}
+.mini-hex-row{display:flex;gap:4px;align-items:center;margin-bottom:6px;}
+.mini-hex-row label{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--muted);flex-shrink:0;}
+#miniHexInput{flex:1;background:var(--panel);border:1px solid var(--border);color:var(--text);padding:3px 5px;font-family:'Share Tech Mono',monospace;font-size:9px;outline:none;}
+.mini-preview-sw{width:100%;height:18px;border:1px solid var(--border);margin-bottom:6px;}
+.stage-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;}
+.stage-sel-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.stage-arr{background:none;border:1px solid var(--border);color:var(--muted2);width:32px;height:32px;cursor:pointer;font-size:12px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.stage-arr:hover:not(:disabled){border-color:var(--accent2);color:var(--accent2);}
+.stage-arr:disabled{opacity:0.2;cursor:not-allowed;}
 .stage-sel-wrap{flex:1;position:relative;}
-.stage-sel-wrap select{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:9px 32px 9px 12px;font-family:'Share Tech Mono',monospace;font-size:11px;cursor:pointer;appearance:none;outline:none;}
-.stage-sel-wrap select:focus{border-color:var(--accent2);}
-.stage-sel-wrap::after{content:'v';position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-family:'Share Tech Mono',monospace;font-size:9px;}
-.stage-info{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted2);line-height:1.8;margin-bottom:14px;}
-#stageMapCanvas{display:block;image-rendering:pixelated;border:1px solid var(--border);margin-bottom:14px;max-width:100%;}
-
-/* SECTION 5: GRID */
-.grid-wrapper{background:var(--dark);border:1px solid var(--border);}
-.grid-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;}
-.grid-info{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;}
-.grid-info strong{color:var(--accent2);}
-.grid-legend{display:flex;gap:12px;flex-wrap:wrap;}
-.legend-item{display:flex;gap:5px;align-items:center;font-size:9px;color:var(--muted2);letter-spacing:1px;font-family:'Share Tech Mono',monospace;}
-.legend-dot{width:10px;height:10px;border:1px solid transparent;}
-.legend-dot.ld-avail{background:rgba(255,255,255,0.05);border-color:#2a2a40;}
-.legend-dot.ld-claimed{background:rgba(50,100,200,0.5);border-color:rgba(50,100,200,0.8);}
-.legend-dot.ld-reserved{background:rgba(200,130,0,0.5);border-color:rgba(200,130,0,0.7);}
-.legend-dot.ld-selected{background:rgba(0,200,255,0.3);border-color:var(--accent2);}
-.legend-dot.ld-conflict{background:rgba(231,76,60,0.5);border-color:var(--accent);}
+.stage-sel-wrap select{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:8px 28px 8px 10px;font-family:'Share Tech Mono',monospace;font-size:10px;cursor:pointer;appearance:none;outline:none;}
+.stage-sel-wrap::after{content:'v';position:absolute;right:8px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-family:'Share Tech Mono',monospace;font-size:8px;}
+.stage-badge{display:inline-block;padding:2px 8px;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;background:rgba(74,184,255,0.12);color:var(--accent2);border:1px solid rgba(74,184,255,0.3);margin-bottom:8px;}
+.stage-badge.creator{background:rgba(245,200,66,0.12);color:var(--gold);border-color:rgba(245,200,66,0.3);}
+.stage-info{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);line-height:1.9;margin-bottom:8px;}
+.stage-price-info{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--accent2);margin-bottom:10px;line-height:1.8;}
+#stageMapCanvas{display:block;image-rendering:pixelated;border:1px solid var(--border);max-width:100%;background:#07070f;}
+.grid-wrap{background:var(--dark);border:1px solid var(--border);}
+.grid-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;}
+.grid-info-txt{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;}
+.grid-info-txt strong{color:var(--accent2);}
+.grid-legend{display:flex;gap:8px;flex-wrap:wrap;}
+.leg-item{display:flex;gap:4px;align-items:center;font-size:8px;color:var(--muted2);letter-spacing:1px;font-family:'Share Tech Mono',monospace;}
+.leg-dot{width:8px;height:8px;border:1px solid transparent;}
+.leg-avail{background:rgba(255,255,255,0.05);border-color:#2a2a40;}
+.leg-claimed{background:rgba(50,100,200,0.5);border-color:rgba(50,100,200,0.8);}
+.leg-reserved{background:rgba(200,130,0,0.5);border-color:rgba(200,130,0,0.7);}
+.leg-sel{background:rgba(0,200,255,0.3);border-color:var(--accent2);}
+.leg-conflict{background:rgba(231,76,60,0.5);border-color:var(--accent);}
+.leg-deleted{background:rgba(160,60,220,0.4);border-color:rgba(160,60,220,0.7);}
+.grid-canvas-wrap{position:relative;overflow:hidden;}
 #gridCanvas{display:block;width:100%;image-rendering:pixelated;cursor:crosshair;}
-.grid-hint{padding:8px 16px;background:rgba(74,184,255,0.03);border-top:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;}
-.placement-info{background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.2);padding:12px 16px;margin:12px 0;font-family:'Share Tech Mono',monospace;font-size:11px;line-height:2;}
-.placement-info .row{display:flex;justify-content:space-between;}
-.placement-info .val{color:var(--accent2);}
-
-/* SECTION 6: CONFIRM */
-.summary-box{background:var(--panel2);border:1px solid var(--border);padding:16px;margin-bottom:16px;font-family:'Share Tech Mono',monospace;font-size:11px;line-height:2.2;}
-.summary-box .srow{display:flex;justify-content:space-between;}
-.summary-box .sval{color:var(--accent2);}
-.plan-toggle{display:flex;margin-bottom:14px;border:1px solid var(--border);}
-.plan-btn{flex:1;background:none;border:none;color:var(--muted);padding:10px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;}
-.plan-btn.active{background:var(--accent2);color:#000;font-weight:700;}
-.price-summary{border:1px solid var(--border);padding:14px;margin-bottom:16px;}
-.price-row{display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:11px;margin-bottom:8px;color:var(--muted);}
-.price-row.total{border-top:1px solid var(--border);padding-top:10px;margin-top:4px;color:#fff;font-size:13px;}
-.price-row.annual-row{background:rgba(245,200,66,0.06);padding:6px 10px;margin:-4px -10px 8px;border-left:2px solid var(--gold);display:none;}
-.price-row .disc{color:var(--green);}
-.price-row .amount{color:var(--gold);}
-.sec6-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
-#sec6Preview{display:none;border:1px solid var(--border);image-rendering:pixelated;max-width:100%;width:100%;}
-.panel-note{font-size:10px;color:var(--muted);line-height:1.8;letter-spacing:0.5px;}
-.panel-note a{color:var(--accent2);text-decoration:none;}
-#checkoutError{display:none;margin-bottom:10px;padding:10px 12px;background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.4);color:rgba(255,120,100,0.95);font-size:11px;letter-spacing:0.5px;line-height:1.5;font-family:'Share Tech Mono',monospace;}
-
-/* TOOLTIP */
-#tooltip{position:fixed;background:var(--panel2);border:1px solid var(--border2);padding:8px 12px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;pointer-events:none;z-index:500;display:none;max-width:180px;line-height:1.8;}
-
-/* PRICING */
+.grid-zoom-bar{display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:1px solid var(--border);background:var(--panel);}
+.grid-zoom-bar label{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;}
+.grid-zoom-bar input{width:80px;accent-color:var(--accent2);}
+.grid-zoom-val{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--accent2);}
+.grid-hint{padding:7px 14px;background:rgba(74,184,255,0.03);border-top:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;}
+.grid-edit-bar{display:flex;gap:8px;padding:7px 14px;border-top:1px solid var(--border);flex-wrap:wrap;align-items:center;background:var(--panel);}
+.edit-mode-hint{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--gold);letter-spacing:1px;}
+.place-info{background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.2);padding:10px 14px;margin:10px 0;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:2;}
+.place-row{display:flex;justify-content:space-between;}
+.place-val{color:var(--accent2);}
+.pay-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
+.order-box{background:var(--panel2);border:1px solid var(--border);padding:14px;margin-bottom:14px;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:2.2;}
+.orow{display:flex;justify-content:space-between;}
+.oval{color:var(--accent2);}
+.plan-tabs{display:flex;margin-bottom:12px;border:1px solid var(--border);}
+.plan-tab{flex:1;background:none;border:none;color:var(--muted);padding:9px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;}
+.plan-tab.active{background:var(--accent2);color:#000;font-weight:700;}
+.price-box{border:1px solid var(--border);padding:12px;margin-bottom:14px;}
+.p-row{display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:10px;margin-bottom:6px;color:var(--muted);}
+.p-row.total{border-top:1px solid var(--border);padding-top:8px;margin-top:2px;color:#fff;font-size:12px;}
+.p-disc{color:var(--green);}
+.p-amt{color:var(--gold);}
+.checkout-err{display:none;margin-bottom:8px;padding:9px 11px;background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.4);color:rgba(255,120,100,0.95);font-size:10px;font-family:'Share Tech Mono',monospace;}
+.note{font-size:10px;color:var(--muted);line-height:1.8;}
+.note a{color:var(--accent2);text-decoration:none;}
+.preview-with-map{position:relative;border:1px solid var(--border);background:#07070f;margin-bottom:8px;}
+#sec6MapCanvas{display:block;width:100%;image-rendering:pixelated;}
+#sec6LogoCanvas{position:absolute;top:0;left:0;width:100%;height:100%;image-rendering:pixelated;pointer-events:none;}
 .pricing-section{max-width:960px;margin:0 auto;padding:0 24px 80px;}
-.section-title{font-family:'Bebas Neue',sans-serif;font-size:44px;color:#fff;margin-bottom:6px;}
-.section-sub{font-size:13px;color:var(--muted2);margin-bottom:40px;letter-spacing:1px;line-height:1.6;}
-.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:48px;}
-.price-tier{background:var(--dark);padding:24px 20px;}
-.tier-label{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--muted2);margin-bottom:12px;text-transform:uppercase;}
-.tier-price{font-family:'Bebas Neue',sans-serif;font-size:44px;color:#fff;line-height:1;}
-.tier-price sup{font-size:18px;vertical-align:top;margin-top:8px;display:inline-block;}
-.tier-price sub{font-size:12px;color:var(--muted);font-family:'Share Tech Mono',monospace;}
-.tier-price-text{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--text);line-height:1.5;margin-bottom:4px;letter-spacing:0.5px;padding:10px 0;}
-.tier-note{font-size:11px;color:var(--muted2);margin-top:10px;line-height:1.75;}
-.tier-cap{color:var(--gold);font-size:10px;letter-spacing:2px;margin-top:10px;display:block;font-family:'Share Tech Mono',monospace;}
-.price-ladder{display:flex;gap:0;flex-wrap:wrap;border:1px solid var(--border);overflow:hidden;margin-bottom:48px;}
-.price-rung{flex:1;min-width:80px;padding:14px 12px;text-align:center;background:var(--dark);border-right:1px solid var(--border);font-family:'Share Tech Mono',monospace;}
-.price-rung:last-child{border-right:none;}
-.price-rung.current{background:rgba(74,222,128,0.06);border-bottom:2px solid var(--green);}
-.price-rung.monopoly-unlocks{background:rgba(245,200,66,0.05);border-bottom:2px solid var(--gold);}
-.pr-price{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#fff;line-height:1;}
-.pr-label{font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:4px;}
-.pr-tag{font-size:9px;letter-spacing:1px;margin-top:6px;}
-.volume-table{border:1px solid var(--border);overflow:hidden;margin-bottom:48px;}
-.vol-row{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:12px;transition:background 0.15s;}
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:40px;color:#fff;margin-bottom:4px;}
+.sec-sub{font-size:12px;color:var(--muted2);margin-bottom:32px;letter-spacing:1px;line-height:1.6;}
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:40px;}
+.price-tier{background:var(--dark);padding:20px 16px;}
+.tier-lbl{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--muted2);margin-bottom:10px;text-transform:uppercase;}
+.tier-price{font-family:'Bebas Neue',sans-serif;font-size:40px;color:#fff;line-height:1;}
+.tier-price sup{font-size:16px;vertical-align:top;margin-top:6px;display:inline-block;}
+.tier-price sub{font-size:11px;color:var(--muted);font-family:'Share Tech Mono',monospace;}
+.tier-note{font-size:10px;color:var(--muted2);margin-top:8px;line-height:1.75;}
+.tier-cap{color:var(--gold);font-size:9px;letter-spacing:2px;margin-top:8px;display:block;font-family:'Share Tech Mono',monospace;}
+.price-ladder{display:flex;border:1px solid var(--border);overflow:hidden;margin-bottom:40px;}
+.p-rung{flex:1;padding:12px 10px;text-align:center;background:var(--dark);border-right:1px solid var(--border);font-family:'Share Tech Mono',monospace;}
+.p-rung:last-child{border-right:none;}
+.p-rung.now{background:rgba(74,222,128,0.06);border-bottom:2px solid var(--green);}
+.p-rung.mono{background:rgba(245,200,66,0.05);border-bottom:2px solid var(--gold);}
+.pr-p{font-family:'Bebas Neue',sans-serif;font-size:20px;color:#fff;line-height:1;}
+.pr-l{font-size:8px;color:var(--muted);letter-spacing:1px;margin-top:3px;}
+.pr-t{font-size:8px;letter-spacing:1px;margin-top:5px;}
+.vol-table{border:1px solid var(--border);overflow:hidden;margin-bottom:40px;}
+.vol-row{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:11px;}
 .vol-row:last-child{border-bottom:none;}
 .vol-row:hover{background:var(--panel);}
-.vol-row .blocks{color:var(--text);letter-spacing:1px;}
-.vol-row .disc{color:var(--green);font-weight:600;}
-.vol-row .disc.none{color:var(--muted);}
-.vol-section-title{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;margin-bottom:6px;}
-
-footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
-.footer-logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--muted);}
+.v-blocks{color:var(--text);letter-spacing:1px;}
+.v-disc{color:var(--green);font-weight:600;}
+.v-disc.none{color:var(--muted);}
+.vol-title{font-family:'Bebas Neue',sans-serif;font-size:26px;color:#fff;margin-bottom:4px;}
+footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.footer-logo{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--muted);}
 .footer-logo span{color:var(--accent);}
-.footer-links{display:flex;gap:20px;flex-wrap:wrap;}
-.footer-links a{font-size:11px;color:var(--muted);text-decoration:none;letter-spacing:1px;}
-.footer-links a:hover{color:var(--accent2);}
-.footer-copy{font-size:10px;color:#333;letter-spacing:1px;}
-
-@media(max-width:700px){
-  header{padding:14px 20px;}
-  nav{gap:14px;}
-  .hero{padding:40px 20px 24px;}
-  .stats-bar{flex-wrap:wrap;}
-  .stat-item{min-width:50%;border-right:none;border-bottom:1px solid var(--border);}
-  .sec6-grid{grid-template-columns:1fr;}
-  footer{padding:20px;}
-}
+.footer-links{display:flex;gap:16px;}
+.footer-links a{font-size:10px;color:var(--muted);text-decoration:none;letter-spacing:1px;}
+.footer-copy{font-size:9px;color:#333;letter-spacing:1px;}
+#tooltip{position:fixed;background:var(--panel2);border:1px solid var(--border2);padding:7px 10px;font-family:'Share Tech Mono',monospace;font-size:10px;pointer-events:none;z-index:500;display:none;max-width:160px;line-height:1.8;}
 </style>
 </head>
 <body>
-
 <div id="tooltip"><span id="ttCoord" style="color:var(--accent2)"></span> <span id="ttStatus"></span></div>
-
-<!-- COLOR PICKER POPUP -->
-<div id="colorPickerPopup">
-  <div class="cp-sv-wrap" id="cpSVWrap">
-    <canvas id="cpSVCanvas" width="192" height="150"></canvas>
-    <div id="cpSVCursor"></div>
-  </div>
-  <div class="cp-hue-wrap" id="cpHueWrap">
-    <canvas id="cpHueCanvas" width="192" height="16"></canvas>
-    <div id="cpHueCursor"></div>
-  </div>
-  <div class="cp-hex-row">
-    <label>HEX</label>
-    <input type="text" id="cpHexInput" maxlength="7" placeholder="#ff0000">
-  </div>
-  <div class="cp-preview-row">
-    <div class="cp-swatch" id="cpPreviewSwatch"></div>
-    <div><div class="cp-swatch-label">FROM</div><div class="cp-swatch" id="cpFromSwatch"></div></div>
-    <div class="cp-swatch-label" id="cpReplaceCount" style="color:var(--muted2);font-size:10px;"></div>
-  </div>
-  <div class="cp-btns">
-    <button class="cp-btn" onclick="applyColorReplace()">REPLACE ALL</button>
-    <button class="cp-btn cancel" onclick="closeColorPicker()">CANCEL</button>
-  </div>
-</div>
-
 <header>
   <div class="logo">never<span>END</span></div>
-  <nav>
-    <a href="#">How It Works</a>
-    <a href="#pricing">Pricing</a>
-    <a href="#">Content Policy</a>
-    <a href="#sec1" class="nav-cta">CLAIM YOUR SPACE</a>
-  </nav>
+  <nav><a href="#">How It Works</a><a href="#pricing">Pricing</a><a href="#">Content Policy</a><a href="#sec1" class="nav-cta">CLAIM YOUR SPACE</a></nav>
 </header>
-
 <section class="hero">
   <div class="hero-eyebrow">// BACKGROUND GRID PLACEMENT MARKETPLACE</div>
   <h1>YOUR BRAND<br>LIVES IN THE <em>GAME</em></h1>
-  <p>neverEND is a hardcore browser platformer. Every death, every stream, every share &mdash; your placement is right there. Claim a piece of the background before it is gone.</p>
+  <p>neverEND is a hardcore browser platformer. Every death, every retry &mdash; your logo is right there. Claim a piece of the background before it&rsquo;s gone.</p>
 </section>
-
 <div class="stats-bar">
-  <div class="stat-item"><div class="stat-num" id="statTotal">14,400</div><div class="stat-label">Total Blocks (Standard)</div></div>
+  <div class="stat-item"><div class="stat-num" id="statTotal">14,400</div><div class="stat-label">Blocks (Standard)</div></div>
   <div class="stat-item"><div class="stat-num" id="takenCount">&mdash;</div><div class="stat-label">Claimed</div></div>
   <div class="stat-item"><div class="stat-num" id="statAvail">14,400</div><div class="stat-label">Available</div></div>
   <div class="stat-item"><div class="stat-num">From $5</div><div class="stat-label">Per Month</div></div>
 </div>
-
-<div style="background:#0a0a18;border-bottom:1px solid #1e1e35;padding:10px 40px;text-align:center;font-family:'Share Tech Mono',monospace;font-size:10px;color:#6e7585;letter-spacing:1px;">
-  STANDARD STAGE: <span style="color:#4ab8ff">160×90 dots</span> &nbsp;|&nbsp;
-  CREATOR ZONE (every 5th stage): <span style="color:#f5c842">320×180 dots</span> &nbsp;|&nbsp;
-  GAME RESOLUTION: <span style="color:#9aa2b5">1280×720px</span>
+<div class="res-bar">
+  STANDARD STAGE: <span style="color:#4ab8ff">160&times;90 dots</span> &nbsp;|&nbsp;
+  CREATOR ZONE (every 5th stage): <span style="color:#f5c842">320&times;180 dots</span> &nbsp;|&nbsp;
+  GAME RESOLUTION: <span style="color:#9aa2b5">1280&times;720px</span>
 </div>
-
-<section class="placement-section" id="placementTool">
-  <div class="placement-title-bar">
-    <div>
-      <div class="placement-title">Place Your Logo</div>
-      <div class="placement-subtitle">Upload your image, choose a size, then place it on a stage.</div>
-    </div>
-  </div>
-
-  <!-- Progress indicator -->
-  <div class="progress-track">
+<div class="main-wrap" id="placementTool">
+  <div class="section-hdr"><h2>Place Your Logo</h2><p>Upload &rarr; Size &rarr; Edit Colors &rarr; Stage &rarr; Place &rarr; Pay</p></div>
+  <div class="progress-wrap">
     <div class="prog-step active" id="prog1">&#9312; UPLOAD</div>
     <div class="prog-step" id="prog2">&#9313; SIZE</div>
     <div class="prog-step" id="prog3">&#9314; EDIT</div>
@@ -322,523 +242,322 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
     <div class="prog-step" id="prog5">&#9316; PLACE</div>
     <div class="prog-step" id="prog6">&#9317; PAY</div>
   </div>
-
-  <!-- ── SECTION 1: UPLOAD ── -->
-  <div class="flow-section" id="sec1">
-    <div class="flow-sec-hdr">
-      <span class="flow-sec-num">1</span>
-      <span class="flow-sec-title">UPLOAD YOUR IMAGE</span>
-      <span class="flow-sec-done" id="sec1Done" style="display:none">&#10003;</span>
-    </div>
-    <div class="flow-sec-body">
-      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-        <div class="upload-icon">&#8679;</div>
-        <div class="upload-title">Drop your image here</div>
-        <div class="upload-sub">Click to browse &nbsp;&bull;&nbsp; PNG, JPG, GIF &nbsp;&bull;&nbsp; max 2MB<br><span style="color:var(--accent2)">PNG transparency is preserved</span></div>
-      </div>
-      <input type="file" id="fileInput" accept="image/png,image/jpeg,image/gif,image/*">
-      <div id="uploadPreview" style="display:none;" class="upload-preview">
-        <img id="uploadPreviewImg" alt="preview">
-        <div class="upload-preview-info">
-          <div id="uploadFileName"></div>
-          <div id="uploadDimensions"></div>
+  <div class="flow-panel" id="sec1">
+    <div class="panel-hdr"><span class="panel-num">1</span><span class="panel-title">UPLOAD &amp; TRIM</span><span class="panel-check" id="sec1Done" style="display:none">&#10003;</span></div>
+    <div class="panel-body">
+      <div class="upload-layout">
+        <div>
+          <div class="upload-drop" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-icon">&#8679;</div>
+            <h3>Drop image</h3>
+            <p>PNG JPG GIF &bull; max 2MB<br><span style="color:var(--accent2)">PNG transparency preserved</span></p>
+          </div>
+          <input type="file" id="fileInput" accept="image/*">
+          <div id="uploadFileInfo" style="display:none;margin-top:6px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted2);padding:5px 7px;background:var(--panel2);border:1px solid var(--border);">
+            <span id="uploadFileName" style="color:var(--accent2)"></span><br><span id="uploadDims"></span>
+          </div>
+          <div style="margin-top:8px;">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">TRIM</div>
+            <div class="trim-ctrl"><label>ZOOM</label><input type="range" id="trimZoom" min="100" max="400" value="100" oninput="updateTrim()"><span class="trim-val" id="trimZoomVal">100%</span></div>
+            <div class="trim-ctrl"><label>X</label><input type="range" id="trimX" min="0" max="100" value="0" oninput="updateTrim()"><span class="trim-val" id="trimXVal">0</span></div>
+            <div class="trim-ctrl"><label>Y</label><input type="range" id="trimY" min="0" max="100" value="0" oninput="updateTrim()"><span class="trim-val" id="trimYVal">0</span></div>
+          </div>
+        </div>
+        <div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:5px;">PREVIEW — drag to pan</div>
+          <div class="sq-canvas-wrap" id="trimWrap"><canvas id="trimCanvas" width="400" height="400"></canvas></div>
+          <p style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted2);margin-top:4px;letter-spacing:1px;">Square crop. Transparent padding added automatically.</p>
         </div>
       </div>
-      <div style="margin-top:12px;display:flex;justify-content:flex-end;">
-        <button class="btn-blue" id="uploadContinueBtn" onclick="goToSection2()" disabled>CONTINUE TO SIZE &#8594;</button>
+      <div style="margin-top:14px;display:flex;justify-content:flex-end;">
+        <button class="btn-blue" id="uploadContinueBtn" onclick="goToSection2()" disabled>CONTINUE TO SIZE &rarr;</button>
       </div>
     </div>
   </div>
-
-  <!-- ── SECTION 2: SIZE ── -->
-  <div class="flow-section locked" id="sec2">
-    <div class="flow-sec-hdr">
-      <span class="flow-sec-num">2</span>
-      <span class="flow-sec-title">CHOOSE SIZE &amp; PREVIEW</span>
-      <span class="flow-sec-done" id="sec2Done" style="display:none">&#10003;</span>
-    </div>
-    <div class="flow-sec-body">
-      <div class="size-btns">
-        <button class="size-btn" onclick="selectPreset(2,2,this)">
-          <span class="sb-label">MINIMAL</span>
-          4 blocks (minimum)<br>
-          <span style="color:var(--green)">from $5/mo</span>
-        </button>
-        <button class="size-btn" onclick="selectPreset(7,7,this)">
-          <span class="sb-label">SMALL</span>
-          ~50 blocks<br>
-          <span style="color:var(--green)">~$10.40/mo</span>
-        </button>
-        <button class="size-btn" onclick="selectPreset(15,14,this)">
-          <span class="sb-label">MEDIUM</span>
-          ~200 blocks &nbsp;&bull;&nbsp; -10%<br>
-          <span style="color:var(--green)">~$37.44/mo</span>
-        </button>
-        <button class="size-btn" onclick="selectPreset(20,25,this)">
-          <span class="sb-label">LARGE</span>
-          ~500 blocks &nbsp;&bull;&nbsp; -20%<br>
-          <span style="color:var(--green)">~$83.20/mo</span>
-        </button>
-        <button class="size-btn" onclick="selectPreset(32,32,this)">
-          <span class="sb-label">EXTRA LARGE</span>
-          ~1000 blocks &nbsp;&bull;&nbsp; -30%<br>
-          <span style="color:var(--green)">~$145.60/mo</span>
-        </button>
-        <button class="size-btn" id="monopolyBtn" onclick="selectMonopoly(this)">
-          <span class="sb-label">FULL STAGE</span>
-          Entire stage monopoly<br>
-          <span style="color:var(--gold)">$3,000/mo</span>
-        </button>
-        <button class="size-btn" id="customSizeBtn" onclick="selectCustom(this)">
-          <span class="sb-label">CUSTOM</span>
-          <span id="customSizeLabelInner">Enter block count below</span>
-        </button>
+  <div class="flow-panel locked" id="sec2">
+    <div class="panel-hdr"><span class="panel-num">2</span><span class="panel-title">CHOOSE SIZE</span><span class="panel-check" id="sec2Done" style="display:none">&#10003;</span></div>
+    <div class="panel-body">
+      <div class="size-grid">
+        <button class="size-btn" onclick="selectPreset(2,2,this)"><span class="sb-name">TINY</span>4&ndash;20 blocks<br><span style="color:var(--green)">from $5/mo</span></button>
+        <button class="size-btn" onclick="selectPreset(10,10,this)"><span class="sb-name">SMALL</span>~100 blocks<br><span style="color:var(--green)" id="smallPrice">~$21/mo</span></button>
+        <button class="size-btn" onclick="selectPreset(23,22,this)"><span class="sb-name">MEDIUM</span>~500 blk -20%<br><span style="color:var(--green)" id="medPrice">~$84/mo</span></button>
+        <button class="size-btn" onclick="selectPreset(45,45,this)"><span class="sb-name">LARGE</span>~2k blk -30%<br><span style="color:var(--green)" id="largePrice">~$291/mo</span></button>
+        <button class="size-btn" onclick="selectPreset(71,71,this)"><span class="sb-name">XL</span>~5k blk -30%<br><span style="color:var(--green)" id="xlPrice">~$728/mo</span></button>
+        <button class="size-btn" id="monopolyBtn" onclick="selectMonopoly(this)"><span class="sb-name">FULL STAGE</span>Entire stage<br><span style="color:var(--gold)" id="monoPrice">$3,000/mo</span></button>
+        <button class="size-btn" id="customSizeBtn" onclick="selectCustom(this)"><span class="sb-name">CUSTOM</span>Enter count</button>
       </div>
-      <div id="customSizeInputs" style="display:none;margin-bottom:14px;">
-        <div class="custom-size-row">
-          <input type="number" id="customBlocks" value="50" min="4" max="3600" placeholder="blocks" oninput="updateCustomBlocksInfo()">
-          <span>blocks</span>
-          <button class="btn-secondary" onclick="applyCustomBlocks()">APPLY</button>
+      <div id="customInputs" style="display:none;margin-bottom:10px;">
+        <div class="custom-row">
+          <input type="number" id="customBlocks" value="50" min="4" max="57600" oninput="updateCustomInfo()">
+          <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted)">blocks</span>
+          <button class="btn-ghost" onclick="applyCustomBlocks()">APPLY</button>
         </div>
-        <div id="customBlocksInfo" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted2);margin-top:8px;line-height:2;"></div>
+        <div id="customInfo" style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);line-height:2;"></div>
       </div>
-      <div id="sec2Converting" style="display:none;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted2);margin-bottom:12px;letter-spacing:1px;">Converting image...</div>
+      <div id="sec2Converting" style="display:none;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);margin-bottom:8px;">Converting...</div>
       <div id="sec2PreviewWrap" style="display:none;">
-        <div class="previews-row">
-          <div class="preview-box">
-            <div class="preview-box-label">ON GRID (1:1)</div>
-            <div class="preview-box-inner"><canvas id="prev1x"></canvas></div>
-          </div>
-          <div class="preview-box">
-            <div class="preview-box-label">PREVIEW (2&#215;)</div>
-            <div class="preview-box-inner"><canvas id="prev2x"></canvas></div>
-          </div>
-          <div class="preview-box">
-            <div class="preview-box-label">DETAIL (4&#215;)</div>
-            <div class="preview-box-inner"><canvas id="prev4x"></canvas></div>
-          </div>
-        </div>
-        <div class="size-stats" id="sec2Stats"></div>
-        <p style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:14px;">Only colored (non-transparent) blocks are charged.</p>
-        <div style="display:flex;justify-content:flex-end;">
-          <button class="btn-blue" id="sec2ContinueBtn" onclick="goToSection3()">CONTINUE TO EDIT COLORS &#8594;</button>
-        </div>
+        <div class="prev-single"><div class="prev-lbl">ON GRID PREVIEW (1:1)</div><div class="prev-inner"><canvas id="prevCanvas"></canvas></div></div>
+        <div class="size-stat" id="sec2Stats"></div>
+        <p style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);margin-bottom:10px;">Only colored (non-transparent) blocks are charged.</p>
+        <div style="display:flex;justify-content:flex-end;"><button class="btn-blue" onclick="goToSection3()">CONTINUE TO EDIT COLORS &rarr;</button></div>
       </div>
     </div>
   </div>
-
-  <!-- ── SECTION 3: EDIT COLORS ── -->
-  <div class="flow-section locked" id="sec3">
-    <div class="flow-sec-hdr">
-      <span class="flow-sec-num">3</span>
-      <span class="flow-sec-title">EDIT COLORS</span>
-      <span class="flow-sec-done" id="sec3Done" style="display:none">&#10003;</span>
-    </div>
-    <div class="flow-sec-body">
+  <div class="flow-panel locked" id="sec3">
+    <div class="panel-hdr"><span class="panel-num">3</span><span class="panel-title">EDIT COLORS</span><span class="panel-check" id="sec3Done" style="display:none">&#10003;</span></div>
+    <div class="panel-body">
       <div class="color-toolbar">
-        <button class="color-tool-btn active" id="toolReplace" onclick="setColorTool('replace')">REPLACE</button>
-        <button class="color-tool-btn" id="toolTransparent" onclick="setColorTool('transparent')">TRANSPARENT</button>
-        <button class="color-tool-btn" id="toolEyedropper" onclick="setColorTool('eyedropper')">EYEDROPPER</button>
-        <button class="btn-secondary" onclick="resetEditPixels()" style="margin-left:auto;">RESET</button>
+        <button class="ctool-btn active" id="toolReplace" onclick="setColorTool('replace')">REPLACE</button>
+        <button class="ctool-btn" id="toolTransparent" onclick="setColorTool('transparent')">TRANSPARENT</button>
+        <button class="ctool-btn" id="toolEyedropper" onclick="setColorTool('eyedropper')">EYEDROPPER</button>
+        <button class="btn-ghost" onclick="resetEditPixels()" style="margin-left:auto;">RESET</button>
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-        <span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;">BRUSH SIZE</span>
+        <span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;">BRUSH</span>
         <button class="ctool-btn active" id="brush1" onclick="setBrushSize(1,this)">1px</button>
         <button class="ctool-btn" id="brush3" onclick="setBrushSize(3,this)">3px</button>
         <button class="ctool-btn" id="brush5" onclick="setBrushSize(5,this)">5px</button>
       </div>
-      <div id="toolHint" style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:10px;letter-spacing:1px;">
-        REPLACE: select a color from the palette below, then click pixels to recolor them. Click a palette swatch to edit all of that color at once.
+      <div id="toolHint" style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);margin-bottom:8px;letter-spacing:1px;">REPLACE: select palette color, then click/drag pixels to recolor.</div>
+      <div class="edit-zoom-bar">
+        <label>ZOOM</label>
+        <input type="range" id="editZoomSlider" min="1" max="8" value="1" step="1" oninput="updateEditZoom()">
+        <span class="edit-zoom-val" id="editZoomVal">1&times;</span>
       </div>
-      <div style="margin-bottom:8px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;">PALETTE</div>
-      <div class="color-palette-row" id="colorPaletteRow"></div>
-      <div class="edit-canvas-wrap">
-        <canvas id="editCanvas"></canvas>
-      </div>
-      <div id="editStats" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted2);margin-bottom:14px;"></div>
-      <div style="display:flex;justify-content:flex-end;">
-        <button class="btn-blue" onclick="goToSection4()">CONTINUE TO SELECT STAGE &#8594;</button>
+      <div class="color-main-layout">
+        <div>
+          <div class="edit-canvas-wrap" id="editCanvasWrap"><canvas id="editCanvas"></canvas></div>
+          <div class="edit-stat" id="editStats"></div>
+          <div style="display:flex;justify-content:flex-end;"><button class="btn-blue" onclick="goToSection4()">CONTINUE TO SELECT STAGE &rarr;</button></div>
+        </div>
+        <div class="color-sidebar">
+          <div class="cs-title">PALETTE</div>
+          <div class="pal-groups" id="palGroups"></div>
+          <hr class="cs-divider">
+          <div class="cs-add-title">ADD COLOR</div>
+          <div class="mini-hue" id="miniHueWrap"><canvas id="miniHueCanvas" width="178" height="12"></canvas><div id="miniHueCursor"></div></div>
+          <div class="mini-sv" id="miniSVWrap"><canvas id="miniSVCanvas" width="178" height="100"></canvas><div id="miniSVCursor"></div></div>
+          <div class="mini-hex-row"><label>HEX</label><input type="text" id="miniHexInput" maxlength="7" placeholder="#ff0000"></div>
+          <div class="mini-preview-sw" id="miniPreviewSw"></div>
+          <button class="btn-blue" style="width:100%;font-size:8px;padding:6px;" onclick="addCustomColor()">ADD TO PALETTE</button>
+        </div>
       </div>
     </div>
   </div>
-
-  <!-- ── SECTION 4: SELECT STAGE ── -->
-  <div class="flow-section locked" id="sec4">
-    <div class="flow-sec-hdr">
-      <span class="flow-sec-num">4</span>
-      <span class="flow-sec-title">SELECT STAGE</span>
-      <span class="flow-sec-done" id="sec4Done" style="display:none">&#10003;</span>
-    </div>
-    <div class="flow-sec-body">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+  <div class="flow-panel locked" id="sec4">
+    <div class="panel-hdr"><span class="panel-num">4</span><span class="panel-title">SELECT STAGE</span><span class="panel-check" id="sec4Done" style="display:none">&#10003;</span></div>
+    <div class="panel-body">
+      <div class="stage-layout">
         <div>
           <div class="stage-sel-row">
-            <button class="stage-arrow" id="stagePrevBtn" onclick="changeStage(-1)" disabled>&#9664;</button>
-            <div class="stage-sel-wrap">
-              <select id="stageSelect" onchange="setStage(parseInt(this.value))"></select>
-            </div>
-            <button class="stage-arrow" id="stageNextBtn" onclick="changeStage(1)">&#9654;</button>
+            <button class="stage-arr" id="stagePrevBtn" onclick="changeStage(-1)" disabled>&#9664;</button>
+            <div class="stage-sel-wrap"><select id="stageSelect" onchange="setStage(parseInt(this.value))"></select></div>
+            <button class="stage-arr" id="stageNextBtn" onclick="changeStage(1)">&#9654;</button>
           </div>
+          <div id="stageBadge" class="stage-badge">STANDARD</div>
           <div class="stage-info" id="stageInfoText"></div>
-          <button class="btn-blue w100" onclick="confirmStage()">SELECT THIS STAGE &#8594;</button>
+          <div class="stage-price-info" id="stagePriceInfo"></div>
+          <button class="btn-blue w100" onclick="confirmStage()">SELECT THIS STAGE &rarr;</button>
         </div>
-        <div>
-          <canvas id="stageMapCanvas" width="400" height="225"></canvas>
-        </div>
+        <div><canvas id="stageMapCanvas" width="400" height="225"></canvas></div>
       </div>
     </div>
   </div>
-
-  <!-- ── SECTION 5: PLACE ON GRID ── -->
-  <div class="flow-section locked" id="sec5">
-    <div class="flow-sec-hdr">
-      <span class="flow-sec-num">5</span>
-      <span class="flow-sec-title">PLACE ON GRID</span>
-      <span class="flow-sec-done" id="sec5Done" style="display:none">&#10003;</span>
-    </div>
-    <div class="flow-sec-body" style="padding:0;">
-      <div class="grid-wrapper">
-        <div class="grid-header">
-          <div class="grid-info"><strong id="gridStageName">STAGE 1</strong> &nbsp;|&nbsp; <span id="gridBlockInfo">160 × 90 blocks | 1 block = 8×8px</span></div>
+  <div class="flow-panel locked" id="sec5">
+    <div class="panel-hdr"><span class="panel-num">5</span><span class="panel-title">PLACE ON GRID</span><span class="panel-check" id="sec5Done" style="display:none">&#10003;</span></div>
+    <div class="panel-body" style="padding:0;">
+      <div class="grid-wrap">
+        <div class="grid-hdr">
+          <div class="grid-info-txt"><strong id="gridStageName">STAGE 1</strong> &nbsp;|&nbsp; <span id="gridBlockInfo">160&times;90 | 8&times;8px</span></div>
           <div class="grid-legend">
-            <div class="legend-item"><div class="legend-dot ld-avail"></div>AVAILABLE</div>
-            <div class="legend-item"><div class="legend-dot ld-claimed"></div>CLAIMED</div>
-            <div class="legend-item"><div class="legend-dot ld-reserved"></div>RESERVED</div>
-            <div class="legend-item"><div class="legend-dot ld-selected"></div>YOUR LOGO</div>
-            <div class="legend-item"><div class="legend-dot ld-conflict"></div>CONFLICT</div>
+            <div class="leg-item"><div class="leg-dot leg-avail"></div>AVAIL</div>
+            <div class="leg-item"><div class="leg-dot leg-claimed"></div>CLAIMED</div>
+            <div class="leg-item"><div class="leg-dot leg-reserved"></div>RESERVED</div>
+            <div class="leg-item"><div class="leg-dot leg-sel"></div>LOGO</div>
+            <div class="leg-item"><div class="leg-dot leg-conflict"></div>CONFLICT</div>
+            <div class="leg-item"><div class="leg-dot leg-deleted"></div>DELETED</div>
           </div>
         </div>
-        <canvas id="gridCanvas" width="1280" height="720"></canvas>
-        <div class="grid-hint" id="gridHint">Move your mouse over the grid to position your logo. Click to place it.</div>
+        <div class="grid-zoom-bar">
+          <label>ZOOM</label>
+          <input type="range" id="gridZoomSlider" min="1" max="6" value="1" step="0.5" oninput="updateGridZoom()">
+          <span class="grid-zoom-val" id="gridZoomVal">1&times;</span>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);margin-left:12px;">drag to pan when zoomed</span>
+        </div>
+        <div class="grid-canvas-wrap" id="gridCanvasWrap" style="overflow:hidden;">
+          <canvas id="gridCanvas" width="1280" height="720"></canvas>
+        </div>
+        <div class="grid-hint" id="gridHint">Move mouse to position logo. Click to place.</div>
+        <div class="grid-edit-bar" id="gridEditBar" style="display:none;">
+          <span class="edit-mode-hint">&#9998; EDIT MODE &mdash; click or drag to delete/restore blocks</span>
+          <button class="btn-ghost" onclick="undoLastDelete()" id="undoBtn" style="margin-left:auto;" disabled>UNDO</button>
+          <button class="btn-warn" onclick="exitEditMode()">DONE EDITING</button>
+        </div>
       </div>
-      <div style="padding:14px 16px;">
-        <div class="placement-info" id="placementInfo" style="display:none;">
-          <div class="row"><span>POSITION</span><span class="val" id="placementPos">--</span></div>
-          <div class="row"><span>SIZE</span><span class="val" id="placementSize">--</span></div>
-          <div class="row"><span>STATUS</span><span class="val" id="placementStatus">--</span></div>
+      <div style="padding:10px 14px;">
+        <div class="place-info" id="placeInfo" style="display:none;">
+          <div class="place-row"><span>POSITION</span><span class="place-val" id="placePos">--</span></div>
+          <div class="place-row"><span>SIZE</span><span class="place-val" id="placeSize">--</span></div>
+          <div class="place-row"><span>ACTIVE BLOCKS</span><span class="place-val" id="placeActiveBlocks">--</span></div>
+          <div class="place-row"><span>PRICE</span><span class="place-val" id="placePrice">--</span></div>
+          <div class="place-row"><span>STATUS</span><span class="place-val" id="placeStatus">--</span></div>
         </div>
         <div style="display:flex;gap:8px;justify-content:flex-end;">
-          <button class="btn-secondary" id="resetPlacementBtn" onclick="resetPlacement()" style="display:none;">RESET</button>
-          <button class="btn-blue" id="confirmPlacementBtn" onclick="confirmPlacement()" style="display:none;" disabled>CONFIRM PLACEMENT &#8594;</button>
+          <button class="btn-ghost" id="resetPlaceBtn" onclick="resetPlacement()" style="display:none;">RESET</button>
+          <button class="btn-warn" id="editBlocksBtn" onclick="enterEditMode()" style="display:none;">EDIT BLOCKS</button>
+          <button class="btn-blue" id="confirmPlaceBtn" onclick="confirmPlacement()" style="display:none;" disabled>CONFIRM PLACEMENT &rarr;</button>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- ── SECTION 6: CONFIRM & PAY ── -->
-  <div class="flow-section locked" id="sec6">
-    <div class="flow-sec-hdr">
-      <span class="flow-sec-num">6</span>
-      <span class="flow-sec-title">CONFIRM &amp; PURCHASE</span>
-    </div>
-    <div class="flow-sec-body">
-      <div class="sec6-grid">
+  <div class="flow-panel locked" id="sec6">
+    <div class="panel-hdr"><span class="panel-num">6</span><span class="panel-title">CONFIRM &amp; PURCHASE</span></div>
+    <div class="panel-body">
+      <div class="pay-layout">
         <div>
-          <div style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:8px;">ORDER SUMMARY</div>
-          <div class="summary-box">
-            <div class="srow"><span>STAGE</span><span class="sval" id="sumStage">--</span></div>
-            <div class="srow"><span>POSITION</span><span class="sval" id="sumPos">--</span></div>
-            <div class="srow"><span>SIZE</span><span class="sval" id="sumSize">--</span></div>
-            <div class="srow"><span>ACTIVE BLOCKS</span><span class="sval" id="sumBlocks">--</span></div>
-            <div class="srow"><span>EST. MONTHLY</span><span class="sval" id="sumPrice">--</span></div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);margin-bottom:6px;">ORDER SUMMARY</div>
+          <div class="order-box">
+            <div class="orow"><span>STAGE</span><span class="oval" id="sumStage">--</span></div>
+            <div class="orow"><span>POSITION</span><span class="oval" id="sumPos">--</span></div>
+            <div class="orow"><span>SIZE</span><span class="oval" id="sumSize">--</span></div>
+            <div class="orow"><span>ACTIVE BLOCKS</span><span class="oval" id="sumBlocks">--</span></div>
+            <div class="orow"><span>EST. MONTHLY</span><span class="oval" id="sumPrice">--</span></div>
           </div>
-          <div style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:8px;">BILLING PLAN</div>
-          <div class="plan-toggle">
-            <button class="plan-btn active" onclick="setPlan('monthly',this)">MONTHLY</button>
-            <button class="plan-btn" onclick="setPlan('annual',this)">ANNUAL &mdash; 2 MONTHS FREE</button>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);margin-bottom:6px;">BILLING PLAN</div>
+          <div class="plan-tabs">
+            <button class="plan-tab active" onclick="setPlan('monthly',this)">MONTHLY</button>
+            <button class="plan-tab" onclick="setPlan('annual',this)">ANNUAL &mdash; 2 MONTHS FREE</button>
           </div>
-          <div class="price-summary">
-            <div class="price-row"><span>BASE PRICE</span><span class="amount" id="priceBase">--</span></div>
-            <div class="price-row"><span>VOLUME DISCOUNT</span><span class="disc" id="priceDisc">--</span></div>
-            <div class="price-row"><span>PLAN DISCOUNT</span><span class="disc" id="pricePlanDisc">--</span></div>
-            <div class="price-row total"><span>MONTHLY TOTAL</span><span class="amount" id="priceTotal">--</span></div>
-            <div class="price-row annual-row" id="annualRow"><span>BILLED ANNUALLY</span><span class="amount" id="priceAnnual">--</span></div>
+          <div class="price-box">
+            <div class="p-row"><span>BASE PRICE</span><span class="p-amt" id="priceBase">--</span></div>
+            <div class="p-row"><span>VOLUME DISCOUNT</span><span class="p-disc" id="priceDisc">--</span></div>
+            <div class="p-row total"><span>MONTHLY TOTAL</span><span class="p-amt" id="priceTotal">--</span></div>
+            <div class="p-row" id="annualRow" style="display:none;"><span>BILLED ANNUALLY</span><span class="p-amt" id="priceAnnual">--</span></div>
           </div>
-          <div id="checkoutError"></div>
-          <button class="btn-primary" id="ctaBtn" onclick="proceedToCheckout()">PROCEED TO PAYMENT</button>
-          <p class="panel-note">By proceeding you agree to our <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>.<br>First month prorated from purchase date. Billing auto-renews. Cancel anytime.</p>
+          <div class="checkout-err" id="checkoutError"></div>
+          <button class="btn-primary w100" id="ctaBtn" onclick="proceedToCheckout()">PROCEED TO PAYMENT</button>
+          <p class="note">By proceeding you agree to our <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>.<br>First month prorated. Billing auto-renews. Cancel anytime.</p>
         </div>
         <div>
-          <div style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:8px;">LOGO PREVIEW ON GRID</div>
-          <canvas id="sec6Preview"></canvas>
-          <div id="sec6NoPreview" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);font-style:italic;">Preview will appear here.</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);margin-bottom:6px;">IN-GAME PREVIEW (with background filter)</div>
+          <div class="preview-with-map">
+            <canvas id="sec6MapCanvas" width="640" height="360"></canvas>
+            <canvas id="sec6LogoCanvas" width="640" height="360"></canvas>
+          </div>
+          <p style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);margin-top:4px;letter-spacing:1px;">Logos appear at ~60% opacity in-game to preserve stage visibility.</p>
         </div>
       </div>
     </div>
   </div>
-
-</section>
-
-<!-- PRICING -->
+</div>
 <section class="pricing-section" id="pricing">
-  <div class="section-title">PRICING</div>
-  <div class="section-sub">Transparent pricing. Hard cap at $20/block/mo. Always.</div>
+  <div class="sec-title">PRICING</div>
+  <div class="sec-sub">Transparent pricing. Active subscriptions never auto-increase.</div>
   <div class="pricing-grid">
-    <div class="price-tier">
-      <div class="tier-label">Early Access Eligibility</div>
-      <div class="tier-price-text">Available while base price is below $8</div>
-      <div class="tier-note">Subscriptions started before the base price reaches $8 may transition to a minimum of $5 within up to 6 months. After that, pricing remains fixed while the subscription stays active.</div>
-    </div>
-    <div class="price-tier">
-      <div class="tier-label">Launch &mdash; Standard</div>
-      <div class="tier-price"><sup>$</sup>0.21<sub>/block/mo</sub></div>
-      <div class="tier-note">Current launch price. From $5/mo minimum. Lock in your placement at the lowest available rate. First 20 paying customers get this price locked permanently.</div>
-    </div>
-    <div class="price-tier">
-      <div class="tier-label">Growth Pricing</div>
-      <div class="tier-price-text">Prices increase in stages</div>
-      <div class="tier-note">Pricing increases based on demand, grid occupancy, and platform growth. Active subscriptions are never auto-increased.</div>
-    </div>
-    <div class="price-tier">
-      <div class="tier-label">Absolute Cap</div>
-      <div class="tier-price"><sup>$</sup>20<sub>/block/mo</sub></div>
-      <div class="tier-note">Standard pricing will never exceed $20 per block per month.</div>
-      <span class="tier-cap">HARD LIMIT &mdash; UNCONDITIONAL</span>
-    </div>
+    <div class="price-tier"><div class="tier-lbl">Early Access</div><div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text);padding:8px 0;">While base price &lt; $8</div><div class="tier-note">First 20 paying customers get launch pricing locked permanently.</div></div>
+    <div class="price-tier"><div class="tier-lbl">Standard Stage</div><div class="tier-price"><sup>$</sup>0.21<sub>/block/mo</sub></div><div class="tier-note">160&times;90 = 14,400 blocks. From $5/mo minimum.</div></div>
+    <div class="price-tier"><div class="tier-lbl">Creator Zone</div><div class="tier-price"><sup>$</sup>0.06<sub>/block/mo</sub></div><div class="tier-note">320&times;180 = 57,600 blocks. Every 5th stage.</div></div>
+    <div class="price-tier"><div class="tier-lbl">Full Stage Cap</div><div class="tier-price"><sup>$</sup>3k<sub>/stage/mo</sub></div><div class="tier-note">$3,000 standard / $3,300 creator. Max $10k.</div><span class="tier-cap">HARD LIMIT</span></div>
   </div>
-  <div class="vol-section-title" style="margin-bottom:6px;">PRICE TIERS</div>
-  <div class="section-sub" style="margin-bottom:16px;">All 6 pricing stages. Active subscriptions are never auto-increased.</div>
+  <div class="vol-title" style="margin-bottom:4px;">PRICE TIERS</div>
+  <div class="sec-sub" style="margin-bottom:14px;">Standard stage. Creator zones ~27% cheaper per block.</div>
   <div class="price-ladder">
-    <div class="price-rung current"><div class="pr-price">$0.21</div><div class="pr-label">/block/mo (standard)</div><div class="pr-tag" style="color:var(--green)">NOW</div></div>
-    <div class="price-rung"><div class="pr-price">$0.35</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--muted)">$1,000 revenue</div></div>
-    <div class="price-rung"><div class="pr-price">$0.52</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--muted)">$5,000 revenue</div></div>
-    <div class="price-rung monopoly-unlocks"><div class="pr-price">$0.69</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--gold)">$20,000 revenue / CAP</div></div>
+    <div class="p-rung now"><div class="pr-p">$0.21</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--green)">NOW</div></div>
+    <div class="p-rung"><div class="pr-p">$0.35</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--muted)">$1k rev</div></div>
+    <div class="p-rung"><div class="pr-p">$0.52</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--muted)">$5k rev</div></div>
+    <div class="p-rung mono"><div class="pr-p">$0.69</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--gold)">$20k/CAP</div></div>
   </div>
-  <div class="vol-section-title" style="margin-bottom:6px;">VOLUME DISCOUNTS</div>
-  <div class="section-sub" style="margin-bottom:16px;">Applied automatically at checkout.</div>
-  <div class="volume-table">
-    <div class="vol-row"><span class="blocks">4 &ndash; 199 blocks</span><span class="disc none">No discount &mdash; from $5/mo</span></div>
-    <div class="vol-row"><span class="blocks">200 &ndash; 499 blocks</span><span class="disc">-10%</span></div>
-    <div class="vol-row"><span class="blocks">500 &ndash; 999 blocks</span><span class="disc">-20%</span></div>
-    <div class="vol-row"><span class="blocks">1,000+ blocks</span><span class="disc">-30%</span></div>
+  <div class="vol-title" style="margin-bottom:4px;">VOLUME DISCOUNTS</div>
+  <div class="sec-sub" style="margin-bottom:14px;">Applied automatically.</div>
+  <div class="vol-table">
+    <div class="vol-row"><span class="v-blocks">4&ndash;199 blocks</span><span class="v-disc none">No discount &mdash; from $5/mo</span></div>
+    <div class="vol-row"><span class="v-blocks">200&ndash;499 blocks</span><span class="v-disc">-10%</span></div>
+    <div class="vol-row"><span class="v-blocks">500&ndash;999 blocks</span><span class="v-disc">-20%</span></div>
+    <div class="vol-row"><span class="v-blocks">1,000+ blocks</span><span class="v-disc">-30%</span></div>
   </div>
 </section>
-
 <footer>
   <div class="footer-logo">never<span>END</span></div>
-  <div class="footer-links">
-    <a href="#">Terms of Service</a><a href="#">Privacy Policy</a><a href="#">Cookie Policy</a><a href="#">Content Policy</a>
-  </div>
-  <div class="footer-copy">2025 Carila. All rights reserved.</div>
+  <div class="footer-links"><a href="#">Terms</a><a href="#">Privacy</a><a href="#">Cookies</a><a href="#">Content Policy</a></div>
+  <div class="footer-copy">&copy; 2025 Carila.</div>
 </footer>
-
 <script>
-// ── Cancel previous reservation ──
-(function(){
-  var prev=localStorage.getItem('neverend_placement');
-  if(prev){try{var p=JSON.parse(prev);if(p.session_key)fetch('/api/cancel-reservation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_key:p.session_key})}).catch(function(){});}catch(e){}localStorage.removeItem('neverend_placement');}
-})();
+(function(){var prev=localStorage.getItem('neverend_placement');if(prev){try{var p=JSON.parse(prev);if(p.session_key)fetch('/api/cancel-reservation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_key:p.session_key})}).catch(function(){});}catch(e){}localStorage.removeItem('neverend_placement');}})();
+const STAGES_DATA=[{id:1,name:'STAGE 1',sub:'Learn to survive.',type:'standard'},{id:2,name:'STAGE 2',sub:'The floor is a lie.',type:'standard'},{id:3,name:'STAGE 3',sub:'Which way is right?',type:'standard'},{id:4,name:'STAGE 4',sub:'Nothing stays still.',type:'standard'},{id:5,name:'STAGE 5',sub:'The chaos zone.',type:'creator'},{id:6,name:'STAGE 6',sub:'Trust nothing.',type:'standard'},{id:7,name:'STAGE 7',sub:'Going up.',type:'standard'},{id:8,name:'STAGE 8',sub:'Nothing is safe.',type:'standard'},{id:9,name:'STAGE 9',sub:"One mistake.",type:'standard'},{id:10,name:'STAGE 10',sub:'You made it?',type:'creator'},{id:11,name:'STAGE 11',sub:'The wall.',type:'standard'},{id:12,name:'STAGE 12',sub:'Sink or swim.',type:'standard'},{id:13,name:'STAGE 13',sub:'No floor.',type:'standard'},{id:14,name:'STAGE 14',sub:'Mirrors.',type:'standard'},{id:15,name:'STAGE 15',sub:'Fire and ice.',type:'creator'},{id:16,name:'STAGE 16',sub:'The gauntlet.',type:'standard'},{id:17,name:'STAGE 17',sub:'Descent.',type:'standard'},{id:18,name:'STAGE 18',sub:'Labyrinth.',type:'standard'},{id:19,name:'STAGE 19',sub:'Almost there.',type:'standard'},{id:20,name:'STAGE 20',sub:'The final test.',type:'creator'}];
+const STAGE_MAPS={1:{plats:[[0,640,1280,80],[480,576,96,16]],spikes:[[528,544,32,32]],goal:[1184,528,80,112],spawn:[48,592]},2:{plats:[[0,640,192,80],[224,592,128,16],[416,544,128,16],[608,496,128,16],[800,448,128,16],[992,400,128,16],[1152,352,128,368]],spikes:[[224,560,32,32],[992,368,32,32]],goal:[1168,240,64,112],spawn:[48,592]},3:{plats:[[0,640,1280,80],[368,480,32,160],[880,480,32,160],[880,320,400,32]],spikes:[[608,608,32,32],[128,608,32,32],[1104,608,32,32]],goal:[1056,208,64,112],spawn:[48,592]},4:{plats:[[0,576,176,144],[1104,576,176,144]],spikes:[[176,688,32,32],[208,688,32,32],[240,688,32,32],[272,688,32,32],[304,688,32,32],[336,688,32,32],[368,688,32,32],[400,688,32,32],[432,688,32,32],[464,688,32,32],[496,688,32,32],[528,688,32,32],[560,688,32,32],[592,688,32,32],[624,688,32,32],[656,688,32,32],[688,688,32,32],[720,688,32,32],[752,688,32,32],[784,688,32,32],[816,688,32,32],[848,688,32,32],[880,688,32,32],[912,688,32,32],[944,688,32,32],[976,688,32,32],[1008,688,32,32],[1040,688,32,32],[1072,688,32,32]],goal:[1120,464,64,112],spawn:[48,528]},5:{plats:[[0,656,1280,64],[0,0,1280,96],[640,96,32,464],[0,96,32,560]],spikes:[[128,624,32,32],[800,624,32,32],[832,624,32,32],[864,624,32,32]],goal:[48,528,64,128],spawn:[1200,608]},6:{plats:[[0,384,112,336],[112,464,112,16],[224,528,112,16],[336,592,112,16],[448,624,384,96],[832,592,112,16],[944,528,112,16],[1056,464,112,16],[1168,384,112,336],[576,512,64,16]],spikes:[[336,560,32,32],[896,560,32,32]],goal:[576,272,64,112],spawn:[48,336]},7:{plats:[[0,0,16,720],[1264,0,16,720],[0,0,1280,32],[16,656,528,64],[736,656,528,64],[16,176,192,16],[16,352,192,16],[16,528,192,16],[1072,272,192,16],[1072,448,192,16],[256,528,128,16],[432,496,128,16],[560,448,144,16]],spikes:[[544,672,32,32],[576,672,32,32],[608,672,32,32],[640,672,32,32],[672,672,32,32],[704,672,32,32],[16,144,32,32],[16,320,32,32]],goal:[576,544,128,112],spawn:[80,80]},8:{plats:[[0,640,304,80],[320,576,128,16],[512,512,128,16],[704,480,256,16],[1024,528,128,16],[1184,576,96,144]],spikes:[[320,544,32,32],[1184,544,32,32]],goal:[1200,464,64,112],spawn:[48,592]},9:{plats:[[0,640,320,80],[320,576,128,16],[512,448,128,16],[704,496,96,16],[960,448,128,16],[1152,576,128,16],[1152,640,128,80]],spikes:[[320,544,32,32]],goal:[1168,464,80,112],spawn:[48,592]},10:{plats:[[0,0,16,720],[1264,0,16,720],[16,624,192,96],[256,528,144,16],[448,448,144,16],[640,368,144,16],[832,288,144,16],[1024,208,240,16],[1024,208,240,512]],spikes:[[256,496,32,32],[832,256,32,32]],goal:[1040,96,80,112],spawn:[80,576]}};
+const CELL_S=8,CELL_C=4,GC_S=160,GR_S=90,GC_C=320,GR_C=180,BP_S=0.208,BP_C=0.057;
+let GRID_COLS=160,GRID_ROWS=90,CELL=8,BASE_PRICE=0.208;
+let monopolyMode=false,uploadedImage=null;
+let trimZoom=1,trimOffX=0,trimOffY=0,trimDrag=false,trimDragSX=0,trimDragSY=0,trimDragOX=0,trimDragOY=0;
+let chosenW=0,chosenH=0,pixelArtOriginal=null,pixelArtEdit=null,customColors=[];
+let colorTool='replace',selectedPaletteColor=null,selectedPaletteKey=null,brushSize=1;
+let currentStage=1,gridStates={};
+let logoGridX=0,logoGridY=0,logoPlaced=false,selectedArea=null;
+let editMode=false,deletedBlocks=[],deleteHistory=[],plan='monthly';
+let gridZoom=1,editZoomLevel=1,baseEditZoom=1;
+let miniH=0,miniS=1,miniV=1,miniDragSV=false,miniDragHue=false;
+let editDrag=false,gridEditDrag=false;
 
-// ── Stage data ──
-const STAGES_DATA=[
-  {id:1,name:'STAGE 1',sub:'Learn to survive.',type:'standard'},
-  {id:2,name:'STAGE 2',sub:'The floor is a lie.',type:'standard'},
-  {id:3,name:'STAGE 3',sub:'Which way is right?',type:'standard'},
-  {id:4,name:'STAGE 4',sub:'Nothing stays still.',type:'standard'},
-  {id:5,name:'STAGE 5',sub:'The chaos zone.',type:'creator'},
-  {id:6,name:'STAGE 6',sub:'Trust nothing.',type:'standard'},
-  {id:7,name:'STAGE 7',sub:'Going up.',type:'standard'},
-  {id:8,name:'STAGE 8',sub:'Nothing is safe.',type:'standard'},
-  {id:9,name:'STAGE 9',sub:"One mistake. That's all.",type:'standard'},
-  {id:10,name:'STAGE 10',sub:'You made it this far?',type:'creator'},
-  {id:11,name:'STAGE 11',sub:'The wall.',type:'standard'},
-  {id:12,name:'STAGE 12',sub:'Sink or swim.',type:'standard'},
-  {id:13,name:'STAGE 13',sub:'No floor.',type:'standard'},
-  {id:14,name:'STAGE 14',sub:'Mirrors.',type:'standard'},
-  {id:15,name:'STAGE 15',sub:'Fire and ice.',type:'creator'},
-  {id:16,name:'STAGE 16',sub:'The gauntlet.',type:'standard'},
-  {id:17,name:'STAGE 17',sub:'Descent.',type:'standard'},
-  {id:18,name:'STAGE 18',sub:'Labyrinth.',type:'standard'},
-  {id:19,name:'STAGE 19',sub:'Almost there.',type:'standard'},
-  {id:20,name:'STAGE 20',sub:'The final test.',type:'creator'},
-];
+function isCreator(id){return id%5===0;}
+function updateGC(id){if(isCreator(id)){GRID_COLS=GC_C;GRID_ROWS=GR_C;CELL=CELL_C;BASE_PRICE=BP_C;}else{GRID_COLS=GC_S;GRID_ROWS=GR_S;CELL=CELL_S;BASE_PRICE=BP_S;}}
+function unlockSec(n){const s=document.getElementById('sec'+n);if(s)s.classList.remove('locked');}
+function markDone(n){const s=document.getElementById('sec'+n);const d=document.getElementById('sec'+n+'Done');if(s)s.classList.add('done');if(d)d.style.display='block';}
+function setProgress(a){for(let i=1;i<=6;i++){const el=document.getElementById('prog'+i);if(i<a)el.className='prog-step done';else if(i===a)el.className='prog-step active';else el.className='prog-step';}}
+function calcPrice(n,p){let d=0;if(n>=1000)d=0.30;else if(n>=500)d=0.20;else if(n>=200)d=0.10;const base=BASE_PRICE*n;const total=Math.max(5,base*(1-d));return{base,disc:d,total,annual:total*10};}
+function setBrushSize(s,btn){brushSize=s;document.querySelectorAll('#brush1,#brush3,#brush5').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');}
 
-// Actual stage map data extracted from game (pixel coordinates, 1280x720 space)
-// plats/spikes: [x,y,w,h], goal: [x,y,w,h], spawn: [x,y]
-const STAGE_MAPS={
-  1:{plats:[[0,640,1280,80],[480,576,96,16]],spikes:[[528,544,32,32]],goal:[1184,528,80,112],spawn:[48,592]},
-  2:{plats:[[0,640,192,80],[224,592,128,16],[416,544,128,16],[608,496,128,16],[800,448,128,16],[992,400,128,16],[1152,352,128,368]],spikes:[[224,560,32,32],[992,368,32,32]],goal:[1168,240,64,112],spawn:[48,592]},
-  3:{plats:[[0,640,1280,80],[368,480,32,160],[880,480,32,160],[880,320,400,32]],spikes:[[608,608,32,32],[128,608,32,32],[1104,608,32,32]],goal:[1056,208,64,112],spawn:[48,592]},
-  4:{plats:[[0,576,176,144],[1104,576,176,144]],spikes:[[176,688,32,32],[208,688,32,32],[240,688,32,32],[272,688,32,32],[304,688,32,32],[336,688,32,32],[368,688,32,32],[400,688,32,32],[432,688,32,32],[464,688,32,32],[496,688,32,32],[528,688,32,32],[560,688,32,32],[592,688,32,32],[624,688,32,32],[656,688,32,32],[688,688,32,32],[720,688,32,32],[752,688,32,32],[784,688,32,32],[816,688,32,32],[848,688,32,32],[880,688,32,32],[912,688,32,32],[944,688,32,32],[976,688,32,32],[1008,688,32,32],[1040,688,32,32],[1072,688,32,32]],goal:[1120,464,64,112],spawn:[48,528]},
-  5:{plats:[[0,656,1280,64],[0,0,1280,96],[640,96,32,464],[0,96,32,560]],spikes:[[128,624,32,32],[800,624,32,32],[832,624,32,32],[864,624,32,32]],goal:[48,528,64,128],spawn:[1200,608]},
-  6:{plats:[[0,384,112,336],[112,464,112,16],[224,528,112,16],[336,592,112,16],[448,624,384,96],[832,592,112,16],[944,528,112,16],[1056,464,112,16],[1168,384,112,336],[576,512,64,16]],spikes:[[336,560,32,32],[896,560,32,32]],goal:[576,272,64,112],spawn:[48,336]},
-  7:{plats:[[0,0,16,720],[1264,0,16,720],[0,0,1280,32],[16,656,528,64],[736,656,528,64],[16,176,192,16],[16,352,192,16],[16,528,192,16],[1072,272,192,16],[1072,448,192,16],[256,528,128,16],[432,496,128,16],[560,448,144,16]],spikes:[[544,672,32,32],[576,672,32,32],[608,672,32,32],[640,672,32,32],[672,672,32,32],[704,672,32,32],[16,144,32,32],[16,320,32,32]],goal:[576,544,128,112],spawn:[80,80]},
-  8:{plats:[[0,640,304,80],[320,576,128,16],[512,512,128,16],[704,480,256,16],[1024,528,128,16],[1184,576,96,144]],spikes:[[320,544,32,32],[1184,544,32,32]],goal:[1200,464,64,112],spawn:[48,592]},
-  9:{plats:[[0,640,320,80],[320,576,128,16],[512,448,128,16],[704,496,96,16],[960,448,128,16],[1152,576,128,16],[1152,640,128,80]],spikes:[[320,544,32,32]],goal:[1168,464,80,112],spawn:[48,592]},
-  10:{plats:[[0,0,16,720],[1264,0,16,720],[16,624,192,96],[256,528,144,16],[448,448,144,16],[640,368,144,16],[832,288,144,16],[1024,208,240,16],[1024,208,240,512]],spikes:[[256,496,32,32],[832,256,32,32]],goal:[1040,96,80,112],spawn:[80,576]},
-  11:{plats:[[0,640,624,80],[656,640,624,80],[608,0,64,160],[608,256,64,464],[80,512,128,16],[256,400,128,16],[432,512,128,16],[720,512,128,16],[896,400,128,16],[1072,512,128,16],[432,320,128,16],[464,240,128,16],[672,240,128,16],[848,320,128,16]],spikes:[[80,480,32,32],[1136,480,32,32]],goal:[1168,400,80,112],spawn:[48,592]},
-  12:{plats:[[0,640,192,80],[240,576,128,16],[432,512,128,16],[624,448,128,16],[816,384,128,16],[1008,320,128,16],[1152,256,128,464]],spikes:[[432,688,32,32],[464,688,32,32],[496,688,32,32],[528,688,32,32],[816,688,32,32],[848,688,32,32],[880,688,32,32],[912,688,32,32]],goal:[1168,144,64,112],spawn:[48,592]},
-  13:{plats:[[0,640,1056,80],[896,512,128,16],[1056,384,224,336]],spikes:[[448,608,32,32],[704,608,32,32],[1024,480,32,32]],goal:[1072,272,80,112],spawn:[48,592]},
-  14:{plats:[[0,656,1280,64],[0,0,1280,96]],spikes:[[96,160,32,32],[96,256,32,32],[96,352,32,32],[96,448,32,32],[96,544,32,32],[1152,208,32,32],[1152,304,32,32],[1152,400,32,32],[1152,496,32,32],[1152,592,32,32]],goal:[592,560,80,96],spawn:[80,608]},
-  15:{plats:[[0,640,1280,80],[80,480,128,16],[256,400,128,16],[432,320,128,16],[608,240,128,16],[608,240,128,480]],spikes:[[80,448,32,32],[432,288,32,32]],goal:[624,128,80,112],spawn:[48,592]},
-  16:{plats:[[0,640,192,80],[240,576,128,16],[432,512,128,16],[624,448,128,16],[816,384,128,16],[1008,320,128,16],[1152,256,128,464]],spikes:[[240,544,32,32],[816,352,32,32]],goal:[1168,144,64,112],spawn:[48,592]},
-  17:{plats:[[0,576,192,144],[1088,576,192,144]],spikes:[[192,688,32,32],[224,688,32,32],[256,688,32,32],[288,688,32,32],[320,688,32,32],[352,688,32,32],[384,688,32,32],[416,688,32,32],[448,688,32,32],[480,688,32,32],[512,688,32,32],[544,688,32,32],[576,688,32,32],[608,688,32,32],[640,688,32,32],[672,688,32,32],[704,688,32,32],[736,688,32,32],[768,688,32,32],[800,688,32,32],[832,688,32,32],[864,688,32,32],[896,688,32,32],[928,688,32,32],[960,688,32,32],[992,688,32,32],[1024,688,32,32],[1056,688,32,32]],goal:[1104,464,64,112],spawn:[48,528]},
-  18:{plats:[[0,640,192,80],[240,512,192,16],[512,448,128,16],[704,384,192,16],[960,320,128,16],[1152,256,128,464],[0,672,1280,48]],spikes:[[240,688,32,32],[272,688,32,32],[304,688,32,32],[336,688,32,32],[368,688,32,32],[400,688,32,32],[704,688,32,32],[736,688,32,32],[768,688,32,32],[800,688,32,32],[832,688,32,32],[864,688,32,32]],goal:[1168,144,64,112],spawn:[48,592]},
-  19:{plats:[[0,640,1280,80],[288,528,128,16],[864,528,128,16]],spikes:[[288,496,32,32],[320,496,32,32],[864,496,32,32],[896,496,32,32]],goal:[1184,528,80,112],spawn:[48,592]},
-  20:{plats:[[0,640,224,80],[256,576,128,16],[448,512,128,16],[448,512,32,208],[640,448,128,16],[832,384,128,16],[832,384,32,336],[1024,320,128,16],[1024,320,256,400]],spikes:[[256,544,32,32],[640,416,32,32],[1024,288,32,32]],goal:[1040,208,80,112],spawn:[48,592]},
-  21:{plats:[[0,640,192,80],[1088,320,192,400]],spikes:[[192,688,32,32],[224,688,32,32],[256,688,32,32],[288,688,32,32],[320,688,32,32],[352,688,32,32],[384,688,32,32],[416,688,32,32],[448,688,32,32],[480,688,32,32],[512,688,32,32],[544,688,32,32],[576,688,32,32],[608,688,32,32],[640,688,32,32],[672,688,32,32],[704,688,32,32],[736,688,32,32],[768,688,32,32],[800,688,32,32],[832,688,32,32],[864,688,32,32],[896,688,32,32],[928,688,32,32],[960,688,32,32],[992,688,32,32],[1024,688,32,32],[1056,688,32,32]],goal:[1104,208,80,112],spawn:[48,592]},
-  22:{plats:[[0,640,160,80],[176,544,160,16],[432,496,128,16],[640,464,128,16],[848,432,128,16],[1024,384,96,16],[1120,256,160,464]],spikes:[[160,608,32,32],[528,464,32,32]],goal:[1136,144,80,112],spawn:[48,592]},
-  23:{plats:[[0,640,192,80],[240,576,128,16],[432,512,128,16],[624,448,128,16],[832,496,128,16],[1024,400,128,16],[1152,288,128,432]],spikes:[[240,544,32,32],[832,464,32,32]],goal:[1168,176,64,112],spawn:[48,592]},
-  24:{plats:[[0,640,1280,80],[0,0,1280,96],[608,464,64,16],[608,304,64,16]],spikes:[[96,96,32,32],[128,96,32,32],[1088,96,32,32],[1120,96,32,32],[576,608,32,32]],goal:[608,192,80,112],spawn:[96,592]},
-  25:{plats:[[0,640,1280,80],[848,480,432,16],[1152,480,128,240]],spikes:[[256,608,32,32],[688,608,32,32]],goal:[1168,368,80,112],spawn:[48,592]},
-  26:{plats:[[0,640,192,80],[240,576,128,16],[432,512,128,16],[624,448,128,16],[816,384,128,16],[1008,320,128,16],[1152,256,128,464]],spikes:[[240,688,32,32],[272,688,32,32],[304,688,32,32],[336,688,32,32],[432,688,32,32],[464,688,32,32],[496,688,32,32],[528,688,32,32],[816,688,32,32],[848,688,32,32],[880,688,32,32],[912,688,32,32],[1008,688,32,32],[1040,688,32,32],[1072,688,32,32],[1104,688,32,32]],goal:[1168,144,64,112],spawn:[48,592]},
-  27:{plats:[[0,640,1280,80],[0,0,1280,32]],spikes:[[160,608,32,32],[192,608,32,32],[1056,608,32,32],[1088,608,32,32]],goal:[1168,528,80,112],spawn:[48,592]},
-  28:{plats:[[0,0,16,720],[1264,0,16,720],[16,144,208,16],[272,192,96,16],[432,160,96,16],[592,192,96,16],[752,144,96,16],[912,176,96,16],[1056,128,208,592]],spikes:[[16,688,32,32],[48,688,32,32],[80,688,32,32],[112,688,32,32],[144,688,32,32],[176,688,32,32],[208,688,32,32],[240,688,32,32],[272,688,32,32],[304,688,32,32],[336,688,32,32],[368,688,32,32],[400,688,32,32],[432,688,32,32],[464,688,32,32],[496,688,32,32],[528,688,32,32],[560,688,32,32],[592,688,32,32],[624,688,32,32],[656,688,32,32],[688,688,32,32],[720,688,32,32],[752,688,32,32],[784,688,32,32],[816,688,32,32],[848,688,32,32],[880,688,32,32],[912,688,32,32],[944,688,32,32],[976,688,32,32],[1008,688,32,32],[1040,688,32,32],[496,128,32,32],[816,112,32,32]],goal:[1072,16,80,112],spawn:[48,96]},
-  29:{plats:[[0,640,1280,80]],spikes:[[160,608,32,32],[1104,608,32,32]],goal:[1168,528,80,112],spawn:[48,592]},
-  30:{plats:[[0,640,160,80],[176,560,128,16],[400,480,128,16],[608,400,128,16],[832,320,128,16],[1056,240,224,480]],spikes:[[400,448,32,32],[832,288,32,32]],goal:[1072,128,80,112],spawn:[48,592]},
-};
-
-// ── State ──
-const CELL_STANDARD=8, CELL_CREATOR=4;
-const GRID_COLS_STANDARD=160, GRID_ROWS_STANDARD=90;
-const GRID_COLS_CREATOR=320, GRID_ROWS_CREATOR=180;
-const BASE_PRICE_STANDARD=0.208, BASE_PRICE_CREATOR=0.057;
-let GRID_COLS=160, GRID_ROWS=90, CELL=8, BASE_PRICE=0.208;
-let monopolyMode=false;
-let uploadedImage=null;
-let uploadedImageDataUrl=null;
-let chosenW=0,chosenH=0;
-let pixelArtOriginal=null; // 2D array of {r,g,b}|null
-let pixelArtEdit=null;     // 2D array (editable copy)
-let colorTool='replace';
-let brushSize=1;
-let selectedPaletteColor=null; // {r,g,b} or 'transparent'
-let selectedPaletteKey=null;
-let currentStage=1;
-let gridStates={};
-let logoGridX=0,logoGridY=0;
-let logoPlaced=false;
-let selectedArea=null;
-let plan='monthly';
-// Color picker state
-let cpH=0,cpS=1,cpV=1;
-let cpTargetColor=null; // {r,g,b} color to replace
-let cpDraggingSV=false,cpDraggingHue=false;
-
-// ── Section helpers ──
-function unlockSection(n){const s=document.getElementById('sec'+n);if(s){s.classList.remove('locked');}}
-function lockSection(n){const s=document.getElementById('sec'+n);if(s){s.classList.add('locked');s.classList.remove('done');document.getElementById('sec'+n+'Done').style.display='none';}}
-function markSectionDone(n){const s=document.getElementById('sec'+n);const d=document.getElementById('sec'+n+'Done');if(s)s.classList.add('done');if(d)d.style.display='block';}
-function setProgress(activeStep){
-  for(let i=1;i<=6;i++){
-    const el=document.getElementById('prog'+i);
-    if(i<activeStep)el.className='prog-step done';
-    else if(i===activeStep)el.className='prog-step active';
-    else el.className='prog-step';
-  }
-}
-
-// ── Stage setup ──
 const stageSelEl=document.getElementById('stageSelect');
-STAGES_DATA.forEach(function(s){
-  const o=document.createElement('option');o.value=s.id;o.textContent=s.name+' \u2014 '+s.sub;stageSelEl.appendChild(o);
-});
-
-function isCreatorStage(id){return id%5===0;}
-function updateGridConstants(stageId){
-  if(isCreatorStage(stageId)){
-    GRID_COLS=GRID_COLS_CREATOR; GRID_ROWS=GRID_ROWS_CREATOR;
-    CELL=CELL_CREATOR; BASE_PRICE=BASE_PRICE_CREATOR;
-  }else{
-    GRID_COLS=GRID_COLS_STANDARD; GRID_ROWS=GRID_ROWS_STANDARD;
-    CELL=CELL_STANDARD; BASE_PRICE=BASE_PRICE_STANDARD;
-  }
-}
+STAGES_DATA.forEach(function(s){const o=document.createElement('option');o.value=s.id;o.textContent=s.name+' — '+s.sub;stageSelEl.appendChild(o);});
 
 function setStage(id){
-  currentStage=id;stageSelEl.value=id;
-  updateGridConstants(id);
+  currentStage=id;stageSelEl.value=id;updateGC(id);
   document.getElementById('stagePrevBtn').disabled=(id<=1);
   document.getElementById('stageNextBtn').disabled=(id>=STAGES_DATA.length);
   const s=STAGES_DATA[id-1];
-  document.getElementById('stageInfoText').textContent=s.name+' \u2014 '+s.sub+(s.type==='creator'?' (Creator Zone)':'');
-  drawStageMap();
+  const badge=document.getElementById('stageBadge');
+  if(isCreator(id)){badge.className='stage-badge creator';badge.textContent='CREATOR ZONE';}else{badge.className='stage-badge';badge.textContent='STANDARD';}
+  document.getElementById('stageInfoText').textContent=s.name+' — '+s.sub;
+  document.getElementById('stagePriceInfo').textContent=GRID_COLS+'×'+GRID_ROWS+' = '+(GRID_COLS*GRID_ROWS).toLocaleString()+' blocks | $'+BASE_PRICE.toFixed(3)+'/block | Full: $'+(isCreator(id)?'3,300':'3,000')+'/mo';
+  updatePresetPrices();drawStageMap();
 }
 function changeStage(d){const n=currentStage+d;if(n>=1&&n<=STAGES_DATA.length)setStage(n);}
+function updatePresetPrices(){
+  document.getElementById('smallPrice').textContent='~$'+Math.round(calcPrice(100,plan).total)+'/mo';
+  document.getElementById('medPrice').textContent='~$'+Math.round(calcPrice(506,plan).total)+'/mo';
+  document.getElementById('largePrice').textContent='~$'+Math.round(calcPrice(2025,plan).total)+'/mo';
+  document.getElementById('xlPrice').textContent='~$'+Math.round(calcPrice(5041,plan).total)+'/mo';
+  document.getElementById('monoPrice').textContent='$'+(isCreator(currentStage)?'3,300':'3,000')+'/mo';
+}
 
 function drawStageMap(){
-  const mc=document.getElementById('stageMapCanvas');
-  const mctx=mc.getContext('2d');
-  const MW=400,MH=225,SX=1280,SY=720;
-  const sx=MW/SX,sy=MH/SY;
+  const mc=document.getElementById('stageMapCanvas');const mctx=mc.getContext('2d');
+  const MW=400,MH=225,SX=1280,SY=720,sx=MW/SX,sy=MH/SY;
   mctx.fillStyle='#07070f';mctx.fillRect(0,0,MW,MH);
   const m=STAGE_MAPS[currentStage];
-  if(!m){
-    mctx.fillStyle='rgba(100,100,120,0.5)';mctx.font='13px monospace';mctx.textAlign='center';
-    mctx.fillText('Stage '+currentStage,MW/2,MH/2-8);
-    mctx.fillStyle='rgba(80,80,100,0.4)';mctx.font='11px monospace';
-    mctx.fillText('Preview not available',MW/2,MH/2+14);
-    return;
-  }
-  // Platforms
-  mctx.fillStyle='rgba(80,100,140,0.9)';
-  (m.plats||[]).forEach(function(p){mctx.fillRect(p[0]*sx,p[1]*sy,p[2]*sx,p[3]*sy);});
-  // Spikes — red triangles pointing up
-  mctx.fillStyle='rgba(220,50,50,0.95)';
-  (m.spikes||[]).forEach(function(s){
-    var bx=s[0]*sx,by=(s[1]+s[3])*sy,tw=s[2]*sx,th=s[3]*sy;
-    // clamp small spikes to at least 4px
-    if(tw<2)tw=2;if(th<2)th=2;
-    mctx.beginPath();
-    mctx.moveTo(bx+tw/2,by-th);
-    mctx.lineTo(bx,by);
-    mctx.lineTo(bx+tw,by);
-    mctx.closePath();mctx.fill();
-  });
-  // Goal — bright green
-  mctx.fillStyle='rgba(60,220,100,0.9)';
-  if(m.goal){var g=m.goal;mctx.fillRect(g[0]*sx,g[1]*sy,g[2]*sx,g[3]*sy);}
-  // Spawn — blue circle
-  mctx.fillStyle='rgba(100,180,255,0.9)';
-  if(m.spawn){mctx.beginPath();mctx.arc(m.spawn[0]*sx,m.spawn[1]*sy,4,0,Math.PI*2);mctx.fill();}
-  // Traps — orange squares
-  mctx.fillStyle='rgba(255,140,0,0.85)';
-  (m.traps||[]).forEach(function(t){mctx.fillRect(t[0]*sx,t[1]*sy,t[2]*sx,t[3]*sy);});
-  // Mimics — purple squares
-  mctx.fillStyle='rgba(160,60,220,0.85)';
-  (m.mimics||[]).forEach(function(t){mctx.fillRect(t[0]*sx,t[1]*sy,t[2]*sx,t[3]*sy);});
-  // Lava — red/orange bar
-  mctx.fillStyle='rgba(255,80,0,0.8)';
-  (m.lava||[]).forEach(function(l){mctx.fillRect(l[0]*sx,l[1]*sy,l[2]*sx,l[3]*sy);});
+  if(!m){mctx.fillStyle='rgba(100,100,120,0.5)';mctx.font='12px monospace';mctx.textAlign='center';mctx.fillText('Stage '+currentStage,MW/2,MH/2);return;}
+  mctx.strokeStyle='rgba(74,184,255,0.75)';mctx.lineWidth=1;
+  (m.plats||[]).forEach(function(p){mctx.strokeRect(p[0]*sx+.5,p[1]*sy+.5,p[2]*sx,p[3]*sy);});
+  mctx.fillStyle='rgba(231,76,60,0.95)';
+  (m.spikes||[]).forEach(function(s){var bx=s[0]*sx,by=(s[1]+s[3])*sy,tw=Math.max(2,s[2]*sx),th=Math.max(2,s[3]*sy);mctx.beginPath();mctx.moveTo(bx+tw/2,by-th);mctx.lineTo(bx,by);mctx.lineTo(bx+tw,by);mctx.closePath();mctx.fill();});
+  mctx.strokeStyle='rgba(74,222,128,0.9)';mctx.lineWidth=1.5;
+  if(m.goal){mctx.strokeRect(m.goal[0]*sx,m.goal[1]*sy,m.goal[2]*sx,m.goal[3]*sy);}
+  mctx.fillStyle='rgba(74,184,255,0.9)';
+  if(m.spawn){mctx.beginPath();mctx.arc(m.spawn[0]*sx,m.spawn[1]*sy,3.5,0,Math.PI*2);mctx.fill();}
+  (m.traps||[]).forEach(function(t){mctx.strokeStyle='rgba(255,140,0,0.8)';mctx.lineWidth=1;mctx.strokeRect(t[0]*sx,t[1]*sy,t[2]*sx,t[3]*sy);});
+  mctx.fillStyle='rgba(245,200,66,0.35)';mctx.fillRect(0,0,MW,3);
 }
 setStage(1);
 
-// ── Mock grid ──
-function generateMockGrid(id){
-  const g={};let s=id*1337;
-  for(let i=0;i<12+(id*3)%18;i++){
-    s=(s*1664525+1013904223)&0x7fffffff;const c=s%GRID_COLS;
-    s=(s*1664525+1013904223)&0x7fffffff;const r=s%GRID_ROWS;
-    g[c+','+r]='claimed';
-  }
-  return g;
-}
+function generateMockGrid(id){const g={};let s=id*1337;for(let i=0;i<12+(id*3)%18;i++){s=(s*1664525+1013904223)&0x7fffffff;const c=s%GRID_COLS;s=(s*1664525+1013904223)&0x7fffffff;const r=s%GRID_ROWS;g[c+','+r]='claimed';}return g;}
 STAGES_DATA.forEach(function(s){gridStates[s.id]=generateMockGrid(s.id);});
 function getBlockState(c,r){return(gridStates[currentStage]&&gridStates[currentStage][c+','+r])||'available';}
+function fetchGridStates(stageId){fetch('/api/grid?stage_id='+stageId).then(function(r){return r.json();}).then(function(d){if(d&&d.blocks){const g={};d.blocks.forEach(function(b){g[b.x+','+b.y]=b.status;});gridStates[stageId]=g;if(currentStage===stageId)drawGrid();}}).catch(function(){});}
 
-// Try to load real grid data when stage is confirmed
-function fetchGridStates(stageId){
-  fetch('/api/grid?stage_id='+stageId)
-    .then(function(r){return r.json();})
-    .then(function(d){
-      if(d&&d.blocks){
-        const g={};
-        d.blocks.forEach(function(b){g[b.x+','+b.y]=b.status;});
-        gridStates[stageId]=g;
-        if(currentStage===stageId)drawGrid();
-      }
-    }).catch(function(){});
-}
-
-// ── Upload (Section 1) ──
 const uploadZone=document.getElementById('uploadZone');
 const fileInput=document.getElementById('fileInput');
 uploadZone.addEventListener('dragover',function(e){e.preventDefault();uploadZone.classList.add('dragover');});
 uploadZone.addEventListener('dragleave',function(){uploadZone.classList.remove('dragover');});
-uploadZone.addEventListener('drop',function(e){
-  e.preventDefault();uploadZone.classList.remove('dragover');
-  const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadImageFile(f);
-});
+uploadZone.addEventListener('drop',function(e){e.preventDefault();uploadZone.classList.remove('dragover');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadImageFile(f);});
 fileInput.addEventListener('change',function(){if(fileInput.files[0])loadImageFile(fileInput.files[0]);});
 
 function loadImageFile(file){
@@ -847,808 +566,436 @@ function loadImageFile(file){
   reader.onload=function(ev){
     const img=new Image();
     img.onload=function(){
-      uploadedImage=img;
-      uploadedImageDataUrl=ev.target.result;
-      document.getElementById('uploadPreviewImg').src=ev.target.result;
-      document.getElementById('uploadFileName').innerHTML='<strong style="color:var(--accent2)">'+file.name+'</strong>';
-      document.getElementById('uploadDimensions').textContent=img.naturalWidth+' \xd7 '+img.naturalHeight+' px';
-      document.getElementById('uploadPreview').style.display='flex';
+      uploadedImage=img;trimZoom=1;trimOffX=0;trimOffY=0;
+      document.getElementById('trimZoom').value=100;
+      document.getElementById('trimX').value=0;document.getElementById('trimY').value=0;
+      document.getElementById('uploadFileName').textContent=file.name;
+      document.getElementById('uploadDims').textContent=img.naturalWidth+'×'+img.naturalHeight+' px';
+      document.getElementById('uploadFileInfo').style.display='block';
       document.getElementById('uploadContinueBtn').disabled=false;
+      drawTrimCanvas();
     };
     img.src=ev.target.result;
   };
   reader.readAsDataURL(file);
 }
 
-function goToSection2(){
+function drawTrimCanvas(){
+  const canvas=document.getElementById('trimCanvas');const ctx=canvas.getContext('2d');
+  const S=canvas.width;
+  ctx.clearRect(0,0,S,S);ctx.fillStyle='#000';ctx.fillRect(0,0,S,S);
   if(!uploadedImage)return;
-  markSectionDone(1);
-  unlockSection(2);
-  setProgress(2);
-  document.getElementById('sec2').scrollIntoView({behavior:'smooth',block:'start'});
+  const img=uploadedImage;const iw=img.naturalWidth,ih=img.naturalHeight;
+  const scale=trimZoom;const sw=iw/scale,sh=ih/scale;
+  const sx=Math.max(0,trimOffX*(iw-sw)/100);const sy=Math.max(0,trimOffY*(ih-sh)/100);
+  const srcW=Math.min(sw,iw),srcH=Math.min(sh,ih);
+  const aspect=srcW/srcH;
+  let dw,dh,dx,dy;
+  if(aspect>=1){dw=S;dh=S/aspect;dx=0;dy=(S-dh)/2;}else{dh=S;dw=S*aspect;dx=(S-dw)/2;dy=0;}
+  ctx.drawImage(img,sx,sy,srcW,srcH,dx,dy,dw,dh);
+  ctx.strokeStyle='rgba(74,184,255,0.4)';ctx.lineWidth=1.5;ctx.strokeRect(1,1,S-2,S-2);
+  ctx.strokeStyle='rgba(74,184,255,0.1)';ctx.lineWidth=0.5;
+  for(let i=1;i<4;i++){ctx.beginPath();ctx.moveTo(S*i/4,0);ctx.lineTo(S*i/4,S);ctx.stroke();ctx.beginPath();ctx.moveTo(0,S*i/4);ctx.lineTo(S,S*i/4);ctx.stroke();}
 }
 
-// ── Size & Preview (Section 2) ──
+function updateTrim(){
+  trimZoom=parseInt(document.getElementById('trimZoom').value)/100;
+  trimOffX=parseInt(document.getElementById('trimX').value);trimOffY=parseInt(document.getElementById('trimY').value);
+  document.getElementById('trimZoomVal').textContent=Math.round(trimZoom*100)+'%';
+  document.getElementById('trimXVal').textContent=trimOffX;document.getElementById('trimYVal').textContent=trimOffY;
+  drawTrimCanvas();
+}
+
+const trimWrap=document.getElementById('trimWrap');
+trimWrap.addEventListener('mousedown',function(e){trimDrag=true;trimDragSX=e.clientX;trimDragSY=e.clientY;trimDragOX=trimOffX;trimDragOY=trimOffY;e.preventDefault();});
+document.addEventListener('mousemove',function(e){
+  if(trimDrag){
+    const canvas=document.getElementById('trimCanvas');
+    const dx=trimDragSX-e.clientX,dy=trimDragSY-e.clientY;
+    trimOffX=Math.max(0,Math.min(100,trimDragOX+dx/canvas.offsetWidth*100));
+    trimOffY=Math.max(0,Math.min(100,trimDragOY+dy/canvas.offsetHeight*100));
+    document.getElementById('trimX').value=Math.round(trimOffX);document.getElementById('trimY').value=Math.round(trimOffY);
+    document.getElementById('trimXVal').textContent=Math.round(trimOffX);document.getElementById('trimYVal').textContent=Math.round(trimOffY);
+    drawTrimCanvas();
+  }
+  if(miniDragSV)updateMiniSVFromEvent(e);
+  if(miniDragHue)updateMiniHueFromEvent(e);
+  if(editDrag){const{x,y}=getEditPixelCoords(e);applyEditBrush(x,y);drawEditCanvas();updateEditStats();}
+  if(gridEditDrag)applyGridEdit(e);
+});
+document.addEventListener('mouseup',function(){trimDrag=false;miniDragSV=false;miniDragHue=false;if(editDrag){editDrag=false;buildPalette();}gridEditDrag=false;if(editMode){updatePlaceInfo();drawGrid();}});
+
+function getTrimmedDataUrl(){
+  if(!uploadedImage)return null;
+  const img=uploadedImage;const iw=img.naturalWidth,ih=img.naturalHeight;
+  const scale=trimZoom;const sw=iw/scale,sh=ih/scale;
+  const sx=Math.max(0,trimOffX*(iw-sw)/100);const sy=Math.max(0,trimOffY*(ih-sh)/100);
+  const srcW=Math.min(sw,iw),srcH=Math.min(sh,ih);
+  const S=Math.max(srcW,srcH);
+  const off=document.createElement('canvas');off.width=S;off.height=S;
+  const oc=off.getContext('2d');
+  // transparent background (no fillRect)
+  const aspect=srcW/srcH;
+  let dw,dh,dx,dy;
+  if(aspect>=1){dw=S;dh=S/aspect;dx=0;dy=(S-dh)/2;}else{dh=S;dw=S*aspect;dx=(S-dw)/2;dy=0;}
+  oc.drawImage(img,sx,sy,srcW,srcH,dx,dy,dw,dh);
+  return off.toDataURL('image/png');
+}
+
+function goToSection2(){if(!uploadedImage)return;markDone(1);unlockSec(2);setProgress(2);document.getElementById('sec2').scrollIntoView({behavior:'smooth',block:'start'});}
+
 let activeSizeBtn=null;
-function selectPreset(w,h,btn){
-  monopolyMode=false;
-  if(activeSizeBtn)activeSizeBtn.classList.remove('active');
-  activeSizeBtn=btn;btn.classList.add('active');
-  document.getElementById('customSizeInputs').style.display='none';
-  convertAndPreview(w,h);
-}
-function selectCustom(btn){
-  monopolyMode=false;
-  if(activeSizeBtn)activeSizeBtn.classList.remove('active');
-  activeSizeBtn=btn;btn.classList.add('active');
-  document.getElementById('customSizeInputs').style.display='block';
-  updateCustomBlocksInfo();
-}
+function selectPreset(w,h,btn){monopolyMode=false;if(activeSizeBtn)activeSizeBtn.classList.remove('active');activeSizeBtn=btn;btn.classList.add('active');document.getElementById('customInputs').style.display='none';convertAndPreview(w,h);}
+function selectCustom(btn){monopolyMode=false;if(activeSizeBtn)activeSizeBtn.classList.remove('active');activeSizeBtn=btn;btn.classList.add('active');document.getElementById('customInputs').style.display='block';updateCustomInfo();}
 function selectMonopoly(btn){
-  monopolyMode=true;
-  if(activeSizeBtn)activeSizeBtn.classList.remove('active');
-  activeSizeBtn=btn;btn.classList.add('active');
-  document.getElementById('customSizeInputs').style.display='none';
+  monopolyMode=true;if(activeSizeBtn)activeSizeBtn.classList.remove('active');activeSizeBtn=btn;btn.classList.add('active');
+  document.getElementById('customInputs').style.display='none';
   chosenW=GRID_COLS;chosenH=GRID_ROWS;
-  if(uploadedImage){
-    convertAndPreview(GRID_COLS,GRID_ROWS);
-  }else{
-    const mp=isCreatorStage(currentStage)?'$3,300/mo':'$3,000/mo';
-    document.getElementById('sec2Stats').innerHTML='<strong>FULL STAGE MONOPOLY</strong> \u2014 '+GRID_COLS+'\xd7'+GRID_ROWS+'='+(GRID_COLS*GRID_ROWS).toLocaleString()+' blocks. Price: <strong>'+mp+'</strong><br><span style="color:var(--muted2);font-size:9px;">Upload an image first to continue.</span>';
-    document.getElementById('sec2Converting').style.display='none';
-    document.getElementById('sec2PreviewWrap').style.display='none';
+  if(uploadedImage){convertAndPreview(GRID_COLS,GRID_ROWS);}
+  else{
+    const mp=isCreator(currentStage)?'$3,300/mo':'$3,000/mo';
+    document.getElementById('sec2Stats').innerHTML='<strong>FULL STAGE MONOPOLY</strong> — '+GRID_COLS+'×'+GRID_ROWS+'='+(GRID_COLS*GRID_ROWS).toLocaleString()+' blocks. Price: <strong>'+mp+'</strong><br><span style="color:var(--muted2);font-size:9px;">Upload an image first to continue.</span>';
+    document.getElementById('sec2Converting').style.display='none';document.getElementById('sec2PreviewWrap').style.display='none';
   }
 }
-function updateCustomBlocksInfo(){
-  const n=Math.max(4,Math.min(3600,parseInt(document.getElementById('customBlocks').value)||50));
-  const r=calcPrice(n,'monthly');
-  let tier='none';if(n>=1000)tier='-30%';else if(n>=500)tier='-20%';else if(n>=200)tier='-10%';
-  document.getElementById('customBlocksInfo').innerHTML=
-    'Current blocks selected: <strong>'+n+'</strong><br>'+
-    'Discount tier: <strong>'+tier+'</strong><br>'+
-    'Monthly price: <strong>$'+r.total.toFixed(2)+'</strong><br>'+
-    'Annual price: <strong>$'+r.annual.toFixed(2)+'</strong> (save 2 months)';
-}
-
-function applyCustomBlocks(){
-  const n=Math.max(4,Math.min(3600,parseInt(document.getElementById('customBlocks').value)||50));
-  const w=Math.ceil(Math.sqrt(n));
-  const h=Math.ceil(n/w);
-  convertAndPreview(w,h);
-}
-
-function convertAndPreview(w,h){
-  if(!uploadedImage)return;
-  chosenW=w;chosenH=h;
-  document.getElementById('sec2Converting').style.display='block';
-  document.getElementById('sec2PreviewWrap').style.display='none';
-  setTimeout(function(){doConvert(w,h);},30);
-}
+function updateCustomInfo(){const n=Math.max(4,Math.min(57600,parseInt(document.getElementById('customBlocks').value)||50));const r=calcPrice(n,plan);let t='none';if(n>=1000)t='-30%';else if(n>=500)t='-20%';else if(n>=200)t='-10%';document.getElementById('customInfo').innerHTML='Blocks: <strong>'+n+'</strong> | Discount: <strong>'+t+'</strong> | Monthly: <strong>$'+Math.round(r.total)+'</strong>';}
+function applyCustomBlocks(){const n=Math.max(4,Math.min(57600,parseInt(document.getElementById('customBlocks').value)||50));const w=Math.ceil(Math.sqrt(n)),h=Math.ceil(n/w);convertAndPreview(w,h);}
+function convertAndPreview(w,h){if(!uploadedImage)return;chosenW=w;chosenH=h;document.getElementById('sec2Converting').style.display='block';document.getElementById('sec2PreviewWrap').style.display='none';setTimeout(function(){doConvert(w,h);},30);}
 
 function doConvert(w,h){
-  // Draw image at target size
-  const off=document.createElement('canvas');
-  off.width=w;off.height=h;
-  const oc=off.getContext('2d');
-  oc.imageSmoothingEnabled=true;
-  oc.imageSmoothingQuality='high';
-  oc.drawImage(uploadedImage,0,0,w,h);
-
-  const imgData=oc.getImageData(0,0,w,h);
-  const data=imgData.data;
-
-  // Collect opaque pixels for quantization
-  const pixelArr=[];
-  for(let i=0;i<data.length;i+=4){
-    if(data[i+3]>=30)pixelArr.push([data[i],data[i+1],data[i+2]]);
-  }
-
-  let colorMap=null;
-  if(pixelArr.length>0&&typeof quantize==='function'){
-    try{colorMap=quantize(pixelArr,16);}catch(e){}
-  }
-
-  // Build 2D pixel array
-  const pixels=[];
-  for(let y=0;y<h;y++){
-    const row=[];
-    for(let x=0;x<w;x++){
-      const idx=(y*w+x)*4;
-      const a=data[idx+3];
-      if(a<30){row.push(null);}
-      else{
-        let r=data[idx],g=data[idx+1],b=data[idx+2];
-        if(colorMap){
-          const mapped=colorMap.map([r,g,b]);
-          if(mapped){r=mapped[0];g=mapped[1];b=mapped[2];}
-        }
-        row.push({r,g,b});
-      }
-    }
-    pixels.push(row);
-  }
-
-  pixelArtOriginal=pixels;
-  pixelArtEdit=deepCopyPixels(pixels);
-
-  // Render 3 previews
-  renderPreviewCanvas(document.getElementById('prev1x'),pixels,w,h,16,false);
-  renderPreviewCanvas(document.getElementById('prev2x'),pixels,w,h,32,false);
-  renderPreviewCanvas(document.getElementById('prev4x'),pixels,w,h,64,false);
-
-  const active=countActivePixels(pixels);
-  const total=w*h;
-  const r=calcPrice(active,plan);
-  document.getElementById('sec2Stats').innerHTML=
-    'Active blocks: <strong>'+active+'</strong> &nbsp;&bull;&nbsp; '+
-    'Transparent: <strong>'+(total-active)+'</strong> &nbsp;&bull;&nbsp; '+
-    'Est. monthly price: <strong>$'+r.total.toFixed(2)+'</strong>';
-
-  document.getElementById('sec2Converting').style.display='none';
-  document.getElementById('sec2PreviewWrap').style.display='block';
+  const dataUrl=getTrimmedDataUrl()||uploadedImage.src;
+  const img=new Image();
+  img.onload=function(){
+    const off=document.createElement('canvas');off.width=w;off.height=h;
+    const oc=off.getContext('2d');oc.imageSmoothingEnabled=true;oc.imageSmoothingQuality='high';
+    oc.drawImage(img,0,0,w,h);
+    const imgData=oc.getImageData(0,0,w,h);const data=imgData.data;
+    const pixelArr=[];
+    for(let i=0;i<data.length;i+=4){if(data[i+3]>=30)pixelArr.push([data[i],data[i+1],data[i+2]]);}
+    let colorMap=null;
+    if(pixelArr.length>0&&typeof quantize==='function'){try{colorMap=quantize(pixelArr,16);}catch(e){}}
+    const pixels=[];
+    for(let y=0;y<h;y++){const row=[];for(let x=0;x<w;x++){const idx=(y*w+x)*4;const a=data[idx+3];if(a<30){row.push(null);}else{let r=data[idx],g2=data[idx+1],b=data[idx+2];if(colorMap){const mapped=colorMap.map([r,g2,b]);if(mapped){r=mapped[0];g2=mapped[1];b=mapped[2];}}row.push({r,g:g2,b});}}pixels.push(row);}
+    pixelArtOriginal=pixels;pixelArtEdit=deepCopy(pixels);customColors=[];
+    const prev=document.getElementById('prevCanvas');renderPrev(prev,pixels,w,h,16);
+    const active=countActive(pixels);const r2=calcPrice(active,plan);
+    document.getElementById('sec2Stats').innerHTML='Active blocks: <strong>'+active+'</strong> | Est. monthly: <strong>$'+Math.round(r2.total)+'</strong>';
+    document.getElementById('sec2Converting').style.display='none';document.getElementById('sec2PreviewWrap').style.display='block';
+  };
+  img.src=dataUrl;
 }
+function renderPrev(canvas,pixels,w,h,bpx){canvas.width=w*bpx;canvas.height=h*bpx;const ctx2=canvas.getContext('2d');ctx2.imageSmoothingEnabled=false;ctx2.fillStyle='#000';ctx2.fillRect(0,0,canvas.width,canvas.height);for(let y=0;y<h;y++){for(let x=0;x<w;x++){const px=pixels[y][x];if(px){ctx2.fillStyle='rgb('+px.r+','+px.g+','+px.b+')';ctx2.fillRect(x*bpx,y*bpx,bpx,bpx);}}}}
+function deepCopy(p){return p.map(function(row){return row.map(function(px){return px?{r:px.r,g:px.g,b:px.b}:null;});});}
+function countActive(pixels){let n=0;pixels.forEach(function(row){row.forEach(function(px){if(px!==null)n++;});});return n;}
 
-function renderPreviewCanvas(canvas,pixels,w,h,blockPx,checkerboard){
-  canvas.width=w*blockPx;canvas.height=h*blockPx;
-  const ctx2=canvas.getContext('2d');
-  ctx2.imageSmoothingEnabled=false;
-  if(!checkerboard){ctx2.fillStyle='#000000';ctx2.fillRect(0,0,canvas.width,canvas.height);}
-  for(let y=0;y<h;y++){
-    for(let x=0;x<w;x++){
-      const px=pixels[y][x];
-      if(px){
-        ctx2.fillStyle='rgb('+px.r+','+px.g+','+px.b+')';
-        ctx2.fillRect(x*blockPx,y*blockPx,blockPx,blockPx);
-      }else if(checkerboard){
-        ctx2.fillStyle=(x+y)%2===0?'#1c1c28':'#242436';
-        ctx2.fillRect(x*blockPx,y*blockPx,blockPx,blockPx);
-      }
-    }
-  }
-}
+function goToSection3(){if(!pixelArtEdit)return;markDone(2);unlockSec(3);setProgress(3);initEditCanvas();buildPalette();updateEditStats();initMiniPicker();document.getElementById('sec3').scrollIntoView({behavior:'smooth',block:'start'});}
 
-function deepCopyPixels(p){
-  return p.map(function(row){return row.map(function(px){return px?{r:px.r,g:px.g,b:px.b}:null;});});
-}
-
-function countActivePixels(pixels){
-  let n=0;
-  pixels.forEach(function(row){row.forEach(function(px){if(px!==null)n++;});});
-  return n;
-}
-
-function goToSection3(){
-  if(!pixelArtEdit)return;
-  markSectionDone(2);
-  unlockSection(3);
-  setProgress(3);
-  initEditCanvas();
-  buildColorPalette();
-  updateEditStats();
-  document.getElementById('sec3').scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-// ── Color Editor (Section 3) ──
 const editCanvas=document.getElementById('editCanvas');
 const editCtx=editCanvas.getContext('2d');
-let editZoom=1;
 
 function initEditCanvas(){
   if(!pixelArtEdit)return;
-  const w=chosenW,h=chosenH;
-  const maxDim=Math.max(w,h,1);
-  editZoom=Math.max(4,Math.min(24,Math.floor(340/maxDim)));
-  editCanvas.width=w*editZoom;editCanvas.height=h*editZoom;
-  drawEditCanvas();
+  const maxDim=Math.max(chosenW,chosenH,1);
+  baseEditZoom=Math.max(4,Math.min(20,Math.floor(280/maxDim)));
+  editZoomLevel=1;document.getElementById('editZoomSlider').value=1;document.getElementById('editZoomVal').textContent='1×';
+  applyEditZoom();
 }
-
-function drawEditCanvas(){
+function updateEditZoom(){editZoomLevel=parseFloat(document.getElementById('editZoomSlider').value);document.getElementById('editZoomVal').textContent=editZoomLevel+'×';applyEditZoom();}
+function applyEditZoom(){const z=Math.round(baseEditZoom*editZoomLevel);editCanvas.width=chosenW*z;editCanvas.height=chosenH*z;drawEditCanvas(z);buildPalette();}
+function drawEditCanvas(z){
   if(!pixelArtEdit)return;
-  const w=chosenW,h=chosenH,z=editZoom;
+  if(!z)z=Math.round(baseEditZoom*editZoomLevel);
+  const w=chosenW,h=chosenH;
   editCtx.clearRect(0,0,editCanvas.width,editCanvas.height);
-  for(let y=0;y<h;y++){
-    for(let x=0;x<w;x++){
-      const px=pixelArtEdit[y][x];
-      if(px){editCtx.fillStyle='rgb('+px.r+','+px.g+','+px.b+')';}
-      else{editCtx.fillStyle=(x+y)%2===0?'#1c1c28':'#242436';}
-      editCtx.fillRect(x*z,y*z,z,z);
-    }
-  }
-  // Grid lines
-  editCtx.strokeStyle='rgba(255,255,255,0.06)';editCtx.lineWidth=0.5;
+  for(let y=0;y<h;y++){for(let x=0;x<w;x++){const px=pixelArtEdit[y][x];editCtx.fillStyle=px?'rgb('+px.r+','+px.g+','+px.b+')':((x+y)%2===0?'#1c1c28':'#242436');editCtx.fillRect(x*z,y*z,z,z);}}
+  editCtx.strokeStyle='rgba(255,255,255,0.05)';editCtx.lineWidth=0.5;
   for(let x=0;x<=w;x++){editCtx.beginPath();editCtx.moveTo(x*z,0);editCtx.lineTo(x*z,h*z);editCtx.stroke();}
   for(let y=0;y<=h;y++){editCtx.beginPath();editCtx.moveTo(0,y*z);editCtx.lineTo(w*z,y*z);editCtx.stroke();}
 }
 
-function buildColorPalette(){
+function groupColors(colors){
+  const withHSV=colors.map(function(c){const hsv=rgbToHsv(c.r,c.g,c.b);return{r:c.r,g:c.g,b:c.b,h:hsv.h,s:hsv.s,v:hsv.v};});
+  const deduped=[];withHSV.forEach(function(c){const dup=deduped.find(function(d){return Math.abs(d.r-c.r)<8&&Math.abs(d.g-c.g)<8&&Math.abs(d.b-c.b)<8;});if(!dup)deduped.push(c);});
+  const groups={neutrals:[],reds:[],oranges:[],yellows:[],greens:[],cyans:[],blues:[],purples:[]};
+  deduped.forEach(function(c){if(c.s<0.15)groups.neutrals.push(c);else if(c.h<0.04||c.h>0.93)groups.reds.push(c);else if(c.h<0.11)groups.oranges.push(c);else if(c.h<0.19)groups.yellows.push(c);else if(c.h<0.45)groups.greens.push(c);else if(c.h<0.55)groups.cyans.push(c);else if(c.h<0.70)groups.blues.push(c);else groups.purples.push(c);});
+  groups.neutrals.sort(function(a,b){return a.v-b.v;});return groups;
+}
+function buildPalette(){
+  if(!pixelArtEdit)return;
   const seen={};
-  (pixelArtEdit||[]).forEach(function(row){
-    row.forEach(function(px){
-      if(px){const k=px.r+','+px.g+','+px.b;if(!seen[k])seen[k]={r:px.r,g:px.g,b:px.b};}
+  pixelArtEdit.forEach(function(row){row.forEach(function(px){if(px){const k=px.r+','+px.g+','+px.b;if(!seen[k])seen[k]={r:px.r,g:px.g,b:px.b};}});});
+  customColors.forEach(function(c){const k=c.r+','+c.g+','+c.b;if(!seen[k])seen[k]=c;});
+  const groups=groupColors(Object.values(seen));
+  const container=document.getElementById('palGroups');container.innerHTML='';
+  const transpGrp=document.createElement('div');transpGrp.className='pal-group';
+  const tLbl=document.createElement('span');tLbl.className='pal-group-lbl';tLbl.textContent='ERASE';
+  const tChips=document.createElement('div');tChips.className='pal-chips-row';
+  const tChip=document.createElement('div');tChip.className='pal-chip pal-transp';
+  if(selectedPaletteKey==='transparent')tChip.classList.add('sel');
+  tChip.onclick=function(){selectedPaletteKey='transparent';selectedPaletteColor='transparent';buildPalette();};
+  tChips.appendChild(tChip);transpGrp.appendChild(tLbl);transpGrp.appendChild(tChips);container.appendChild(transpGrp);
+  const labels={neutrals:'NEUTRAL',reds:'RED',oranges:'ORANGE',yellows:'YELLOW',greens:'GREEN',cyans:'CYAN',blues:'BLUE',purples:'PURPLE'};
+  Object.entries(groups).forEach(function([gname,colors]){
+    if(!colors.length)return;
+    const grp=document.createElement('div');grp.className='pal-group';
+    const lbl=document.createElement('span');lbl.className='pal-group-lbl';lbl.textContent=labels[gname];
+    const chips=document.createElement('div');chips.className='pal-chips-row';
+    colors.forEach(function(c){
+      const k=c.r+','+c.g+','+c.b;
+      const chip=document.createElement('div');chip.className='pal-chip';chip.style.background='rgb('+c.r+','+c.g+','+c.b+')';
+      if(selectedPaletteKey===k)chip.classList.add('sel');
+      chip.onclick=function(){selectedPaletteKey=k;selectedPaletteColor={r:c.r,g:c.g,b:c.b};buildPalette();};
+      chips.appendChild(chip);
     });
-  });
-  const row=document.getElementById('colorPaletteRow');
-  row.innerHTML='<span class="pal-label">COLORS</span>';
-  // Transparent chip
-  const tChip=document.createElement('div');
-  tChip.className='pal-chip pal-transp';
-  tChip.title='Transparent (erases pixel)';
-  if(selectedPaletteKey==='transparent')tChip.classList.add('selected');
-  tChip.onclick=function(){
-    selectedPaletteKey='transparent';
-    selectedPaletteColor='transparent';
-    buildColorPalette();
-  };
-  row.appendChild(tChip);
-  // Color chips
-  Object.values(seen).forEach(function(c){
-    const k=c.r+','+c.g+','+c.b;
-    const chip=document.createElement('div');
-    chip.className='pal-chip';
-    chip.style.background='rgb('+c.r+','+c.g+','+c.b+')';
-    chip.title='rgb('+c.r+','+c.g+','+c.b+') \u2014 click to select, opens editor for bulk replace';
-    if(selectedPaletteKey===k)chip.classList.add('selected');
-    chip.onclick=function(e){
-      selectedPaletteKey=k;
-      selectedPaletteColor={r:c.r,g:c.g,b:c.b};
-      buildColorPalette();
-      const rect=chip.getBoundingClientRect();
-      openColorPicker(c,rect.left,rect.bottom+8);
-    };
-    row.appendChild(chip);
+    grp.appendChild(lbl);grp.appendChild(chips);container.appendChild(grp);
   });
 }
-
-function updateEditStats(){
-  if(!pixelArtEdit)return;
-  const active=countActivePixels(pixelArtEdit);
-  const total=chosenW*chosenH;
-  const r=calcPrice(active,plan);
-  document.getElementById('editStats').textContent=
-    'Active: '+active+' / '+total+' blocks \u2014 Est. $'+r.total.toFixed(2)+'/mo';
-}
-
-function setColorTool(t){
-  colorTool=t;
-  document.getElementById('toolReplace').classList.toggle('active',t==='replace');
-  document.getElementById('toolTransparent').classList.toggle('active',t==='transparent');
-  document.getElementById('toolEyedropper').classList.toggle('active',t==='eyedropper');
-  const hints={
-    replace:'REPLACE: select a color from the palette below, then click pixels to recolor them. Click a palette swatch to edit all of that color at once.',
-    transparent:'TRANSPARENT: click any pixel to make it transparent (removed from charge).',
-    eyedropper:'EYEDROPPER: click any pixel to pick its color as the active palette color, then switch to REPLACE.'
-  };
-  document.getElementById('toolHint').textContent=hints[t]||'';
-}
-
-function setBrushSize(s,btn){
-  brushSize=s;
-  document.querySelectorAll('#brush1,#brush3,#brush5').forEach(function(b){b.classList.remove('active');});
-  btn.classList.add('active');
-}
+function updateEditStats(){if(!pixelArtEdit)return;const active=countActive(pixelArtEdit);const r=calcPrice(active,plan);document.getElementById('editStats').textContent='Active: '+active+' / '+(chosenW*chosenH)+' blocks — Est. $'+Math.round(r.total)+'/mo';}
+function setColorTool(t){colorTool=t;['Replace','Transparent','Eyedropper'].forEach(function(n){document.getElementById('tool'+n).classList.toggle('active',t===n.toLowerCase());});const hints={replace:'REPLACE: select palette color, then click/drag pixels to recolor.',transparent:'TRANSPARENT: click/drag pixels to make transparent.',eyedropper:'EYEDROPPER: click pixel to pick its color.'};document.getElementById('toolHint').textContent=hints[t]||'';}
+function getEditPixelCoords(e){const rect=editCanvas.getBoundingClientRect();const x=Math.floor((e.clientX-rect.left)*chosenW/editCanvas.offsetWidth);const y=Math.floor((e.clientY-rect.top)*chosenH/editCanvas.offsetHeight);return{x,y};}
 function applyEditToPixel(x,y){
-  if(!pixelArtEdit||x<0||x>=chosenW||y<0||y>=chosenH)return;
-  if(colorTool==='transparent'){
-    if(pixelArtEdit[y][x]!==null)pixelArtEdit[y][x]=null;
-  }else if(colorTool==='replace'){
-    if(selectedPaletteColor==='transparent'){
-      if(pixelArtEdit[y][x]!==null)pixelArtEdit[y][x]=null;
-    }else if(selectedPaletteColor){
-      pixelArtEdit[y][x]={r:selectedPaletteColor.r,g:selectedPaletteColor.g,b:selectedPaletteColor.b};
-    }
-  }
-}
-function applyEditBrush(cx,cy){
-  const r=Math.floor(brushSize/2);
-  for(let dy=-r;dy<=r;dy++){
-    for(let dx=-r;dx<=r;dx++){
-      applyEditToPixel(cx+dx,cy+dy);
-    }
-  }
-}
-
-editCanvas.addEventListener('click',function(e){
-  if(!pixelArtEdit)return;
-  const rect=editCanvas.getBoundingClientRect();
-  const x=Math.floor((e.clientX-rect.left)*chosenW/editCanvas.offsetWidth);
-  const y=Math.floor((e.clientY-rect.top)*chosenH/editCanvas.offsetHeight);
   if(x<0||x>=chosenW||y<0||y>=chosenH)return;
   const px=pixelArtEdit[y][x];
-  if(colorTool==='eyedropper'){
-    if(px){
-      selectedPaletteKey=px.r+','+px.g+','+px.b;
-      selectedPaletteColor={r:px.r,g:px.g,b:px.b};
-      buildColorPalette();
-      setColorTool('replace');
-    }
-  }else{
-    applyEditBrush(x,y);
-    drawEditCanvas();buildColorPalette();updateEditStats();
-  }
-});
-
-function replaceColorWithTransparent(target){
-  (pixelArtEdit||[]).forEach(function(row){
-    row.forEach(function(px,i,arr){
-      if(px&&px.r===target.r&&px.g===target.g&&px.b===target.b)arr[i]=null;
-    });
-  });
-  drawEditCanvas();buildColorPalette();updateEditStats();
+  if(colorTool==='eyedropper'){if(px){selectedPaletteKey=px.r+','+px.g+','+px.b;selectedPaletteColor={r:px.r,g:px.g,b:px.b};buildPalette();setColorTool('replace');}}
+  else if(colorTool==='transparent'){if(px!==null)pixelArtEdit[y][x]=null;}
+  else{if(!selectedPaletteColor)return;if(selectedPaletteColor==='transparent'){if(px!==null)pixelArtEdit[y][x]=null;}else{pixelArtEdit[y][x]={r:selectedPaletteColor.r,g:selectedPaletteColor.g,b:selectedPaletteColor.b};}}
 }
+function applyEditBrush(cx,cy){const r=Math.floor(brushSize/2);for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++)applyEditToPixel(cx+dx,cy+dy);}
+editCanvas.addEventListener('mousedown',function(e){editDrag=true;const{x,y}=getEditPixelCoords(e);applyEditBrush(x,y);drawEditCanvas();buildPalette();updateEditStats();});
+editCanvas.addEventListener('mousemove',function(e){if(!editDrag)return;const{x,y}=getEditPixelCoords(e);applyEditBrush(x,y);drawEditCanvas();updateEditStats();});
+function resetEditPixels(){if(pixelArtOriginal){pixelArtEdit=deepCopy(pixelArtOriginal);customColors=[];drawEditCanvas();buildPalette();updateEditStats();}}
+function goToSection4(){markDone(3);unlockSec(4);setProgress(4);document.getElementById('sec4').scrollIntoView({behavior:'smooth',block:'start'});}
 
-function resetEditPixels(){
-  if(pixelArtOriginal){pixelArtEdit=deepCopyPixels(pixelArtOriginal);drawEditCanvas();buildColorPalette();updateEditStats();}
-}
+function initMiniPicker(){miniH=0;miniS=1;miniV=1;renderMiniHue();renderMiniSV();updateMiniCursors();updateMiniPreview();}
+function renderMiniHue(){const c=document.getElementById('miniHueCanvas');const ctx2=c.getContext('2d');const g=ctx2.createLinearGradient(0,0,c.width,0);for(let i=0;i<=12;i++){const rgb=hsvToRgb(i/12,1,1);g.addColorStop(i/12,'rgb('+rgb.r+','+rgb.g+','+rgb.b+')');}ctx2.fillStyle=g;ctx2.fillRect(0,0,c.width,c.height);}
+function renderMiniSV(){const c=document.getElementById('miniSVCanvas');const ctx2=c.getContext('2d');const w=c.width,h=c.height;const br=hsvToRgb(miniH,1,1);const g1=ctx2.createLinearGradient(0,0,w,0);g1.addColorStop(0,'rgba(255,255,255,1)');g1.addColorStop(1,'rgba('+br.r+','+br.g+','+br.b+',1)');ctx2.fillStyle=g1;ctx2.fillRect(0,0,w,h);const g2=ctx2.createLinearGradient(0,0,0,h);g2.addColorStop(0,'rgba(0,0,0,0)');g2.addColorStop(1,'rgba(0,0,0,1)');ctx2.fillStyle=g2;ctx2.fillRect(0,0,w,h);updateMiniPreview();}
+function updateMiniCursors(){const svC=document.getElementById('miniSVCursor');const hC=document.getElementById('miniHueCursor');const svW=document.getElementById('miniSVCanvas').width;const svH=document.getElementById('miniSVCanvas').height;const hW=document.getElementById('miniHueCanvas').width;svC.style.left=(miniS*svW)+'px';svC.style.top=((1-miniV)*svH)+'px';hC.style.left=(miniH*hW)+'px';}
+function updateMiniPreview(){const rgb=hsvToRgb(miniH,miniS,miniV);document.getElementById('miniPreviewSw').style.background='rgb('+rgb.r+','+rgb.g+','+rgb.b+')';document.getElementById('miniHexInput').value=rgbToHex(rgb.r,rgb.g,rgb.b);}
+const miniSVCanvas=document.getElementById('miniSVCanvas');const miniHueCanvas=document.getElementById('miniHueCanvas');
+miniSVCanvas.addEventListener('mousedown',function(e){miniDragSV=true;updateMiniSVFromEvent(e);});
+miniHueCanvas.addEventListener('mousedown',function(e){miniDragHue=true;updateMiniHueFromEvent(e);});
+function updateMiniSVFromEvent(e){const rect=miniSVCanvas.getBoundingClientRect();miniS=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));miniV=1-Math.max(0,Math.min(1,(e.clientY-rect.top)/rect.height));updateMiniCursors();updateMiniPreview();}
+function updateMiniHueFromEvent(e){const rect=miniHueCanvas.getBoundingClientRect();miniH=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));renderMiniSV();updateMiniCursors();updateMiniPreview();}
+document.getElementById('miniHexInput').addEventListener('input',function(){const hex=this.value;if(/^#[0-9a-fA-F]{6}$/.test(hex)){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);const hsv=rgbToHsv(r,g,b);miniH=hsv.h;miniS=hsv.s;miniV=hsv.v;renderMiniSV();updateMiniCursors();}});
+function addCustomColor(){const rgb=hsvToRgb(miniH,miniS,miniV);if(!customColors.find(function(c){return c.r===rgb.r&&c.g===rgb.g&&c.b===rgb.b;})){customColors.push({r:rgb.r,g:rgb.g,b:rgb.b});}selectedPaletteKey=rgb.r+','+rgb.g+','+rgb.b;selectedPaletteColor={r:rgb.r,g:rgb.g,b:rgb.b};buildPalette();}
 
-function goToSection4(){
-  markSectionDone(3);
-  unlockSection(4);
-  setProgress(4);
-  document.getElementById('sec4').scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-// ── Color Picker ──
-function openColorPicker(color,clientX,clientY){
-  cpTargetColor={r:color.r,g:color.g,b:color.b};
-  const hsv=rgbToHsv(color.r,color.g,color.b);
-  cpH=hsv.h;cpS=hsv.s;cpV=hsv.v;
-  renderHuePicker();
-  renderSVPicker();
-  updateCPCursors();
-  updateCPHex();
-  document.getElementById('cpFromSwatch').style.background='rgb('+color.r+','+color.g+','+color.b+')';
-  const count=countColorInstances(color);
-  document.getElementById('cpReplaceCount').textContent=count+' block'+(count!==1?'s':'');
-  const popup=document.getElementById('colorPickerPopup');
-  popup.style.display='block';
-  const px=clientX||window.innerWidth/2-110;
-  const py=clientY||window.innerHeight/2-150;
-  popup.style.left=Math.min(px,window.innerWidth-240)+'px';
-  popup.style.top=Math.max(10,Math.min(py-20,window.innerHeight-340))+'px';
-}
-
-function closeColorPicker(){document.getElementById('colorPickerPopup').style.display='none';cpTargetColor=null;}
-
-function countColorInstances(c){
-  let n=0;
-  (pixelArtEdit||[]).forEach(function(row){row.forEach(function(px){if(px&&px.r===c.r&&px.g===c.g&&px.b===c.b)n++;});});
-  return n;
-}
-
-function applyColorReplace(){
-  if(!cpTargetColor)return;
-  const newRgb=hsvToRgb(cpH,cpS,cpV);
-  const t=cpTargetColor;
-  (pixelArtEdit||[]).forEach(function(row){
-    row.forEach(function(px,i,arr){
-      if(px&&px.r===t.r&&px.g===t.g&&px.b===t.b)arr[i]={r:newRgb.r,g:newRgb.g,b:newRgb.b};
-    });
-  });
-  selectedPaletteColor={r:newRgb.r,g:newRgb.g,b:newRgb.b};
-  selectedPaletteKey=newRgb.r+','+newRgb.g+','+newRgb.b;
-  closeColorPicker();
-  drawEditCanvas();buildColorPalette();updateEditStats();
-}
-
-function renderHuePicker(){
-  const canvas=document.getElementById('cpHueCanvas');
-  const ctx2=canvas.getContext('2d');
-  const grad=ctx2.createLinearGradient(0,0,canvas.width,0);
-  for(let i=0;i<=12;i++){
-    const rgb=hsvToRgb(i/12,1,1);
-    grad.addColorStop(i/12,'rgb('+rgb.r+','+rgb.g+','+rgb.b+')');
-  }
-  ctx2.fillStyle=grad;ctx2.fillRect(0,0,canvas.width,canvas.height);
-}
-
-function renderSVPicker(){
-  const canvas=document.getElementById('cpSVCanvas');
-  const ctx2=canvas.getContext('2d');
-  const w=canvas.width,h=canvas.height;
-  const baseRgb=hsvToRgb(cpH,1,1);
-  const grad1=ctx2.createLinearGradient(0,0,w,0);
-  grad1.addColorStop(0,'rgba(255,255,255,1)');
-  grad1.addColorStop(1,'rgba('+baseRgb.r+','+baseRgb.g+','+baseRgb.b+',1)');
-  ctx2.fillStyle=grad1;ctx2.fillRect(0,0,w,h);
-  const grad2=ctx2.createLinearGradient(0,0,0,h);
-  grad2.addColorStop(0,'rgba(0,0,0,0)');
-  grad2.addColorStop(1,'rgba(0,0,0,1)');
-  ctx2.fillStyle=grad2;ctx2.fillRect(0,0,w,h);
-  updateCPPreview();
-}
-
-function updateCPCursors(){
-  const svC=document.getElementById('cpSVCursor');
-  const hC=document.getElementById('cpHueCursor');
-  const svW=document.getElementById('cpSVCanvas').width;
-  const svH=document.getElementById('cpSVCanvas').height;
-  const hW=document.getElementById('cpHueCanvas').width;
-  svC.style.left=(cpS*svW)+'px';svC.style.top=((1-cpV)*svH)+'px';
-  hC.style.left=(cpH*hW)+'px';
-}
-
-function updateCPPreview(){
-  const rgb=hsvToRgb(cpH,cpS,cpV);
-  document.getElementById('cpPreviewSwatch').style.background='rgb('+rgb.r+','+rgb.g+','+rgb.b+')';
-}
-
-function updateCPHex(){
-  const rgb=hsvToRgb(cpH,cpS,cpV);
-  document.getElementById('cpHexInput').value=rgbToHex(rgb.r,rgb.g,rgb.b);
-  updateCPPreview();
-}
-
-// CP interactions
-const cpSVCanvas=document.getElementById('cpSVCanvas');
-const cpHueCanvas=document.getElementById('cpHueCanvas');
-
-cpSVCanvas.addEventListener('mousedown',function(e){cpDraggingSV=true;updateSVFromEvent(e);});
-cpHueCanvas.addEventListener('mousedown',function(e){cpDraggingHue=true;updateHueFromEvent(e);});
-document.addEventListener('mousemove',function(e){
-  if(cpDraggingSV)updateSVFromEvent(e);
-  if(cpDraggingHue)updateHueFromEvent(e);
-});
-document.addEventListener('mouseup',function(){cpDraggingSV=false;cpDraggingHue=false;});
-
-function updateSVFromEvent(e){
-  const rect=cpSVCanvas.getBoundingClientRect();
-  const x=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
-  const y=Math.max(0,Math.min(1,(e.clientY-rect.top)/rect.height));
-  cpS=x;cpV=1-y;
-  updateCPCursors();updateCPHex();
-}
-
-function updateHueFromEvent(e){
-  const rect=cpHueCanvas.getBoundingClientRect();
-  cpH=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
-  renderSVPicker();updateCPCursors();updateCPHex();
-}
-
-document.getElementById('cpHexInput').addEventListener('input',function(){
-  const hex=this.value;
-  if(/^#[0-9a-fA-F]{6}$/.test(hex)){
-    const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
-    const hsv=rgbToHsv(r,g,b);cpH=hsv.h;cpS=hsv.s;cpV=hsv.v;
-    renderSVPicker();updateCPCursors();
-  }
-});
-
-// Close popup on outside click (canvas clicks close picker, then pixel action fires on 'click')
-document.addEventListener('mousedown',function(e){
-  const popup=document.getElementById('colorPickerPopup');
-  if(popup.style.display!=='none'&&!popup.contains(e.target)){
-    closeColorPicker();
-  }
-});
-
-// ── Stage confirm (Section 4) ──
 function confirmStage(){
-  markSectionDone(4);
+  markDone(4);updateGC(currentStage);deletedBlocks=[];deleteHistory=[];
+  unlockSec(5);setProgress(5);
+  document.getElementById('gridStageName').textContent=STAGES_DATA[currentStage-1].name;
+  document.getElementById('gridBlockInfo').textContent=GRID_COLS+'×'+GRID_ROWS+' | '+CELL+'×'+CELL+'px';
+  gridZoom=1;document.getElementById('gridZoomSlider').value=1;document.getElementById('gridZoomVal').textContent='1×';
   if(monopolyMode){
+    chosenW=GRID_COLS;chosenH=GRID_ROWS;logoGridX=0;logoGridY=0;logoPlaced=true;
     selectedArea={x:0,y:0,w:GRID_COLS,h:GRID_ROWS};
-    markSectionDone(5);
-    unlockSection(6);
-    setProgress(6);
-    updateSummary();
-    document.getElementById('sec6').scrollIntoView({behavior:'smooth',block:'start'});
+    document.getElementById('placeInfo').style.display='block';
+    document.getElementById('placePos').textContent='Full stage';
+    document.getElementById('placeSize').textContent=GRID_COLS+'×'+GRID_ROWS;
+    document.getElementById('placeActiveBlocks').textContent=(GRID_COLS*GRID_ROWS).toLocaleString()+' blocks';
+    const mp=isCreator(currentStage)?3300:3000;
+    document.getElementById('placePrice').textContent='$'+mp+'/mo';
+    document.getElementById('placeStatus').innerHTML='<span style="color:var(--green)">FULL STAGE MONOPOLY</span>';
+    document.getElementById('gridHint').textContent='Full stage monopoly. Entire grid is yours.';
+    document.getElementById('editBlocksBtn').style.display='none';
+    document.getElementById('confirmPlaceBtn').style.display='block';document.getElementById('confirmPlaceBtn').disabled=false;
+    document.getElementById('resetPlaceBtn').style.display='block';
   }else{
-    unlockSection(5);
-    setProgress(5);
-    const _cs=STAGES_DATA[currentStage-1];
-    document.getElementById('gridStageName').textContent=_cs.name;
-    document.getElementById('gridBlockInfo').textContent=GRID_COLS+' \xd7 '+GRID_ROWS+' blocks | 1 block = '+CELL+'\xd7'+CELL+'px';
-    initGrid();
-    fetchGridStates(currentStage);
-    document.getElementById('sec5').scrollIntoView({behavior:'smooth',block:'start'});
+    logoPlaced=false;selectedArea=null;
+    logoGridX=Math.max(0,Math.floor((GRID_COLS-chosenW)/2));logoGridY=Math.max(0,Math.floor((GRID_ROWS-chosenH)/2));
+    document.getElementById('placeInfo').style.display='none';
+    document.getElementById('confirmPlaceBtn').style.display='none';document.getElementById('editBlocksBtn').style.display='none';document.getElementById('resetPlaceBtn').style.display='none';
+    document.getElementById('gridHint').textContent='Move mouse to position logo. Click to place.';
   }
+  initGrid();fetchGridStates(currentStage);
+  document.getElementById('sec5').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-// ── Grid (Section 5) ──
 const gridCanvas=document.getElementById('gridCanvas');
 const gridCtx=gridCanvas.getContext('2d');
-let gridHoverX=-1,gridHoverY=-1;
 
-function initGrid(){
-  logoPlaced=false;selectedArea=null;
-  logoGridX=Math.max(0,Math.floor((GRID_COLS-chosenW)/2));
-  logoGridY=Math.max(0,Math.floor((GRID_ROWS-chosenH)/2));
-  document.getElementById('placementInfo').style.display='none';
-  document.getElementById('confirmPlacementBtn').style.display='none';
-  document.getElementById('resetPlacementBtn').style.display='none';
-  document.getElementById('gridHint').textContent='Move your mouse over the grid to position your logo. Click to place it.';
-  drawGrid();
-}
-
-function isDeleted(c,r){return false;}
-function hasConflict(x,y,w,h){
-  for(let dr=0;dr<h;dr++)for(let dc=0;dc<w;dc++){
-    if(isDeleted(x+dc,y+dr))continue;
-    const st=getBlockState(x+dc,y+dr);if(st==='claimed'||st==='reserved')return true;
-  }
-  return false;
-}
+function updateGridZoom(){gridZoom=parseFloat(document.getElementById('gridZoomSlider').value);document.getElementById('gridZoomVal').textContent=gridZoom+'×';drawGrid();}
+function initGrid(){gridCanvas.style.width='100%';gridCanvas.style.height='auto';drawGrid();}
+function isDeleted(c,r){if(!selectedArea)return false;const lc=c-selectedArea.x,lr=r-selectedArea.y;return deletedBlocks.some(function(d){return d.x===lc&&d.y===lr;});}
+function getDisplayPixel(lc,lr){if(!pixelArtEdit||!pixelArtEdit[lr])return null;return pixelArtEdit[lr][lc]||null;}
+function hasConflict(x,y,w,h){for(let dr=0;dr<h;dr++)for(let dc=0;dc<w;dc++){if(isDeleted(x+dc,y+dr))continue;const st=getBlockState(x+dc,y+dr);if(st==='claimed'||st==='reserved')return true;}return false;}
 
 function drawGrid(){
   gridCtx.clearRect(0,0,1280,720);
-  const lx=logoPlaced?selectedArea.x:logoGridX;
-  const ly=logoPlaced?selectedArea.y:logoGridY;
-  const lw=chosenW||1,lh=chosenH||1;
-  const conflict=hasConflict(lx,ly,lw,lh);
-
-  for(let r=0;r<GRID_ROWS;r++){
-    for(let c=0;c<GRID_COLS;c++){
-      const px=c*CELL,py=r*CELL;
-      const state=getBlockState(c,r);
-      const inLogo=c>=lx&&c<lx+lw&&r>=ly&&r<ly+lh;
-
-      if(state==='claimed'){
-        gridCtx.fillStyle=inLogo?'rgba(231,76,60,0.7)':'rgba(50,100,200,0.45)';gridCtx.fillRect(px,py,CELL,CELL);
-        gridCtx.strokeStyle='rgba(255,255,255,0.04)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);
-      }else if(state==='reserved'){
-        gridCtx.fillStyle=inLogo?'rgba(231,76,60,0.5)':'rgba(200,130,0,0.45)';gridCtx.fillRect(px,py,CELL,CELL);
-        gridCtx.strokeStyle='rgba(200,130,0,0.3)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);
-      }else if(inLogo){
-        // Draw logo pixel
-        const lc=c-lx,lr=r-ly;
-        const lpx=pixelArtEdit&&pixelArtEdit[lr]&&pixelArtEdit[lr][lc];
-        if(lpx){
-          const alpha=logoPlaced?1:0.7;
-          gridCtx.fillStyle='rgba('+lpx.r+','+lpx.g+','+lpx.b+','+alpha+')';gridCtx.fillRect(px,py,CELL,CELL);
-        }else{
-          gridCtx.fillStyle=(c+r)%2===0?'rgba(74,184,255,0.06)':'rgba(74,184,255,0.03)';gridCtx.fillRect(px,py,CELL,CELL);
-        }
-        gridCtx.strokeStyle=conflict?'rgba(231,76,60,0.3)':'rgba(74,184,255,0.15)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);
-      }else{
-        gridCtx.fillStyle=(c+r)%2===0?'#191926':'#1b1b28';gridCtx.fillRect(px,py,CELL,CELL);
-        gridCtx.strokeStyle='#232335';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);
-      }
-    }
+  const m=STAGE_MAPS[currentStage];
+  if(m){
+    gridCtx.strokeStyle='rgba(74,184,255,0.1)';gridCtx.lineWidth=0.5;
+    (m.plats||[]).forEach(function(p){gridCtx.strokeRect(p[0],p[1],p[2],p[3]);});
+    gridCtx.fillStyle='rgba(231,76,60,0.2)';
+    (m.spikes||[]).forEach(function(s){gridCtx.beginPath();gridCtx.moveTo(s[0]+s[2]/2,s[1]);gridCtx.lineTo(s[0],s[1]+s[3]);gridCtx.lineTo(s[0]+s[2],s[1]+s[3]);gridCtx.closePath();gridCtx.fill();});
+    gridCtx.strokeStyle='rgba(74,222,128,0.18)';gridCtx.lineWidth=1;
+    if(m.goal){gridCtx.strokeRect(m.goal[0],m.goal[1],m.goal[2],m.goal[3]);}
+    gridCtx.fillStyle='rgba(245,200,66,0.25)';gridCtx.fillRect(0,0,1280,6);
+    gridCtx.fillStyle='rgba(245,200,66,0.6)';gridCtx.fillRect(0,0,800,6);
   }
-
-  // Logo border
-  const bx=lx*CELL,by=ly*CELL,bw=lw*CELL,bh=lh*CELL;
-  gridCtx.strokeStyle=conflict?'rgba(231,76,60,0.9)':'rgba(0,200,255,0.8)';
-  gridCtx.lineWidth=2;
-  if(!logoPlaced)gridCtx.setLineDash([6,3]);
-  gridCtx.strokeRect(bx,by,bw,bh);
-  gridCtx.setLineDash([]);
+  const lx=logoPlaced&&selectedArea?selectedArea.x:logoGridX;
+  const ly=logoPlaced&&selectedArea?selectedArea.y:logoGridY;
+  const lw=chosenW||1,lh=chosenH||1;
+  const conflict=!monopolyMode&&hasConflict(lx,ly,lw,lh);
+  for(let r=0;r<GRID_ROWS;r++){for(let c=0;c<GRID_COLS;c++){
+    const px=c*CELL,py=r*CELL;const state=getBlockState(c,r);const inLogo=c>=lx&&c<lx+lw&&r>=ly&&r<ly+lh;const lc=c-lx,lr=r-ly;const deleted=inLogo&&isDeleted(c,r);
+    if(deleted){gridCtx.fillStyle='rgba(160,60,220,0.3)';gridCtx.fillRect(px,py,CELL,CELL);gridCtx.strokeStyle='rgba(160,60,220,0.5)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);}
+    else if(state==='claimed'){gridCtx.fillStyle=inLogo?'rgba(231,76,60,0.7)':'rgba(50,100,200,0.4)';gridCtx.fillRect(px,py,CELL,CELL);gridCtx.strokeStyle='rgba(255,255,255,0.04)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);}
+    else if(state==='reserved'){gridCtx.fillStyle=inLogo?'rgba(231,76,60,0.5)':'rgba(200,130,0,0.4)';gridCtx.fillRect(px,py,CELL,CELL);gridCtx.strokeStyle='rgba(200,130,0,0.3)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);}
+    else if(inLogo){const lpx=getDisplayPixel(lc,lr);if(lpx){const alpha=logoPlaced?1:0.75;gridCtx.fillStyle='rgba('+lpx.r+','+lpx.g+','+lpx.b+','+alpha+')';gridCtx.fillRect(px,py,CELL,CELL);}else{gridCtx.fillStyle=(c+r)%2===0?'rgba(74,184,255,0.07)':'rgba(74,184,255,0.04)';gridCtx.fillRect(px,py,CELL,CELL);}gridCtx.strokeStyle=conflict?'rgba(231,76,60,0.3)':'rgba(74,184,255,0.12)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);}
+    else{gridCtx.fillStyle=(c+r)%2===0?'#0f0f1e':'#111120';gridCtx.fillRect(px,py,CELL,CELL);gridCtx.strokeStyle='#181828';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);}
+  }}
+  if(logoPlaced&&selectedArea||(!logoPlaced&&chosenW)){
+    const bx=lx*CELL,by=ly*CELL,bw=lw*CELL,bh=lh*CELL;
+    gridCtx.strokeStyle=conflict?'rgba(231,76,60,0.9)':'rgba(0,200,255,0.8)';
+    gridCtx.lineWidth=2;if(!logoPlaced)gridCtx.setLineDash([6,3]);
+    gridCtx.strokeRect(bx,by,bw,bh);gridCtx.setLineDash([]);
+  }
+  if(editMode){gridCtx.strokeStyle='rgba(245,200,66,0.4)';gridCtx.lineWidth=2;gridCtx.strokeRect(1,1,1278,718);}
 }
 
 gridCanvas.addEventListener('mousemove',function(e){
-  const rect=gridCanvas.getBoundingClientRect();
-  const sc=1280/rect.width;
-  const c=Math.floor((e.clientX-rect.left)*sc/CELL);
-  const r=Math.floor((e.clientY-rect.top)*sc/CELL);
+  if(editMode)return;
+  const rect=gridCanvas.getBoundingClientRect();const sc=1280/rect.width;
+  const c=Math.floor((e.clientX-rect.left)*sc/CELL);const r=Math.floor((e.clientY-rect.top)*sc/CELL);
   const tt=document.getElementById('tooltip');
   if(c>=0&&c<GRID_COLS&&r>=0&&r<GRID_ROWS){
-    gridHoverX=c;gridHoverY=r;
-    if(!logoPlaced){
-      logoGridX=Math.max(0,Math.min(GRID_COLS-chosenW,c-Math.floor(chosenW/2)));
-      logoGridY=Math.max(0,Math.min(GRID_ROWS-chosenH,r-Math.floor(chosenH/2)));
-      drawGrid();
-    }
-    const state=getBlockState(c,r);
-    tt.style.display='block';tt.style.left=(e.clientX+14)+'px';tt.style.top=(e.clientY-10)+'px';
+    if(!logoPlaced&&!monopolyMode){logoGridX=Math.max(0,Math.min(GRID_COLS-chosenW,c-Math.floor(chosenW/2)));logoGridY=Math.max(0,Math.min(GRID_ROWS-chosenH,r-Math.floor(chosenH/2)));drawGrid();}
+    const state=getBlockState(c,r);tt.style.display='block';tt.style.left=(e.clientX+14)+'px';tt.style.top=(e.clientY-10)+'px';
     document.getElementById('ttCoord').textContent='('+(c+1)+','+(r+1)+')';
     const stMap={available:'<span style="color:var(--green)">AVAILABLE</span>',claimed:'<span style="color:var(--accent)">CLAIMED</span>',reserved:'<span style="color:var(--gold)">RESERVED</span>'};
     document.getElementById('ttStatus').innerHTML=stMap[state]||'';
-  }else{
-    tt.style.display='none';
-  }
+  }else{tt.style.display='none';}
 });
-
-gridCanvas.addEventListener('mouseleave',function(){document.getElementById('tooltip').style.display='none';});
-
+gridCanvas.addEventListener('mouseleave',function(){document.getElementById('tooltip').style.display='none';gridEditDrag=false;});
+gridCanvas.addEventListener('mousedown',function(e){if(editMode&&logoPlaced&&selectedArea){gridEditDrag=true;applyGridEdit(e);}});
+function applyGridEdit(e){
+  const rect=gridCanvas.getBoundingClientRect();const sc=1280/rect.width;
+  const c=Math.floor((e.clientX-rect.left)*sc/CELL);const r=Math.floor((e.clientY-rect.top)*sc/CELL);
+  if(c<0||c>=GRID_COLS||r<0||r>=GRID_ROWS||!selectedArea)return;
+  const inLogo=c>=selectedArea.x&&c<selectedArea.x+selectedArea.w&&r>=selectedArea.y&&r<selectedArea.y+selectedArea.h;
+  if(!inLogo)return;
+  const lc=c-selectedArea.x,lr=r-selectedArea.y;
+  const alreadyDel=deletedBlocks.some(function(d){return d.x===lc&&d.y===lr;});
+  if(!alreadyDel){deletedBlocks.push({x:lc,y:lr});deleteHistory.push({x:lc,y:lr});}
+  document.getElementById('undoBtn').disabled=!deleteHistory.length;
+  drawGrid();
+}
 gridCanvas.addEventListener('click',function(e){
-  const rect=gridCanvas.getBoundingClientRect();
-  const sc=1280/rect.width;
-  const c=Math.floor((e.clientX-rect.left)*sc/CELL);
-  const r=Math.floor((e.clientY-rect.top)*sc/CELL);
+  if(editMode||monopolyMode)return;
+  const rect=gridCanvas.getBoundingClientRect();const sc=1280/rect.width;
+  const c=Math.floor((e.clientX-rect.left)*sc/CELL);const r=Math.floor((e.clientY-rect.top)*sc/CELL);
   if(c<0||c>=GRID_COLS||r<0||r>=GRID_ROWS)return;
   const px=Math.max(0,Math.min(GRID_COLS-chosenW,c-Math.floor(chosenW/2)));
   const py=Math.max(0,Math.min(GRID_ROWS-chosenH,r-Math.floor(chosenH/2)));
+  logoGridX=px;logoGridY=py;logoPlaced=true;selectedArea={x:px,y:py,w:chosenW,h:chosenH};deletedBlocks=[];deleteHistory=[];
   const conflict=hasConflict(px,py,chosenW,chosenH);
-  logoGridX=px;logoGridY=py;
-
-  document.getElementById('placementInfo').style.display='block';
-  document.getElementById('placementPos').textContent='col '+(px+1)+', row '+(py+1);
-  document.getElementById('placementSize').textContent=chosenW+' \xd7 '+chosenH+' blocks';
-  document.getElementById('placementStatus').innerHTML=conflict
-    ?'<span style="color:var(--accent)">CONFLICT \u2014 overlaps claimed area. Try a different spot.</span>'
-    :'<span style="color:var(--green)">AVAILABLE \u2014 this area is free.</span>';
-
-  const confirmBtn=document.getElementById('confirmPlacementBtn');
-  confirmBtn.style.display='block';
-  confirmBtn.disabled=conflict;
-  document.getElementById('resetPlacementBtn').style.display='block';
-  document.getElementById('gridHint').textContent=conflict
-    ?'Conflict remains. Move to a different spot to resolve.'
-    :'All conflicts resolved. You can confirm placement.';
+  updatePlaceInfo();
+  document.getElementById('confirmPlaceBtn').style.display='block';document.getElementById('confirmPlaceBtn').disabled=conflict;
+  document.getElementById('editBlocksBtn').style.display='block';
+  document.getElementById('resetPlaceBtn').style.display='block';
+  document.getElementById('gridHint').textContent=conflict?'Conflict detected. Use EDIT BLOCKS to delete conflicting blocks.':'Placed. Confirm or use EDIT BLOCKS to fine-tune.';
   drawGrid();
 });
 
-function resetPlacement(){
-  logoPlaced=false;selectedArea=null;
-  document.getElementById('placementInfo').style.display='none';
-  document.getElementById('confirmPlacementBtn').style.display='none';
-  document.getElementById('resetPlacementBtn').style.display='none';
-  document.getElementById('gridHint').textContent='Move your mouse over the grid to position your logo. Click to place it.';
-  drawGrid();
+function updatePlaceInfo(){
+  if(!selectedArea)return;
+  const active=countActivePlaced();
+  const r=monopolyMode?{total:isCreator(currentStage)?3300:3000}:calcPrice(active,plan);
+  document.getElementById('placeInfo').style.display='block';
+  document.getElementById('placePos').textContent=monopolyMode?'Full stage':'col '+(selectedArea.x+1)+', row '+(selectedArea.y+1);
+  document.getElementById('placeSize').textContent=selectedArea.w+'×'+selectedArea.h;
+  document.getElementById('placeActiveBlocks').textContent=active+' active';
+  document.getElementById('placePrice').textContent='$'+Math.round(r.total)+'/mo';
+  const conflict=!monopolyMode&&hasConflict(selectedArea.x,selectedArea.y,selectedArea.w,selectedArea.h);
+  document.getElementById('placeStatus').innerHTML=conflict?'<span style="color:var(--accent)">CONFLICT — delete red blocks to resolve</span>':'<span style="color:var(--green)">AVAILABLE</span>';
+  document.getElementById('confirmPlaceBtn').disabled=conflict;
 }
-
-function confirmPlacement(){
-  if(hasConflict(logoGridX,logoGridY,chosenW,chosenH))return;
-  logoPlaced=true;
-  selectedArea={x:logoGridX,y:logoGridY,w:chosenW,h:chosenH};
-  document.getElementById('gridHint').textContent='Placement confirmed. Proceed to Section 6 to complete your order.';
-  document.getElementById('confirmPlacementBtn').style.display='none';
-  markSectionDone(5);
-  unlockSection(6);
-  setProgress(6);
-  updateSummary();
-  drawGrid();
-  document.getElementById('sec6').scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-// ── Summary & pricing (Section 6) ──
-function calcPrice(n,p){
-  let d=0;if(n>=1000)d=0.30;else if(n>=500)d=0.20;else if(n>=200)d=0.10;
-  const base=BASE_PRICE*n;
-  const total=Math.max(5,base*(1-d));
-  return{base,disc:d,planDisc:0,total,annual:total*10};
-}
+function countActivePlaced(){if(!pixelArtEdit||!selectedArea)return 0;let n=0;for(let yr=0;yr<selectedArea.h;yr++)for(let xc=0;xc<selectedArea.w;xc++){if(isDeleted(selectedArea.x+xc,selectedArea.y+yr))continue;const px=pixelArtEdit[yr]&&pixelArtEdit[yr][xc];if(px)n++;}return n;}
+function enterEditMode(){if(!logoPlaced||!selectedArea)return;editMode=true;document.getElementById('gridEditBar').style.display='flex';document.getElementById('editBlocksBtn').style.display='none';document.getElementById('confirmPlaceBtn').style.display='none';document.getElementById('gridHint').textContent='EDIT MODE: click or drag blocks to delete them. Click deleted block to restore.';gridCanvas.style.cursor='crosshair';drawGrid();}
+function exitEditMode(){editMode=false;document.getElementById('gridEditBar').style.display='none';document.getElementById('editBlocksBtn').style.display='block';document.getElementById('confirmPlaceBtn').style.display='block';document.getElementById('gridHint').textContent='Placement ready. Confirm or edit further.';gridCanvas.style.cursor='crosshair';updatePlaceInfo();drawGrid();}
+function undoLastDelete(){if(!deleteHistory.length)return;const last=deleteHistory.pop();deletedBlocks=deletedBlocks.filter(function(d){return!(d.x===last.x&&d.y===last.y);});document.getElementById('undoBtn').disabled=!deleteHistory.length;updatePlaceInfo();drawGrid();}
+function resetPlacement(){logoPlaced=false;selectedArea=null;editMode=false;deletedBlocks=[];deleteHistory=[];document.getElementById('placeInfo').style.display='none';document.getElementById('confirmPlaceBtn').style.display='none';document.getElementById('editBlocksBtn').style.display='none';document.getElementById('resetPlaceBtn').style.display='none';document.getElementById('gridEditBar').style.display='none';document.getElementById('gridHint').textContent='Move mouse to position logo. Click to place.';drawGrid();}
+function confirmPlacement(){if(!monopolyMode&&hasConflict(selectedArea.x,selectedArea.y,selectedArea.w,selectedArea.h))return;editMode=false;document.getElementById('gridEditBar').style.display='none';document.getElementById('confirmPlaceBtn').style.display='none';document.getElementById('editBlocksBtn').style.display='none';document.getElementById('gridHint').textContent='Placement confirmed.';markDone(5);unlockSec(6);setProgress(6);updateSummary();drawGrid();document.getElementById('sec6').scrollIntoView({behavior:'smooth',block:'start'});}
 
 function updateSummary(){
   if(!selectedArea&&!monopolyMode)return;
   const s=STAGES_DATA[currentStage-1];
   let active,r;
-  if(monopolyMode){
-    active=3600;
-    const mp=s.type==='creator'?3300:3000;
-    r={base:mp,disc:0,planDisc:0,total:mp,annual:mp*10};
-  }else{
-    if(!pixelArtEdit)return;
-    active=countActivePixels(pixelArtEdit);
-    r=calcPrice(active,plan);
-  }
+  if(monopolyMode){active=GRID_COLS*GRID_ROWS;const mp=isCreator(currentStage)?3300:3000;r={base:mp,disc:0,total:mp,annual:mp*10};}
+  else{active=countActivePlaced();r=calcPrice(active,plan);}
   document.getElementById('sumStage').textContent=s.name+(monopolyMode?' (MONOPOLY)':'');
-  document.getElementById('sumPos').textContent=monopolyMode?'Full Stage':(selectedArea?'col '+(selectedArea.x+1)+', row '+(selectedArea.y+1):'--');
-  document.getElementById('sumSize').textContent=monopolyMode?'Entire Stage':chosenW+' \xd7 '+chosenH+' blocks';
-  document.getElementById('sumBlocks').textContent=monopolyMode?'Full stage monopoly':active+' active blocks';
-  document.getElementById('sumPrice').textContent='$'+r.total.toFixed(2)+'/mo';
-  document.getElementById('priceBase').textContent='$'+r.base.toFixed(2);
+  document.getElementById('sumPos').textContent=monopolyMode?'Full Stage':'col '+(selectedArea.x+1)+', row '+(selectedArea.y+1);
+  document.getElementById('sumSize').textContent=monopolyMode?'Entire Stage':chosenW+'×'+chosenH+' blocks';
+  document.getElementById('sumBlocks').textContent=monopolyMode?'Full stage':active+' active';
+  document.getElementById('sumPrice').textContent='$'+Math.round(r.total)+'/mo';
+  document.getElementById('priceBase').textContent='$'+Math.round(r.base);
   document.getElementById('priceDisc').textContent=r.disc>0?'-'+(r.disc*100).toFixed(0)+'%':'--';
-  document.getElementById('pricePlanDisc').textContent='--';
-  document.getElementById('priceTotal').textContent='$'+r.total.toFixed(2);
+  document.getElementById('priceTotal').textContent='$'+Math.round(r.total);
   const annRow=document.getElementById('annualRow');
-  if(plan==='annual'){annRow.style.display='flex';document.getElementById('priceAnnual').textContent='$'+r.annual.toFixed(2)+' / yr';}
-  else annRow.style.display='none';
-  if(!monopolyMode)renderSec6Preview();
+  if(plan==='annual'){annRow.style.display='flex';document.getElementById('priceAnnual').textContent='$'+Math.round(r.annual)+'/yr';}else annRow.style.display='none';
+  renderSec6Preview();
 }
-
 function renderSec6Preview(){
-  if(!pixelArtEdit||!selectedArea)return;
-  const prev=document.getElementById('sec6Preview');
-  const noP=document.getElementById('sec6NoPreview');
-  const BS=16;
-  prev.width=chosenW*BS;prev.height=chosenH*BS;
-  const pCtx=prev.getContext('2d');pCtx.imageSmoothingEnabled=false;
-  for(let y=0;y<chosenH;y++){
-    for(let x=0;x<chosenW;x++){
-      const px=pixelArtEdit[y]&&pixelArtEdit[y][x];
-      pCtx.fillStyle=px?'rgb('+px.r+','+px.g+','+px.b+')':((x+y)%2===0?'#1a1a2e':'#16213e');
-      pCtx.fillRect(x*BS,y*BS,BS,BS);
+  if(!selectedArea)return;
+  const mapC=document.getElementById('sec6MapCanvas');const logoC=document.getElementById('sec6LogoCanvas');
+  const W=640,H=360,sx=W/1280,sy=H/720;
+  const mctx=mapC.getContext('2d');const lctx=logoC.getContext('2d');
+  mctx.fillStyle='#07070f';mctx.fillRect(0,0,W,H);
+  const m=STAGE_MAPS[currentStage];
+  if(m){
+    mctx.strokeStyle='rgba(74,184,255,0.7)';mctx.lineWidth=0.8;
+    (m.plats||[]).forEach(function(p){mctx.strokeRect(p[0]*sx,p[1]*sy,p[2]*sx,p[3]*sy);});
+    mctx.fillStyle='rgba(231,76,60,0.9)';
+    (m.spikes||[]).forEach(function(s){var bx=s[0]*sx,by=(s[1]+s[3])*sy,tw=Math.max(2,s[2]*sx),th=Math.max(2,s[3]*sy);mctx.beginPath();mctx.moveTo(bx+tw/2,by-th);mctx.lineTo(bx,by);mctx.lineTo(bx+tw,by);mctx.closePath();mctx.fill();});
+    mctx.strokeStyle='rgba(74,222,128,0.9)';mctx.lineWidth=1.5;
+    if(m.goal){mctx.strokeRect(m.goal[0]*sx,m.goal[1]*sy,m.goal[2]*sx,m.goal[3]*sy);}
+    mctx.fillStyle='rgba(74,184,255,0.9)';
+    if(m.spawn){mctx.beginPath();mctx.arc(m.spawn[0]*sx,m.spawn[1]*sy,4,0,Math.PI*2);mctx.fill();}
+    mctx.fillStyle='rgba(245,200,66,0.4)';mctx.fillRect(0,0,W,4);mctx.fillStyle='rgba(245,200,66,0.7)';mctx.fillRect(0,0,W*0.62,4);
+  }
+  lctx.clearRect(0,0,W,H);
+  if(pixelArtEdit&&selectedArea){
+    const lx=selectedArea.x,ly=selectedArea.y,lw=selectedArea.w,lh=selectedArea.h;
+    for(let yr=0;yr<lh;yr++)for(let xc=0;xc<lw;xc++){
+      if(isDeleted(lx+xc,ly+yr))continue;
+      const px=pixelArtEdit[yr]&&pixelArtEdit[yr][xc];
+      if(px){const fr=Math.round(px.r*0.6),fg=Math.round(px.g*0.6),fb=Math.round(px.b*0.6);lctx.fillStyle='rgba('+fr+','+fg+','+fb+',0.6)';lctx.fillRect((lx+xc)*CELL*sx,(ly+yr)*CELL*sy,CELL*sx+0.5,CELL*sy+0.5);}
     }
   }
-  prev.style.display='block';
-  if(noP)noP.style.display='none';
 }
+function setPlan(p,btn){plan=p;document.querySelectorAll('.plan-tab').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');updateSummary();}
 
-function setPlan(p,btn){
-  plan=p;
-  document.querySelectorAll('.plan-btn').forEach(function(b){b.classList.remove('active');});
-  btn.classList.add('active');
-  updateSummary();
-}
-
-// ── Checkout ──
 function showCheckoutError(msg){const el=document.getElementById('checkoutError');el.textContent=msg;el.style.display='block';}
-function clearCheckoutError(){const el=document.getElementById('checkoutError');el.style.display='none';el.textContent='';}
-
-// Build final logo data URL from pixelArtEdit
+function clearCheckoutError(){document.getElementById('checkoutError').style.display='none';}
 function buildLogoDataUrl(){
   if(!pixelArtEdit||!chosenW||!chosenH)return null;
   const off=document.createElement('canvas');off.width=chosenW;off.height=chosenH;
   const oc=off.getContext('2d');oc.imageSmoothingEnabled=false;
-  for(let y=0;y<chosenH;y++){
-    for(let x=0;x<chosenW;x++){
-      const px=pixelArtEdit[y]&&pixelArtEdit[y][x];
-      if(px){oc.fillStyle='rgb('+px.r+','+px.g+','+px.b+')';oc.fillRect(x,y,1,1);}
-    }
-  }
+  for(let y=0;y<chosenH;y++)for(let x=0;x<chosenW;x++){if(isDeleted(selectedArea?selectedArea.x+x:x,selectedArea?selectedArea.y+y:y))continue;const px=pixelArtEdit[y]&&pixelArtEdit[y][x];if(px){oc.fillStyle='rgb('+px.r+','+px.g+','+px.b+')';oc.fillRect(x,y,1,1);}}
   return off.toDataURL('image/png');
 }
-
 async function proceedToCheckout(){
-  clearCheckoutError();
-  if(!selectedArea){showCheckoutError('Please complete all steps first.');return;}
-  const btn=document.getElementById('ctaBtn');
-  btn.disabled=true;btn.textContent='RESERVING...';
-  const s=STAGES_DATA[currentStage-1];
-  const BASE='https://neverend.vercel.app';
+  clearCheckoutError();if(!selectedArea){showCheckoutError('Please complete all steps first.');return;}
+  const btn=document.getElementById('ctaBtn');btn.disabled=true;btn.textContent='RESERVING...';
+  const s=STAGES_DATA[currentStage-1];const BASE='https://neverend.vercel.app';
   try{
-    const resRes=await fetch(BASE+'/api/reserve',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        stage_id:currentStage,anchor_x:selectedArea.x,anchor_y:selectedArea.y,
-        width:chosenW,height:chosenH,zone_type:s.type,plan_type:plan
-      })
-    });
+    const resRes=await fetch(BASE+'/api/reserve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stage_id:currentStage,anchor_x:selectedArea.x,anchor_y:selectedArea.y,width:chosenW,height:chosenH,zone_type:s.type,plan_type:plan})});
     const resData=await resRes.json();
-    if(!resRes.ok||!resData.session_key){
-      const msg=resData.message||resData.error||'';
-      showCheckoutError(msg.toLowerCase().includes('overlap')||msg.toLowerCase().includes('conflict')
-        ?'This area is already taken. Please select a different location.'
-        :'Reservation failed: '+msg);
-      btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';return;
-    }
-    const session_key=resData.session_key;
-
-    btn.textContent='UPLOADING LOGO...';
+    if(!resRes.ok||!resData.session_key){const msg=resData.message||resData.error||'';showCheckoutError(msg.toLowerCase().includes('overlap')||msg.toLowerCase().includes('conflict')?'This area is already taken.':'Reservation failed: '+msg);btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';return;}
+    const session_key=resData.session_key;btn.textContent='UPLOADING LOGO...';
     const logoUrl=buildLogoDataUrl();
-    if(logoUrl){
-      const parts=logoUrl.split(',');
-      const image_type=parts[0].split(':')[1].split(';')[0];
-      const image_data=parts[1];
-      await fetch(BASE+'/api/stage-logo',{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({session_key,image_data,image_type})
-      }).catch(function(){});
-    }
-
+    if(logoUrl){const parts=logoUrl.split(',');await fetch(BASE+'/api/stage-logo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_key,image_data:parts[1],image_type:parts[0].split(':')[1].split(';')[0]})}).catch(function(){});}
     btn.textContent='CREATING CHECKOUT...';
-    const coRes=await fetch(BASE+'/api/create-checkout',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({session_key,plan_type:plan})
-    });
+    const coRes=await fetch(BASE+'/api/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_key,plan_type:plan})});
     const coData=await coRes.json();
-    if(!coRes.ok||(!coData.url&&!coData.subscription_url&&!coData.payment_url)){
-      showCheckoutError('Payment setup failed. Please try again or contact support.');
-      btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';return;
-    }
+    if(!coRes.ok||(!coData.url&&!coData.subscription_url&&!coData.payment_url)){showCheckoutError('Payment setup failed.');btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';return;}
     localStorage.setItem('neverend_placement',JSON.stringify({session_key}));
     window.location.href=coData.subscription_url||coData.payment_url||coData.url;
-  }catch(err){
-    showCheckoutError('Connection error. Please check your connection and try again.');
-    btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';
-  }
+  }catch(err){showCheckoutError('Connection error.');btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';}
 }
 
-// ── Color math utilities ──
-function hsvToRgb(h,s,v){
-  const i=Math.floor(h*6),f=h*6-i;
-  const p=v*(1-s),q=v*(1-f*s),t=v*(1-(1-f)*s);
-  let r,g,b;
-  switch(i%6){
-    case 0:r=v;g=t;b=p;break;case 1:r=q;g=v;b=p;break;case 2:r=p;g=v;b=t;break;
-    case 3:r=p;g=q;b=v;break;case 4:r=t;g=p;b=v;break;case 5:r=v;g=p;b=q;break;
-  }
-  return{r:Math.round(r*255),g:Math.round(g*255),b:Math.round(b*255)};
-}
-
-function rgbToHsv(r,g,b){
-  r/=255;g/=255;b/=255;
-  const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min;
-  let h=0,s=max===0?0:d/max,v=max;
-  if(d!==0){
-    if(max===r)h=(g-b)/d+(g<b?6:0);
-    else if(max===g)h=(b-r)/d+2;
-    else h=(r-g)/d+4;
-    h/=6;
-  }
-  return{h,s,v};
-}
-
+function hsvToRgb(h,s,v){const i=Math.floor(h*6),f=h*6-i;const p=v*(1-s),q=v*(1-f*s),t=v*(1-(1-f)*s);let r,g,b;switch(i%6){case 0:r=v;g=t;b=p;break;case 1:r=q;g=v;b=p;break;case 2:r=p;g=v;b=t;break;case 3:r=p;g=q;b=v;break;case 4:r=t;g=p;b=v;break;case 5:r=v;g=p;b=q;break;}return{r:Math.round(r*255),g:Math.round(g*255),b:Math.round(b*255)};}
+function rgbToHsv(r,g,b){r/=255;g/=255;b/=255;const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min;let h=0,s=max===0?0:d/max,v=max;if(d!==0){if(max===r)h=(g-b)/d+(g<b?6:0);else if(max===g)h=(b-r)/d+2;else h=(r-g)/d+4;h/=6;}return{h,s,v};}
 function rgbToHex(r,g,b){return'#'+[r,g,b].map(function(v){return v.toString(16).padStart(2,'0');}).join('');}
 </script>
 </body>

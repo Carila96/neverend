@@ -289,9 +289,9 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
 </section>
 
 <div class="stats-bar">
-  <div class="stat-item"><div class="stat-num">3,600</div><div class="stat-label">Total Blocks</div></div>
-  <div class="stat-item"><div class="stat-num" id="takenCount">247</div><div class="stat-label">Claimed</div></div>
-  <div class="stat-item"><div class="stat-num">3,353</div><div class="stat-label">Available</div></div>
+  <div class="stat-item"><div class="stat-num" id="statTotal">14,400</div><div class="stat-label">Total Blocks (Standard)</div></div>
+  <div class="stat-item"><div class="stat-num" id="takenCount">&mdash;</div><div class="stat-label">Claimed</div></div>
+  <div class="stat-item"><div class="stat-num" id="statAvail">14,400</div><div class="stat-label">Available</div></div>
   <div class="stat-item"><div class="stat-num">From $5</div><div class="stat-label">Per Month</div></div>
 </div>
 
@@ -483,7 +483,7 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
     <div class="flow-sec-body" style="padding:0;">
       <div class="grid-wrapper">
         <div class="grid-header">
-          <div class="grid-info"><strong id="gridStageName">STAGE 1</strong> &nbsp;|&nbsp; 80 &times; 45 blocks &nbsp;|&nbsp; 1 block = 16&times;16px</div>
+          <div class="grid-info"><strong id="gridStageName">STAGE 1</strong> &nbsp;|&nbsp; <span id="gridBlockInfo">160 × 90 blocks | 1 block = 8×8px</span></div>
           <div class="grid-legend">
             <div class="legend-item"><div class="legend-dot ld-avail"></div>AVAILABLE</div>
             <div class="legend-item"><div class="legend-dot ld-claimed"></div>CLAIMED</div>
@@ -583,12 +583,10 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
   <div class="vol-section-title" style="margin-bottom:6px;">PRICE TIERS</div>
   <div class="section-sub" style="margin-bottom:16px;">All 6 pricing stages. Active subscriptions are never auto-increased.</div>
   <div class="price-ladder">
-    <div class="price-rung current"><div class="pr-price">$0.21</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--green)">NOW</div></div>
-    <div class="price-rung"><div class="pr-price">$3</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--muted)">20% full</div></div>
-    <div class="price-rung"><div class="pr-price">$5</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--muted)">40% full</div></div>
-    <div class="price-rung monopoly-unlocks"><div class="pr-price">$8</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--gold)">Monopoly</div></div>
-    <div class="price-rung"><div class="pr-price">$12</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--muted)">70% full</div></div>
-    <div class="price-rung"><div class="pr-price">$15</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--accent)">CAP</div></div>
+    <div class="price-rung current"><div class="pr-price">$0.21</div><div class="pr-label">/block/mo (standard)</div><div class="pr-tag" style="color:var(--green)">NOW</div></div>
+    <div class="price-rung"><div class="pr-price">$0.35</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--muted)">$1,000 revenue</div></div>
+    <div class="price-rung"><div class="pr-price">$0.52</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--muted)">$5,000 revenue</div></div>
+    <div class="price-rung monopoly-unlocks"><div class="pr-price">$0.69</div><div class="pr-label">/block/mo</div><div class="pr-tag" style="color:var(--gold)">$20,000 revenue / CAP</div></div>
   </div>
   <div class="vol-section-title" style="margin-bottom:6px;">VOLUME DISCOUNTS</div>
   <div class="section-sub" style="margin-bottom:16px;">Applied automatically at checkout.</div>
@@ -675,7 +673,11 @@ const STAGE_MAPS={
 };
 
 // ── State ──
-const GRID_COLS=80,GRID_ROWS=45,CELL=16,BASE_PRICE=0.208;
+const CELL_STANDARD=8, CELL_CREATOR=4;
+const GRID_COLS_STANDARD=160, GRID_ROWS_STANDARD=90;
+const GRID_COLS_CREATOR=320, GRID_ROWS_CREATOR=180;
+const BASE_PRICE_STANDARD=0.208, BASE_PRICE_CREATOR=0.057;
+let GRID_COLS=160, GRID_ROWS=90, CELL=8, BASE_PRICE=0.208;
 let monopolyMode=false;
 let uploadedImage=null;
 let uploadedImageDataUrl=null;
@@ -715,8 +717,20 @@ STAGES_DATA.forEach(function(s){
   const o=document.createElement('option');o.value=s.id;o.textContent=s.name+' \u2014 '+s.sub;stageSelEl.appendChild(o);
 });
 
+function isCreatorStage(id){return id%5===0;}
+function updateGridConstants(stageId){
+  if(isCreatorStage(stageId)){
+    GRID_COLS=GRID_COLS_CREATOR; GRID_ROWS=GRID_ROWS_CREATOR;
+    CELL=CELL_CREATOR; BASE_PRICE=BASE_PRICE_CREATOR;
+  }else{
+    GRID_COLS=GRID_COLS_STANDARD; GRID_ROWS=GRID_ROWS_STANDARD;
+    CELL=CELL_STANDARD; BASE_PRICE=BASE_PRICE_STANDARD;
+  }
+}
+
 function setStage(id){
   currentStage=id;stageSelEl.value=id;
+  updateGridConstants(id);
   document.getElementById('stagePrevBtn').disabled=(id<=1);
   document.getElementById('stageNextBtn').disabled=(id>=STAGES_DATA.length);
   const s=STAGES_DATA[id-1];
@@ -859,9 +873,10 @@ function selectMonopoly(btn){
   activeSizeBtn=btn;btn.classList.add('active');
   document.getElementById('customSizeInputs').style.display='none';
   chosenW=GRID_COLS;chosenH=GRID_ROWS;
+  const mp=isCreatorStage(currentStage)?'$3,300/mo':'$3,000/mo';
+  document.getElementById('sec2Stats').innerHTML='<strong>FULL STAGE MONOPOLY</strong> &mdash; Entire stage claimed. Price: <strong>'+mp+'</strong>';
   document.getElementById('sec2Converting').style.display='none';
   document.getElementById('sec2PreviewWrap').style.display='block';
-  document.getElementById('sec2Stats').innerHTML='<strong>FULL STAGE MONOPOLY</strong> &nbsp;&mdash;&nbsp; Entire stage claimed. Price: <strong>$3,000/mo</strong> (Creator zone: $3,300/mo).';
 }
 function updateCustomBlocksInfo(){
   const n=Math.max(4,Math.min(3600,parseInt(document.getElementById('customBlocks').value)||50));
@@ -1279,7 +1294,9 @@ function confirmStage(){
   }else{
     unlockSection(5);
     setProgress(5);
-    document.getElementById('gridStageName').textContent=STAGES_DATA[currentStage-1].name;
+    const _cs=STAGES_DATA[currentStage-1];
+    document.getElementById('gridStageName').textContent=_cs.name;
+    document.getElementById('gridBlockInfo').textContent=GRID_COLS+' \xd7 '+GRID_ROWS+' blocks | 1 block = '+CELL+'\xd7'+CELL+'px';
     initGrid();
     fetchGridStates(currentStage);
     document.getElementById('sec5').scrollIntoView({behavior:'smooth',block:'start'});

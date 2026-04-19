@@ -1359,8 +1359,12 @@ function initGrid(){
   drawGrid();
 }
 
+function isDeleted(c,r){return false;}
 function hasConflict(x,y,w,h){
-  for(let dr=0;dr<h;dr++)for(let dc=0;dc<w;dc++){const st=getBlockState(x+dc,y+dr);if(st==='claimed'||st==='reserved')return true;}
+  for(let dr=0;dr<h;dr++)for(let dc=0;dc<w;dc++){
+    if(isDeleted(x+dc,y+dr))continue;
+    const st=getBlockState(x+dc,y+dr);if(st==='claimed'||st==='reserved')return true;
+  }
   return false;
 }
 
@@ -1457,6 +1461,9 @@ gridCanvas.addEventListener('click',function(e){
   confirmBtn.style.display='block';
   confirmBtn.disabled=conflict;
   document.getElementById('resetPlacementBtn').style.display='block';
+  document.getElementById('gridHint').textContent=conflict
+    ?'Conflict remains. Move to a different spot to resolve.'
+    :'All conflicts resolved. You can confirm placement.';
   drawGrid();
 });
 

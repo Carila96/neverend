@@ -599,26 +599,26 @@ const STAGES=[
    {x:640,y:160,w:32,h:192},
    {x:640,y:448,w:32,h:208},
    {x:0,y:160,w:32,h:496},
-   {x:480,y:496,w:160,h:16},
-   {x:672,y:496,w:160,h:16},
-   {x:480,y:368,w:160,h:16},
-   {x:672,y:368,w:160,h:16},
+   {x:576,y:352,w:64,h:16},
+   {x:672,y:352,w:64,h:16},
+   {x:448,y:496,w:128,h:16},
+   {x:704,y:496,w:128,h:16},
  ],
  spikes:[
    {x:128,y:624,w:32,h:32},
    {x:800,y:624,w:32,h:32},
    {x:832,y:624,w:32,h:32},
    {x:864,y:624,w:32,h:32},
+   {x:448,y:464,w:32,h:32},
    {x:480,y:464,w:32,h:32},
-   {x:512,y:464,w:32,h:32},
-   {x:672,y:464,w:32,h:32},
-   {x:704,y:464,w:32,h:32},
+   {x:736,y:464,w:32,h:32},
+   {x:768,y:464,w:32,h:32},
  ],
  traps:[],
  chasers:[{x:1360,y:480,w:80,h:176,speed:200,triggerX:960,active:false}],
  fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[
-   {x:352,y:160,w:32,h:48,triggerX:416,speed:480,triggered:false,startY:160,currentY:160},
-   {x:496,y:160,w:32,h:48,triggerX:560,speed:480,triggered:false,startY:160,currentY:160},
+   {x:352,y:160,w:32,h:48,triggerX:544,speed:480,triggered:false,startY:160,currentY:160},
+   {x:496,y:160,w:32,h:48,triggerX:688,speed:480,triggered:false,startY:160,currentY:160},
  ],lava:[],pendulums:[],focusZones:[],darkness:{enabled:false},
  hg:[{x:320,y:624,w:16,h:32},{x:960,y:624,w:16,h:32}],
  goal:{x:48,y:528,w:64,h:128},spawn:{x:1200,y:608}},
@@ -2610,7 +2610,7 @@ function update(dt){
     if(keys['ArrowLeft']||keys['a']||keys['A']){player.vx=-5;player.facing=-1;}
     else if(keys['ArrowRight']||keys['d']||keys['D']){player.vx=5;player.facing=1;}
     else player.vx*=(STAGES[stageNum-1]?.friction??0.75);
-    if((keys[' ']||keys['ArrowUp']||keys['w']||keys['W'])&&player.onGround){player.vy=-16;player.onGround=false;sfxJump();}
+    if((keys[' ']||keys['ArrowUp']||keys['w']||keys['W'])&&player.onGround){player.vy=-18;player.onGround=false;sfxJump();}
     player.vy+=0.7;if(player.vy>20)player.vy=20;
     // Update moving platforms and store delta for player carry
     for(const p of movingPlatforms){
@@ -2755,8 +2755,22 @@ function update(dt){
     const pauseKey=(keys['Escape']&&!prevKeys['Escape'])||(keys['f']&&!prevKeys['f'])||(keys['F']&&!prevKeys['F']);
     if(pauseKey){state='pause';stopBGM();}
     if(adminMode){
-      if(keys['n']&&!prevKeys['n']){loadStage(Math.min(STAGES.length,stageNum+1));startBGM(getBGMTrack(stageNum));floatMsgs=[];}
-      if(keys['v']&&!prevKeys['v']){loadStage(Math.max(1,stageNum-1));startBGM(getBGMTrack(stageNum));floatMsgs=[];}
+      if(keys['n']&&!prevKeys['n']){
+        stageNum=Math.min(STAGES.length,stageNum+1);
+        loadStage(stageNum);
+        setTimeout(()=>startBGM(getBGMTrack(stageNum)),100);
+        timeLeft=30;
+        state='play';
+        floatMsgs=[];
+      }
+      if(keys['v']&&!prevKeys['v']){
+        stageNum=Math.max(1,stageNum-1);
+        loadStage(stageNum);
+        setTimeout(()=>startBGM(getBGMTrack(stageNum)),100);
+        timeLeft=30;
+        state='play';
+        floatMsgs=[];
+      }
     }
     if(damnTimer>0)damnTimer-=dt;else damnEffect=null;
   } else if(state==='pause'){
@@ -2764,8 +2778,22 @@ function update(dt){
     if(resumeKey){state='play';startBGM(bgmTrack);}
     if(keys['t']&&!prevKeys['t']){resetRun();stopBGM();state='title';}
     if(adminMode){
-      if(keys['n']&&!prevKeys['n']){loadStage(Math.min(STAGES.length,stageNum+1));startBGM(getBGMTrack(stageNum));state='play';}
-      if(keys['v']&&!prevKeys['v']){loadStage(Math.max(1,stageNum-1));startBGM(getBGMTrack(stageNum));state='play';}
+      if(keys['n']&&!prevKeys['n']){
+        stageNum=Math.min(STAGES.length,stageNum+1);
+        loadStage(stageNum);
+        setTimeout(()=>startBGM(getBGMTrack(stageNum)),100);
+        timeLeft=30;
+        state='play';
+        floatMsgs=[];
+      }
+      if(keys['v']&&!prevKeys['v']){
+        stageNum=Math.max(1,stageNum-1);
+        loadStage(stageNum);
+        setTimeout(()=>startBGM(getBGMTrack(stageNum)),100);
+        timeLeft=30;
+        state='play';
+        floatMsgs=[];
+      }
     }
   } else if(state==='mypage'){
     if(keys['Escape']&&!prevKeys['Escape']){state='title';}

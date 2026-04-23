@@ -2608,8 +2608,8 @@ function update(dt){
     if(!adminMode){incStat('totalPlayTime',dt);checkTitlesOnPlayTime();}
     timeLeft-=dt;
     if(timeLeft<=0){lastDeathCause='time';lastDeathStage=stageNum;lastTimeLeft=0;triggerDeath();return;}
-    if(keys['ArrowLeft']||keys['a']||keys['A']){player.vx=-5;player.facing=-1;}
-    else if(keys['ArrowRight']||keys['d']||keys['D']){player.vx=5;player.facing=1;}
+    if(keys['ArrowLeft']||keys['a']||keys['A']){player.vx=-5.5;player.facing=-1;}
+    else if(keys['ArrowRight']||keys['d']||keys['D']){player.vx=5.5;player.facing=1;}
     else player.vx*=(STAGES[stageNum-1]?.friction??0.75);
     if((keys[' ']||keys['ArrowUp']||keys['w']||keys['W'])&&player.onGround){player.vy=-16;player.onGround=false;sfxJump();}
     player.vy+=0.7;

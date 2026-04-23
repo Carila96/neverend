@@ -2611,8 +2611,8 @@ function update(dt){
     if(keys['ArrowLeft']||keys['a']||keys['A']){player.vx=-5.5;player.facing=-1;}
     else if(keys['ArrowRight']||keys['d']||keys['D']){player.vx=5.5;player.facing=1;}
     else player.vx*=(STAGES[stageNum-1]?.friction??0.75);
-    if((keys[' ']||keys['ArrowUp']||keys['w']||keys['W'])&&player.onGround){player.vy=-18.3;player.onGround=false;sfxJump();}
-    player.vy+=0.89;
+    if((keys[' ']||keys['ArrowUp']||keys['w']||keys['W'])&&player.onGround){player.vy=-18.5;player.onGround=false;sfxJump();}
+    player.vy+=0.88;
     if(player.vy>20)player.vy=20;
     // Update moving platforms and store delta for player carry
     for(const p of movingPlatforms){

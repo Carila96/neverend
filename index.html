@@ -1878,7 +1878,7 @@ function loadStage(n){
     if(p.phantom){p._phantomTouched=false;p._vanishTimer=0;}
     if(p.sinking){p._origY=p.y;p._sinkVy=0;}
   }
-  player={x:s.spawn.x,y:s.spawn.y,vx:0,vy:0,w:28,h:44,onGround:false,facing:1,walkT:0};
+  player={x:s.spawn.x,y:s.spawn.y,vx:0,vy:0,w:28,h:44,onGround:false,facing:1,walkT:0,prevX:0,prevY:0};
   stageNum=n;
   fetch('/api/grid?stage_id='+n)
     .then(r=>r.json())
@@ -2629,6 +2629,8 @@ function drawTitle(){
 // ======== UPDATE ========
 function update(dt){
   if(state==='play'){
+    player.prevX=player.x+player.w/2;
+    player.prevY=player.y+player.h/2;
     if(!adminMode){incStat('totalPlayTime',dt);checkTitlesOnPlayTime();}
     timeLeft-=dt;
     if(timeLeft<=0){lastDeathCause='time';lastDeathStage=stageNum;lastTimeLeft=0;triggerDeath();return;}
@@ -2739,7 +2741,24 @@ function update(dt){
       const tipX=p.pivotX+Math.sin(p.angle)*p.length;
       const tipY=p.pivotY+Math.cos(p.angle)*p.length;
       const pcx=player.x+player.w/2,pcy=player.y+player.h/2;
-      if(Math.sqrt((pcx-tipX)*(pcx-tipX)+(pcy-tipY)*(pcy-tipY))<=16){lastDeathCause='spike';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
+      // Swept collision: check segment from prev frame to current frame against pendulum tip
+      const ax=player.prevX||pcx, ay=player.prevY||pcy;
+      const bx=pcx, by=pcy;
+      const cx=tipX, cy=tipY, r=16;
+      const dx=bx-ax, dy=by-ay;
+      const fx=ax-cx, fy=ay-cy;
+      const a=dx*dx+dy*dy;
+      const b=2*(fx*dx+fy*dy);
+      const c=fx*fx+fy*fy-r*r;
+      const disc=b*b-4*a*c;
+      let hit=false;
+      if(a<0.0001){hit=c<=0;}
+      else if(disc>=0){
+        const t1=(-b-Math.sqrt(disc))/(2*a);
+        const t2=(-b+Math.sqrt(disc))/(2*a);
+        if((t1>=0&&t1<=1)||(t2>=0&&t2<=1)||(t1<0&&t2>1))hit=true;
+      }
+      if(hit){lastDeathCause='spike';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
     }
     // Phantom platforms — vanish timer
     for(const p of [...platforms,...movingPlatforms]){

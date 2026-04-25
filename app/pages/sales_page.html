@@ -222,14 +222,14 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
   <p>neverEND is a hardcore browser platformer. Every death, every retry &mdash; your logo is right there. Claim a piece of the background before it&rsquo;s gone.</p>
 </section>
 <div class="stats-bar">
-  <div class="stat-item"><div class="stat-num" id="statTotal">14,400</div><div class="stat-label">Blocks (Standard)</div></div>
+  <div class="stat-item"><div class="stat-num" id="statTotal">9,216</div><div class="stat-label">Blocks Per Stage</div></div>
   <div class="stat-item"><div class="stat-num" id="takenCount">&mdash;</div><div class="stat-label">Claimed</div></div>
-  <div class="stat-item"><div class="stat-num" id="statAvail">14,400</div><div class="stat-label">Available</div></div>
+  <div class="stat-item"><div class="stat-num" id="statAvail">9,216</div><div class="stat-label">Available</div></div>
   <div class="stat-item"><div class="stat-num">From $5</div><div class="stat-label">Per Month</div></div>
 </div>
 <div class="res-bar">
-  STANDARD STAGE: <span style="color:#4ab8ff">160&times;90 dots</span> &nbsp;|&nbsp;
-  CREATOR ZONE (every 5th stage): <span style="color:#f5c842">320&times;180 dots</span> &nbsp;|&nbsp;
+  GRID: <span style="color:#4ab8ff">128&times;72 blocks</span> &nbsp;|&nbsp;
+  BLOCK SIZE: <span style="color:#f5c842">10&times;10px</span> &nbsp;|&nbsp;
   GAME RESOLUTION: <span style="color:#9aa2b5">1280&times;720px</span>
 </div>
 <div class="main-wrap" id="placementTool">
@@ -278,21 +278,32 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
     <div class="panel-hdr"><span class="panel-num">2</span><span class="panel-title">CHOOSE SIZE</span><span class="panel-check" id="sec2Done" style="display:none">&#10003;</span></div>
     <div class="panel-body">
       <div class="size-grid">
-        <button class="size-btn" onclick="selectPreset(2,2,this)"><span class="sb-name">TINY</span>4&ndash;20 blocks<br><span style="color:var(--green)">from $5/mo</span></button>
-        <button class="size-btn" onclick="selectPreset(10,10,this)"><span class="sb-name">SMALL</span>~100 blocks<br><span style="color:var(--green)" id="smallPrice">~$21/mo</span></button>
-        <button class="size-btn" onclick="selectPreset(23,22,this)"><span class="sb-name">MEDIUM</span>~500 blk -20%<br><span style="color:var(--green)" id="medPrice">~$84/mo</span></button>
-        <button class="size-btn" onclick="selectPreset(45,45,this)"><span class="sb-name">LARGE</span>~2k blk -30%<br><span style="color:var(--green)" id="largePrice">~$291/mo</span></button>
-        <button class="size-btn" onclick="selectPreset(71,71,this)"><span class="sb-name">XL</span>~5k blk -30%<br><span style="color:var(--green)" id="xlPrice">~$728/mo</span></button>
-        <button class="size-btn" id="monopolyBtn" onclick="selectMonopoly(this)"><span class="sb-name">FULL STAGE</span>Entire stage<br><span style="color:var(--gold)" id="monoPrice">$3,000/mo</span></button>
-        <button class="size-btn" id="customSizeBtn" onclick="selectCustom(this)"><span class="sb-name">CUSTOM</span>Enter count</button>
+        <button class="size-btn" onclick="selectPreset(2,2,this)"><span class="sb-name">NANO</span>4 blocks min<br><span style="color:var(--green)" id="nanoPrice">from $5/mo</span></button>
+        <button class="size-btn" onclick="selectPreset(7,7,this)"><span class="sb-name">SMALL</span>~50 blocks<br><span style="color:var(--green)" id="smallPrice">~$16/mo</span></button>
+        <button class="size-btn" onclick="selectPreset(15,14,this)"><span class="sb-name">MEDIUM</span>~200 blk -10%<br><span style="color:var(--green)" id="medPrice">~$59/mo</span></button>
+        <button class="size-btn" onclick="selectPreset(23,22,this)"><span class="sb-name">LARGE</span>~500 blk -20%<br><span style="color:var(--green)" id="largePrice">~$131/mo</span></button>
+        <button class="size-btn" onclick="selectPreset(32,32,this)"><span class="sb-name">XL</span>~1k blk -30%<br><span style="color:var(--green)" id="xlPrice">~$228/mo</span></button>
+        <button class="size-btn" id="monopolyBtn" onclick="selectMonopoly(this)"><span class="sb-name">FULL STAGE</span>9,216 blocks<br><span style="color:var(--gold)" id="monoPrice">$3,000/mo</span></button>
+        <button class="size-btn" id="customSizeBtn" onclick="selectCustom(this)"><span class="sb-name">CUSTOM</span>Enter count<br><span style="color:var(--muted)">min 4, max 9,216</span></button>
       </div>
       <div id="customInputs" style="display:none;margin-bottom:10px;">
         <div class="custom-row">
-          <input type="number" id="customBlocks" value="50" min="4" max="57600" oninput="updateCustomInfo()">
+          <input type="number" id="customBlocks" value="50" min="4" max="9216" oninput="updateCustomInfo()">
           <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted)">blocks</span>
           <button class="btn-ghost" onclick="applyCustomBlocks()">APPLY</button>
         </div>
         <div id="customInfo" style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);line-height:2;"></div>
+      </div>
+      <div style="background:var(--panel2);border:1px solid var(--border);padding:14px 16px;margin-bottom:10px;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:2;color:var(--muted2);">
+        <div style="color:var(--accent2);font-size:9px;letter-spacing:2px;margin-bottom:6px;">PRICING &amp; ESCALATION</div>
+        <div>Current price: <span style="color:#fff" id="pricePerBlockDisplay">$0.33</span> per block ($3,000/stage at launch)</div>
+        <div style="margin-top:6px;color:var(--muted);font-size:9px;">Price increases when cumulative revenue reaches these thresholds — only if achieved within 12 months:</div>
+        <div style="margin-top:4px;">• $1,000 total sales &rarr; <span style="color:var(--gold)">$5,000/stage</span></div>
+        <div>• $5,000 total sales &rarr; <span style="color:var(--gold)">$7,500/stage</span></div>
+        <div>• $20,000 total sales &rarr; <span style="color:var(--gold)">$10,000/stage</span></div>
+        <div>• $100,000 total sales &rarr; <span style="color:var(--gold)">$12,500/stage</span> (premium)</div>
+        <div>• $300,000 total sales &rarr; <span style="color:var(--gold)">$15,000/stage</span> (premium)</div>
+        <div style="margin-top:6px;color:var(--green);font-size:9px;">Your purchase price is locked permanently. Cancel anytime.</div>
       </div>
       <div id="sec2Converting" style="display:none;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);margin-bottom:8px;">Converting...</div>
       <div id="sec2PreviewWrap" style="display:none;">
@@ -368,7 +379,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
     <div class="panel-body" style="padding:0;">
       <div class="grid-wrap">
         <div class="grid-hdr">
-          <div class="grid-info-txt"><strong id="gridStageName">STAGE 1</strong> &nbsp;|&nbsp; <span id="gridBlockInfo">160&times;90 | 8&times;8px</span></div>
+          <div class="grid-info-txt"><strong id="gridStageName">STAGE 1</strong> &nbsp;|&nbsp; <span id="gridBlockInfo">128&times;72 | 10&times;10px</span></div>
           <div class="grid-legend">
             <div class="leg-item"><div class="leg-dot leg-avail"></div>AVAIL</div>
             <div class="leg-item"><div class="leg-dot leg-claimed"></div>CLAIMED</div>
@@ -452,23 +463,25 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
 </div>
 <section class="pricing-section" id="pricing">
   <div class="sec-title">PRICING</div>
-  <div class="sec-sub">Transparent pricing. Active subscriptions never auto-increase.</div>
+  <div class="sec-sub">Transparent pricing. Your price is locked at purchase — never auto-increases.</div>
   <div class="pricing-grid">
-    <div class="price-tier"><div class="tier-lbl">Early Access</div><div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text);padding:8px 0;">While base price &lt; $8</div><div class="tier-note">First 20 paying customers get launch pricing locked permanently.</div></div>
-    <div class="price-tier"><div class="tier-lbl">Standard Stage</div><div class="tier-price"><sup>$</sup>0.21<sub>/block/mo</sub></div><div class="tier-note">160&times;90 = 14,400 blocks. From $5/mo minimum.</div></div>
-    <div class="price-tier"><div class="tier-lbl">Creator Zone</div><div class="tier-price"><sup>$</sup>0.06<sub>/block/mo</sub></div><div class="tier-note">320&times;180 = 57,600 blocks. Every 5th stage.</div></div>
-    <div class="price-tier"><div class="tier-lbl">Full Stage Cap</div><div class="tier-price"><sup>$</sup>3k<sub>/stage/mo</sub></div><div class="tier-note">$3,000 standard / $3,300 creator. Max $10k.</div><span class="tier-cap">HARD LIMIT</span></div>
+    <div class="price-tier"><div class="tier-lbl">Launch Price</div><div class="tier-price"><sup>$</sup>3k<sub>/stage/mo</sub></div><div class="tier-note">128&times;72 = 9,216 blocks. ~$0.33/block. From $5/mo minimum.</div></div>
+    <div class="price-tier"><div class="tier-lbl">After $1k sales</div><div class="tier-price"><sup>$</sup>5k<sub>/stage/mo</sub></div><div class="tier-note">~$0.54/block. Only triggers if reached within 12 months.</div></div>
+    <div class="price-tier"><div class="tier-lbl">After $5k sales</div><div class="tier-price"><sup>$</sup>7.5k<sub>/stage/mo</sub></div><div class="tier-note">~$0.81/block.</div></div>
+    <div class="price-tier"><div class="tier-lbl">Premium Cap</div><div class="tier-price"><sup>$</sup>15k<sub>/stage/mo</sub></div><div class="tier-note">Max tier at $300k cumulative revenue.</div><span class="tier-cap">HARD LIMIT</span></div>
   </div>
-  <div class="vol-title" style="margin-bottom:4px;">PRICE TIERS</div>
-  <div class="sec-sub" style="margin-bottom:14px;">Standard stage. Creator zones ~27% cheaper per block.</div>
+  <div class="vol-title" style="margin-bottom:4px;">PRICE ESCALATION</div>
+  <div class="sec-sub" style="margin-bottom:14px;">Increases only if cumulative revenue milestones are hit within 12 months.</div>
   <div class="price-ladder">
-    <div class="p-rung now"><div class="pr-p">$0.21</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--green)">NOW</div></div>
-    <div class="p-rung"><div class="pr-p">$0.35</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--muted)">$1k rev</div></div>
-    <div class="p-rung"><div class="pr-p">$0.52</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--muted)">$5k rev</div></div>
-    <div class="p-rung mono"><div class="pr-p">$0.69</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--gold)">$20k/CAP</div></div>
+    <div class="p-rung now"><div class="pr-p">$3,000</div><div class="pr-l">/stage/mo</div><div class="pr-t" style="color:var(--green)">NOW</div></div>
+    <div class="p-rung"><div class="pr-p">$5,000</div><div class="pr-l">/stage/mo</div><div class="pr-t" style="color:var(--muted)">$1k rev</div></div>
+    <div class="p-rung"><div class="pr-p">$7,500</div><div class="pr-l">/stage/mo</div><div class="pr-t" style="color:var(--muted)">$5k rev</div></div>
+    <div class="p-rung"><div class="pr-p">$10,000</div><div class="pr-l">/stage/mo</div><div class="pr-t" style="color:var(--muted)">$20k rev</div></div>
+    <div class="p-rung"><div class="pr-p">$12,500</div><div class="pr-l">/stage/mo</div><div class="pr-t" style="color:var(--gold)">$100k rev</div></div>
+    <div class="p-rung mono"><div class="pr-p">$15,000</div><div class="pr-l">/stage/mo</div><div class="pr-t" style="color:var(--gold)">$300k rev</div></div>
   </div>
   <div class="vol-title" style="margin-bottom:4px;">VOLUME DISCOUNTS</div>
-  <div class="sec-sub" style="margin-bottom:14px;">Applied automatically.</div>
+  <div class="sec-sub" style="margin-bottom:14px;">Applied automatically at checkout.</div>
   <div class="vol-table">
     <div class="vol-row"><span class="v-blocks">4&ndash;199 blocks</span><span class="v-disc none">No discount &mdash; from $5/mo</span></div>
     <div class="vol-row"><span class="v-blocks">200&ndash;499 blocks</span><span class="v-disc">-10%</span></div>
@@ -485,8 +498,29 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
 (function(){var prev=localStorage.getItem('neverend_placement');if(prev){try{var p=JSON.parse(prev);if(p.session_key)fetch('/api/cancel-reservation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_key:p.session_key})}).catch(function(){});}catch(e){}localStorage.removeItem('neverend_placement');}})();
 const STAGES_DATA=[{id:1,name:'STAGE 1',sub:'Learn to survive.',type:'standard'},{id:2,name:'STAGE 2',sub:'The floor is a lie.',type:'standard'},{id:3,name:'STAGE 3',sub:'Which way is right?',type:'standard'},{id:4,name:'STAGE 4',sub:'Nothing stays still.',type:'standard'},{id:5,name:'STAGE 5',sub:'The chaos zone.',type:'creator'},{id:6,name:'STAGE 6',sub:'Trust nothing.',type:'standard'},{id:7,name:'STAGE 7',sub:'Going up.',type:'standard'},{id:8,name:'STAGE 8',sub:'Nothing is safe.',type:'standard'},{id:9,name:'STAGE 9',sub:"One mistake.",type:'standard'},{id:10,name:'STAGE 10',sub:'You made it?',type:'creator'},{id:11,name:'STAGE 11',sub:'The wall.',type:'standard'},{id:12,name:'STAGE 12',sub:'Sink or swim.',type:'standard'},{id:13,name:'STAGE 13',sub:'No floor.',type:'standard'},{id:14,name:'STAGE 14',sub:'Mirrors.',type:'standard'},{id:15,name:'STAGE 15',sub:'Fire and ice.',type:'creator'},{id:16,name:'STAGE 16',sub:'The gauntlet.',type:'standard'},{id:17,name:'STAGE 17',sub:'Descent.',type:'standard'},{id:18,name:'STAGE 18',sub:'Labyrinth.',type:'standard'},{id:19,name:'STAGE 19',sub:'Almost there.',type:'standard'},{id:20,name:'STAGE 20',sub:'The final test.',type:'creator'}];
 const STAGE_MAPS={1:{plats:[[0,640,1280,80],[480,576,96,16]],spikes:[[528,544,32,32]],goal:[1184,528,80,112],spawn:[48,592]},2:{plats:[[0,640,192,80],[224,592,128,16],[416,544,128,16],[608,496,128,16],[800,448,128,16],[992,400,128,16],[1152,352,128,368]],spikes:[[224,560,32,32],[992,368,32,32]],goal:[1168,240,64,112],spawn:[48,592]},3:{plats:[[0,640,1280,80],[368,480,32,160],[880,480,32,160],[880,320,400,32]],spikes:[[608,608,32,32],[128,608,32,32],[1104,608,32,32]],goal:[1056,208,64,112],spawn:[48,592]},4:{plats:[[0,576,176,144],[1104,576,176,144]],spikes:[[176,688,32,32],[208,688,32,32],[240,688,32,32],[272,688,32,32],[304,688,32,32],[336,688,32,32],[368,688,32,32],[400,688,32,32],[432,688,32,32],[464,688,32,32],[496,688,32,32],[528,688,32,32],[560,688,32,32],[592,688,32,32],[624,688,32,32],[656,688,32,32],[688,688,32,32],[720,688,32,32],[752,688,32,32],[784,688,32,32],[816,688,32,32],[848,688,32,32],[880,688,32,32],[912,688,32,32],[944,688,32,32],[976,688,32,32],[1008,688,32,32],[1040,688,32,32],[1072,688,32,32]],goal:[1120,464,64,112],spawn:[48,528]},5:{plats:[[0,656,1280,64],[0,0,1280,96],[640,96,32,464],[0,96,32,560]],spikes:[[128,624,32,32],[800,624,32,32],[832,624,32,32],[864,624,32,32]],goal:[48,528,64,128],spawn:[1200,608]},6:{plats:[[0,384,112,336],[112,464,112,16],[224,528,112,16],[336,592,112,16],[448,624,384,96],[832,592,112,16],[944,528,112,16],[1056,464,112,16],[1168,384,112,336],[576,512,64,16]],spikes:[[336,560,32,32],[896,560,32,32]],goal:[576,272,64,112],spawn:[48,336]},7:{plats:[[0,0,16,720],[1264,0,16,720],[0,0,1280,32],[16,656,528,64],[736,656,528,64],[16,176,192,16],[16,352,192,16],[16,528,192,16],[1072,272,192,16],[1072,448,192,16],[256,528,128,16],[432,496,128,16],[560,448,144,16]],spikes:[[544,672,32,32],[576,672,32,32],[608,672,32,32],[640,672,32,32],[672,672,32,32],[704,672,32,32],[16,144,32,32],[16,320,32,32]],goal:[576,544,128,112],spawn:[80,80]},8:{plats:[[0,640,304,80],[320,576,128,16],[512,512,128,16],[704,480,256,16],[1024,528,128,16],[1184,576,96,144]],spikes:[[320,544,32,32],[1184,544,32,32]],goal:[1200,464,64,112],spawn:[48,592]},9:{plats:[[0,640,320,80],[320,576,128,16],[512,448,128,16],[704,496,96,16],[960,448,128,16],[1152,576,128,16],[1152,640,128,80]],spikes:[[320,544,32,32]],goal:[1168,464,80,112],spawn:[48,592]},10:{plats:[[0,0,16,720],[1264,0,16,720],[16,624,192,96],[256,528,144,16],[448,448,144,16],[640,368,144,16],[832,288,144,16],[1024,208,240,16],[1024,208,240,512]],spikes:[[256,496,32,32],[832,256,32,32]],goal:[1040,96,80,112],spawn:[80,576]}};
-const CELL_S=8,CELL_C=4,GC_S=160,GR_S=90,GC_C=320,GR_C=180,BP_S=0.208,BP_C=0.057;
-let GRID_COLS=160,GRID_ROWS=90,CELL=8,BASE_PRICE=0.208;
+/*
+SUPABASE: owned_blocks table constraint must be updated to:
+x >= 0 AND x < 128
+y >= 0 AND y < 72
+Run in Supabase SQL Editor:
+ALTER TABLE owned_blocks DROP CONSTRAINT IF EXISTS owned_blocks_x_check;
+ALTER TABLE owned_blocks DROP CONSTRAINT IF EXISTS owned_blocks_y_check;
+ALTER TABLE owned_blocks ADD CONSTRAINT owned_blocks_x_check CHECK (x >= 0 AND x < 128);
+ALTER TABLE owned_blocks ADD CONSTRAINT owned_blocks_y_check CHECK (y >= 0 AND y < 72);
+*/
+const PRICE_TIERS=[
+  {stagePrice:3000,triggerSales:0},
+  {stagePrice:5000,triggerSales:1000},
+  {stagePrice:7500,triggerSales:5000},
+  {stagePrice:10000,triggerSales:20000},
+  {stagePrice:12500,triggerSales:100000},
+  {stagePrice:15000,triggerSales:300000}
+];
+const TOTAL_BLOCKS_PER_STAGE=9216;
+function getCurrentTierPrice(){return PRICE_TIERS[0].stagePrice;}
+function getPricePerBlock(){return getCurrentTierPrice()/TOTAL_BLOCKS_PER_STAGE;}
+function calculatePrice(blockCount){const ppb=getPricePerBlock();let base=blockCount*ppb;let discount=0;if(blockCount>=1000)discount=0.30;else if(blockCount>=500)discount=0.20;else if(blockCount>=200)discount=0.10;const total=Math.max(5,base*(1-discount));return{base,disc:discount,total,annual:total*10};}
+let GRID_COLS=128,GRID_ROWS=72,CELL=10;
 let monopolyMode=false,uploadedImage=null;
 let trimZoom=1,trimOffX=0,trimOffY=0,trimDrag=false,trimDragSX=0,trimDragSY=0,trimDragOX=0,trimDragOY=0;
 let chosenW=0,chosenH=0,pixelArtOriginal=null,pixelArtEdit=null,customColors=[];
@@ -498,12 +532,12 @@ let gridZoom=1,editZoomLevel=1,baseEditZoom=1;
 let miniH=0,miniS=1,miniV=1,miniDragSV=false,miniDragHue=false;
 let editDrag=false,gridEditDrag=false;
 
-function isCreator(id){return id%5===0;}
-function updateGC(id){if(isCreator(id)){GRID_COLS=GC_C;GRID_ROWS=GR_C;CELL=CELL_C;BASE_PRICE=BP_C;}else{GRID_COLS=GC_S;GRID_ROWS=GR_S;CELL=CELL_S;BASE_PRICE=BP_S;}}
+function isCreator(id){return false;}
+function updateGC(id){GRID_COLS=128;GRID_ROWS=72;CELL=10;}
 function unlockSec(n){const s=document.getElementById('sec'+n);if(s)s.classList.remove('locked');}
 function markDone(n){const s=document.getElementById('sec'+n);const d=document.getElementById('sec'+n+'Done');if(s)s.classList.add('done');if(d)d.style.display='block';}
 function setProgress(a){for(let i=1;i<=6;i++){const el=document.getElementById('prog'+i);if(i<a)el.className='prog-step done';else if(i===a)el.className='prog-step active';else el.className='prog-step';}}
-function calcPrice(n,p){let d=0;if(n>=1000)d=0.30;else if(n>=500)d=0.20;else if(n>=200)d=0.10;const base=BASE_PRICE*n;const total=Math.max(5,base*(1-d));return{base,disc:d,total,annual:total*10};}
+function calcPrice(n,p){return calculatePrice(n);}
 function setBrushSize(s,btn){brushSize=s;document.querySelectorAll('#brush1,#brush3,#brush5').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');}
 
 const stageSelEl=document.getElementById('stageSelect');
@@ -515,18 +549,20 @@ function setStage(id){
   document.getElementById('stageNextBtn').disabled=(id>=STAGES_DATA.length);
   const s=STAGES_DATA[id-1];
   const badge=document.getElementById('stageBadge');
-  if(isCreator(id)){badge.className='stage-badge creator';badge.textContent='CREATOR ZONE';}else{badge.className='stage-badge';badge.textContent='STANDARD';}
+  badge.className='stage-badge';badge.textContent='STANDARD';
   document.getElementById('stageInfoText').textContent=s.name+' — '+s.sub;
-  document.getElementById('stagePriceInfo').textContent=GRID_COLS+'×'+GRID_ROWS+' = '+(GRID_COLS*GRID_ROWS).toLocaleString()+' blocks | $'+BASE_PRICE.toFixed(3)+'/block | Full: $'+(isCreator(id)?'3,300':'3,000')+'/mo';
+  document.getElementById('stagePriceInfo').textContent=GRID_COLS+'×'+GRID_ROWS+' = '+(GRID_COLS*GRID_ROWS).toLocaleString()+' blocks | $'+getPricePerBlock().toFixed(4)+'/block | Full: $3,000/mo';
   updatePresetPrices();drawStageMap();
 }
 function changeStage(d){const n=currentStage+d;if(n>=1&&n<=STAGES_DATA.length)setStage(n);}
 function updatePresetPrices(){
-  document.getElementById('smallPrice').textContent='~$'+Math.round(calcPrice(100,plan).total)+'/mo';
-  document.getElementById('medPrice').textContent='~$'+Math.round(calcPrice(506,plan).total)+'/mo';
-  document.getElementById('largePrice').textContent='~$'+Math.round(calcPrice(2025,plan).total)+'/mo';
-  document.getElementById('xlPrice').textContent='~$'+Math.round(calcPrice(5041,plan).total)+'/mo';
-  document.getElementById('monoPrice').textContent='$'+(isCreator(currentStage)?'3,300':'3,000')+'/mo';
+  document.getElementById('nanoPrice').textContent='from $'+Math.round(calcPrice(4).total)+'/mo';
+  document.getElementById('smallPrice').textContent='~$'+Math.round(calcPrice(49).total)+'/mo';
+  document.getElementById('medPrice').textContent='~$'+Math.round(calcPrice(210).total)+'/mo';
+  document.getElementById('largePrice').textContent='~$'+Math.round(calcPrice(506).total)+'/mo';
+  document.getElementById('xlPrice').textContent='~$'+Math.round(calcPrice(1024).total)+'/mo';
+  document.getElementById('monoPrice').textContent='$3,000/mo';
+  document.getElementById('pricePerBlockDisplay').textContent='$'+getPricePerBlock().toFixed(4);
 }
 
 function drawStageMap(){
@@ -653,13 +689,12 @@ function selectMonopoly(btn){
   chosenW=GRID_COLS;chosenH=GRID_ROWS;
   if(uploadedImage){convertAndPreview(GRID_COLS,GRID_ROWS);}
   else{
-    const mp=isCreator(currentStage)?'$3,300/mo':'$3,000/mo';
-    document.getElementById('sec2Stats').innerHTML='<strong>FULL STAGE MONOPOLY</strong> — '+GRID_COLS+'×'+GRID_ROWS+'='+(GRID_COLS*GRID_ROWS).toLocaleString()+' blocks. Price: <strong>'+mp+'</strong><br><span style="color:var(--muted2);font-size:9px;">Upload an image first to continue.</span>';
+    document.getElementById('sec2Stats').innerHTML='<strong>FULL STAGE MONOPOLY</strong> — '+GRID_COLS+'×'+GRID_ROWS+'='+(GRID_COLS*GRID_ROWS).toLocaleString()+' blocks. Price: <strong>$3,000/mo</strong><br><span style="color:var(--muted2);font-size:9px;">Upload an image first to continue.</span>';
     document.getElementById('sec2Converting').style.display='none';document.getElementById('sec2PreviewWrap').style.display='none';
   }
 }
-function updateCustomInfo(){const n=Math.max(4,Math.min(57600,parseInt(document.getElementById('customBlocks').value)||50));const r=calcPrice(n,plan);let t='none';if(n>=1000)t='-30%';else if(n>=500)t='-20%';else if(n>=200)t='-10%';document.getElementById('customInfo').innerHTML='Blocks: <strong>'+n+'</strong> | Discount: <strong>'+t+'</strong> | Monthly: <strong>$'+Math.round(r.total)+'</strong>';}
-function applyCustomBlocks(){const n=Math.max(4,Math.min(57600,parseInt(document.getElementById('customBlocks').value)||50));const w=Math.ceil(Math.sqrt(n)),h=Math.ceil(n/w);convertAndPreview(w,h);}
+function updateCustomInfo(){const n=Math.max(4,Math.min(9216,parseInt(document.getElementById('customBlocks').value)||50));const r=calcPrice(n,plan);let t='none';if(n>=1000)t='-30%';else if(n>=500)t='-20%';else if(n>=200)t='-10%';document.getElementById('customInfo').innerHTML='Blocks: <strong>'+n+'</strong> | Discount: <strong>'+t+'</strong> | Monthly: <strong>$'+Math.round(r.total)+'</strong> | Annual: <strong>$'+Math.round(r.annual)+'</strong>';}
+function applyCustomBlocks(){const n=Math.max(4,Math.min(9216,parseInt(document.getElementById('customBlocks').value)||50));const w=Math.ceil(Math.sqrt(n)),h=Math.ceil(n/w);convertAndPreview(w,h);}
 function convertAndPreview(w,h){if(!uploadedImage)return;chosenW=w;chosenH=h;document.getElementById('sec2Converting').style.display='block';document.getElementById('sec2PreviewWrap').style.display='none';setTimeout(function(){doConvert(w,h);},30);}
 
 function doConvert(w,h){
@@ -792,8 +827,7 @@ function confirmStage(){
     document.getElementById('placePos').textContent='Full stage';
     document.getElementById('placeSize').textContent=GRID_COLS+'×'+GRID_ROWS;
     document.getElementById('placeActiveBlocks').textContent=(GRID_COLS*GRID_ROWS).toLocaleString()+' blocks';
-    const mp=isCreator(currentStage)?3300:3000;
-    document.getElementById('placePrice').textContent='$'+mp+'/mo';
+    document.getElementById('placePrice').textContent='$3,000/mo';
     document.getElementById('placeStatus').innerHTML='<span style="color:var(--green)">FULL STAGE MONOPOLY</span>';
     document.getElementById('gridHint').textContent='Full stage monopoly. Entire grid is yours.';
     document.getElementById('editBlocksBtn').style.display='none';
@@ -842,7 +876,7 @@ function drawGrid(){
     else if(state==='claimed'){gridCtx.fillStyle=inLogo?'rgba(231,76,60,0.7)':'rgba(50,100,200,0.4)';gridCtx.fillRect(px,py,CELL,CELL);gridCtx.strokeStyle='rgba(255,255,255,0.04)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);}
     else if(state==='reserved'){gridCtx.fillStyle=inLogo?'rgba(231,76,60,0.5)':'rgba(200,130,0,0.4)';gridCtx.fillRect(px,py,CELL,CELL);gridCtx.strokeStyle='rgba(200,130,0,0.3)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);}
     else if(inLogo){const lpx=getDisplayPixel(lc,lr);if(lpx){const alpha=logoPlaced?1:0.75;gridCtx.fillStyle='rgba('+lpx.r+','+lpx.g+','+lpx.b+','+alpha+')';gridCtx.fillRect(px,py,CELL,CELL);}else{gridCtx.fillStyle=(c+r)%2===0?'rgba(74,184,255,0.07)':'rgba(74,184,255,0.04)';gridCtx.fillRect(px,py,CELL,CELL);}gridCtx.strokeStyle=conflict?'rgba(231,76,60,0.3)':'rgba(74,184,255,0.12)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);}
-    else{gridCtx.fillStyle=(c+r)%2===0?'#0f0f1e':'#111120';gridCtx.fillRect(px,py,CELL,CELL);gridCtx.strokeStyle='#181828';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);}
+    else{gridCtx.fillStyle='rgba(255,255,255,0.02)';gridCtx.fillRect(px,py,CELL,CELL);gridCtx.strokeStyle='rgba(255,255,255,0.05)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);}
   }}
   if(logoPlaced&&selectedArea||(!logoPlaced&&chosenW)){
     const bx=lx*CELL,by=ly*CELL,bw=lw*CELL,bh=lh*CELL;
@@ -921,7 +955,7 @@ function updateSummary(){
   if(!selectedArea&&!monopolyMode)return;
   const s=STAGES_DATA[currentStage-1];
   let active,r;
-  if(monopolyMode){active=GRID_COLS*GRID_ROWS;const mp=isCreator(currentStage)?3300:3000;r={base:mp,disc:0,total:mp,annual:mp*10};}
+  if(monopolyMode){active=GRID_COLS*GRID_ROWS;r={base:3000,disc:0,total:3000,annual:30000};}
   else{active=countActivePlaced();r=calcPrice(active,plan);}
   document.getElementById('sumStage').textContent=s.name+(monopolyMode?' (MONOPOLY)':'');
   document.getElementById('sumPos').textContent=monopolyMode?'Full Stage':'col '+(selectedArea.x+1)+', row '+(selectedArea.y+1);

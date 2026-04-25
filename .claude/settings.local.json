@@ -8,7 +8,24 @@
       "Bash(mv .env.example app/)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git:*)",
+      "Bash(curl:*)",
+      "Bash(node --input-type=module)",
+      "Bash(node -e ':*)",
+      "Bash(node:*)",
+      "Bash(npx vercel:*)",
+      "Bash(ls C:/neverEND/_new_stages*.js)",
+      "Bash(grep -n \"overlap\\(player,goal\\)\\\\|loadStage\\\\|keys = {}\\\\|keys={}\\\\|prevKeys\\\\|pendulum\\\\|tipX\\\\|tipY\\\\|pivotX\\\\|pendulums\\\\[\" C:/neverEND/index.html)",
+      "Bash(npx vercel@latest env pull .env.local)",
+      "Bash(grep -v \"//\")",
+      "Bash(unzip -l files.zip)",
+      "Bash(mv -f cancel.html public/cancel.html)",
+      "Bash(mv -f hall-of-legends.html public/hall-of-legends.html)",
+      "Bash(mv -f success.html public/success.html)",
+      "Bash(ls \"docs/specification/map_design_rules .md\")",
+      "Bash(rm \"map_design_rules.md\")",
+      "Bash(mv \"map_design_rules.md\" \"docs/specification/map_design_rules.md\")"
     ]
   }
 }

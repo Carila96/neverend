@@ -13,10 +13,8 @@ export default async function handler(req, res) {
   if (!stage_id || anchor_x == null || anchor_y == null || !width || !height || !zone_type || !plan_type)
     return res.status(400).json({ error: 'Missing required fields' });
 
-  const maxX=zone_type==="creator"?320:160;
-  const maxY=zone_type==="creator"?180:90;
-  if (anchor_x < 0 || anchor_x + width > maxX || anchor_y < 0 || anchor_y + height > maxY)
-    return res.status(400).json({ error: `Placement out of grid bounds (${maxX}×${maxY})` });
+  if (anchor_x < 0 || anchor_x + width > 128 || anchor_y < 0 || anchor_y + height > 72)
+    return res.status(400).json({ error: "Placement out of grid bounds (128x72)" });
 
   const block_count = width * height;
   const expires_at = new Date(Date.now() + TTL_MINUTES * 60 * 1000).toISOString();

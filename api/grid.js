@@ -5,8 +5,8 @@ import { createClient } from '@supabase/supabase-js';
 // Anon key: public read only (RLS policy "public read owned blocks" allows this)
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
-const GRID_COLS = 80;
-const GRID_ROWS = 45;
+const GRID_COLS = 128;
+const GRID_ROWS = 72;
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });

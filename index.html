@@ -427,6 +427,9 @@ function updateBGMTempo(){
 
 // ======== HIDDEN COMMANDS ========
 let adminMode=false,hardMode=false,retroMode=false,easyMode=false,inputBuf=[];
+const retroOffCanvas=document.createElement('canvas');
+retroOffCanvas.width=80;retroOffCanvas.height=45;
+const retroOffCtx=retroOffCanvas.getContext('2d');
 let easyModeSavedStage=1;
 const ADMIN_SEQ=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a','1','9','8','4'];
 const HARD_SEQ=['h','h','h','h','h'],RETRO_SEQ=['r','r','r','r','r'];
@@ -2371,13 +2374,20 @@ function drawRetroOverlay(){
   const vg=ctx.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,H*.8);
   vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,0.4)');
   ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+  // Full-screen pixelation: downsample to 80×45 then upscale
+  retroOffCtx.imageSmoothingEnabled=false;
+  retroOffCtx.drawImage(canvas,0,0,80,45);
+  ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(retroOffCanvas,0,0,W,H);
+  ctx.imageSmoothingEnabled=true;
 }
 function drawLogoRetro(img,dx,dy,dw,dh){
   if(!retroMode){ctx.drawImage(img,dx,dy,dw,dh);return;}
-  const cols=60,rows=45;
-  const off=document.createElement('canvas');off.width=cols;off.height=rows;
+  const off=document.createElement('canvas');
+  off.width=80;off.height=45;
   const oc=off.getContext('2d');
-  oc.drawImage(img,0,0,cols,rows);
+  oc.imageSmoothingEnabled=false;
+  oc.drawImage(img,0,0,80,45);
   ctx.imageSmoothingEnabled=false;
   ctx.drawImage(off,dx,dy,dw,dh);
   ctx.imageSmoothingEnabled=true;

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Cancelled — neverEND</title>
+  <meta name="description" content="Payment cancelled. Your reservation has been released. Come back anytime to claim your space.">
+  <meta property="og:title" content="neverEND">
+  <meta property="og:description" content="Nobody finishes this game. But everybody sees your logo.">
+  <meta property="og:image" content="https://neverend.vercel.app/og-image.png">
+  <meta property="og:url" content="https://neverend.vercel.app">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="neverEND — Nobody finishes this game.">
+  <meta name="twitter:description" content="A hardcore platformer where businesses buy space in the background.">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      color: #e0e0e0;
+      font-family: 'Courier New', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+      padding: 2rem;
+    }
+    h1 {
+      font-size: 2rem;
+      color: #ff4444;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+      text-shadow: 0 0 12px #ff444466;
+    }
+    p {
+      font-size: 1rem;
+      color: #aaa;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+    .links {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    a {
+      display: inline-block;
+      padding: 0.6rem 1.4rem;
+      border: 1px solid #ff4444;
+      color: #ff4444;
+      text-decoration: none;
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      transition: background 0.2s, color 0.2s;
+    }
+    a:hover {
+      background: #ff4444;
+      color: #0a0a0a;
+    }
+    .icon {
+      font-size: 3rem;
+      margin-bottom: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="icon">&#10007;</div>
+  <h1>PAYMENT CANCELLED</h1>
+  <p>No charge was made.<br>Your reservation will expire in 30 minutes.</p>
+  <div class="links">
+    <a href="/app/pages/sales_page.html">RETURN TO SALES PAGE</a>
+    <a href="/index.html">RETURN TO GAME</a>
+  </div>
+<script>
+(function(){
+  try{
+    const stored=localStorage.getItem('neverend_placement');
+    if(stored){
+      const p=JSON.parse(stored);
+      if(p&&p.session_key){
+        fetch('/api/cancel-reservation',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({session_key:p.session_key})
+        }).catch(function(){});
+      }
+      localStorage.removeItem('neverend_placement');
+    }
+  }catch(e){}
+})();
+</script>
+</body>
+</html>

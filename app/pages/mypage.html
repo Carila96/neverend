@@ -55,10 +55,10 @@ nav a:hover{color:var(--accent2);}
 .panel-card{background:var(--dark);border:1px solid var(--border);}
 .panel-card-title{font-family:'Bebas Neue',sans-serif;font-size:18px;color:#fff;letter-spacing:1px;padding:16px 20px;border-bottom:1px solid var(--border);}
 .info-rows{padding:16px 20px;display:flex;flex-direction:column;gap:0;}
-.info-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:11px;}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:13px;}
 .info-row:last-child{border-bottom:none;}
-.info-label{color:var(--muted);}
-.info-val{color:var(--accent2);}
+.info-label{color:var(--muted);letter-spacing:1px;}
+.info-val{color:var(--accent2);font-size:14px;font-weight:600;}
 .info-val.green{color:var(--green);}
 .info-val.gold{color:var(--gold);}
 
@@ -99,6 +99,25 @@ nav a:hover{color:var(--accent2);}
 .modal-actions{display:flex;gap:12px;}
 .modal-actions .btn-danger{flex:1;}
 .modal-actions .btn-secondary{flex:1;padding:11px;}
+/* ACHIEVEMENTS */
+.achievement-section{margin-top:32px;}
+.achievement-title{font-family:'Bebas Neue',sans-serif;font-size:20px;color:#fff;letter-spacing:2px;margin-bottom:16px;}
+.achievement-grid{display:flex;flex-wrap:wrap;gap:12px;}
+.achievement-badge{background:var(--dark);border:1px solid var(--border2);padding:12px 18px;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;gap:4px;min-width:140px;}
+.achievement-badge:hover{border-color:var(--gold);background:rgba(245,200,66,0.06);}
+.badge-icon{font-size:24px;}
+.badge-name{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--gold);letter-spacing:1px;}
+.badge-desc{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.5px;}
+/* TITLE MODAL */
+.title-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:400;display:none;align-items:center;justify-content:center;}
+.title-modal-overlay.open{display:flex;}
+.title-modal{background:var(--panel2);border:2px solid var(--gold);padding:48px;max-width:480px;width:90%;text-align:center;position:relative;}
+.title-modal-icon{font-size:64px;margin-bottom:16px;}
+.title-modal-name{font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--gold);letter-spacing:3px;margin-bottom:8px;text-shadow:0 0 24px rgba(245,200,66,0.4);}
+.title-modal-rank{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:3px;margin-bottom:20px;}
+.title-modal-text{font-size:14px;color:var(--muted2);line-height:1.8;margin-bottom:28px;}
+.title-modal-close{background:none;border:1px solid var(--border2);color:var(--muted2);padding:10px 28px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;}
+.title-modal-close:hover{border-color:var(--gold);color:var(--gold);}
 
 footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
 .footer-logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--muted);}
@@ -226,6 +245,22 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
         <div class="grid-note" id="gridNote">Loading grid data...</div>
       </div>
     </div>
+    <!-- ACHIEVEMENTS -->
+    <div class="achievement-section" id="achievementSection" style="display:none;">
+      <div class="achievement-title">// YOUR TITLES</div>
+      <div class="achievement-grid" id="achievementGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TITLE MODAL -->
+<div class="title-modal-overlay" id="titleModal" onclick="closeTitleModal(event)">
+  <div class="title-modal">
+    <div class="title-modal-icon" id="titleModalIcon"></div>
+    <div class="title-modal-name" id="titleModalName"></div>
+    <div class="title-modal-rank" id="titleModalRank"></div>
+    <div class="title-modal-text" id="titleModalText"></div>
+    <button class="title-modal-close" onclick="document.getElementById('titleModal').classList.remove('open')">CLOSE</button>
   </div>
 </div>
 
@@ -273,6 +308,7 @@ async function init(p){
   document.getElementById('infoPos').textContent='col '+(p.anchor_x+1)+', row '+(p.anchor_y+1);
   document.getElementById('infoSize').textContent=p.width+' x '+p.height+' blocks';
   document.getElementById('infoBlocks').textContent=(p.width*p.height)+' total';
+  buildAchievements(p.width*p.height);
   document.getElementById('infoZone').textContent=(p.zone_type||'standard').toUpperCase();
   document.getElementById('infoPlan').textContent=(p.plan_type||'monthly').toUpperCase();
   document.getElementById('gridStageName').textContent='STAGE '+p.stage_id;
@@ -452,6 +488,40 @@ document.getElementById('confirmCancelBtn').addEventListener('click',async funct
 function showCancelFallback(){
   alert('To cancel your subscription, please email support@neverend.game with your session key:\n\n'+(loadPlacement()&&loadPlacement().session_key||'(not found)')+'\n\nWe will process your cancellation within 24 hours.');
 }
+
+// -- ACHIEVEMENTS / TITLES --
+const TITLES=[
+  {icon:'🌱',name:'NEWCOMER',rank:'RANK 1',minBlocks:1,maxBlocks:9,desc:'You placed your first block. The neverEND grid now carries your mark. Small, but it\'s there.'},
+  {icon:'🔷',name:'REGULAR',rank:'RANK 2',minBlocks:10,maxBlocks:49,desc:'Double digits. You\'re no tourist. Your presence on the grid is starting to register.'},
+  {icon:'⚡',name:'CONTENDER',rank:'RANK 3',minBlocks:50,maxBlocks:99,desc:'Nearly 100 blocks. Players pass your territory without knowing who\'s behind it.'},
+  {icon:'🔥',name:'PRESENCE',rank:'RANK 4',minBlocks:100,maxBlocks:249,desc:'100+ blocks. You are a fixture. Your logo persists across thousands of failed runs.'},
+  {icon:'👑',name:'DOMINANT',rank:'RANK 5',minBlocks:250,maxBlocks:1023,desc:'Quarter-thousand blocks. You dominate your corner of the stage. Unmissable.'},
+  {icon:'💎',name:'SOVEREIGN',rank:'RANK 6',minBlocks:1024,maxBlocks:9215,desc:'Over a thousand blocks. You own a stage landmark. Players memorize your placement.'},
+  {icon:'🏆',name:'MONOPOLIST',rank:'RANK ∞',minBlocks:9216,maxBlocks:Infinity,desc:'FULL STAGE MONOPOLY. The entire background is yours. Nobody finishes this game. Everybody sees you.'},
+];
+function buildAchievements(blockCount){
+  const section=document.getElementById('achievementSection');
+  const grid=document.getElementById('achievementGrid');
+  const earned=TITLES.filter(function(t){return blockCount>=t.minBlocks;});
+  if(!earned.length){section.style.display='none';return;}
+  section.style.display='block';
+  grid.innerHTML='';
+  earned.forEach(function(t){
+    const badge=document.createElement('div');
+    badge.className='achievement-badge';
+    badge.innerHTML='<div class="badge-icon">'+t.icon+'</div><div class="badge-name">'+t.name+'</div><div class="badge-desc">'+t.rank+' · '+t.minBlocks+'+ blocks</div>';
+    badge.onclick=function(){openTitleModal(t);};
+    grid.appendChild(badge);
+  });
+}
+function openTitleModal(t){
+  document.getElementById('titleModalIcon').textContent=t.icon;
+  document.getElementById('titleModalName').textContent=t.name;
+  document.getElementById('titleModalRank').textContent=t.rank+' — '+t.minBlocks+'+ BLOCKS';
+  document.getElementById('titleModalText').textContent=t.desc;
+  document.getElementById('titleModal').classList.add('open');
+}
+function closeTitleModal(e){if(e.target===document.getElementById('titleModal'))document.getElementById('titleModal').classList.remove('open');}
 </script>
 </body>
 </html>

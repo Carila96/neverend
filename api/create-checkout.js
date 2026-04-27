@@ -75,8 +75,8 @@ export default async function handler(req, res) {
         }],
         subscription_data: { metadata },
         metadata,
-        success_url: `${BASE_URL}/success.html?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url:  `${BASE_URL}/cancel.html`,
+        success_url: `${BASE_URL}/app/pages/success.html?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url:  `${BASE_URL}/app/pages/cancel.html`,
       };
     } else {
       // Annual = one-time payment (10 months upfront)
@@ -91,8 +91,8 @@ export default async function handler(req, res) {
           quantity: 1,
         }],
         metadata,
-        success_url: `${BASE_URL}/success.html?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url:  `${BASE_URL}/cancel.html`,
+        success_url: `${BASE_URL}/app/pages/success.html?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url:  `${BASE_URL}/app/pages/cancel.html`,
       };
     }
 

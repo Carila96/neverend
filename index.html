@@ -2058,7 +2058,7 @@ function drawBg(isTitle){
     const img=_placementImgCache[p.image_url];
     if(img.complete&&img.naturalWidth>0){
       ctx.save();ctx.globalAlpha=0.85;
-      ctx.drawImage(img,px,py,pw,ph);
+      drawLogoRetro(img,px,py,pw,ph);
       ctx.restore();
     }
   }
@@ -2345,28 +2345,36 @@ function drawUI(){
 }
 
 function drawRetroOverlay(){
-  for(let y=0;y<H;y+=2){ctx.fillStyle='rgba(0,0,0,0.22)';ctx.fillRect(0,y,W,1);}
+  // Scanlines
+  ctx.fillStyle='rgba(0,0,0,0.18)';
+  for(let y=0;y<H;y+=2)ctx.fillRect(0,y,W,1);
+  // Chroma shift (screen blend)
   const amt=Math.sin(animT*7)*2+3;
-  ctx.save();ctx.globalCompositeOperation='screen';ctx.globalAlpha=0.12;
+  ctx.save();ctx.globalCompositeOperation='screen';ctx.globalAlpha=0.10;
   ctx.drawImage(canvas,amt,0,W,H,0,0,W,H);
   ctx.drawImage(canvas,-amt,0,W,H,0,0,W,H);
   ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.restore();
-  if(Math.random()<0.75){
-    const gy=Math.floor(Math.random()*H),gh=Math.floor(Math.random()*8)+1,gx=Math.floor(Math.random()*50)-25;
-    try{const s=ctx.getImageData(0,gy,W,gh);ctx.putImageData(s,gx,gy);}catch(e){}
+  // Random noise lines (CSS-only, no getImageData)
+  if(Math.random()<0.12){
+    const gy=Math.floor(Math.random()*H),gh=Math.floor(Math.random()*3)+1;
+    const g=Math.floor(Math.random()*60)+20;
+    ctx.fillStyle=`rgba(${g},${g},${g},0.07)`;
+    ctx.fillRect(0,gy,W,gh);
   }
-  if(Math.random()<0.08){
-    const gy=Math.floor(Math.random()*H),gh=Math.floor(Math.random()*20)+4,gx=Math.floor(Math.random()*80)-40;
-    try{const s=ctx.getImageData(0,gy,W,gh);ctx.putImageData(s,gx,gy);}catch(e){}
-  }
-  if(Math.random()<0.18){
-    const g=Math.floor(Math.random()*80)+40;
-    ctx.fillStyle=`rgba(${g},${g},${g},${Math.random()*0.06+0.02})`;
-    ctx.fillRect(0,Math.floor(Math.random()*H),W,Math.floor(Math.random()*3)+1);
-  }
+  // Vignette
   const vg=ctx.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,H*.8);
-  vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,0.45)');
+  vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,0.4)');
   ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+}
+function drawLogoRetro(img,dx,dy,dw,dh){
+  if(!retroMode){ctx.drawImage(img,dx,dy,dw,dh);return;}
+  const cols=60,rows=45;
+  const off=document.createElement('canvas');off.width=cols;off.height=rows;
+  const oc=off.getContext('2d');
+  oc.drawImage(img,0,0,cols,rows);
+  ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(off,dx,dy,dw,dh);
+  ctx.imageSmoothingEnabled=true;
 }
 
 function drawDamn(){
@@ -2708,7 +2716,8 @@ function update(dt){
     for(const t of trapSpikes){
       // Only trigger if player is within Y range of the trap (prevents cross-level firing)
       const inYRange=player.y+player.h>t.y-160&&player.y<t.y+t.h+160;
-      if(!t.triggered&&player.x>t.tx&&inYRange){t.triggered=true;t.visible=true;t.timer=t.warn?0.5:0;}
+      const yTriggerOk=t.triggerY==null||player.y>t.triggerY;
+      if(!t.triggered&&player.x>t.tx&&inYRange&&yTriggerOk){t.triggered=true;t.visible=true;t.timer=t.warn?0.5:0;}
       if(t.triggered&&t.timer>0)t.timer-=dt;
     }
     for(const b of fallingBlocks){
@@ -2780,13 +2789,21 @@ function update(dt){
     }
     // Falling spikes (trigger-based)
     for(const f of fallingSpikesExt){
-      if(!f.triggered&&player.x>f.triggerX){f.triggered=true;}
+      if(!f.triggered){
+        const xOk=f.triggerX==null||player.x>f.triggerX;
+        const yOk=f.triggerY==null||player.y>f.triggerY;
+        if(xOk&&yOk)f.triggered=true;
+      }
       if(f.triggered){f.currentY+=f.speed*dt;}
       if(overlap(player,{x:f.x+4,y:f.currentY+4,w:f.w-8,h:f.h-8})){lastDeathCause='spike';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
     }
     // Chasers (boulders)
     for(const c of chasers){
-      if(!c.active&&player.x>c.triggerX){c.active=true;}
+      if(!c.active){
+        const xOk=c.triggerX==null||player.x>c.triggerX;
+        const yOk=c.triggerY==null||player.y>c.triggerY;
+        if(xOk&&yOk)c.active=true;
+      }
       if(c.active){c.x+=c.speed*dt;}
       if(c.active&&overlap(player,c)){lastDeathCause='crush';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
     }

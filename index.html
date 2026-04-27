@@ -310,9 +310,12 @@ function refreshAdminPanel(){
 function apSkipStage(){
   const n=parseInt(document.getElementById('apSkipInput').value)||1;
   if(typeof loadStage==='function'){
+    stageNum=n;
     loadStage(n);
-    if(typeof startBGM==='function'&&typeof getBGMTrack==='function')startBGM(getBGMTrack(n));
+    timeLeft=hardMode?25:30;
+    floatMsgs=[];
     state='play';
+    setTimeout(()=>{if(typeof startBGM==='function'&&typeof getBGMTrack==='function')startBGM(getBGMTrack(n));},100);
     toggleAdminPanel();
   }
 }

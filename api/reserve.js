@@ -77,9 +77,6 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Failed to reserve blocks' });
   }
 
-  // Create reservation session (checkout token)
-  // price_per_block and monthly_total are returned in the response but not stored
-  // until the DB migration adds those columns to reservation_sessions.
   const { error: sessionError } = await supabase.from('reservation_sessions').insert({
     session_key,
     stage_id,
@@ -90,19 +87,20 @@ export default async function handler(req, res) {
     zone_type,
     plan_type,
     block_count,
+    price_per_block,
+    monthly_total,
     expires_at,
     status: 'pending',
   });
 
   if (sessionError) {
-    // Roll back block inserts on session failure
     await supabase.from('owned_blocks')
       .delete()
       .eq('stage_id', stage_id)
       .gte('x', anchor_x).lt('x', anchor_x + width)
       .gte('y', anchor_y).lt('y', anchor_y + height)
       .eq('status', 'reserved');
-    return res.status(500).json({ error: 'Failed to create reservation session', detail: sessionError.message, code: sessionError.code });
+    return res.status(500).json({ error: 'Failed to create reservation session' });
   }
 
   return res.status(200).json({ session_key, expires_at, block_count, price_per_block, monthly_total });

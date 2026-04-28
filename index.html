@@ -280,7 +280,7 @@ function openSettings(){
 function closeSettings(){document.getElementById('settings').classList.remove('open');canvas.focus();}
 function resetAllData(){
   if(confirm('This will reset all your stats and titles. Are you sure?')){
-    const keys=Object.keys(localStorage).filter(k=>k.startsWith('neverend_')&&k!=='neverend_worlddeaths');
+    const keys=Object.keys(localStorage).filter(k=>k.startsWith('neverend_')&&k!=='neverend_worlddeaths'&&k!=='neverend_cookie_consent');
     keys.forEach(k=>localStorage.removeItem(k));
     location.reload();
   }
@@ -320,7 +320,7 @@ function apSkipStage(){
   }
 }
 function apResetStats(){
-  const keys=Object.keys(localStorage).filter(k=>k.startsWith('neverend_')&&k!=='neverend_playername');
+  const keys=Object.keys(localStorage).filter(k=>k.startsWith('neverend_')&&k!=='neverend_playername'&&k!=='neverend_worlddeaths'&&k!=='neverend_cookie_consent');
   keys.forEach(k=>localStorage.removeItem(k));
   refreshAdminPanel();
   floatMsgs.push({txt:'LOCAL STATS RESET',x:W/2,y:H/2,life:2,color:'rgba(255,100,100,1)'});

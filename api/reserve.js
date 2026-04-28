@@ -102,7 +102,7 @@ export default async function handler(req, res) {
       .gte('x', anchor_x).lt('x', anchor_x + width)
       .gte('y', anchor_y).lt('y', anchor_y + height)
       .eq('status', 'reserved');
-    return res.status(500).json({ error: 'Failed to create reservation session' });
+    return res.status(500).json({ error: 'Failed to create reservation session', detail: sessionError.message, code: sessionError.code });
   }
 
   return res.status(200).json({ session_key, expires_at, block_count, price_per_block, monthly_total });

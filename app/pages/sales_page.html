@@ -225,7 +225,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
   <div class="stat-item"><div class="stat-num" id="statTotal">9,216</div><div class="stat-label">Blocks Per Stage</div></div>
   <div class="stat-item"><div class="stat-num" id="takenCount">&mdash;</div><div class="stat-label">Claimed</div></div>
   <div class="stat-item"><div class="stat-num" id="statAvail">9,216</div><div class="stat-label">Available</div></div>
-  <div class="stat-item"><div class="stat-num">From $5</div><div class="stat-label">Per Month</div></div>
+  <div class="stat-item"><div class="stat-num">From $1</div><div class="stat-label">Per Month</div></div>
 </div>
 <div class="res-bar">
   GRID: <span style="color:#4ab8ff">128&times;72 blocks</span> &nbsp;|&nbsp;
@@ -278,7 +278,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
     <div class="panel-hdr"><span class="panel-num">2</span><span class="panel-title">CHOOSE SIZE</span><span class="panel-check" id="sec2Done" style="display:none">&#10003;</span></div>
     <div class="panel-body">
       <div class="size-grid">
-        <button class="size-btn" onclick="selectPreset(2,2,this)"><span class="sb-name">NANO</span>4 blocks min<br><span style="color:var(--green)" id="nanoPrice">from $5/mo</span></button>
+        <button class="size-btn" onclick="selectPreset(2,2,this)"><span class="sb-name">NANO</span>4 blocks min<br><span style="color:var(--green)" id="nanoPrice">from $1/mo</span></button>
         <button class="size-btn" onclick="selectPreset(7,7,this)"><span class="sb-name">SMALL</span>~50 blocks<br><span style="color:var(--green)" id="smallPrice">~$16/mo</span></button>
         <button class="size-btn" onclick="selectPreset(15,14,this)"><span class="sb-name">MEDIUM</span>~200 blk -10%<br><span style="color:var(--green)" id="medPrice">~$59/mo</span></button>
         <button class="size-btn" onclick="selectPreset(23,22,this)"><span class="sb-name">LARGE</span>~500 blk -20%<br><span style="color:var(--green)" id="largePrice">~$131/mo</span></button>
@@ -467,7 +467,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
   <div class="sec-title">PRICING</div>
   <div class="sec-sub">Transparent pricing. Your price is locked at purchase — never auto-increases.</div>
   <div class="pricing-grid">
-    <div class="price-tier"><div class="tier-lbl">Launch Price</div><div class="tier-price"><sup>$</sup>3k<sub>/stage/mo</sub></div><div class="tier-note">128&times;72 = 9,216 blocks. ~$0.33/block. From $5/mo minimum.</div></div>
+    <div class="price-tier"><div class="tier-lbl">Launch Price</div><div class="tier-price"><sup>$</sup>3k<sub>/stage/mo</sub></div><div class="tier-note">128&times;72 = 9,216 blocks. ~$0.33/block. From $1/mo minimum.</div></div>
     <div class="price-tier"><div class="tier-lbl">After $1k sales</div><div class="tier-price"><sup>$</sup>5k<sub>/stage/mo</sub></div><div class="tier-note">~$0.54/block. Only triggers if reached within 12 months.</div></div>
     <div class="price-tier"><div class="tier-lbl">After $5k sales</div><div class="tier-price"><sup>$</sup>7.5k<sub>/stage/mo</sub></div><div class="tier-note">~$0.81/block.</div></div>
     <div class="price-tier"><div class="tier-lbl">Premium Cap</div><div class="tier-price"><sup>$</sup>15k<sub>/stage/mo</sub></div><div class="tier-note">Max tier at $300k cumulative revenue.</div><span class="tier-cap">HARD LIMIT</span></div>
@@ -485,7 +485,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
   <div class="vol-title" style="margin-bottom:4px;">VOLUME DISCOUNTS</div>
   <div class="sec-sub" style="margin-bottom:14px;">Applied automatically at checkout.</div>
   <div class="vol-table">
-    <div class="vol-row"><span class="v-blocks">4&ndash;199 blocks</span><span class="v-disc none">No discount &mdash; from $5/mo</span></div>
+    <div class="vol-row"><span class="v-blocks">4&ndash;199 blocks</span><span class="v-disc none">No discount &mdash; from $1/mo</span></div>
     <div class="vol-row"><span class="v-blocks">200&ndash;499 blocks</span><span class="v-disc">-10%</span></div>
     <div class="vol-row"><span class="v-blocks">500&ndash;999 blocks</span><span class="v-disc">-20%</span></div>
     <div class="vol-row"><span class="v-blocks">1,000+ blocks</span><span class="v-disc">-30%</span></div>
@@ -521,7 +521,7 @@ const PRICE_TIERS=[
 const TOTAL_BLOCKS_PER_STAGE=9216;
 function getCurrentTierPrice(){return PRICE_TIERS[0].stagePrice;}
 function getPricePerBlock(){return getCurrentTierPrice()/TOTAL_BLOCKS_PER_STAGE;}
-function calculatePrice(blockCount){const ppb=getPricePerBlock();let base=blockCount*ppb;let discount=0;if(blockCount>=1000)discount=0.30;else if(blockCount>=500)discount=0.20;else if(blockCount>=200)discount=0.10;const total=Math.max(5,base*(1-discount));return{base,disc:discount,total,annual:total*10};}
+function calculatePrice(blockCount){const ppb=getPricePerBlock();let base=blockCount*ppb;let discount=0;if(blockCount>=1000)discount=0.30;else if(blockCount>=500)discount=0.20;else if(blockCount>=200)discount=0.10;const total=Math.max(1,base*(1-discount));return{base,disc:discount,total,annual:total*10};}
 let GRID_COLS=128,GRID_ROWS=72,CELL=10;
 let monopolyMode=false,uploadedImage=null;
 let trimZoom=1,trimOffX=0,trimOffY=0,trimDrag=false,trimDragSX=0,trimDragSY=0,trimDragOX=0,trimDragOY=0;

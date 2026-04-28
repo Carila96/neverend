@@ -78,6 +78,8 @@ export default async function handler(req, res) {
   }
 
   // Create reservation session (checkout token)
+  // price_per_block and monthly_total are returned in the response but not stored
+  // until the DB migration adds those columns to reservation_sessions.
   const { error: sessionError } = await supabase.from('reservation_sessions').insert({
     session_key,
     stage_id,
@@ -90,8 +92,6 @@ export default async function handler(req, res) {
     block_count,
     expires_at,
     status: 'pending',
-    price_per_block,
-    monthly_total,
   });
 
   if (sessionError) {

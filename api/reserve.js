@@ -6,6 +6,16 @@ import { randomBytes } from 'crypto';
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 const TTL_MINUTES = 30;
 
+const PRICE_TIERS = [
+  { minBlocks: 0,       maxBlocks: 20000,    pricePerBlock: 0.40 },
+  { minBlocks: 20001,   maxBlocks: 50000,    pricePerBlock: 0.70 },
+  { minBlocks: 50001,   maxBlocks: 90000,    pricePerBlock: 1.10 },
+  { minBlocks: 90001,   maxBlocks: 140000,   pricePerBlock: 1.60 },
+  { minBlocks: 140001,  maxBlocks: 300000,   pricePerBlock: 2.40 },
+  { minBlocks: 300001,  maxBlocks: 800000,   pricePerBlock: 3.10 },
+  { minBlocks: 800001,  maxBlocks: Infinity, pricePerBlock: 4.00 },
+];
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -17,6 +27,17 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Placement out of grid bounds (128x72)" });
 
   const block_count = width * height;
+
+  // Fetch current price tier based on total claimed blocks (pre-purchase count)
+  const { count: totalClaimed } = await supabase
+    .from('owned_blocks')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'claimed');
+
+  const total = totalClaimed || 0;
+  const tier = PRICE_TIERS.find(t => total <= t.maxBlocks) || PRICE_TIERS[PRICE_TIERS.length - 1];
+  const price_per_block = tier.pricePerBlock;
+  const monthly_total = parseFloat(Math.max(5, price_per_block * block_count).toFixed(2));
   const expires_at = new Date(Date.now() + TTL_MINUTES * 60 * 1000).toISOString();
   const session_key = randomBytes(32).toString('hex');
 
@@ -69,6 +90,8 @@ export default async function handler(req, res) {
     block_count,
     expires_at,
     status: 'pending',
+    price_per_block,
+    monthly_total,
   });
 
   if (sessionError) {
@@ -82,5 +105,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Failed to create reservation session' });
   }
 
-  return res.status(200).json({ session_key, expires_at, block_count });
+  return res.status(200).json({ session_key, expires_at, block_count, price_per_block, monthly_total });
 }

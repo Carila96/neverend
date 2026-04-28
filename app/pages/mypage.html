@@ -55,7 +55,7 @@ nav a:hover{color:var(--accent2);}
 .panel-card{background:var(--dark);border:1px solid var(--border);}
 .panel-card-title{font-family:'Bebas Neue',sans-serif;font-size:18px;color:#fff;letter-spacing:1px;padding:16px 20px;border-bottom:1px solid var(--border);}
 .info-rows{padding:16px 20px;display:flex;flex-direction:column;gap:0;}
-.info-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:13px;}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:14px;}
 .info-row:last-child{border-bottom:none;}
 .info-label{color:var(--muted);letter-spacing:1px;}
 .info-val{color:var(--accent2);font-size:14px;font-weight:600;}
@@ -107,17 +107,24 @@ nav a:hover{color:var(--accent2);}
 .achievement-badge:hover{border-color:var(--gold);background:rgba(245,200,66,0.06);}
 .badge-icon{font-size:24px;}
 .badge-name{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--gold);letter-spacing:1px;}
-.badge-desc{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.5px;}
+.badge-desc{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;}
 /* TITLE MODAL */
 .title-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:400;display:none;align-items:center;justify-content:center;}
 .title-modal-overlay.open{display:flex;}
 .title-modal{background:var(--panel2);border:2px solid var(--gold);padding:48px;max-width:480px;width:90%;text-align:center;position:relative;}
 .title-modal-icon{font-size:64px;margin-bottom:16px;}
-.title-modal-name{font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--gold);letter-spacing:3px;margin-bottom:8px;text-shadow:0 0 24px rgba(245,200,66,0.4);}
+.title-modal-name{font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--gold);letter-spacing:3px;margin-bottom:8px;}
 .title-modal-rank{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:3px;margin-bottom:20px;}
 .title-modal-text{font-size:14px;color:var(--muted2);line-height:1.8;margin-bottom:28px;}
 .title-modal-close{background:none;border:1px solid var(--border2);color:var(--muted2);padding:10px 28px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;}
 .title-modal-close:hover{border-color:var(--gold);color:var(--gold);}
+.title-modal-status{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;margin-bottom:20px;}
+.badge-locked{opacity:0.4;filter:grayscale(1);}
+.achieve-pagination{display:flex;align-items:center;gap:12px;margin-top:16px;}
+.achieve-page-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);padding:6px 14px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+.achieve-page-btn:hover:not(:disabled){border-color:var(--accent2);color:var(--accent2);}
+.achieve-page-btn:disabled{opacity:0.3;cursor:not-allowed;}
+.achieve-page-info{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;}
 
 footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
 .footer-logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--muted);}
@@ -249,6 +256,11 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
     <div class="achievement-section" id="achievementSection" style="display:none;">
       <div class="achievement-title">// YOUR TITLES</div>
       <div class="achievement-grid" id="achievementGrid"></div>
+      <div class="achieve-pagination">
+        <button class="achieve-page-btn" id="titlePrevBtn" onclick="if(titlesPage>0){titlesPage--;renderTitlePage();}" disabled>&#9664; PREV</button>
+        <span class="achieve-page-info" id="titlePageInfo">1/2</span>
+        <button class="achieve-page-btn" id="titleNextBtn" onclick="titlesPage++;renderTitlePage()">NEXT &#9654;</button>
+      </div>
     </div>
   </div>
 </div>
@@ -260,6 +272,7 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
     <div class="title-modal-name" id="titleModalName"></div>
     <div class="title-modal-rank" id="titleModalRank"></div>
     <div class="title-modal-text" id="titleModalText"></div>
+    <div class="title-modal-status" id="titleModalStatus"></div>
     <button class="title-modal-close" onclick="document.getElementById('titleModal').classList.remove('open')">CLOSE</button>
   </div>
 </div>
@@ -308,7 +321,7 @@ async function init(p){
   document.getElementById('infoPos').textContent='col '+(p.anchor_x+1)+', row '+(p.anchor_y+1);
   document.getElementById('infoSize').textContent=p.width+' x '+p.height+' blocks';
   document.getElementById('infoBlocks').textContent=(p.width*p.height)+' total';
-  buildAchievements(p.width*p.height);
+  reservedAtGlobal=p.reserved_at||null;buildAchievements(p.width*p.height);
   document.getElementById('infoZone').textContent=(p.zone_type||'standard').toUpperCase();
   document.getElementById('infoPlan').textContent=(p.plan_type||'monthly').toUpperCase();
   document.getElementById('gridStageName').textContent='STAGE '+p.stage_id;
@@ -499,26 +512,44 @@ const TITLES=[
   {icon:'💎',name:'SOVEREIGN',rank:'RANK 6',minBlocks:1024,maxBlocks:9215,desc:'Over a thousand blocks. You own a stage landmark. Players memorize your placement.'},
   {icon:'🏆',name:'MONOPOLIST',rank:'RANK ∞',minBlocks:9216,maxBlocks:Infinity,desc:'FULL STAGE MONOPOLY. The entire background is yours. Nobody finishes this game. Everybody sees you.'},
 ];
+let blockCountGlobal=0,reservedAtGlobal=null,titlesPage=0;
+const TITLES_PER_PAGE=4;
 function buildAchievements(blockCount){
-  const section=document.getElementById('achievementSection');
-  const grid=document.getElementById('achievementGrid');
-  const earned=TITLES.filter(function(t){return blockCount>=t.minBlocks;});
-  if(!earned.length){section.style.display='none';return;}
-  section.style.display='block';
-  grid.innerHTML='';
-  earned.forEach(function(t){
-    const badge=document.createElement('div');
-    badge.className='achievement-badge';
-    badge.innerHTML='<div class="badge-icon">'+t.icon+'</div><div class="badge-name">'+t.name+'</div><div class="badge-desc">'+t.rank+' · '+t.minBlocks+'+ blocks</div>';
-    badge.onclick=function(){openTitleModal(t);};
-    grid.appendChild(badge);
-  });
+  blockCountGlobal=blockCount;titlesPage=0;
+  document.getElementById('achievementSection').style.display='block';
+  renderTitlePage();
 }
-function openTitleModal(t){
-  document.getElementById('titleModalIcon').textContent=t.icon;
+function renderTitlePage(){
+  const grid=document.getElementById('achievementGrid');
+  grid.innerHTML='';
+  const start=titlesPage*TITLES_PER_PAGE;
+  const end=Math.min(start+TITLES_PER_PAGE,TITLES.length);
+  for(let i=start;i<end;i++){
+    const t=TITLES[i];const earned=blockCountGlobal>=t.minBlocks;
+    const badge=document.createElement('div');
+    badge.className='achievement-badge'+(earned?'':' badge-locked');
+    badge.innerHTML='<div class="badge-icon">'+(earned?t.icon:'🔒')+'</div><div class="badge-name">'+t.name+'</div><div class="badge-desc">'+t.rank+' · '+t.minBlocks+'+ blocks</div>';
+    const te=earned;badge.onclick=function(){openTitleModal(t,te);};
+    grid.appendChild(badge);
+  }
+  const pb=document.getElementById('titlePrevBtn'),nb=document.getElementById('titleNextBtn');
+  if(pb)pb.disabled=titlesPage===0;
+  if(nb)nb.disabled=(titlesPage+1)*TITLES_PER_PAGE>=TITLES.length;
+  const pi=document.getElementById('titlePageInfo');
+  if(pi)pi.textContent=(titlesPage+1)+'/'+Math.ceil(TITLES.length/TITLES_PER_PAGE);
+}
+function openTitleModal(t,earned){
+  document.getElementById('titleModalIcon').textContent=earned?t.icon:'🔒';
   document.getElementById('titleModalName').textContent=t.name;
   document.getElementById('titleModalRank').textContent=t.rank+' — '+t.minBlocks+'+ BLOCKS';
   document.getElementById('titleModalText').textContent=t.desc;
+  const s=document.getElementById('titleModalStatus');
+  if(earned){
+    let d='';if(reservedAtGlobal){d=' · Since '+new Date(reservedAtGlobal).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});}
+    s.innerHTML='<span style="color:var(--green)">&#10003; EARNED'+d+'</span>';
+  }else{
+    s.innerHTML='<span style="color:var(--muted)">&#10007; NOT YET &#8212; need '+t.minBlocks+'+ blocks</span>';
+  }
   document.getElementById('titleModal').classList.add('open');
 }
 function closeTitleModal(e){if(e.target===document.getElementById('titleModal'))document.getElementById('titleModal').classList.remove('open');}

@@ -1945,6 +1945,7 @@ function loadStage(n){
   }
   player={x:s.spawn.x,y:s.spawn.y,vx:0,vy:0,w:28,h:44,onGround:false,facing:1,walkT:0,prevX:0,prevY:0};
   stageNum=n;
+  stagePlacements=[];
   fetch('/api/grid?stage_id='+n)
     .then(r=>r.json())
     .then(d=>{
@@ -2067,7 +2068,10 @@ function drawBg(isTitle){
     }
     const img=_placementImgCache[p.image_url];
     if(img.complete&&img.naturalWidth>0){
-      ctx.save();ctx.globalAlpha=0.85;
+      ctx.save();
+      ctx.fillStyle='rgba(0,0,0,0.45)';
+      ctx.fillRect(px,py,pw,ph);
+      ctx.globalAlpha=0.6;
       drawLogoRetro(img,px,py,pw,ph);
       ctx.restore();
     }
@@ -2280,11 +2284,11 @@ function drawDarkness(){
     const grad=ctx.createRadialGradient(px,py,0,px,py,r);
     grad.addColorStop(0,'rgba(0,0,0,0)');
     grad.addColorStop(0.6,'rgba(0,0,0,0)');
-    grad.addColorStop(1,'rgba(0,0,0,0.97)');
+    grad.addColorStop(1,'rgba(0,0,0,0.77)');
     ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
     ctx.restore();
   } else {
-    ctx.fillStyle='rgba(0,0,0,0.95)';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='rgba(0,0,0,0.75)';ctx.fillRect(0,0,W,H);
   }
 }
 
@@ -2677,27 +2681,28 @@ function drawTitle(){
   // タイトルに累計情報をさりげなく
   const td=getStat('totalDeaths');
   const tb=getStat('bestStage',0);
+  ctx.save();
+  ctx.font='12px "Courier New"';
+  // 左下：自分のdeaths + WORLD DEATHS
   if(td>0){
-    ctx.save();
-    ctx.fillStyle='rgba(255,100,100,0.7)';ctx.font='12px "Courier New"';ctx.textAlign='left';
-    ctx.fillText('deaths: '+td.toLocaleString(),20,H-16);
-    if(tb>0){
-      ctx.fillStyle='rgba(160,185,255,0.65)';ctx.textAlign='right';
-      ctx.fillText('best: Stage '+tb,W-20,H-16);
-    }
-    ctx.restore();
+    ctx.fillStyle='rgba(255,100,100,0.7)';ctx.textAlign='left';
+    ctx.fillText('deaths: '+td.toLocaleString(),20,H-30);
   }
-  if(hardMode)neonText('HARD MODE ON',160,H-16,'rgba(255,80,60,0.6)',10,4);
-  if(easyMode)neonText('BABY MODE ON — Progress saved. Dignity lost.',W/2,H-32,'rgba(255,180,255,0.7)',10,4,'center');
-  if(retroMode)neonText('RETRO MODE ON',W-160,H-16,'rgba(100,255,120,0.6)',10,4);
-  // World deaths display
-  // Hall of Legends link
-  ctx.save();ctx.fillStyle='rgba(100,140,200,0.4)';ctx.font='9px "Courier New"';ctx.textAlign='center';
-  ctx.fillText('[ HALL OF LEGENDS ]',W/2,H/2+120);ctx.restore();
   if(worldDeaths!=null){
-    ctx.save();ctx.fillStyle='rgba(220,120,120,0.9)';ctx.font='13px "Courier New"';ctx.textAlign='center';
-    ctx.fillText('⚡ WORLD DEATHS: '+Number(worldDeaths).toLocaleString(),W/2,H-20);ctx.restore();
+    ctx.fillStyle='rgba(220,120,120,0.9)';ctx.textAlign='left';
+    ctx.fillText('⚡ WORLD: '+Number(worldDeaths).toLocaleString(),20,H-12);
   }
+  // 右下：HALL OF LEGENDS + ベストステージ
+  ctx.fillStyle='rgba(100,160,220,0.75)';ctx.textAlign='right';
+  ctx.fillText('[ HALL OF LEGENDS ]',W-20,H-30);
+  if(tb>0){
+    ctx.fillStyle='rgba(160,185,255,0.65)';ctx.textAlign='right';
+    ctx.fillText('best: Stage '+tb,W-20,H-12);
+  }
+  ctx.restore();
+  if(hardMode)neonText('HARD MODE ON',160,H-48,'rgba(255,80,60,0.6)',10,4);
+  if(easyMode)neonText('BABY MODE ON — Progress saved. Dignity lost.',W/2,H-32,'rgba(255,180,255,0.7)',10,4,'center');
+  if(retroMode)neonText('RETRO MODE ON',W-160,H-48,'rgba(100,255,120,0.6)',10,4);
   // TEST MODE badge
   if(testMode){
     ctx.save();ctx.fillStyle='rgba(255,40,40,0.9)';ctx.font='bold 11px "Courier New"';ctx.textAlign='right';

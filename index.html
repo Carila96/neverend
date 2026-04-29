@@ -2058,6 +2058,9 @@ function drawBg(isTitle){
       ctx.strokeRect(gx*BG,gy*BG,BG,BG);
     }
   }
+  // Dark filter over entire background grid
+  ctx.fillStyle='rgba(0,0,0,0.45)';
+  ctx.fillRect(0,0,W,H);
   // Draw placement logos
   for(const p of stagePlacements){
     if(!p.image_url||p.is_active===false)continue;
@@ -2069,8 +2072,6 @@ function drawBg(isTitle){
     const img=_placementImgCache[p.image_url];
     if(img.complete&&img.naturalWidth>0){
       ctx.save();
-      ctx.fillStyle='rgba(0,0,0,0.45)';
-      ctx.fillRect(px,py,pw,ph);
       ctx.globalAlpha=0.6;
       drawLogoRetro(img,px,py,pw,ph);
       ctx.restore();

@@ -2629,11 +2629,8 @@ canvas.addEventListener('click',e=>{
   if(state==='title'){
     if(cx>=settingsBtn.x&&cx<=settingsBtn.x+settingsBtn.w&&cy>=settingsBtn.y&&cy<=settingsBtn.y+settingsBtn.h){openSettings();}
     if(!testMode&&cx>=mpBtn.x&&cx<=mpBtn.x+mpBtn.w&&cy>=mpBtn.y&&cy<=mpBtn.y+mpBtn.h){state='mypage';}
-    // Hall of Legends click
-    const cr=canvas.getBoundingClientRect();
-    const scaleX2=1280/cr.width,scaleY2=720/cr.height;
-    const rawCx=(e.clientX-cr.left)*scaleX2,rawCy=(e.clientY-cr.top)*scaleY2;
-    if(rawCx>W/2-80&&rawCx<W/2+80&&rawCy>H/2+130&&rawCy<H/2+152){window.open('/hall-of-legends.html'+(testMode?'?mode=test':''),'_blank');}
+    // Hall of Legends click (bottom-right area)
+    if(cx>=W-200&&cx<=W-20&&cy>=H-24&&cy<=H-4){window.open('/app/pages/mypage.html','_blank');}
   } else if(state==='testcomplete'){
     if(cx>=_tcBtn.x&&cx<=_tcBtn.x+_tcBtn.w&&cy>=_tcBtn.y&&cy<=_tcBtn.y+_tcBtn.h){state='title';}
   } else if(state==='mypage'){
@@ -2691,22 +2688,18 @@ function drawTitle(){
   const tb=getStat('bestStage',0);
   ctx.save();
   ctx.font='12px "Courier New"';
-  // 左下：自分のdeaths + WORLD DEATHS
-  if(td>0){
-    ctx.fillStyle='rgba(255,100,100,0.7)';ctx.textAlign='left';
-    ctx.fillText('deaths: '+td.toLocaleString(),20,H-30);
-  }
-  if(worldDeaths!=null){
-    ctx.fillStyle='rgba(220,120,120,0.9)';ctx.textAlign='left';
-    ctx.fillText('⚡ WORLD: '+Number(worldDeaths).toLocaleString(),20,H-12);
-  }
-  // 右下：HALL OF LEGENDS + ベストステージ
-  ctx.fillStyle='rgba(100,160,220,0.75)';ctx.textAlign='right';
-  ctx.fillText('[ HALL OF LEGENDS ]',W-20,H-30);
+  // 左下：YOUR DEATHS + WORLD DEATHS
+  ctx.fillStyle='rgba(255,100,100,0.8)';ctx.textAlign='left';
+  ctx.fillText('YOUR DEATHS: '+(td>0?td.toLocaleString():'0'),20,H-30);
+  ctx.fillStyle='rgba(220,120,120,0.8)';ctx.textAlign='left';
+  ctx.fillText('WORLD DEATHS: '+Number(worldDeaths||0).toLocaleString(),20,H-14);
+  // 右下：BEST STAGE + HALL OF LEGENDS
   if(tb>0){
-    ctx.fillStyle='rgba(160,185,255,0.65)';ctx.textAlign='right';
-    ctx.fillText('best: Stage '+tb,W-20,H-12);
+    ctx.fillStyle='rgba(160,185,255,0.8)';ctx.textAlign='right';
+    ctx.fillText('BEST: Stage '+tb,W-20,H-30);
   }
+  ctx.fillStyle='rgba(100,140,200,0.8)';ctx.textAlign='right';
+  ctx.fillText('[ HALL OF LEGENDS ]',W-20,H-14);
   ctx.restore();
   if(hardMode)neonText('HARD MODE ON',160,H-48,'rgba(255,80,60,0.6)',10,4);
   if(easyMode)neonText('BABY MODE ON — Progress saved. Dignity lost.',W/2,H-32,'rgba(255,180,255,0.7)',10,4,'center');

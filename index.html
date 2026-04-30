@@ -2653,8 +2653,12 @@ canvas.addEventListener('click',e=>{
   if(state==='title'){
     if(cx>=settingsBtn.x&&cx<=settingsBtn.x+settingsBtn.w&&cy>=settingsBtn.y&&cy<=settingsBtn.y+settingsBtn.h){openSettings();}
     if(!testMode&&cx>=mpBtn.x&&cx<=mpBtn.x+mpBtn.w&&cy>=mpBtn.y&&cy<=mpBtn.y+mpBtn.h){state='mypage';}
-    // testMode: LOGIN button click
-    if(testMode&&!_currentUser&&cx>=W/2-180&&cx<=W/2+180&&cy>=H/2+108&&cy<=H/2+132){openLoginModal();}
+    // testMode: LOGIN button click (H/2+134 area)
+    if(testMode&&!_currentUser&&cx>=W/2-200&&cx<=W/2+200&&cy>=H/2+122&&cy<=H/2+146){openLoginModal();}
+    // ENTER YOUR NAME click (non-testMode, when no name set)
+    if(!_getPlayerName()&&cx>=W/2-160&&cx<=W/2+160&&cy>=H/2+104&&cy<=H/2+124){
+      const _ov=document.getElementById('nameOverlay');if(_ov){_ov.classList.add('show');setTimeout(()=>document.getElementById('nameInputField').focus(),50);}
+    }
     // Hall of Legends click (bottom-right area, disabled in testMode)
     if(!testMode&&cx>=W-200&&cx<=W-20&&cy>=H-24&&cy<=H-4){window.open('/app/pages/mypage.html','_blank');}
   } else if(state==='testcomplete'){
@@ -2703,6 +2707,18 @@ function drawTitle(){
   ctx.fillText('How far can you get in 1 hour?',W/2,H/2+50);ctx.restore();
   const pulse=Math.sin(animT*2)*.3+.7;
   neonText('[ SPACE ] START',W/2,H/2+90,`rgba(255,255,255,${pulse})`,24,14,'center');
+  // Name display below START
+  ctx.save();ctx.font='12px "Courier New"';ctx.textAlign='center';
+  const _pn=_getPlayerName();
+  if(_pn){
+    ctx.fillStyle='rgba(160,180,220,0.7)';
+    ctx.fillText('Playing as: '+_pn,W/2,H/2+114);
+  } else {
+    const _np=Math.sin(animT*1.5)*.15+.6;
+    ctx.fillStyle=`rgba(180,160,100,${_np})`;
+    ctx.fillText('[ ENTER YOUR NAME ]',W/2,H/2+114);
+  }
+  ctx.restore();
   ctx.save();ctx.fillStyle='rgba(100,120,160,0.6)';ctx.font='13px "Courier New"';ctx.textAlign='center';
   ctx.fillText('← →  MOVE    SPACE  JUMP    F / ESC  PAUSE',W/2,H-36);ctx.restore();
   if(adminMode)neonText('[ ADMIN MODE ON ]',W/2,H-16,'rgba(255,220,50,0.5)',10,4,'center');
@@ -2733,24 +2749,28 @@ function drawTitle(){
   // TEST MODE badge + login prompt
   if(testMode){
     ctx.save();
-    // Badge (top-center) — taller when logged in
-    const _badgeH=_currentUser?44:24;
-    ctx.fillStyle='rgba(220,40,40,0.95)';ctx.fillRect(W/2-110,4,220,_badgeH);
+    // Badge (top-center) — taller when name is known
+    const _tpn=_getPlayerName();
+    const _badgeH=(_currentUser||_tpn)?44:24;
+    ctx.fillStyle='rgba(220,40,40,0.95)';ctx.fillRect(W/2-130,4,260,_badgeH);
     ctx.fillStyle='#fff';ctx.font='bold 13px "Courier New"';ctx.textAlign='center';
     ctx.fillText('TEST PLAY MODE',W/2,20);
     if(_currentUser){
-      const _dn=_getPlayerName()||(_currentUser.email?_currentUser.email.split('@')[0]:'Player');
+      const _dn=_tpn||(_currentUser.email?_currentUser.email.split('@')[0]:'Player');
       ctx.font='11px "Courier New"';ctx.fillStyle='rgba(255,255,255,0.85)';
       ctx.fillText('Playing as: '+_dn,W/2,36);
+    } else if(_tpn){
+      ctx.font='11px "Courier New"';ctx.fillStyle='rgba(255,255,180,0.8)';
+      ctx.fillText('Playing as: '+_tpn+' (not saved to credits)',W/2,36);
     }
     // Login prompt (center, below subtitle)
     if(_currentUser){
       ctx.fillStyle='rgba(80,255,150,0.9)';ctx.font='13px "Courier New"';ctx.textAlign='center';
-      ctx.fillText('✓ Your name will appear in the credits!',W/2,H/2+120);
+      ctx.fillText('✓ Your name will appear in the credits!',W/2,H/2+134);
     } else {
       const lp=Math.sin(animT*2)*.2+.8;
       ctx.fillStyle=`rgba(255,220,80,${lp})`;ctx.font='bold 13px "Courier New"';ctx.textAlign='center';
-      ctx.fillText('[ LOGIN ] to leave your name in the credits',W/2,H/2+120);
+      ctx.fillText('[ LOGIN ] to leave your name in the credits',W/2,H/2+134);
     }
     ctx.restore();
   }

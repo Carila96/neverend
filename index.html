@@ -2733,10 +2733,16 @@ function drawTitle(){
   // TEST MODE badge + login prompt
   if(testMode){
     ctx.save();
-    // Badge (top-center)
-    ctx.fillStyle='rgba(220,40,40,0.95)';ctx.fillRect(W/2-100,4,200,24);
+    // Badge (top-center) — taller when logged in
+    const _badgeH=_currentUser?44:24;
+    ctx.fillStyle='rgba(220,40,40,0.95)';ctx.fillRect(W/2-110,4,220,_badgeH);
     ctx.fillStyle='#fff';ctx.font='bold 13px "Courier New"';ctx.textAlign='center';
     ctx.fillText('TEST PLAY MODE',W/2,20);
+    if(_currentUser){
+      const _dn=_getPlayerName()||(_currentUser.email?_currentUser.email.split('@')[0]:'Player');
+      ctx.font='11px "Courier New"';ctx.fillStyle='rgba(255,255,255,0.85)';
+      ctx.fillText('Playing as: '+_dn,W/2,36);
+    }
     // Login prompt (center, below subtitle)
     if(_currentUser){
       ctx.fillStyle='rgba(80,255,150,0.9)';ctx.font='13px "Courier New"';ctx.textAlign='center';
@@ -3387,7 +3393,10 @@ async function _onLoginSuccess(){
     }
     if(!r.ok)throw new Error('Sync error');
     _setLmMsg('Logged in! Data synced.','#4af');
-    if(typeof floatMsgs!=='undefined')floatMsgs.push({txt:'Data synced to cloud!',x:W/2,y:H/2-60,life:3,color:'rgba(74,184,255,1)'});
+    if(typeof floatMsgs!=='undefined'){
+      const _dn=playerName||(user.email?user.email.split('@')[0]:'Player');
+      floatMsgs.push({txt:'✓ Logged in as '+_dn,x:W/2,y:H/2-60,life:4,color:'rgba(100,255,180,1)'});
+    }
     setTimeout(closeLoginModal,1800);
   }catch(e){
     _setLmMsg('Logged in but sync failed.','#ffe033');

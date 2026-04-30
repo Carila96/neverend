@@ -938,7 +938,9 @@ const STAGES=[
  ],
  traps:[],
  move:[
-   {x:336,y:240,w:128,h:16,vx:0,vy:4.0,rx:0,ry:160,sx:352,sy:400,phase:-1.5708},{x:576,y:560,w:128,h:16,vx:0,vy:-4.0,rx:0,ry:160,sx:576,sy:400,phase:1.5708},{x:832,y:240,w:128,h:16,vx:0,vy:4.0,rx:0,ry:160,sx:800,sy:400,phase:-1.5708},
+  {x:336,y:240,w:128,h:16,vx:0,vy:4.0,rx:0,ry:160,sx:352,sy:400,phase:-1.5708},
+  {x:576,y:560,w:128,h:16,vx:0,vy:-4.0,rx:0,ry:160,sx:576,sy:400,phase:1.5708},
+  {x:832,y:240,w:128,h:16,vx:0,vy:4.0,rx:0,ry:160,sx:800,sy:400,phase:-1.5708},
  ],
  fall:[{x:624,y:150,w:156,h:32},],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
  hg:[{x:80,y:496,w:16,h:32},{x:1042,y:278,w:16,h:32}],
@@ -1948,17 +1950,18 @@ function loadStage(n){
   }
   player={x:s.spawn.x,y:s.spawn.y,vx:0,vy:0,w:28,h:44,onGround:false,facing:1,walkT:0,prevX:0,prevY:0};
   stageNum=n;
-  stagePlacements=[];
   fetch('/api/grid?stage_id='+n)
     .then(r=>r.json())
     .then(d=>{
-      stagePlacements=d.placements||[];
-      stagePlacements.forEach(p=>{
+      const raw=d.placements||[];
+      raw.forEach(p=>{
         if(p.image_url&&!_placementImgCache[p.image_url]){
-          const img=new Image();img.src=p.image_url;
+          const img=new Image();
+          img.src=p.image_url;
           _placementImgCache[p.image_url]=img;
         }
       });
+      setTimeout(()=>{stagePlacements=raw;},500);
     })
     .catch(()=>{stagePlacements=[];});
 }
@@ -2064,18 +2067,13 @@ function drawBg(isTitle){
   // Draw placement logos
   for(const p of stagePlacements){
     if(!p.image_url||p.is_active===false)continue;
-    const px=p.anchor_x*BG,py=p.anchor_y*BG,pw=p.width*BG,ph=p.height*BG;
-    if(!_placementImgCache[p.image_url]){
-      const img=new Image();img.src=p.image_url;
-      _placementImgCache[p.image_url]=img;
-    }
     const img=_placementImgCache[p.image_url];
-    if(img.complete&&img.naturalWidth>0){
-      ctx.save();
-      ctx.globalAlpha=0.6;
-      drawLogoRetro(img,px,py,pw,ph);
-      ctx.restore();
-    }
+    if(!img||!img.complete||img.naturalWidth===0)continue;
+    const px=p.anchor_x*BG,py=p.anchor_y*BG,pw=p.width*BG,ph=p.height*BG;
+    ctx.save();
+    ctx.globalAlpha=0.6;
+    drawLogoRetro(img,px,py,pw,ph);
+    ctx.restore();
   }
   // Dark filter over entire background (grid + logos)
   ctx.fillStyle='rgba(0,0,0,0.45)';

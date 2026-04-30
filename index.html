@@ -2396,12 +2396,6 @@ function drawRetroOverlay(){
   const vg=ctx.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,H*.8);
   vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,0.4)');
   ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
-  // Full-screen pixelation: downsample to 80×45 then upscale
-  retroOffCtx.imageSmoothingEnabled=false;
-  retroOffCtx.drawImage(canvas,0,0,80,45);
-  ctx.imageSmoothingEnabled=false;
-  ctx.drawImage(retroOffCanvas,0,0,W,H);
-  ctx.imageSmoothingEnabled=true;
 }
 function drawLogoRetro(img,dx,dy,dw,dh){
   if(!retroMode){ctx.drawImage(img,dx,dy,dw,dh);return;}
@@ -2852,7 +2846,7 @@ function update(dt){
       // Swept collision: check segment from prev frame to current frame against pendulum tip
       const ax=player.prevX||pcx, ay=player.prevY||pcy;
       const bx=pcx, by=pcy;
-      const cx=tipX, cy=tipY, r=16;
+      const cx=tipX, cy=tipY, r=17;
       const dx=bx-ax, dy=by-ay;
       const fx=ax-cx, fy=ay-cy;
       const a=dx*dx+dy*dy;

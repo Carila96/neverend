@@ -430,20 +430,6 @@ let adminMode=false,hardMode=false,retroMode=false,easyMode=false,inputBuf=[];
 const retroOffCanvas=document.createElement('canvas');
 retroOffCanvas.width=80;retroOffCanvas.height=45;
 const retroOffCtx=retroOffCanvas.getContext('2d');
-const bgOffCanvas=document.createElement('canvas');
-bgOffCanvas.width=1280;bgOffCanvas.height=720;
-const bgOffCtx=bgOffCanvas.getContext('2d');
-(function(){
-  const BG=10,BGW=128,BGH=72;
-  for(let gy=0;gy<BGH;gy++){
-    for(let gx=0;gx<BGW;gx++){
-      bgOffCtx.fillStyle=(gx+gy)%2===0?'#1c1c28':'#1a1a26';
-      bgOffCtx.fillRect(gx*BG,gy*BG,BG,BG);
-      bgOffCtx.strokeStyle='#242436';bgOffCtx.lineWidth=0.3;
-      bgOffCtx.strokeRect(gx*BG,gy*BG,BG,BG);
-    }
-  }
-})();
 let easyModeSavedStage=1;
 const ADMIN_SEQ=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a','1','9','8','4'];
 const HARD_SEQ=['h','h','h','h','h'],RETRO_SEQ=['r','r','r','r','r'];
@@ -1968,16 +1954,14 @@ function loadStage(n){
     .then(r=>r.json())
     .then(d=>{
       const raw=d.placements||[];
-      let pending=raw.filter(p=>p.image_url&&!_placementImgCache[p.image_url]).length;
-      if(pending===0){stagePlacements=raw;return;}
       raw.forEach(p=>{
-        if(!p.image_url){return;}
-        if(_placementImgCache[p.image_url]){pending--;if(pending<=0)stagePlacements=raw;return;}
-        const img=new Image();
-        img.onload=img.onerror=()=>{pending--;if(pending<=0)stagePlacements=raw;};
-        img.src=p.image_url;
-        _placementImgCache[p.image_url]=img;
+        if(p.image_url&&!_placementImgCache[p.image_url]){
+          const img=new Image();
+          img.src=p.image_url;
+          _placementImgCache[p.image_url]=img;
+        }
       });
+      setTimeout(()=>{stagePlacements=raw;},500);
     })
     .catch(()=>{stagePlacements=[];});
 }
@@ -2070,7 +2054,16 @@ function neonText(txt,x,y,color,size,blur,align){
 
 function drawBg(isTitle){
   if(isTitle){ctx.fillStyle='#050508';ctx.fillRect(0,0,W,H);return;}
-  ctx.drawImage(bgOffCanvas,0,0);
+  // Background grid: 16px cells = 80x45 = 3600 blocks (sales grid)
+  const BG=10,BGW=128,BGH=72;
+  for(let gy=0;gy<BGH;gy++){
+    for(let gx=0;gx<BGW;gx++){
+      ctx.fillStyle=(gx+gy)%2===0?'#1c1c28':'#1a1a26';
+      ctx.fillRect(gx*BG,gy*BG,BG,BG);
+      ctx.strokeStyle='#242436';ctx.lineWidth=0.3;
+      ctx.strokeRect(gx*BG,gy*BG,BG,BG);
+    }
+  }
   // Draw placement logos
   for(const p of stagePlacements){
     if(!p.image_url||p.is_active===false)continue;

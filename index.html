@@ -2653,8 +2653,10 @@ canvas.addEventListener('click',e=>{
   if(state==='title'){
     if(cx>=settingsBtn.x&&cx<=settingsBtn.x+settingsBtn.w&&cy>=settingsBtn.y&&cy<=settingsBtn.y+settingsBtn.h){openSettings();}
     if(!testMode&&cx>=mpBtn.x&&cx<=mpBtn.x+mpBtn.w&&cy>=mpBtn.y&&cy<=mpBtn.y+mpBtn.h){state='mypage';}
+    // testMode: LOGIN button click
+    if(testMode&&!_currentUser&&cx>=W/2-180&&cx<=W/2+180&&cy>=H/2+108&&cy<=H/2+132){openLoginModal();}
     // Hall of Legends click (bottom-right area)
-    if(cx>=W-200&&cx<=W-20&&cy>=H-24&&cy<=H-4){window.open('/app/pages/mypage.html','_blank');}
+    if(cx>=W-200&&cx<=W-20&&cy>=H-24&&cy<=H-4){window.open('/app/pages/mypage.html'+(testMode?'?test=true':''),'_blank');}
   } else if(state==='testcomplete'){
     if(cx>=_tcBtn.x&&cx<=_tcBtn.x+_tcBtn.w&&cy>=_tcBtn.y&&cy<=_tcBtn.y+_tcBtn.h){state='title';}
   } else if(state==='mypage'){

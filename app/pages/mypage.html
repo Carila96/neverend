@@ -295,6 +295,18 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
 const BASE='https://neverend.vercel.app';
 const GRID_COLS=128,GRID_ROWS=72,CELL=10;
 
+// Hide sales-related elements in test mode
+(function(){
+  const _tp=new URLSearchParams(window.location.search);
+  if(_tp.get('test')==='true'||_tp.get('test')==='1'){
+    document.addEventListener('DOMContentLoaded',()=>{
+      document.querySelectorAll('a[href*="sales_page"]').forEach(el=>{
+        el.style.display='none';
+      });
+    });
+  }
+})();
+
 // -- Load placement from URL param or localStorage --
 function getSessionKey(){
   const params=new URLSearchParams(window.location.search);

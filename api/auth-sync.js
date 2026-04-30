@@ -22,7 +22,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { user_id, player_name, total_deaths, best_stage, total_play_time, titles_earned, is_tester } = req.body || {};
+  const { user_id, player_name, total_deaths, best_stage, total_play_time, titles_earned, is_tester, record_hall_of_legends, hall_stage_reached } = req.body || {};
 
   if (!user_id) return res.status(400).json({ error: 'Missing user_id' });
 
@@ -56,6 +56,19 @@ export default async function handler(req, res) {
   if (error) {
     console.error('Auth sync error:', error.message);
     return res.status(500).json({ error: 'Sync failed' });
+  }
+
+  // Optional: record to hall_of_legends (requires table to exist)
+  if (record_hall_of_legends && player_name) {
+    try {
+      const pname = player_name || 'Unknown';
+      await supabase.from('hall_of_legends').insert({
+        user_id,
+        player_name: pname,
+        stage_reached: hall_stage_reached || 20,
+        is_tester: is_tester || false,
+      });
+    } catch (_) {}
   }
 
   return res.status(200).json({ ok: true });

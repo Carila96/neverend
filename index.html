@@ -2655,8 +2655,8 @@ canvas.addEventListener('click',e=>{
     if(!testMode&&cx>=mpBtn.x&&cx<=mpBtn.x+mpBtn.w&&cy>=mpBtn.y&&cy<=mpBtn.y+mpBtn.h){state='mypage';}
     // testMode: LOGIN button click
     if(testMode&&!_currentUser&&cx>=W/2-180&&cx<=W/2+180&&cy>=H/2+108&&cy<=H/2+132){openLoginModal();}
-    // Hall of Legends click (bottom-right area)
-    if(cx>=W-200&&cx<=W-20&&cy>=H-24&&cy<=H-4){window.open('/app/pages/mypage.html'+(testMode?'?test=true':''),'_blank');}
+    // Hall of Legends click (bottom-right area, disabled in testMode)
+    if(!testMode&&cx>=W-200&&cx<=W-20&&cy>=H-24&&cy<=H-4){window.open('/app/pages/mypage.html','_blank');}
   } else if(state==='testcomplete'){
     if(cx>=_tcBtn.x&&cx<=_tcBtn.x+_tcBtn.w&&cy>=_tcBtn.y&&cy<=_tcBtn.y+_tcBtn.h){state='title';}
   } else if(state==='mypage'){
@@ -2724,8 +2724,8 @@ function drawTitle(){
     ctx.fillStyle='rgba(160,185,255,0.8)';ctx.textAlign='right';
     ctx.fillText('BEST: Stage '+tb,W-20,H-30);
   }
-  ctx.fillStyle='rgba(100,140,200,0.8)';ctx.textAlign='right';
-  ctx.fillText('[ HALL OF LEGENDS ]',W-20,H-14);
+  ctx.fillStyle=testMode?'rgba(80,80,100,0.5)':'rgba(100,140,200,0.8)';ctx.textAlign='right';
+  ctx.fillText(testMode?'[ HALL OF LEGENDS ] Coming Soon':'[ HALL OF LEGENDS ]',W-20,H-14);
   ctx.restore();
   if(hardMode)neonText('HARD MODE ON',160,H-48,'rgba(255,80,60,0.6)',10,4);
   if(easyMode)neonText('BABY MODE ON — Progress saved. Dignity lost.',W/2,H-32,'rgba(255,180,255,0.7)',10,4,'center');
@@ -2924,6 +2924,10 @@ function update(dt){
       timeLeft=Math.min(MAX_TIME,timeLeft+3);score+=500+Math.floor(timeLeft*10);sfxGoal();
       if(testMode&&next>20){
         state='testcomplete';stopBGM();
+        if(_currentUser){
+          const _pn=_getPlayerName()||'';
+          fetch('/api/auth-sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:_currentUser.id,player_name:_pn||undefined,total_deaths:getStat('totalDeaths',0),best_stage:getStat('bestStage',1),total_play_time:getStat('totalPlayTime',0),titles_earned:getTitles(),is_tester:true,record_hall_of_legends:true,hall_stage_reached:20})}).catch(()=>{});
+        }
       } else if(next<=STAGES.length){
         loadStage(next);floatMsgs.push({txt:'STAGE '+next+'!',x:W/2,y:H/2,life:2,color:'rgba(255,220,50,1)'});
         if(testMode&&next===5&&!_stage5ToastShown){_stage5ToastShown=true;floatMsgs.push({txt:'Playing well! Your progress is being recorded for credits.',x:W/2,y:H/2+64,life:5,color:'rgba(100,255,180,0.95)'});}

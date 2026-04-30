@@ -2379,13 +2379,32 @@ function drawRetroOverlay(){
   // Scanlines
   ctx.fillStyle='rgba(0,0,0,0.18)';
   for(let y=0;y<H;y+=2)ctx.fillRect(0,y,W,1);
-  // Chroma shift (screen blend)
+  // Chroma shift (screen blend) — ゲーム全体に適用
   const amt=Math.sin(animT*7)*2+3;
   ctx.save();ctx.globalCompositeOperation='screen';ctx.globalAlpha=0.10;
   ctx.drawImage(canvas,amt,0,W,H,0,0,W,H);
   ctx.drawImage(canvas,-amt,0,W,H,0,0,W,H);
   ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.restore();
-  // Random noise lines (CSS-only, no getImageData)
+  // Random glitch noise lines — ゲーム全体に走る
+  if(Math.random()<0.25){
+    const gy=Math.floor(Math.random()*H);
+    const gh=Math.floor(Math.random()*4)+1;
+    const gx=Math.floor(Math.random()*30)-15;
+    ctx.save();
+    ctx.globalAlpha=0.15;
+    ctx.drawImage(canvas,0,gy,W,gh,gx,gy,W,gh);
+    ctx.restore();
+  }
+  if(Math.random()<0.08){
+    const gy=Math.floor(Math.random()*H);
+    const gh=Math.floor(Math.random()*12)+2;
+    const gx=Math.floor(Math.random()*60)-30;
+    ctx.save();
+    ctx.globalAlpha=0.12;
+    ctx.drawImage(canvas,0,gy,W,gh,gx,gy,W,gh);
+    ctx.restore();
+  }
+  // Random noise line
   if(Math.random()<0.12){
     const gy=Math.floor(Math.random()*H),gh=Math.floor(Math.random()*3)+1;
     const g=Math.floor(Math.random()*60)+20;
@@ -2846,7 +2865,7 @@ function update(dt){
       // Swept collision: check segment from prev frame to current frame against pendulum tip
       const ax=player.prevX||pcx, ay=player.prevY||pcy;
       const bx=pcx, by=pcy;
-      const cx=tipX, cy=tipY, r=17;
+      const cx=tipX, cy=tipY, r=18;
       const dx=bx-ax, dy=by-ay;
       const fx=ax-cx, fy=ay-cy;
       const a=dx*dx+dy*dy;

@@ -252,6 +252,12 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
         <div class="grid-note" id="gridNote">Loading grid data...</div>
       </div>
     </div>
+    <!-- TESTER CREDITS (future)
+         When tester_credits table is created in Supabase, add a section here
+         to display test player contribution info for admin review.
+         Table schema: tester_credits(user_id uuid, player_name text, is_tester boolean, credited_at timestamptz)
+         Query: SELECT * FROM player_profiles WHERE is_tester = true ORDER BY created_at
+    -->
     <!-- ACHIEVEMENTS -->
     <div class="achievement-section" id="achievementSection" style="display:none;">
       <div class="achievement-title">// YOUR TITLES</div>

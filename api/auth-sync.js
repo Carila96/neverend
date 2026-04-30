@@ -22,7 +22,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { user_id, player_name, total_deaths, best_stage, total_play_time, titles_earned } = req.body || {};
+  const { user_id, player_name, total_deaths, best_stage, total_play_time, titles_earned, is_tester } = req.body || {};
 
   if (!user_id) return res.status(400).json({ error: 'Missing user_id' });
 
@@ -49,6 +49,7 @@ export default async function handler(req, res) {
       best_stage: best_stage || 1,
       total_play_time: total_play_time || 0,
       titles_earned: titles_earned || [],
+      ...(is_tester ? { is_tester: true } : {}),
       updated_at: new Date().toISOString()
     }, { onConflict: 'id' });
 

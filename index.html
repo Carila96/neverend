@@ -2079,16 +2079,18 @@ function drawBg(isTitle){
       ctx.fillRect(gx*BG,gy*BG,BG,BG);
     }
   }
-  // Draw placement logos
-  for(const p of stagePlacements){
-    if(!p.image_url||p.is_active===false)continue;
-    const img=_placementImgCache[p.image_url];
-    if(!img||!img.complete||img.naturalWidth===0)continue;
-    const px=p.anchor_x*BG,py=p.anchor_y*BG,pw=p.width*BG,ph=p.height*BG;
-    ctx.save();
-    ctx.globalAlpha=0.6;
-    drawLogoRetro(img,px,py,pw,ph);
-    ctx.restore();
+  // Draw placement logos (hidden in test mode)
+  if(!testMode){
+    for(const p of stagePlacements){
+      if(!p.image_url||p.is_active===false)continue;
+      const img=_placementImgCache[p.image_url];
+      if(!img||!img.complete||img.naturalWidth===0)continue;
+      const px=p.anchor_x*BG,py=p.anchor_y*BG,pw=p.width*BG,ph=p.height*BG;
+      ctx.save();
+      ctx.globalAlpha=0.6;
+      drawLogoRetro(img,px,py,pw,ph);
+      ctx.restore();
+    }
   }
   // Dark filter over entire background (grid + logos)
   ctx.fillStyle='rgba(0,0,0,0.55)';
@@ -2726,11 +2728,23 @@ function drawTitle(){
   if(hardMode)neonText('HARD MODE ON',160,H-48,'rgba(255,80,60,0.6)',10,4);
   if(easyMode)neonText('BABY MODE ON — Progress saved. Dignity lost.',W/2,H-32,'rgba(255,180,255,0.7)',10,4,'center');
   if(retroMode)neonText('RETRO MODE ON',W-160,H-48,'rgba(100,255,120,0.6)',10,4);
-  // TEST MODE badge
+  // TEST MODE badge + login prompt
   if(testMode){
-    ctx.save();ctx.fillStyle='rgba(255,40,40,0.9)';ctx.font='bold 11px "Courier New"';ctx.textAlign='right';
-    ctx.fillRect(W-110,4,106,20);
-    ctx.fillStyle='#fff';ctx.fillText('TEST MODE',W-6,18);ctx.restore();
+    ctx.save();
+    // Badge (top-right)
+    ctx.fillStyle='rgba(200,30,30,0.95)';ctx.fillRect(W-130,4,126,22);
+    ctx.fillStyle='#fff';ctx.font='bold 12px "Courier New"';ctx.textAlign='center';
+    ctx.fillText('TEST PLAY MODE',W-67,19);
+    // Login prompt (center, below subtitle)
+    if(_currentUser){
+      ctx.fillStyle='rgba(80,255,150,0.9)';ctx.font='13px "Courier New"';ctx.textAlign='center';
+      ctx.fillText('✓ Your name will appear in the credits!',W/2,H/2+120);
+    } else {
+      const lp=Math.sin(animT*2)*.2+.8;
+      ctx.fillStyle=`rgba(255,220,80,${lp})`;ctx.font='bold 13px "Courier New"';ctx.textAlign='center';
+      ctx.fillText('[ LOGIN ] to leave your name in the credits',W/2,H/2+120);
+    }
+    ctx.restore();
   }
 }
 
@@ -3356,7 +3370,8 @@ async function _onLoginSuccess(){
       total_deaths:getStat('totalDeaths',0),
       best_stage:getStat('bestStage',1),
       total_play_time:getStat('totalPlayTime',0),
-      titles_earned:getTitles()
+      titles_earned:getTitles(),
+      ...(testMode?{is_tester:true}:{})
     };
     const r=await fetch('/api/auth-sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     if(r.status===409){

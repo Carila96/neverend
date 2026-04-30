@@ -153,12 +153,17 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
 
 <header>
   <div class="logo">never<span>END</span></div>
-  <nav>
-    <a href="/pages/sales_page.html">Grid</a>
-    <a href="#">How It Works</a>
-    <a href="/pages/sales_page.html#pricing">Pricing</a>
-    <a href="/pages/sales_page.html" class="nav-cta">CLAIM YOUR SPACE</a>
-  </nav>
+  <div style="display:flex;align-items:center;gap:20px;">
+    <nav>
+      <a href="/pages/sales_page.html">Grid</a>
+      <a href="#">How It Works</a>
+      <a href="/pages/sales_page.html#pricing">Pricing</a>
+      <a href="/pages/sales_page.html" class="nav-cta">CLAIM YOUR SPACE</a>
+    </nav>
+    <div id="authArea" style="display:none;">
+      <button id="logoutBtn" onclick="handleLogout()" style="background:none;border:1px solid rgba(231,76,60,0.5);color:var(--accent);padding:7px 14px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;" onmouseover="this.style.background='rgba(231,76,60,0.1)'" onmouseout="this.style.background='none'">LOGOUT</button>
+    </div>
+  </div>
 </header>
 
 <div class="main">
@@ -291,6 +296,7 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
   <div class="footer-copy">2025 Carila. All rights reserved.</div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const BASE='https://neverend.vercel.app';
 const GRID_COLS=128,GRID_ROWS=72,CELL=10;
@@ -566,11 +572,30 @@ function openTitleModal(t,earned){
     let d='';if(reservedAtGlobal){d=' · Since '+new Date(reservedAtGlobal).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});}
     s.innerHTML='<span style="color:var(--green)">&#10003; EARNED'+d+'</span>';
   }else{
-    s.innerHTML='<span style="color:var(--muted)">&#10007; NOT YET &#8212; need '+t.minBlocks+'+ blocks</span>';
+    s.innerHTML='<span style="color:var(--muted)">&#128274; LOCKED &#8212; need '+t.minBlocks+'+ blocks</span>';
   }
   document.getElementById('titleModal').classList.add('open');
 }
 function closeTitleModal(e){if(e.target===document.getElementById('titleModal'))document.getElementById('titleModal').classList.remove('open');}
+
+// -- AUTH --
+const _SB_URL='https://cokcftutqkwhfbmdnhgl.supabase.co';
+const _SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNva2NmdHV0cWt3aGZibWRuaGdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjk1NjIsImV4cCI6MjA5MDY0NTU2Mn0.FkDkRI8Ec5P07EKEZiGMA_kQ44rK0Pu6Hy_yeWBO3cQ';
+let _sbClient=null;
+(function initAuth(){
+  if(window.supabase){
+    _sbClient=window.supabase.createClient(_SB_URL,_SB_KEY);
+    _sbClient.auth.getSession().then(function(r){
+      if(r.data&&r.data.session){
+        document.getElementById('authArea').style.display='block';
+      }
+    });
+  }
+})();
+async function handleLogout(){
+  if(_sbClient)await _sbClient.auth.signOut();
+  window.location.href='/';
+}
 </script>
 </body>
 </html>

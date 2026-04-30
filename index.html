@@ -653,11 +653,11 @@ const STAGES=[
    {x:576,y:512,w:64,h:16},
  ],
  spikes:[{x:336,y:560,w:32,h:32},{x:912,y:560,w:32,h:32}],
- traps:[{x:192,y:432,w:32,h:32,tx:150,warn:false},{x:512,y:592,w:32,h:32,tx:448,warn:false},{x:676,y:592,w:32,h:32,tx:1056,warn:false},{x:740,y:592,w:32,h:32,tx:1056,warn:false},{x:944,y:496,w:32,h:32,tx:1056,warn:false},{x:1024,y:496,w:32,h:32,tx:1056,warn:false},{x:1056,y:432,w:32,h:32,tx:1168,warn:false},
+ traps:[{x:192,y:432,w:32,h:32,tx:132,warn:false},{x:512,y:592,w:32,h:32,tx:448,warn:false},{x:676,y:592,w:32,h:32,tx:1056,warn:false},{x:740,y:592,w:32,h:32,tx:1056,warn:false},{x:944,y:496,w:32,h:32,tx:1056,warn:false},{x:1024,y:496,w:32,h:32,tx:1056,warn:false},{x:1056,y:432,w:32,h:32,tx:1168,warn:false},
         {x:1136,y:432,w:32,h:32,tx:1168,warn:false},{x:1168,y:352,w:32,h:32,tx:1216,warn:false}],
  mimics:[{x:592,y:576,w:48,h:48}],
  fall:[],move:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
- hg:[{x:176,y:432,w:16,h:32},{x:1056,y:432,w:16,h:32},{x:1088,y:432,w:16,h:32},{x:1120,y:432,w:16,h:32},{x:1168,y:336,w:16,h:32},{x:1200,y:336,w:16,h:32},{x:1232,y:336,w:16,h:32}],
+ hg:[{x:160,y:432,w:16,h:32},{x:1056,y:432,w:16,h:32},{x:1088,y:432,w:16,h:32},{x:1120,y:432,w:16,h:32},{x:1168,y:336,w:16,h:32},{x:1200,y:336,w:16,h:32},{x:1232,y:336,w:16,h:32}],
  goal:{x:576,y:240,w:64,h:112},spawn:{x:48,y:336}},
 
 // STAGE 7 — THE DROP
@@ -691,9 +691,9 @@ const STAGES=[
    {x:432,y:624,w:32,h:32,tx:384,warn:false},
    {x:850,y:624,w:32,h:32,tx:800,warn:false},
    {x:1072,y:240,w:32,h:32,tx:1010,warn:false},
-   {x:1104,y:240,w:32,h:32,tx:1190,warn:false},
-   {x:1136,y:240,w:32,h:32,tx:1190,warn:false},
-   {x:1168,y:240,w:32,h:32,tx:1190,warn:false},
+   {x:1104,y:240,w:32,h:32,tx:1199,warn:false},
+   {x:1136,y:240,w:32,h:32,tx:1199,warn:false},
+   {x:1168,y:240,w:32,h:32,tx:1199,warn:false},
  ],fall:[],move:[],mimics:[],ceiling:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
  hg:[{x:80,y:320,w:16,h:32},{x:1120,y:240,w:16,h:32},{x:1200,y:240,w:16,h:32}],
  goal:{x:576,y:544,w:128,h:112},spawn:{x:80,y:80}},
@@ -712,7 +712,7 @@ const STAGES=[
  traps:[{x:784,y:448,w:32,h:32,tx:672,warn:false},{x:1024,y:496,w:32,h:32,tx:980,warn:false}],
  fall:[{x:704,y:480,w:256,h:16,spikesOn:false}],
  move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
- hg:[{x:416,y:544,w:16,h:32},{x:864,y:448,w:16,h:32}],
+ hg:[{x:416,y:544,w:16,h:32},{x:896,y:448,w:16,h:32}],
  goal:{x:1200,y:464,w:64,h:112},spawn:{x:48,y:592}},
 
 // STAGE 9 — THE PENDULUM
@@ -825,10 +825,10 @@ const STAGES=[
  traps:[{x:672,y:416,w:32,h:32,tx:608,warn:false}],
  fall:[],move:[],mimics:[],ceiling:[],
  fallingSpikes:[
-   {x:1008,y:32,w:32,h:48,triggerX:950,speed:400,triggered:false,startY:32,currentY:32},
-   {x:1040,y:32,w:32,h:48,triggerX:990,speed:400,triggered:false,startY:32,currentY:32},
-   {x:1072,y:32,w:32,h:48,triggerX:1022,speed:350,triggered:false,startY:32,currentY:32},
-   {x:1104,y:32,w:32,h:48,triggerX:1054,speed:350,triggered:false,startY:32,currentY:32}
+   {x:1008,y:0,w:32,h:48,triggerX:950,speed:450,triggered:false,startY:32,currentY:32},
+   {x:1040,y:0,w:32,h:48,triggerX:990,speed:450,triggered:false,startY:32,currentY:32},
+   {x:1072,y:0,w:32,h:48,triggerX:1022,speed:320,triggered:false,startY:32,currentY:32},
+   {x:1104,y:0,w:32,h:48,triggerX:1054,speed:320,triggered:false,startY:32,currentY:32}
  ],
  lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
  hg:[{x:288,y:544,w:16,h:32},{x:1040,y:288,w:16,h:32}],
@@ -843,7 +843,7 @@ const STAGES=[
  ],
  spikes:[{x:448,y:608,w:32,h:32},{x:704,y:608,w:32,h:32},{x:960,y:480,w:32,h:32}],
  traps:[{x:576,y:608,w:32,h:32,tx:512,warn:false}],
- chasers:[{x:-96,y:544,w:96,h:96,speed:240,triggerX:80,active:false}],
+ chasers:[{x:-96,y:544,w:96,h:96,speed:280,triggerX:80,active:false}],
  fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],focusZones:[],darkness:{enabled:false},
  hg:[{x:240,y:608,w:16,h:32},{x:864,y:608,w:16,h:32}],
  goal:{x:1072,y:272,w:80,h:112},spawn:{x:48,y:592}},
@@ -852,7 +852,8 @@ const STAGES=[
 {name:'STAGE 14',sub:'There is only one way.',
  plats:[
    {x:0,y:0,w:16,h:720},{x:1264,y:0,w:16,h:720},
-   {x:0,y:704,w:1280,h:32},
+   {x:0,y:688,w:300,h:48},
+   {x:300,y:704,w:980,h:32},
    {x:16,y:192,w:1088,h:32},
    {x:192,y:384,w:1088,h:32},
    {x:16,y:576,w:1088,h:32},
@@ -883,9 +884,9 @@ const STAGES=[
    {x:768,y:416,w:32,h:48,triggerX:717,triggerY:400,speed:400,triggered:false,startY:384,currentY:384},
  ],
  fall:[],move:[],mimics:[],ceiling:[],lava:[],pendulums:[{pivotX:640,pivotY:224,length:160,speed:1.6,maxAngle:1.05,angle:0}],
- chasers:[{x:1360,y:608,w:80,h:96,speed:-400,triggerXLeft:1072,triggerY:576,active:false}],focusZones:[],darkness:{enabled:false},
+ chasers:[{x:1360,y:608,w:80,h:96,speed:-380,triggerXLeft:1072,triggerY:576,active:false}],focusZones:[],darkness:{enabled:false},
  hg:[{x:648,y:160,w:16,h:32},{x:440,y:352,w:16,h:32},{x:640,y:560,w:16,h:32},{x:1232,y:688,w:16,h:32}],
- goal:{x:16,y:608,w:64,h:96},spawn:{x:48,y:48}},
+ goal:{x:16,y:608,w:64,h:80},spawn:{x:48,y:48}},
 
 // STAGE 15 — FAKE EXIT
 {name:'STAGE 15',sub:'That is not the exit.',
@@ -904,7 +905,7 @@ const STAGES=[
    {x:1056,y:320,w:32,h:16},
  ],
  spikes:[{x:80,y:448,w:32,h:32},{x:448,y:288,w:32,h:32}],
- traps:[{x:864,y:208,w:32,h:32,tx:896,triggerYUp:220,warn:false},
+ traps:[{x:864,y:208,w:32,h:32,triggerXLeft:832,triggerYUp:220,warn:false},
         {x:960,y:608,w:32,h:32,tx:896,warn:false},{x:480,y:288,w:32,h:32,tx:420,warn:false},
         {x:512,y:288,w:32,h:32,tx:420,warn:false},{x:544,y:288,w:32,h:32,tx:420,warn:false},
         {x:576,y:288,w:32,h:32,tx:420,warn:false}],
@@ -954,11 +955,11 @@ const STAGES=[
  ],
  traps:[{x:64,y:118,w:32,h:32},{x:312,y:118,w:32,h:32}],
  move:[
-  {x:336,y:240,w:128,h:16,vx:0,vy:4.5,rx:0,ry:160,sx:352,sy:400,phase:-1.5708},
-  {x:576,y:560,w:128,h:16,vx:0,vy:-4.5,rx:0,ry:160,sx:576,sy:400,phase:1.5708},
-  {x:832,y:240,w:128,h:16,vx:0,vy:4.5,rx:0,ry:160,sx:800,sy:400,phase:-1.5708},
+  {x:336,y:240,w:128,h:16,vx:0,vy:5.5,rx:0,ry:160,sx:352,sy:400,phase:-1.5708},
+  {x:576,y:560,w:128,h:16,vx:0,vy:-5.5,rx:0,ry:160,sx:576,sy:400,phase:1.5708},
+  {x:832,y:240,w:128,h:16,vx:0,vy:5.5,rx:0,ry:160,sx:800,sy:400,phase:-1.5708},
  ],
- fall:[{x:624,y:150,w:156,h:32,spikesOn:false,gravity:4.0,shakeTime:0.15}],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ fall:[{x:624,y:150,w:156,h:32,spikesOn:false,gravity:1.5,shakeTime:0.15}],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
  hg:[{x:80,y:496,w:16,h:32},{x:1042,y:278,w:16,h:32}],
  goal:{x:0,y:38,w:64,h:112},spawn:{x:48,y:528}},
 

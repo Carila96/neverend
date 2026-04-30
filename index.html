@@ -438,6 +438,18 @@ let adminMode=false,hardMode=false,retroMode=false,easyMode=false,inputBuf=[];
 const retroOffCanvas=document.createElement('canvas');
 retroOffCanvas.width=80;retroOffCanvas.height=45;
 const retroOffCtx=retroOffCanvas.getContext('2d');
+const _bgCache=document.createElement('canvas');
+_bgCache.width=1280;_bgCache.height=720;
+(function(){
+  const bc=_bgCache.getContext('2d');
+  const BG=10,BGW=128,BGH=72;
+  for(let gy=0;gy<BGH;gy++){
+    for(let gx=0;gx<BGW;gx++){
+      bc.fillStyle=(gx+gy)%2===0?'#1c1c28':'#1a1a26';
+      bc.fillRect(gx*BG,gy*BG,BG,BG);
+    }
+  }
+})();
 let easyModeSavedStage=1;
 const ADMIN_SEQ=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a','1','9','8','4'];
 const HARD_SEQ=['h','h','h','h','h'],RETRO_SEQ=['r','r','r','r','r'];
@@ -1972,10 +1984,21 @@ function loadStage(n){
     .then(d=>{
       if(stageNum!==_loadingStage)return;
       const raw=d.placements||[];
-      let pending=raw.filter(p=>p.image_url&&!_placementImgCache[p.image_url]).length;
-      if(pending===0){stagePlacements=raw;return;}
+      // Pre-cache image_data as Data URL (instant, no network)
       raw.forEach(p=>{
-        if(!p.image_url){return;}
+        if(p.image_data&&!_placementImgCache[p.image_data]){
+          const dataUrl='data:image/png;base64,'+p.image_data;
+          const img=new Image();img.src=dataUrl;
+          _placementImgCache[p.image_data]=img;
+          p._cacheKey=p.image_data;
+        } else if(p.image_data){
+          p._cacheKey=p.image_data;
+        }
+      });
+      const needsFetch=raw.filter(p=>!p.image_data&&p.image_url&&!_placementImgCache[p.image_url]);
+      let pending=needsFetch.length;
+      if(pending===0){stagePlacements=raw;return;}
+      needsFetch.forEach(p=>{
         if(_placementImgCache[p.image_url]){
           pending--;
           if(pending<=0)stagePlacements=raw;
@@ -2081,19 +2104,15 @@ function neonText(txt,x,y,color,size,blur,align){
 
 function drawBg(isTitle){
   if(isTitle){ctx.fillStyle='#050508';ctx.fillRect(0,0,W,H);return;}
-  // Background grid: 16px cells = 80x45 = 3600 blocks (sales grid)
   const BG=10,BGW=128,BGH=72;
-  for(let gy=0;gy<BGH;gy++){
-    for(let gx=0;gx<BGW;gx++){
-      ctx.fillStyle=(gx+gy)%2===0?'#1c1c28':'#1a1a26';
-      ctx.fillRect(gx*BG,gy*BG,BG,BG);
-    }
-  }
+  ctx.drawImage(_bgCache,0,0);
   // Draw placement logos (hidden in test mode)
   if(!testMode){
     for(const p of stagePlacements){
-      if(!p.image_url||p.is_active===false)continue;
-      const img=_placementImgCache[p.image_url];
+      if(p.is_active===false)continue;
+      const _key=p._cacheKey||p.image_url;
+      if(!_key)continue;
+      const img=_placementImgCache[_key];
       if(!img||!img.complete||img.naturalWidth===0)continue;
       const px=p.anchor_x*BG,py=p.anchor_y*BG,pw=p.width*BG,ph=p.height*BG;
       ctx.save();

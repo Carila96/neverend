@@ -1950,20 +1950,31 @@ function loadStage(n){
   }
   player={x:s.spawn.x,y:s.spawn.y,vx:0,vy:0,w:28,h:44,onGround:false,facing:1,walkT:0,prevX:0,prevY:0};
   stageNum=n;
+  const _loadingStage=n;
   fetch('/api/grid?stage_id='+n)
     .then(r=>r.json())
     .then(d=>{
+      if(stageNum!==_loadingStage)return;
       const raw=d.placements||[];
+      let pending=raw.filter(p=>p.image_url&&!_placementImgCache[p.image_url]).length;
+      if(pending===0){stagePlacements=raw;return;}
       raw.forEach(p=>{
-        if(p.image_url&&!_placementImgCache[p.image_url]){
-          const img=new Image();
-          img.src=p.image_url;
-          _placementImgCache[p.image_url]=img;
+        if(!p.image_url){return;}
+        if(_placementImgCache[p.image_url]){
+          pending--;
+          if(pending<=0)stagePlacements=raw;
+          return;
         }
+        const img=new Image();
+        img.onload=img.onerror=()=>{
+          pending--;
+          if(pending<=0&&stageNum===_loadingStage)stagePlacements=raw;
+        };
+        img.src=p.image_url;
+        _placementImgCache[p.image_url]=img;
       });
-      setTimeout(()=>{stagePlacements=raw;},500);
     })
-    .catch(()=>{stagePlacements=[];});
+    .catch(()=>{if(stageNum===n)stagePlacements=[];});
 }
 
 let sessionStartTime=Date.now(),sessionDeaths=0,sessionMaxStage=1;
@@ -2818,9 +2829,10 @@ function update(dt){
     for(const c of chasers){
       if(!c.active){
         const xOk=c.triggerX==null||player.x>c.triggerX;
+        const xLeftOk=c.triggerXLeft==null||player.x<c.triggerXLeft;
         const yOk=c.triggerY==null||player.y>c.triggerY;
         const yUpOk=c.triggerYUp==null||player.y<c.triggerYUp;
-        if(xOk&&yOk&&yUpOk)c.active=true;
+        if(xOk&&xLeftOk&&yOk&&yUpOk)c.active=true;
       }
       if(c.active){c.x+=c.speed*dt;}
       if(c.active&&overlap(player,c)){lastDeathCause='crush';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}

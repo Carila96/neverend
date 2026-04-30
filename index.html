@@ -956,7 +956,7 @@ const STAGES=[
   {x:576,y:560,w:128,h:16,vx:0,vy:-4.5,rx:0,ry:160,sx:576,sy:400,phase:1.5708},
   {x:832,y:240,w:128,h:16,vx:0,vy:4.5,rx:0,ry:160,sx:800,sy:400,phase:-1.5708},
  ],
- fall:[{x:624,y:150,w:156,h:32,spikesOn:false}],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ fall:[{x:624,y:150,w:156,h:32,spikesOn:false,gravity:4.0,shakeTime:0.15}],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
  hg:[{x:80,y:496,w:16,h:32},{x:1042,y:278,w:16,h:32}],
  goal:{x:0,y:38,w:64,h:112},spawn:{x:48,y:528}},
 
@@ -2820,7 +2820,7 @@ function update(dt){
       if(b.gone)continue;
       const onThis=player.x+player.w>b.x&&player.x<b.x+b.w&&
         player.y+player.h>=b.y-2&&player.y+player.h<=b.y+b.h+6&&player.vy>=0;
-      if(onThis&&!b.triggered){b.triggered=true;b.shakeT=0.5;}
+      if(onThis&&!b.triggered){b.triggered=true;b.shakeT=b.shakeTime||0.5;}
       if(b.triggered&&!b.falling){
         b.shakeT-=dt;
         if(b.shakeT<=0){
@@ -2832,7 +2832,7 @@ function update(dt){
           }
         }
       }
-      if(b.falling){b.vy+=1.5;b.y+=b.vy;if(b.y>H+100)b.gone=true;}
+      if(b.falling){b.vy+=(b.gravity||1.5);b.y+=b.vy;if(b.y>H+100)b.gone=true;}
     }
     for(const s of spikes){if(s.falling){s.vy+=1.5;s.y+=s.vy;}}
     if(player.y>H+60){lastDeathCause='fall';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}

@@ -2056,7 +2056,7 @@ function neonText(txt,x,y,color,size,blur,align){
 function drawBg(isTitle){
   if(isTitle){ctx.fillStyle='#050508';ctx.fillRect(0,0,W,H);return;}
   // Background grid: 16px cells = 80x45 = 3600 blocks (sales grid)
-  const BG=16,BGW=80,BGH=45;
+  const BG=10,BGW=128,BGH=72;
   for(let gy=0;gy<BGH;gy++){
     for(let gx=0;gx<BGW;gx++){
       ctx.fillStyle=(gx+gy)%2===0?'#1c1c28':'#1a1a26';

@@ -453,7 +453,7 @@ setTimeout(_submitTesterData,600000); // 10 minutes
 
 // ======== TEST MODE ========
 const _urlParams=new URLSearchParams(window.location.search);
-const testMode=_urlParams.get('mode')==='test'||_urlParams.get('test')==='1'||sessionStorage.getItem('neverend_testmode')==='1';
+const testMode=_urlParams.get('mode')==='test'||_urlParams.get('test')==='1'||_urlParams.get('test')==='true'||sessionStorage.getItem('neverend_testmode')==='1';
 if(testMode)sessionStorage.setItem('neverend_testmode','1');
 
 // ======== NAME INPUT ========

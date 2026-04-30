@@ -1936,7 +1936,7 @@ function loadStage(n){
   {const sp=s.spawn;
   trapSpikes=trapSpikes.filter(t=>!(Math.abs(t.x-sp.x)<64&&Math.abs(t.y-sp.y)<64));}
   fallingBlocks=s.fall.map(b=>({...b,falling:false,vy:0,shakeT:0,triggered:false,gone:false}));
-  movingPlatforms=s.move?s.move.map(p=>({...p,phase:0})):[];
+  movingPlatforms=s.move?s.move.map(p=>({...p,phase:p.phase||0})):[];
   mimics=s.mimics?s.mimics.map(m=>({...m,triggered:false,exploded:false,timer:0})):[];
   ceilingTraps=s.ceiling?s.ceiling.map(c=>({...c,triggered:false,visible:false,timer:0})):[];
   lavas=(s.lava||[]).map(l=>({...l,currentY:l.y}));

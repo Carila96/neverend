@@ -2813,9 +2813,11 @@ function update(dt){
     for(const t of trapSpikes){
       // Only trigger if player is within Y range of the trap (prevents cross-level firing)
       const inYRange=player.y+player.h>t.y-160&&player.y<t.y+t.h+160;
+      const xOk=t.tx==null||player.x>t.tx;
+      const xLeftOk=t.triggerXLeft==null||player.x<t.triggerXLeft;
       const yTriggerOk=t.triggerY==null||player.y>t.triggerY;
       const yUpTriggerOk=t.triggerYUp==null||player.y<t.triggerYUp;
-      if(!t.triggered&&player.x>t.tx&&inYRange&&yTriggerOk&&yUpTriggerOk){t.triggered=true;t.visible=true;t.timer=t.warn?0.5:0;}
+      if(!t.triggered&&xOk&&xLeftOk&&inYRange&&yTriggerOk&&yUpTriggerOk){t.triggered=true;t.visible=true;t.timer=t.warn?0.5:0;}
       if(t.triggered&&t.timer>0)t.timer-=dt;
     }
     for(const b of fallingBlocks){

@@ -2731,10 +2731,10 @@ function drawTitle(){
   // TEST MODE badge + login prompt
   if(testMode){
     ctx.save();
-    // Badge (top-right)
-    ctx.fillStyle='rgba(200,30,30,0.95)';ctx.fillRect(W-130,4,126,22);
-    ctx.fillStyle='#fff';ctx.font='bold 12px "Courier New"';ctx.textAlign='center';
-    ctx.fillText('TEST PLAY MODE',W-67,19);
+    // Badge (top-center)
+    ctx.fillStyle='rgba(220,40,40,0.95)';ctx.fillRect(W/2-100,4,200,24);
+    ctx.fillStyle='#fff';ctx.font='bold 13px "Courier New"';ctx.textAlign='center';
+    ctx.fillText('TEST PLAY MODE',W/2,20);
     // Login prompt (center, below subtitle)
     if(_currentUser){
       ctx.fillStyle='rgba(80,255,150,0.9)';ctx.font='13px "Courier New"';ctx.textAlign='center';

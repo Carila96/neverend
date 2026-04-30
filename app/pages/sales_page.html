@@ -354,8 +354,9 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
         <button class="ctool-btn" onclick="resetEditPixels()">RESET</button>
       </div>
       <div class="color-main-layout">
-        <div>
+        <div style="min-width:0;overflow:hidden;">
           <div class="edit-canvas-wrap" id="editCanvasWrap"><canvas id="editCanvas"></canvas></div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">Checkered = transparent. Transparent pixels are not charged and appear blank in-game.</div>
           <div class="edit-stat" id="editStats"></div>
           <div style="display:flex;justify-content:flex-end;"><button class="btn-blue" onclick="goToSection4()">CONTINUE TO SELECT STAGE &rarr;</button></div>
         </div>
@@ -413,7 +414,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
           <span class="grid-zoom-val" id="gridZoomVal">1&times;</span>
           <span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);margin-left:12px;">drag to pan when zoomed</span>
         </div>
-        <div class="grid-canvas-wrap" id="gridCanvasWrap" style="overflow:auto;max-height:480px;">
+        <div class="grid-canvas-wrap" id="gridCanvasWrap" style="overflow:hidden;">
           <canvas id="gridCanvas" width="1280" height="720"></canvas>
         </div>
         <div class="grid-hint" id="gridHint">Move mouse to position logo. Click to place.</div>

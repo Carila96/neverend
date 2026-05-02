@@ -396,11 +396,24 @@ const TRACKS=[
    lead:[0,0,0,392,0,494,0,0,0,0,0,440,0,494,0,0,0,0,0,494,0,659,0,494,0,523,0,0,392,0,0,0],
    pad:[392,0,494,0,588,0,494,0,294,0,440,0,587,0,440,0,330,0,494,0,659,0,494,0,262,0,392,0,523,392,0,0],
    kick:[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],snare:[0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0],hh:[1,1,0,1,1,1,0,1,1,1,0,1,1,1,1,1],
-   tempo:{n:.14,r:.08},drone:false},
+   tempo:{n:.14,r:.08},drone:false}
+  ,{bass:[41,0,41,0,41,0,41,41,43,0,43,0,43,0,43,0,41,0,38,0,38,0,38,0,38,38,36,0,36,0,36,0],
+   bvol:[.14,0,.1,0,.12,0,.1,.08,.14,0,.1,0,.12,0,.1,0,.14,0,.1,0,.12,0,.1,.08,.14,0,.1,0,.12,0],
+   lead:[0,0,82,0,0,98,0,82,0,0,73,0,82,0,0,73,0,0,82,0,0,110,0,98,0,0,82,0,73,0,0,82],
+   pad:[82,0,0,0,0,0,98,0,73,0,0,0,0,0,82,0,69,0,0,0,0,0,73,0,65,0,0,0,0,0,0,0],
+   kick:[1,0,0,1,0,0,1,0,1,0,0,0,1,0,1,0],snare:[0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0],hh:[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],
+   tempo:{n:.13,r:.07},drone:true}
+  ,{bass:[65,0,65,0,73,0,73,0,58,0,58,0,65,0,65,0,62,0,62,0,69,0,69,0,55,0,55,0,62,0,62,0],
+   bvol:[.08,0,.06,0,.08,0,.06,0,.08,0,.06,0,.08,0,.06,0,.08,0,.06,0,.08,0,.06,0,.08,0,.06,0,.08,0,.06,0],
+   lead:[0,262,0,0,294,0,262,0,0,247,0,0,262,0,0,0,0,233,0,0,247,0,233,0,0,220,0,0,247,0,262,0],
+   pad:[262,0,0,0,294,0,0,0,247,0,0,0,220,0,0,0,262,0,0,0,294,0,0,0,233,0,0,0,247,0,0,0],
+   kick:[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],snare:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],hh:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+   pulse:[0,0,1,0,0,0,1,0,0,0,1,0,0,1,0,0],
+   tempo:{n:.14,r:.08},drone:false}
 ];
 
-// Track0=Cave March(1-9面), Track1=No Return(30-39面), Track2=Last Resolve(10-19面), Track3=Beyond DAMN(20-29面), Track4=Open Sky(5,10,15...面)
-function getBGMTrack(n){if(n%5===0)return 4;if(n<=9)return 0;if(n<=19)return 2;if(n<=29)return 3;if(n<=39)return 1;return 4;}
+// Track0=Cave March(1-9面), Track1=No Return(30-39面), Track2=Last Resolve(10-19面), Track3=Beyond DAMN(20-29面), Track4=Open Sky(5,10,15...面), Track5=Iron Grid(40-49面), Track6=Pixel Rush(50-59面)
+function getBGMTrack(n){if(n%5===0)return 4;if(n<=9)return 0;if(n<=19)return 2;if(n<=29)return 3;if(n<=39)return 1;if(n<=49)return 5;if(n<=59)return 6;return 4;}
 function getTempoKey(t){return t/MAX_TIME>0.25?'n':'r';}
 function bgmTick(){
   const tr=TRACKS[bgmTrack],s=bgmStep%tr.bass.length,fill=(bgmStep%128)>=112;
@@ -410,6 +423,13 @@ function bgmTick(){
   if(tr.kick[s%16]){tone(60,.08,'sine',.15);tone(80,.04,'sine',.1,.01);}
   if(tr.snare[s%16])nz(.06,fill?.1:.07);
   if(tr.hh[s%16])nz(.02,.04);
+  if(tr.pulse&&tr.pulse[s%16]){
+    const a=getAC();const o=a.createOscillator();const g=a.createGain();
+    o.connect(g);g.connect(a.destination);o.type='square';o.frequency.value=1200;
+    g.gain.setValueAtTime(0.06,a.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+0.02);
+    o.start();o.stop(a.currentTime+0.03);
+  }
   bgmStep++;
 }
 function startDrone(){

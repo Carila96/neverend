@@ -812,7 +812,7 @@ function initEditCanvas(){
   applyEditZoom();
 }
 function updateEditZoom(){editZoomLevel=parseFloat(document.getElementById('editZoomSlider').value);document.getElementById('editZoomVal').textContent=editZoomLevel+'×';applyEditZoom();}
-function applyEditZoom(){const z=Math.round(baseEditZoom*editZoomLevel);editCanvas.width=chosenW*z;editCanvas.height=chosenH*z;drawEditCanvas(z);buildPalette();}
+function applyEditZoom(){const z=Math.round(baseEditZoom*editZoomLevel);editCanvas.width=chosenW*z;editCanvas.height=chosenH*z;const ew=document.getElementById('editCanvasWrap');if(ew)ew.style.overflow=editZoomLevel>1?'auto':'hidden';drawEditCanvas(z);buildPalette();}
 function drawEditCanvas(z){
   if(!pixelArtEdit)return;
   if(!z)z=Math.round(baseEditZoom*editZoomLevel);
@@ -930,7 +930,7 @@ function applyGridZoom(){const wrap=document.getElementById('gridCanvasWrap');co
 function initGrid(){applyGridZoom();drawGrid();}
 function isDeleted(c,r){if(!selectedArea)return false;const lc=c-selectedArea.x,lr=r-selectedArea.y;return deletedBlocks.some(function(d){return d.x===lc&&d.y===lr;});}
 function getDisplayPixel(lc,lr){if(!pixelArtEdit||!pixelArtEdit[lr])return null;return pixelArtEdit[lr][lc]||null;}
-function hasConflict(x,y,w,h){for(let dr=0;dr<h;dr++)for(let dc=0;dc<w;dc++){if(isDeleted(x+dc,y+dr))continue;const st=getBlockState(x+dc,y+dr);if(st==='claimed'||st==='reserved')return true;}return false;}
+function hasConflict(x,y,w,h){for(let dr=0;dr<h;dr++)for(let dc=0;dc<w;dc++){if(isDeleted(x+dc,y+dr))continue;const st=getBlockState(x+dc,y+dr);if(st==='claimed')return true;}return false;}
 
 function drawGrid(){
   gridCtx.clearRect(0,0,1280,720);

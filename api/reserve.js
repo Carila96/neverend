@@ -19,7 +19,7 @@ const PRICE_TIERS = [
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { stage_id, anchor_x, anchor_y, width, height, zone_type, plan_type } = req.body;
+  const { stage_id, anchor_x, anchor_y, width, height, zone_type, plan_type, admin_key } = req.body;
   if (!stage_id || anchor_x == null || anchor_y == null || !width || !height || !zone_type || !plan_type)
     return res.status(400).json({ error: 'Missing required fields' });
 
@@ -28,7 +28,31 @@ export default async function handler(req, res) {
 
   const block_count = width * height;
 
-  // Fetch current price tier based on total claimed blocks (pre-purchase count)
+  // Admin free placement — bypass conflict check, insert directly as claimed
+  if (admin_key) {
+    if (admin_key !== process.env.ADMIN_SECRET_KEY) {
+      return res.status(403).json({ error: 'Invalid admin key' });
+    }
+    const adminBlocks = [];
+    for (let dy = 0; dy < height; dy++)
+      for (let dx = 0; dx < width; dx++)
+        adminBlocks.push({
+          stage_id,
+          x: anchor_x + dx,
+          y: anchor_y + dy,
+          status: 'claimed',
+          reserved_at: new Date().toISOString(),
+        });
+    const { error: adminErr } = await supabase.from('owned_blocks').insert(adminBlocks);
+    if (adminErr) {
+      if (adminErr.code === '23505')
+        return res.status(409).json({ error: 'Conflict', message: 'Some blocks already claimed.' });
+      return res.status(500).json({ error: 'Failed to place admin blocks', detail: adminErr.message });
+    }
+    return res.status(200).json({ ok: true, admin: true, block_count, stage_id, anchor_x, anchor_y, width, height });
+  }
+
+  // Fetch current price tier based on total claimed blocks
   const { count: totalClaimed } = await supabase
     .from('owned_blocks')
     .select('*', { count: 'exact', head: true })
@@ -41,23 +65,28 @@ export default async function handler(req, res) {
   const expires_at = new Date(Date.now() + TTL_MINUTES * 60 * 1000).toISOString();
   const session_key = randomBytes(32).toString('hex');
 
-  // Check for conflicts with claimed or unexpired reserved blocks
-  const { data: conflicts } = await supabase
+  // Check for conflicts — exclude expired reserved blocks
+  const { data: rawConflicts } = await supabase
     .from('owned_blocks')
-    .select('x,y,status')
+    .select('x,y,status,expires_at')
     .eq('stage_id', stage_id)
     .in('status', ['claimed', 'reserved'])
     .gte('x', anchor_x).lt('x', anchor_x + width)
     .gte('y', anchor_y).lt('y', anchor_y + height);
 
-  if (conflicts && conflicts.length > 0)
+  const now = new Date().toISOString();
+  const conflicts = (rawConflicts || []).filter(b =>
+    b.status === 'claimed' || (b.status === 'reserved' && b.expires_at && b.expires_at > now)
+  );
+
+  if (conflicts.length > 0)
     return res.status(409).json({
       error: 'Placement conflict',
       message: 'Cannot place here — overlaps claimed or reserved blocks',
       conflicts: conflicts.map(b => ({ x: b.x, y: b.y, status: b.status })),
     });
 
-  // Insert one row per block
+  // Insert one row per block as reserved
   const blocks = [];
   for (let dy = 0; dy < height; dy++)
     for (let dx = 0; dx < width; dx++)

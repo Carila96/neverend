@@ -465,6 +465,13 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
             <div class="p-row" id="annualRow" style="display:none;"><span>BILLED ANNUALLY</span><span class="p-amt" id="priceAnnual">--</span></div>
           </div>
           <div class="checkout-err" id="checkoutError"></div>
+          <div id="adminPlaceBar" style="display:none;margin-bottom:8px;padding:10px 14px;background:#1a0a00;border:1px solid #ff6600;border-radius:4px;">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#ff6600;letter-spacing:2px;margin-bottom:8px;">⚡ ADMIN FREE PLACEMENT</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input id="adminKeyInput" type="password" placeholder="admin key" style="flex:1;background:#0a0a0a;border:1px solid #ff6600;color:#ff6600;font-family:'Share Tech Mono',monospace;font-size:12px;padding:6px 8px;border-radius:3px;outline:none;" />
+              <button onclick="adminFreePlacement()" style="background:#ff6600;color:#000;font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:bold;padding:6px 12px;border:none;border-radius:3px;cursor:pointer;letter-spacing:1px;">PLACE FREE</button>
+            </div>
+          </div>
           <button class="btn-primary w100" id="ctaBtn" onclick="proceedToCheckout()">PROCEED TO PAYMENT</button>
           <p class="note">By proceeding you agree to our <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>.<br>First month prorated. Billing auto-renews. Cancel anytime.</p>
         </div>
@@ -598,6 +605,17 @@ let gridZoom=1,editZoomLevel=1,baseEditZoom=1;
 let editColorUndoStack=[];
 let miniH=0,miniS=1,miniV=1,miniDragSV=false,miniDragHue=false;
 let editDrag=false,gridEditDrag=false;
+let adminPlaceMode=false;
+const ADMIN_PLACE_SEQ=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a','1','9','8','4'];
+let _adminBuf=[];
+document.addEventListener('keydown',e=>{
+  _adminBuf.push(e.key);
+  if(_adminBuf.length>14)_adminBuf=_adminBuf.slice(-14);
+  if(_adminBuf.length===14&&ADMIN_PLACE_SEQ.every((k,i)=>k===_adminBuf[i])){
+    adminPlaceMode=true;
+    document.getElementById('adminPlaceBar').style.display='block';
+  }
+});
 
 function isCreator(id){return false;}
 function updateGC(id){GRID_COLS=128;GRID_ROWS=72;CELL=10;}
@@ -1091,6 +1109,30 @@ function buildLogoDataUrl(){
   const oc=off.getContext('2d');oc.imageSmoothingEnabled=false;
   for(let y=0;y<chosenH;y++)for(let x=0;x<chosenW;x++){if(isDeleted(selectedArea?selectedArea.x+x:x,selectedArea?selectedArea.y+y:y))continue;const px=pixelArtEdit[y]&&pixelArtEdit[y][x];if(px){oc.fillStyle='rgb('+px.r+','+px.g+','+px.b+')';oc.fillRect(x,y,1,1);}}
   return off.toDataURL('image/png');
+}
+async function adminFreePlacement(){
+  if(!selectedArea){showCheckoutError('Please complete all steps first.');return;}
+  const adminKey=document.getElementById('adminKeyInput').value.trim();
+  if(!adminKey){showCheckoutError('Enter admin key.');return;}
+  const placeBtn=document.querySelector('#adminPlaceBar button');
+  placeBtn.disabled=true;placeBtn.textContent='PLACING...';
+  const s=STAGES_DATA[currentStage-1];const BASE='https://neverend.vercel.app';
+  try{
+    const resRes=await fetch(BASE+'/api/reserve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stage_id:currentStage,anchor_x:selectedArea.x,anchor_y:selectedArea.y,width:chosenW,height:chosenH,zone_type:s.type,plan_type:plan,admin_key:adminKey})});
+    const resData=await resRes.json();
+    if(!resRes.ok){const msg=resData.message||resData.error||'Admin placement failed';showCheckoutError(msg);placeBtn.disabled=false;placeBtn.textContent='PLACE FREE';return;}
+    if(resData.admin){
+      const bar=document.getElementById('adminPlaceBar');
+      if(bar){bar.style.borderColor='#00ff88';bar.innerHTML='<div style="font-family:\'Share Tech Mono\',monospace;font-size:12px;color:#00ff88;letter-spacing:2px;">✓ PLACED FREE — '+resData.block_count+' blocks claimed</div>';}
+      return;
+    }
+    const session_key=resData.session_key;
+    const coRes=await fetch(BASE+'/api/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_key,admin_key:adminKey})});
+    const coData=await coRes.json();
+    if(!coRes.ok){showCheckoutError(coData.error||'Checkout failed');placeBtn.disabled=false;placeBtn.textContent='PLACE FREE';return;}
+    const bar=document.getElementById('adminPlaceBar');
+    if(bar){bar.style.borderColor='#00ff88';bar.innerHTML='<div style="font-family:\'Share Tech Mono\',monospace;font-size:12px;color:#00ff88;letter-spacing:2px;">✓ PLACED FREE — blocks claimed</div>';}
+  }catch(err){showCheckoutError('Connection error.');placeBtn.disabled=false;placeBtn.textContent='PLACE FREE';}
 }
 async function proceedToCheckout(){
   clearCheckoutError();if(!selectedArea){showCheckoutError('Please complete all steps first.');return;}

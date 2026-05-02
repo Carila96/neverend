@@ -290,6 +290,19 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
 const BASE='https://neverend.vercel.app';
 const GRID_COLS=128,GRID_ROWS=72,CELL=10;
 
+// TITLES data — declared here (before init) to avoid TDZ when init() calls buildAchievements()
+var TITLES=[
+  {icon:'🌱',name:'NEWCOMER',rank:'RANK 1',minBlocks:1,desc:'You placed your first block. The neverEND grid now carries your mark. Small, but it\'s there.'},
+  {icon:'🔷',name:'REGULAR',rank:'RANK 2',minBlocks:10,desc:'Double digits. You\'re no tourist. Your presence on the grid is starting to register.'},
+  {icon:'⚡',name:'CONTENDER',rank:'RANK 3',minBlocks:50,desc:'Nearly 100 blocks. Players pass your territory without knowing who\'s behind it.'},
+  {icon:'🔥',name:'PRESENCE',rank:'RANK 4',minBlocks:100,desc:'100+ blocks. You are a fixture. Your logo persists across thousands of failed runs.'},
+  {icon:'👑',name:'DOMINANT',rank:'RANK 5',minBlocks:250,desc:'Quarter-thousand blocks. You dominate your corner of the stage. Unmissable.'},
+  {icon:'💎',name:'SOVEREIGN',rank:'RANK 6',minBlocks:1024,desc:'Over a thousand blocks. You own a stage landmark. Players memorize your placement.'},
+  {icon:'🏆',name:'MONOPOLIST',rank:'RANK ∞',minBlocks:9216,desc:'FULL STAGE MONOPOLY. The entire background is yours. Nobody finishes this game. Everybody sees you.'},
+];
+var TITLES_PER_PAGE=20;
+var blockCountGlobal=0,reservedAtGlobal=null,titlesPage=0;
+
 // Hide sales links in test mode
 (function(){
   const _tp=new URLSearchParams(window.location.search);
@@ -434,17 +447,6 @@ function showCancelFallback(){
 }
 
 // ACHIEVEMENTS / TITLES
-const TITLES=[
-  {icon:'🌱',name:'NEWCOMER',rank:'RANK 1',minBlocks:1,desc:'You placed your first block. The neverEND grid now carries your mark. Small, but it\'s there.'},
-  {icon:'🔷',name:'REGULAR',rank:'RANK 2',minBlocks:10,desc:'Double digits. You\'re no tourist. Your presence on the grid is starting to register.'},
-  {icon:'⚡',name:'CONTENDER',rank:'RANK 3',minBlocks:50,desc:'Nearly 100 blocks. Players pass your territory without knowing who\'s behind it.'},
-  {icon:'🔥',name:'PRESENCE',rank:'RANK 4',minBlocks:100,desc:'100+ blocks. You are a fixture. Your logo persists across thousands of failed runs.'},
-  {icon:'👑',name:'DOMINANT',rank:'RANK 5',minBlocks:250,desc:'Quarter-thousand blocks. You dominate your corner of the stage. Unmissable.'},
-  {icon:'💎',name:'SOVEREIGN',rank:'RANK 6',minBlocks:1024,desc:'Over a thousand blocks. You own a stage landmark. Players memorize your placement.'},
-  {icon:'🏆',name:'MONOPOLIST',rank:'RANK ∞',minBlocks:9216,desc:'FULL STAGE MONOPOLY. The entire background is yours. Nobody finishes this game. Everybody sees you.'},
-];
-let blockCountGlobal=0,reservedAtGlobal=null,titlesPage=0;
-const TITLES_PER_PAGE=20;
 
 function buildAchievements(blockCount){
   blockCountGlobal=blockCount;titlesPage=0;
@@ -488,6 +490,15 @@ function openTitleModal(t,earned){
   document.getElementById('titleModal').classList.add('open');
 }
 function closeTitleModal(e){if(e.target===document.getElementById('titleModal'))document.getElementById('titleModal').classList.remove('open');}
+
+// Expose to global scope for inline onclick handlers and external callers
+window.buildAchievements=buildAchievements;
+window.renderTitlePage=renderTitlePage;
+window.openTitleModal=openTitleModal;
+window.closeTitleModal=closeTitleModal;
+window.openCancelModal=openCancelModal;
+window.closeModal=closeModal;
+window.handleLogout=handleLogout;
 
 // AUTH
 const _SB_URL='https://cokcftutqkwhfbmdnhgl.supabase.co';

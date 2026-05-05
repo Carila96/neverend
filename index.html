@@ -1952,8 +1952,598 @@ const STAGES=[
  hg:[{x:496,y:240,w:16,h:32},{x:768,y:192,w:16,h:32}],
  focusZones:[],darkness:{enabled:true,type:'radius',radius:144},
  goal:{x:992,y:64,w:256,h:96},
- spawn:{x:48,y:592}}
+ spawn:{x:48,y:592}},
 
+// STAGE 51 — LOOK UP
+{name:'STAGE 51',sub:'Look up.',
+ scrollY:true,
+ plats:[
+   {x:0,y:2800,w:1280,h:32},
+   {x:0,y:0,w:32,h:2832},{x:1248,y:0,w:32,h:2832},
+   {x:128,y:2400,w:256,h:16},{x:512,y:2000,w:256,h:16},
+   {x:896,y:2400,w:256,h:16},{x:256,y:1600,w:256,h:16},
+   {x:768,y:1600,w:256,h:16},{x:512,y:1200,w:256,h:16},
+   {x:128,y:800,w:256,h:16},{x:896,y:800,w:256,h:16},
+   {x:512,y:400,w:256,h:16},{x:512,y:32,w:256,h:32},
+ ],
+ spikes:[
+   {x:160,y:2768,w:32,h:32},{x:192,y:2768,w:32,h:32},
+   {x:544,y:1968,w:32,h:32},{x:576,y:1968,w:32,h:32},
+   {x:288,y:1568,w:32,h:32},{x:800,y:1568,w:32,h:32},
+ ],
+ traps:[
+   {x:640,y:1200,w:32,h:32,tx:576,warn:false},
+   {x:256,y:800,w:32,h:32,tx:192,warn:false},
+ ],
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:560,y:2768,w:16,h:32}],
+ goal:{x:560,y:352,w:160,h:48},
+ spawn:{x:560,y:2768}},
+
+// STAGE 52 — ORBIT INTRO
+{name:'STAGE 52',sub:'It circles. Always.',
+ plats:[
+   {x:0,y:640,w:256,h:80},
+   {x:384,y:560,w:160,h:16},
+   {x:640,y:480,w:192,h:16},
+   {x:896,y:400,w:192,h:16},
+   {x:1056,y:240,w:224,h:480},
+ ],
+ spikes:[{x:256,y:608,w:32,h:32}],
+ orbits:[
+   {centerX:512,centerY:480,radius:96,speed:1.8,angle:0,size:14,color:'rgba(255,100,100,0.9)'},
+ ],
+ traps:[],fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:416,y:528,w:16,h:32}],
+ goal:{x:1072,y:144,w:160,h:96},
+ spawn:{x:48,y:592}},
+
+// STAGE 53 — THE SQUEEZE
+{name:'STAGE 53',sub:'Tight corners.',
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:0,y:0,w:1280,h:32},
+   {x:256,y:512,w:32,h:208},
+   {x:512,y:352,w:32,h:320},
+   {x:768,y:464,w:32,h:240},
+   {x:1024,y:288,w:32,h:384},
+ ],
+ spikes:[
+   {x:288,y:608,w:32,h:32},{x:544,y:608,w:32,h:32},
+   {x:800,y:608,w:32,h:32},{x:1056,y:608,w:32,h:32},
+ ],
+ traps:[
+   {x:128,y:608,w:32,h:32,tx:64,warn:false},
+   {x:400,y:608,w:32,h:32,tx:320,warn:false},
+ ],
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],orbits:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:672,y:608,w:16,h:32},{x:928,y:608,w:16,h:32}],
+ goal:{x:1088,y:208,w:160,h:80},
+ spawn:{x:48,y:592}},
+
+// STAGE 54 — SINKING AND SPIKED
+{name:'STAGE 54',sub:'The floor remembers nothing.',
+ plats:[
+   {x:0,y:640,w:160,h:80},
+   {x:192,y:592,w:128,h:16,sinking:true},
+   {x:400,y:544,w:128,h:16,sinking:true},
+   {x:608,y:496,w:128,h:16,sinking:true},
+   {x:816,y:448,w:128,h:16,sinking:true},
+   {x:1024,y:384,w:256,h:336},
+ ],
+ spikes:[
+   {x:192,y:608,w:32,h:32},{x:608,y:512,w:32,h:32},{x:816,y:416,w:32,h:32},
+ ],
+ traps:[{x:400,y:512,w:32,h:32,tx:336,warn:false}],
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],orbits:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:448,y:512,w:16,h:32},{x:864,y:416,w:16,h:32}],
+ goal:{x:1072,y:272,w:160,h:112},
+ spawn:{x:48,y:592}},
+
+// STAGE 55 — DOUBLE ORBIT
+{name:'STAGE 55',sub:'Two suns. Zero mercy.',
+ plats:[
+   {x:0,y:640,w:256,h:80},
+   {x:320,y:512,w:192,h:16},
+   {x:608,y:384,w:192,h:16},
+   {x:896,y:256,w:192,h:16},
+   {x:1088,y:192,w:192,h:448},
+ ],
+ spikes:[{x:256,y:608,w:32,h:32},{x:512,y:480,w:32,h:32}],
+ orbits:[
+   {centerX:416,centerY:464,radius:80,speed:2.0,angle:0,size:14,color:'rgba(255,100,100,0.9)'},
+   {centerX:704,centerY:336,radius:80,speed:-1.8,angle:Math.PI,size:14,color:'rgba(100,180,255,0.9)'},
+ ],
+ traps:[],fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:352,y:480,w:16,h:32},{x:640,y:352,w:16,h:32}],
+ goal:{x:1104,y:112,w:144,h:80},
+ spawn:{x:48,y:592}},
+
+// STAGE 56 — ORBIT MAZE
+{name:'STAGE 56',sub:'Navigate the rings.',
+ plats:[
+   {x:0,y:640,w:192,h:80},
+   {x:256,y:560,w:160,h:16},
+   {x:480,y:480,w:160,h:16},
+   {x:704,y:400,w:160,h:16},
+   {x:928,y:320,w:160,h:16},
+   {x:1088,y:224,w:192,h:496},
+ ],
+ spikes:[{x:192,y:608,w:32,h:32},{x:448,y:528,w:32,h:32}],
+ orbits:[
+   {centerX:336,centerY:512,radius:64,speed:2.2,angle:0,size:13,color:'rgba(255,100,100,0.9)'},
+   {centerX:560,centerY:432,radius:64,speed:-2.0,angle:1.5,size:13,color:'rgba(255,200,50,0.9)'},
+   {centerX:784,centerY:352,radius:64,speed:1.8,angle:3.0,size:13,color:'rgba(100,255,150,0.9)'},
+ ],
+ traps:[{x:256,y:528,w:32,h:32,tx:192,warn:false}],
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:288,y:528,w:16,h:32},{x:960,y:288,w:16,h:32}],
+ goal:{x:1104,y:128,w:144,h:96},
+ spawn:{x:48,y:592}},
+
+// STAGE 57 — LAVA AND ORBITS
+{name:'STAGE 57',sub:'The ground rises. So do they.',
+ plats:[
+   {x:0,y:640,w:192,h:80},
+   {x:256,y:528,w:160,h:16},
+   {x:512,y:432,w:160,h:16},
+   {x:736,y:336,w:160,h:16},
+   {x:960,y:240,w:320,h:480},
+ ],
+ spikes:[{x:192,y:608,w:32,h:32},{x:704,y:304,w:32,h:32}],
+ orbits:[
+   {centerX:384,centerY:480,radius:72,speed:2.5,angle:0,size:12,color:'rgba(255,120,50,0.9)'},
+   {centerX:640,centerY:384,radius:72,speed:-2.2,angle:2.0,size:12,color:'rgba(255,80,80,0.9)'},
+ ],
+ lava:[{y:750,speed:20,color:'rgba(255,80,0,0.9)'}],
+ traps:[],fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:288,y:496,w:16,h:32},{x:768,y:304,w:16,h:32}],
+ goal:{x:976,y:144,w:256,h:96},
+ spawn:{x:48,y:592}},
+
+// STAGE 58 — PHANTOM AND ORBIT
+{name:'STAGE 58',sub:'Trust nothing.',
+ plats:[
+   {x:0,y:640,w:224,h:80},
+   {x:256,y:544,w:160,h:16,phantom:true},
+   {x:496,y:448,w:160,h:16},
+   {x:736,y:352,w:160,h:16,phantom:true},
+   {x:960,y:256,w:320,h:464},
+ ],
+ spikes:[{x:224,y:608,w:32,h:32},{x:720,y:320,w:32,h:32}],
+ orbits:[
+   {centerX:576,centerY:400,radius:80,speed:2.8,angle:0,size:14,color:'rgba(255,100,255,0.9)'},
+ ],
+ traps:[{x:496,y:416,w:32,h:32,tx:432,warn:false}],
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:544,y:416,w:16,h:32},{x:992,y:224,w:16,h:32}],
+ goal:{x:976,y:160,w:256,h:96},
+ spawn:{x:48,y:592}},
+
+// STAGE 59 — TRIPLE ORBIT CORRIDOR
+{name:'STAGE 59',sub:'Three guards. One path.',
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:0,y:0,w:1280,h:32},
+   {x:0,y:320,w:128,h:320},
+   {x:1152,y:320,w:128,h:320},
+ ],
+ spikes:[
+   {x:128,y:288,w:32,h:32},{x:1120,y:288,w:32,h:32},
+ ],
+ orbits:[
+   {centerX:320,centerY:336,radius:112,speed:1.6,angle:0,size:16,color:'rgba(255,80,80,0.9)'},
+   {centerX:640,centerY:336,radius:112,speed:-1.6,angle:Math.PI/3,size:16,color:'rgba(255,200,50,0.9)'},
+   {centerX:960,centerY:336,radius:112,speed:1.6,angle:2*Math.PI/3,size:16,color:'rgba(100,200,255,0.9)'},
+ ],
+ traps:[],fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:304,y:608,w:16,h:32},{x:624,y:608,w:16,h:32}],
+ goal:{x:1152,y:208,w:128,h:112},
+ spawn:{x:48,y:592}},
+
+// STAGE 60 — ORBIT DARKNESS
+{name:'STAGE 60',sub:"You can't see them coming.",
+ plats:[
+   {x:0,y:640,w:256,h:80},
+   {x:320,y:528,w:176,h:16},
+   {x:576,y:416,w:176,h:16},
+   {x:832,y:304,w:176,h:16},
+   {x:1072,y:192,w:208,h:448},
+ ],
+ spikes:[{x:256,y:608,w:32,h:32},{x:816,y:272,w:32,h:32}],
+ orbits:[
+   {centerX:432,centerY:480,radius:80,speed:2.2,angle:0,size:14,color:'rgba(255,100,100,0.9)'},
+   {centerX:688,centerY:368,radius:80,speed:-2.0,angle:Math.PI/2,size:14,color:'rgba(100,180,255,0.9)'},
+ ],
+ darkness:{enabled:true,type:'flash',interval:3,duration:1.2},
+ traps:[],fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],
+ hg:[{x:352,y:496,w:16,h:32},{x:864,y:272,w:16,h:32}],
+ goal:{x:1088,y:96,w:160,h:96},
+ spawn:{x:48,y:592}},
+
+// STAGE 61 — VERTICAL ORBIT (scrollY)
+{name:'STAGE 61',sub:'Up and through.',
+ scrollY:true,
+ plats:[
+   {x:0,y:2800,w:1280,h:32},
+   {x:0,y:0,w:32,h:2832},{x:1248,y:0,w:32,h:2832},
+   {x:128,y:2400,w:256,h:16},
+   {x:640,y:2000,w:256,h:16},
+   {x:256,y:1600,w:256,h:16},
+   {x:768,y:1200,w:256,h:16},
+   {x:128,y:800,w:256,h:16},
+   {x:512,y:400,w:256,h:16},
+   {x:512,y:32,w:256,h:32},
+ ],
+ spikes:[
+   {x:160,y:2768,w:32,h:32},{x:192,y:2768,w:32,h:32},
+   {x:288,y:1568,w:32,h:32},
+ ],
+ orbits:[
+   {centerX:640,centerY:2320,radius:96,speed:1.8,angle:0,size:14,color:'rgba(255,100,100,0.9)'},
+   {centerX:384,centerY:1520,radius:80,speed:-2.0,angle:1.0,size:14,color:'rgba(100,200,255,0.9)'},
+   {centerX:896,centerY:1120,radius:80,speed:2.2,angle:2.0,size:14,color:'rgba(255,200,50,0.9)'},
+ ],
+ traps:[],fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:560,y:2768,w:16,h:32},{x:272,y:1568,w:16,h:32}],
+ goal:{x:560,y:352,w:160,h:48},
+ spawn:{x:560,y:2768}},
+
+// STAGE 62 — MIMIC AND ORBIT
+{name:'STAGE 62',sub:"One of them isn't what it looks like.",
+ plats:[
+   {x:0,y:640,w:192,h:80},
+   {x:256,y:544,w:192,h:16},
+   {x:528,y:448,w:192,h:16},
+   {x:800,y:352,w:192,h:16},
+   {x:992,y:208,w:288,h:432},
+ ],
+ spikes:[{x:192,y:608,w:32,h:32},{x:784,y:320,w:32,h:32}],
+ mimics:[{x:560,y:400,w:48,h:48}],
+ orbits:[
+   {centerX:400,centerY:496,radius:80,speed:2.0,angle:0,size:13,color:'rgba(255,100,100,0.9)'},
+ ],
+ traps:[{x:528,y:416,w:32,h:32,tx:464,warn:false}],
+ fall:[],move:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:288,y:512,w:16,h:32},{x:832,y:320,w:16,h:32}],
+ goal:{x:1008,y:112,w:256,h:96},
+ spawn:{x:48,y:592}},
+
+// STAGE 63 — PENDULUM GAUNTLET
+{name:'STAGE 63',sub:'Keep moving. Never stop.',
+ plats:[
+   {x:0,y:640,w:192,h:80},
+   {x:256,y:544,w:128,h:16},
+   {x:464,y:464,w:128,h:16},
+   {x:672,y:384,w:128,h:16},
+   {x:880,y:304,w:128,h:16},
+   {x:1072,y:208,w:208,h:432},
+ ],
+ spikes:[{x:192,y:608,w:32,h:32},{x:864,y:272,w:32,h:32}],
+ pendulums:[
+   {pivotX:320,pivotY:384,length:192,speed:1.5,maxAngle:0.9,angle:0},
+   {pivotX:576,pivotY:304,length:176,speed:1.8,maxAngle:0.85,angle:Math.PI/2},
+   {pivotX:800,pivotY:224,length:160,speed:2.0,maxAngle:0.8,angle:Math.PI},
+ ],
+ traps:[],fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],orbits:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:288,y:512,w:16,h:32},{x:912,y:272,w:16,h:32}],
+ goal:{x:1088,y:112,w:176,h:96},
+ spawn:{x:48,y:592}},
+
+// STAGE 64 — ORBIT SHOWER
+{name:'STAGE 64',sub:'Five targets. Pick a lane.',
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:0,y:0,w:1280,h:48},
+   {x:160,y:272,w:192,h:16},
+   {x:448,y:208,w:192,h:16},
+   {x:736,y:144,w:192,h:16},
+ ],
+ spikes:[
+   {x:0,y:608,w:32,h:32},{x:1248,y:608,w:32,h:32},
+ ],
+ orbits:[
+   {centerX:192,centerY:480,radius:96,speed:1.6,angle:0,size:12,color:'rgba(255,80,80,0.9)'},
+   {centerX:416,centerY:416,radius:96,speed:-1.8,angle:0.6,size:12,color:'rgba(255,150,50,0.9)'},
+   {centerX:640,centerY:352,radius:96,speed:2.0,angle:1.2,size:12,color:'rgba(200,255,50,0.9)'},
+   {centerX:864,centerY:288,radius:96,speed:-1.6,angle:1.8,size:12,color:'rgba(50,200,255,0.9)'},
+   {centerX:1088,centerY:224,radius:96,speed:1.8,angle:2.4,size:12,color:'rgba(200,100,255,0.9)'},
+ ],
+ traps:[],fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:176,y:608,w:16,h:32},{x:640,y:608,w:16,h:32}],
+ goal:{x:960,y:32,w:288,h:112},
+ spawn:{x:48,y:592}},
+
+// STAGE 65 — FALLING SPIKE ORBIT
+{name:'STAGE 65',sub:'Above and beside.',
+ plats:[
+   {x:0,y:640,w:224,h:80},
+   {x:288,y:528,w:176,h:16},
+   {x:544,y:432,w:176,h:16},
+   {x:800,y:336,w:176,h:16},
+   {x:1024,y:176,w:256,h:464},
+ ],
+ spikes:[{x:224,y:608,w:32,h:32},{x:784,y:304,w:32,h:32}],
+ fallingSpikes:[
+   {x:320,y:0,w:32,h:48,triggerX:256,speed:320,triggered:false,startY:0,currentY:0},
+   {x:576,y:0,w:32,h:48,triggerX:512,speed:300,triggered:false,startY:0,currentY:0},
+ ],
+ orbits:[
+   {centerX:464,centerY:480,radius:80,speed:2.2,angle:0,size:13,color:'rgba(255,100,100,0.9)'},
+   {centerX:720,centerY:384,radius:80,speed:-2.0,angle:Math.PI,size:13,color:'rgba(255,180,50,0.9)'},
+ ],
+ traps:[],fall:[],move:[],mimics:[],ceiling:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:320,y:496,w:16,h:32},{x:832,y:304,w:16,h:32}],
+ goal:{x:1040,y:80,w:224,h:96},
+ spawn:{x:48,y:592}},
+
+// STAGE 66 — CHASER AND SPIKES
+{name:'STAGE 66',sub:"It never tires.",
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:0,y:0,w:1280,h:48},
+   {x:0,y:400,w:256,h:240},
+   {x:352,y:464,w:128,h:16},
+   {x:576,y:368,w:128,h:16},
+   {x:800,y:272,w:128,h:16},
+   {x:1008,y:176,w:272,h:464},
+ ],
+ spikes:[
+   {x:256,y:608,w:32,h:32},{x:320,y:432,w:32,h:32},
+   {x:544,y:336,w:32,h:32},{x:768,y:240,w:32,h:32},
+ ],
+ chasers:[
+   {x:-128,y:480,w:128,h:160,speed:160,triggerX:128,active:false},
+ ],
+ traps:[{x:352,y:432,w:32,h:32,tx:288,warn:false}],
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],orbits:[],pendulums:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:608,y:336,w:16,h:32},{x:832,y:240,w:16,h:32}],
+ goal:{x:1024,y:80,w:256,h:96},
+ spawn:{x:48,y:576}},
+
+// STAGE 67 — ORBIT VERTIGO (scrollY)
+{name:'STAGE 67',sub:'Look up. They follow.',
+ scrollY:true,
+ plats:[
+   {x:0,y:2800,w:1280,h:32},
+   {x:0,y:0,w:32,h:2832},{x:1248,y:0,w:32,h:2832},
+   {x:256,y:2400,w:256,h:16},
+   {x:768,y:2000,w:256,h:16},
+   {x:128,y:1600,w:256,h:16},
+   {x:640,y:1200,w:256,h:16},
+   {x:256,y:800,w:256,h:16},
+   {x:512,y:400,w:256,h:16},
+   {x:512,y:32,w:256,h:32},
+ ],
+ spikes:[
+   {x:288,y:2768,w:32,h:32},
+   {x:160,y:1568,w:32,h:32},{x:192,y:1568,w:32,h:32},
+ ],
+ orbits:[
+   {centerX:640,centerY:2240,radius:96,speed:2.0,angle:0,size:14,color:'rgba(255,100,100,0.9)'},
+   {centerX:256,centerY:1760,radius:80,speed:-2.2,angle:1.0,size:14,color:'rgba(255,200,50,0.9)'},
+   {centerX:768,centerY:1360,radius:80,speed:2.0,angle:2.5,size:14,color:'rgba(100,200,255,0.9)'},
+   {centerX:384,centerY:960,radius:80,speed:-1.8,angle:0.5,size:14,color:'rgba(200,100,255,0.9)'},
+ ],
+ traps:[],fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:560,y:2768,w:16,h:32},{x:272,y:1568,w:16,h:32}],
+ goal:{x:560,y:352,w:160,h:48},
+ spawn:{x:560,y:2768}},
+
+// STAGE 68 — MOVING PLATFORM GAUNTLET
+{name:'STAGE 68',sub:'The platforms have opinions.',
+ plats:[
+   {x:0,y:640,w:192,h:80},
+   {x:1088,y:160,w:192,h:480},
+ ],
+ spikes:[{x:192,y:608,w:32,h:32}],
+ move:[
+   {x:256,y:560,w:160,h:16,vx:3.5,vy:0,rx:128,ry:0,sx:256,sy:560},
+   {x:512,y:480,w:160,h:16,vx:0,vy:3.0,rx:0,ry:80,sx:512,sy:480},
+   {x:736,y:400,w:160,h:16,vx:3.0,vy:3.0,rx:96,ry:64,sx:736,sy:400},
+   {x:896,y:304,w:160,h:16,vx:-3.5,vy:0,rx:96,ry:0,sx:896,sy:304},
+   {x:640,y:224,w:160,h:16,vx:0,vy:-2.5,rx:0,ry:64,sx:640,sy:224},
+ ],
+ traps:[],fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],orbits:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:560,y:192,w:16,h:32}],
+ goal:{x:1104,y:64,w:160,h:96},
+ spawn:{x:48,y:592}},
+
+// STAGE 69 — FULL SPECTRUM
+{name:'STAGE 69',sub:'Everything at once.',
+ plats:[
+   {x:0,y:640,w:192,h:80},
+   {x:256,y:544,w:160,h:16},
+   {x:512,y:448,w:160,h:16,sinking:true},
+   {x:768,y:352,w:160,h:16},
+   {x:992,y:192,w:288,h:448},
+ ],
+ spikes:[{x:192,y:608,w:32,h:32},{x:752,y:320,w:32,h:32}],
+ orbits:[
+   {centerX:400,centerY:496,radius:80,speed:2.4,angle:0,size:13,color:'rgba(255,100,100,0.9)'},
+   {centerX:656,centerY:400,radius:80,speed:-2.2,angle:Math.PI/2,size:13,color:'rgba(100,200,255,0.9)'},
+ ],
+ pendulums:[
+   {pivotX:880,pivotY:160,length:224,speed:1.8,maxAngle:0.9,angle:0},
+ ],
+ fallingSpikes:[
+   {x:288,y:0,w:32,h:48,triggerX:224,speed:360,triggered:false,startY:0,currentY:0},
+ ],
+ traps:[{x:512,y:416,w:32,h:32,tx:448,warn:false}],
+ fall:[],move:[],mimics:[],ceiling:[],lava:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:288,y:512,w:16,h:32},{x:800,y:320,w:16,h:32}],
+ goal:{x:1008,y:96,w:256,h:96},
+ spawn:{x:48,y:592}},
+
+// STAGE 70 — DARKNESS ORBIT
+{name:'STAGE 70',sub:'Darkness. Spinning. Both.',
+ plats:[
+   {x:0,y:640,w:256,h:80},
+   {x:352,y:528,w:192,h:16},
+   {x:640,y:416,w:192,h:16},
+   {x:896,y:304,w:192,h:16},
+   {x:1056,y:176,w:224,h:464},
+ ],
+ spikes:[{x:256,y:608,w:32,h:32},{x:624,y:384,w:32,h:32}],
+ orbits:[
+   {centerX:448,centerY:480,radius:88,speed:2.5,angle:0,size:15,color:'rgba(255,80,80,0.9)'},
+   {centerX:736,centerY:368,radius:88,speed:-2.3,angle:Math.PI/3,size:15,color:'rgba(200,100,255,0.9)'},
+   {centerX:992,centerY:256,radius:80,speed:2.0,angle:2*Math.PI/3,size:15,color:'rgba(255,200,50,0.9)'},
+ ],
+ darkness:{enabled:true,type:'radius',radius:128},
+ traps:[],fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],
+ hg:[{x:384,y:496,w:16,h:32},{x:928,y:272,w:16,h:32}],
+ goal:{x:1072,y:80,w:192,h:96},
+ spawn:{x:48,y:592}},
+
+// STAGE 71 — LAVA ORBIT SPIRAL
+{name:'STAGE 71',sub:'The floor and the sky, both hostile.',
+ plats:[
+   {x:0,y:640,w:192,h:80},
+   {x:0,y:0,w:1280,h:48},
+   {x:256,y:512,w:160,h:16},
+   {x:512,y:384,w:160,h:16},
+   {x:768,y:256,w:160,h:16},
+   {x:992,y:160,w:288,h:480},
+ ],
+ spikes:[
+   {x:192,y:608,w:32,h:32},{x:752,y:224,w:32,h:32},
+   {x:256,y:480,w:32,h:32},
+ ],
+ orbits:[
+   {centerX:384,centerY:464,radius:80,speed:2.8,angle:0,size:14,color:'rgba(255,100,100,0.9)'},
+   {centerX:640,centerY:336,radius:80,speed:-2.5,angle:1.0,size:14,color:'rgba(255,150,50,0.9)'},
+   {centerX:848,centerY:208,radius:72,speed:2.2,angle:2.0,size:14,color:'rgba(255,80,200,0.9)'},
+ ],
+ lava:[{y:740,speed:22,color:'rgba(255,80,0,0.9)'}],
+ traps:[],fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:288,y:480,w:16,h:32},{x:800,y:224,w:16,h:32}],
+ goal:{x:1008,y:64,w:256,h:96},
+ spawn:{x:48,y:592}},
+
+// STAGE 72 — THE PHANTOM ORBIT
+{name:'STAGE 72',sub:'Step and disappear.',
+ plats:[
+   {x:0,y:640,w:192,h:80},
+   {x:256,y:544,w:160,h:16,phantom:true},
+   {x:496,y:448,w:160,h:16,phantom:true},
+   {x:736,y:352,w:160,h:16,phantom:true},
+   {x:960,y:240,w:320,h:400},
+ ],
+ spikes:[{x:192,y:608,w:32,h:32},{x:720,y:320,w:32,h:32}],
+ orbits:[
+   {centerX:384,centerY:496,radius:80,speed:2.5,angle:0,size:13,color:'rgba(255,100,100,0.9)'},
+   {centerX:624,centerY:400,radius:80,speed:-2.3,angle:1.5,size:13,color:'rgba(100,200,255,0.9)'},
+   {centerX:848,centerY:304,radius:80,speed:2.0,angle:3.0,size:13,color:'rgba(255,200,50,0.9)'},
+ ],
+ traps:[{x:496,y:416,w:32,h:32,tx:432,warn:false}],
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:288,y:512,w:16,h:32},{x:768,y:320,w:16,h:32}],
+ goal:{x:976,y:144,w:256,h:96},
+ spawn:{x:48,y:592}},
+
+// STAGE 73 — EVERYTHING ORBITS
+{name:'STAGE 73',sub:'The whole stage spins.',
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:0,y:0,w:1280,h:48},
+   {x:0,y:400,w:128,h:240},
+   {x:1152,y:400,w:128,h:240},
+   {x:352,y:304,w:192,h:16},
+   {x:736,y:208,w:192,h:16},
+ ],
+ spikes:[
+   {x:128,y:608,w:32,h:32},{x:1120,y:608,w:32,h:32},
+   {x:128,y:368,w:32,h:32},{x:1120,y:368,w:32,h:32},
+ ],
+ orbits:[
+   {centerX:256,centerY:480,radius:80,speed:2.0,angle:0,size:13,color:'rgba(255,80,80,0.9)'},
+   {centerX:512,centerY:400,radius:80,speed:-2.2,angle:0.8,size:13,color:'rgba(255,200,50,0.9)'},
+   {centerX:768,centerY:320,radius:80,speed:2.4,angle:1.6,size:13,color:'rgba(50,200,255,0.9)'},
+   {centerX:1024,centerY:240,radius:80,speed:-2.0,angle:2.4,size:13,color:'rgba(200,80,255,0.9)'},
+   {centerX:448,centerY:256,radius:64,speed:3.0,angle:0,size:11,color:'rgba(255,150,80,0.9)'},
+   {centerX:832,centerY:160,radius:64,speed:-2.8,angle:Math.PI,size:11,color:'rgba(80,255,180,0.9)'},
+ ],
+ traps:[],fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:240,y:608,w:16,h:32},{x:640,y:608,w:16,h:32}],
+ goal:{x:560,y:32,w:160,h:96},
+ spawn:{x:48,y:592}},
+
+// STAGE 74 — THE LAST CLIMB (scrollY)
+{name:'STAGE 74',sub:'Almost there. Almost.',
+ scrollY:true,
+ plats:[
+   {x:0,y:2800,w:1280,h:32},
+   {x:0,y:0,w:32,h:2832},{x:1248,y:0,w:32,h:2832},
+   {x:128,y:2400,w:256,h:16},
+   {x:512,y:2100,w:256,h:16,sinking:true},
+   {x:896,y:1800,w:256,h:16},
+   {x:256,y:1500,w:256,h:16},
+   {x:640,y:1200,w:256,h:16,phantom:true},
+   {x:128,y:900,w:256,h:16},
+   {x:768,y:600,w:256,h:16},
+   {x:512,y:300,w:256,h:16},
+   {x:512,y:32,w:256,h:32},
+ ],
+ spikes:[
+   {x:160,y:2768,w:32,h:32},{x:192,y:2768,w:32,h:32},
+   {x:896,y:1768,w:32,h:32},
+   {x:160,y:868,w:32,h:32},
+ ],
+ orbits:[
+   {centerX:640,centerY:2240,radius:96,speed:2.0,angle:0,size:14,color:'rgba(255,100,100,0.9)'},
+   {centerX:1024,centerY:1940,radius:80,speed:-2.2,angle:1.0,size:14,color:'rgba(255,200,50,0.9)'},
+   {centerX:384,centerY:1640,radius:80,speed:2.0,angle:2.0,size:14,color:'rgba(100,200,255,0.9)'},
+   {centerX:768,centerY:1340,radius:80,speed:-1.8,angle:0.5,size:14,color:'rgba(200,100,255,0.9)'},
+   {centerX:256,centerY:1040,radius:72,speed:2.4,angle:1.5,size:14,color:'rgba(255,150,50,0.9)'},
+ ],
+ traps:[
+   {x:640,y:1168,w:32,h:32,tx:576,warn:false},
+ ],
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:560,y:2768,w:16,h:32},{x:272,y:1468,w:16,h:32}],
+ goal:{x:560,y:252,w:160,h:48},
+ spawn:{x:560,y:2768}},
+
+// STAGE 75 — CREATOR ZONE: ORBIT CATHEDRAL
+{name:'STAGE 75',sub:'The convergence.',
+ plats:[
+   {x:0,y:640,w:192,h:80},
+   {x:0,y:0,w:1280,h:48},
+   {x:0,y:400,w:96,h:240},
+   {x:1184,y:400,w:96,h:240},
+   {x:256,y:512,w:128,h:16},
+   {x:480,y:416,w:128,h:16,phantom:true},
+   {x:672,y:320,w:128,h:16,sinking:true},
+   {x:864,y:224,w:128,h:16},
+   {x:1040,y:160,w:144,h:480},
+ ],
+ spikes:[
+   {x:96,y:608,w:32,h:32},{x:1152,y:608,w:32,h:32},
+   {x:96,y:368,w:32,h:32},
+   {x:848,y:192,w:32,h:32},
+ ],
+ orbits:[
+   {centerX:320,centerY:464,radius:80,speed:2.2,angle:0,size:14,color:'rgba(255,80,80,0.9)'},
+   {centerX:544,centerY:368,radius:80,speed:-2.4,angle:Math.PI/3,size:14,color:'rgba(255,200,50,0.9)'},
+   {centerX:736,centerY:272,radius:80,speed:2.6,angle:2*Math.PI/3,size:14,color:'rgba(50,200,255,0.9)'},
+   {centerX:928,centerY:176,radius:72,speed:-2.2,angle:Math.PI,size:13,color:'rgba(200,80,255,0.9)'},
+   {centerX:192,centerY:576,radius:64,speed:3.0,angle:0.5,size:11,color:'rgba(255,150,80,0.9)'},
+   {centerX:1088,centerY:576,radius:64,speed:-3.0,angle:2.5,size:11,color:'rgba(80,255,200,0.9)'},
+ ],
+ pendulums:[
+   {pivotX:640,pivotY:48,length:256,speed:1.4,maxAngle:0.75,angle:0},
+ ],
+ chasers:[
+   {x:-96,y:496,w:96,h:144,speed:144,triggerX:96,active:false},
+ ],
+ lava:[{y:740,speed:18,color:'rgba(255,80,0,0.9)'}],
+ darkness:{enabled:true,type:'radius',radius:144},
+ traps:[{x:256,y:480,w:32,h:32,tx:192,warn:false}],
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],focusZones:[],
+ hg:[{x:288,y:480,w:16,h:32},{x:896,y:192,w:16,h:32}],
+ goal:{x:1056,y:64,w:192,h:96},
+ spawn:{x:48,y:592}}
 
 ];
 
@@ -1989,6 +2579,7 @@ function loadStage(n){
   fallingSpikesExt=(s.fallingSpikes||[]).map(f=>({...f,triggered:false,currentY:f.y}));
   chasers=(s.chasers||[]).map(c=>({...c,active:false}));
   pendulums=(s.pendulums||[]).map(p=>({w:32,h:32,...p,angle:0}));
+  orbits=(s.orbits||[]).map(o=>({...o}));
   const dk=s.darkness||{};
   darknessState={enabled:dk.enabled||false,timer:0,active:dk.type==='radius',interval:dk.interval||2,duration:dk.duration||0.5,type:dk.type||'flash',radius:dk.radius||160};
   // Init phantom platform state
@@ -1997,6 +2588,7 @@ function loadStage(n){
     if(p.sinking){p._origY=p.y;p._sinkVy=0;}
   }
   player={x:s.spawn.x,y:s.spawn.y,vx:0,vy:0,w:28,h:44,onGround:false,facing:1,walkT:0,prevX:0,prevY:0};
+  cameraY=0;
   stageNum=n;
   const _loadingStage=n;
   fetch('/api/grid?stage_id='+n)
@@ -2052,7 +2644,7 @@ function overlap(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
 // Track which moving platform player is standing on
 let playerPlatform=null;
 let mimics=[],ceilingTraps=[];
-let lavas=[],fallingSpikesExt=[],chasers=[],pendulums=[];
+let lavas=[],fallingSpikesExt=[],chasers=[],pendulums=[],orbits=[];
 let darknessState={enabled:false,timer:0,active:false,interval:2,duration:0.5};
 
 function resolvePlayer(){
@@ -2974,6 +3566,16 @@ function update(dt){
       }
       if(hit){lastDeathCause='spike';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
     }
+    // Orbits — rotating deadly orbs
+    for(const o of orbits){
+      o.angle+=o.speed*dt;
+      const ox=o.centerX+Math.cos(o.angle)*o.radius;
+      const oy=o.centerY+Math.sin(o.angle)*o.radius;
+      o._x=ox;o._y=oy;
+      const pcx=player.x+player.w/2,pcy=player.y+player.h/2;
+      const dist=Math.sqrt((pcx-ox)*(pcx-ox)+(pcy-oy)*(pcy-oy));
+      if(dist<=o.size+10){lastDeathCause='spike';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
+    }
     // Phantom platforms — vanish timer
     for(const p of [...platforms,...movingPlatforms]){
       if(!p.phantom)continue;
@@ -2999,12 +3601,10 @@ function update(dt){
       const next=stageNum+1;
       checkTitlesOnClear(next);
       timeLeft=Math.min(MAX_TIME,timeLeft+3);score+=500+Math.floor(timeLeft*10);sfxGoal();
-      if(testMode&&next>20){
-        state='testcomplete';stopBGM();
-        if(_currentUser){
-          const _pn=_getPlayerName()||'';
-          fetch('/api/auth-sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:_currentUser.id,player_name:_pn||undefined,total_deaths:getStat('totalDeaths',0),best_stage:getStat('bestStage',1),total_play_time:getStat('totalPlayTime',0),titles_earned:getTitles(),is_tester:true,record_hall_of_legends:true,hall_stage_reached:20})}).catch(()=>{});
-        }
+      if(testMode&&stageNum>=20){
+        floatMsgs.push({txt:'TEST PLAY ENDS HERE — Full game coming soon!',x:W/2,y:H/2,life:5,color:'rgba(255,220,50,1)'});
+        stopBGM();
+        setTimeout(function(){resetRun();state='title';},5000);
       } else if(next<=STAGES.length){
         loadStage(next);floatMsgs.push({txt:'STAGE '+next+'!',x:W/2,y:H/2,life:2,color:'rgba(255,220,50,1)'});
         if(testMode&&next===5&&!_stage5ToastShown){_stage5ToastShown=true;floatMsgs.push({txt:'Playing well! Your progress is being recorded for credits.',x:W/2,y:H/2+64,life:5,color:'rgba(100,255,180,0.95)'});}
@@ -3086,6 +3686,13 @@ function update(dt){
     if(keys['s']&&!prevKeys['s'])shareDeathCount();
   }
   Object.keys(keys).forEach(k=>{if(keys[k])prevKeys[k]=true;else delete prevKeys[k];});
+  // Vertical camera follow for scrollY stages
+  if(STAGES[stageNum-1]?.scrollY){
+    const targetY=player.y+player.h/2-H/2;
+    cameraY+=(targetY-cameraY)*0.12;
+    const maxCamY=Math.max(0,(STAGES[stageNum-1].plats.reduce((m,p)=>Math.max(m,p.y+p.h),0))-H);
+    cameraY=Math.max(0,Math.min(cameraY,maxCamY));
+  }else{cameraY=0;}
 }
 
 // ── TITLE SYSTEM ──
@@ -3194,6 +3801,7 @@ let deathParticles=[];
 let damnScale=1.0;
 let deathTimer=0;
 let slowTimer=0,shakeTimer=0;
+let cameraY=0;
 
 function triggerDeath(){
   damnEffect={x:player.x+player.w/2,y:player.y};damnTimer=1.5;state='dead';sfxDamn();stopBGM();
@@ -3268,6 +3876,7 @@ function loop(ts){
   else if(state==='testcomplete'){drawTestComplete();}
   else{
     drawBg(false);
+    ctx.save();ctx.translate(0,-Math.round(cameraY));
     for(const b of fallingBlocks){if(!b.gone)drawPlatform(b,b.triggered&&!b.falling&&b.shakeT>0);}
     for(const p of platforms){if(p.phantom)drawPhantomPlatform(p);else if(p.sinking)drawSinkingPlatform(p);else drawPlatform(p);}
     for(const p of movingPlatforms){if(p.phantom)drawPhantomPlatform(p);else if(p.sinking)drawSinkingPlatform(p);else drawMovingPlatform(p);}
@@ -3276,11 +3885,23 @@ function loop(ts){
     for(const f of fallingSpikesExt)drawFallingSpikeExt(f);
     for(const c of chasers)drawChaser(c);
     for(const p of pendulums)drawPendulum(p);
+    for(const o of orbits){
+      if(o._x==null)continue;
+      ctx.save();
+      ctx.shadowColor=o.color;ctx.shadowBlur=12;
+      ctx.fillStyle=o.color;
+      ctx.beginPath();ctx.arc(o._x,o._y,o.size,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle=o.color.replace('0.9','0.1');ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(o.centerX,o.centerY,o.radius,0,Math.PI*2);ctx.stroke();
+      ctx.restore();
+    }
     for(const h of hourglasses)drawHourglass(h);
     for(const m of mimics)drawMimic(m);
     for(const c of ceilingTraps)drawCeilingTrap(c);
     for(const l of lavas)drawLava(l);
-    drawGoal();drawPlayer();drawFloatMsgs();drawUI();
+    drawGoal();drawPlayer();drawFloatMsgs();
+    ctx.restore();
+    drawUI();
     drawDarkness();
     if(state==='pause')drawPause();
     if(state==='dead'){

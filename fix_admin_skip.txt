@@ -1,0 +1,42 @@
+C:\neverEND\index.htmlを修正してください。
+修正前に必ずファイルを読んで現在のコードを確認してから変更すること。
+
+## 修正内容
+
+310行目付近のapSkipStage関数を以下に置き換えてください。
+
+現在のコード：
+```
+function apSkipStage(){
+  const n=parseInt(document.getElementById('apSkipInput').value)||1;
+  if(typeof loadStage==='function'){
+    loadStage(n);
+    if(typeof startBGM==='function'&&typeof getBGMTrack==='function')startBGM(getBGMTrack(n));
+    state='play';
+    toggleAdminPanel();
+  }
+}
+```
+
+置き換え後のコード：
+```
+function apSkipStage(){
+  const n=parseInt(document.getElementById('apSkipInput').value)||1;
+  if(typeof loadStage==='function'){
+    stageNum=n;
+    loadStage(n);
+    timeLeft=hardMode?25:30;
+    floatMsgs=[];
+    state='play';
+    setTimeout(()=>{if(typeof startBGM==='function'&&typeof getBGMTrack==='function')startBGM(getBGMTrack(n));},100);
+    toggleAdminPanel();
+  }
+}
+```
+
+## 完了後
+
+git add index.html
+git commit -m "fix: apSkipStage missing stageNum, timeLeft reset and BGM delay"
+git push origin main
+npx vercel --prod

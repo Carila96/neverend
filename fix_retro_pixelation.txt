@@ -1,0 +1,47 @@
+C:\neverEND\index.htmlを修正してください。
+修正前に必ずファイルを読んで現在のコードを確認してから変更すること。
+
+## 修正1：オフスクリーンcanvasを使い回しに変更
+
+let変数宣言部分（retroMode=falseがある付近）に以下を追加：
+```javascript
+const retroOffCanvas=document.createElement('canvas');
+retroOffCanvas.width=80;retroOffCanvas.height=45;
+const retroOffCtx=retroOffCanvas.getContext('2d');
+```
+
+## 修正2：drawLogoRetro関数を修正
+
+現在の2375-2384行のdrawLogoRetro関数を以下に置き換え：
+```javascript
+function drawLogoRetro(img,dx,dy,dw,dh){
+  if(!retroMode){ctx.drawImage(img,dx,dy,dw,dh);return;}
+  const off=document.createElement('canvas');
+  off.width=80;off.height=45;
+  const oc=off.getContext('2d');
+  oc.imageSmoothingEnabled=false;
+  oc.drawImage(img,0,0,80,45);
+  ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(off,dx,dy,dw,dh);
+  ctx.imageSmoothingEnabled=true;
+}
+```
+
+## 修正3：drawRetroOverlay関数の末尾に全画面低解像度化を追加
+
+現在のdrawRetroOverlay関数の最後（vignette描画の後、閉じ括弧の前）に以下を追加：
+```javascript
+  // Full-screen pixelation: downsample to 80×45 then upscale
+  retroOffCtx.imageSmoothingEnabled=false;
+  retroOffCtx.drawImage(canvas,0,0,80,45);
+  ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(retroOffCanvas,0,0,W,H);
+  ctx.imageSmoothingEnabled=true;
+```
+
+## 完了後
+
+git add index.html
+git commit -m "feat: retro mode full-screen 80x45 pixelation"
+git push origin main
+npx vercel --prod

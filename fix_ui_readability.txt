@@ -1,0 +1,84 @@
+Fix UI readability issues in index.html and app/pages/mypage.html.
+Read both files before making changes.
+
+## Fix 1: index.html — SETTINGS button (around line 2641-2646)
+
+Current:
+- font: '10px "Courier New"'
+- fillStyle: rgba(255,255,255,0.6)
+- shadowBlur: 6
+
+Change to:
+- font: '13px "Courier New"' (larger)
+- fillStyle: rgba(255,255,255,0.9) (brighter)
+- shadowBlur: 0 (remove neon glow)
+- strokeStyle: rgba(255,255,255,0.7) (cleaner border)
+
+## Fix 2: index.html — MY PAGE button (around line 2650-2655)
+
+Current:
+- font: '10px "Courier New"'
+- fillStyle: rgba(255,220,50,0.6)
+- shadowBlur: 6
+
+Change to:
+- font: '13px "Courier New"'
+- fillStyle: rgba(255,220,50,1.0)
+- shadowBlur: 0
+- strokeStyle: rgba(255,220,50,0.8)
+
+## Fix 3: index.html — WORLD DEATHS display (around line 2696-2698)
+
+Current:
+- font: '11px "Courier New"'
+- fillStyle: rgba(120,80,80,0.7)
+
+Change to:
+- font: '13px "Courier New"'
+- fillStyle: rgba(220,120,120,0.9)
+
+## Fix 4: index.html — deaths and best stage display (around line 2681-2685)
+
+Current:
+- font: '11px "Courier New"'
+- fillStyle: rgba(255,80,80,0.35) and rgba(160,185,255,0.3)
+
+Change to:
+- font: '12px "Courier New"'
+- fillStyle: rgba(255,100,100,0.7) and rgba(160,185,255,0.65)
+
+## Fix 5: app/pages/mypage.html — Remove neon styling
+
+Read the full mypage.html CSS section.
+Find all instances of:
+- text-shadow with neon glow effects (e.g. 0 0 10px, 0 0 20px color values)
+- Very low opacity text (opacity < 0.7)
+- Small font sizes (< 13px for body text)
+
+Replace neon text-shadow with either:
+- No text-shadow (clean)
+- Simple subtle shadow: 0 1px 2px rgba(0,0,0,0.5)
+
+Increase any body text under 13px to 13px minimum.
+Increase any heading text under 16px to 16px minimum.
+
+Make sure the page looks clean and readable like a settings screen, not a glowing neon sign.
+
+## Fix 6: app/pages/mypage.html — Achievement modal and pagination
+
+Verify these were implemented correctly by Claude Code previously:
+- Clicking achievement badge opens modal with name, description, earned status, date
+- Modal has close button or click-outside-to-close
+- Achievements are paginated (not all on one page)
+- Login button does not overlap achievement content
+
+If any of these are missing or broken, implement them.
+
+## Completion
+
+git add index.html app/pages/mypage.html
+git commit -m "fix: title screen readability, mypage neon removal, achievement modal"
+git push origin main
+npx vercel --prod
+
+Verify both pages return 200 and report all changes made.

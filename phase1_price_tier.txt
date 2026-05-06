@@ -1,0 +1,139 @@
+Implement Phase 1: Dynamic pricing tier system based on cumulative claimed blocks.
+
+Read all relevant files before making any changes.
+
+## Task 1: Create /api/price-tier.js
+
+Create a new file: C:\neverEND\api\price-tier.js
+
+This API returns the current price tier based on total claimed blocks in Supabase.
+
+```javascript
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+
+const PRICE_TIERS = [
+  { minBlocks: 0,       maxBlocks: 20000,  monthlyFull: 1000,  pricePerBlock: 0.40 },
+  { minBlocks: 20001,   maxBlocks: 50000,  monthlyFull: 2000,  pricePerBlock: 0.70 },
+  { minBlocks: 50001,   maxBlocks: 90000,  monthlyFull: 3500,  pricePerBlock: 1.10 },
+  { minBlocks: 90001,   maxBlocks: 140000, monthlyFull: 5000,  pricePerBlock: 1.60 },
+  { minBlocks: 140001,  maxBlocks: 300000, monthlyFull: 7500,  pricePerBlock: 2.40 },
+  { minBlocks: 300001,  maxBlocks: 800000, monthlyFull: 10000, pricePerBlock: 3.10 },
+  { minBlocks: 800001,  maxBlocks: Infinity, monthlyFull: 12500, pricePerBlock: 4.00 },
+];
+
+export default async function handler(req, res) {
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+
+  // Count total claimed blocks across all stages
+  const { count, error } = await supabase
+    .from('owned_blocks')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'claimed');
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  const totalClaimed = count || 0;
+
+  // Find current tier
+  const currentTier = PRICE_TIERS.find(t => totalClaimed <= t.maxBlocks) || PRICE_TIERS[PRICE_TIERS.length - 1];
+  const currentTierIndex = PRICE_TIERS.indexOf(currentTier);
+  const nextTier = PRICE_TIERS[currentTierIndex + 1] || null;
+
+  // Permanent purchase: unlocks at $7,500 tier
+  const permanentPurchaseUnlocked = currentTier.monthlyFull >= 7500;
+
+  return res.status(200).json({
+    totalClaimedBlocks: totalClaimed,
+    currentTier: {
+      monthlyFull: currentTier.monthlyFull,
+      pricePerBlock: currentTier.pricePerBlock,
+      minBlocks: currentTier.minBlocks,
+      maxBlocks: currentTier.maxBlocks,
+    },
+    nextTier: nextTier ? {
+      monthlyFull: nextTier.monthlyFull,
+      pricePerBlock: nextTier.pricePerBlock,
+      triggerBlocks: nextTier.minBlocks,
+      blocksRemaining: nextTier.minBlocks - totalClaimed,
+    } : null,
+    permanentPurchaseUnlocked,
+    permanentPurchasePrice: currentTier.monthlyFull * 24,
+  });
+}
+```
+
+## Task 2: Update /api/reserve.js
+
+Read the current reserve.js first.
+
+Add price tier validation at the start of the handler:
+- Fetch current price tier from Supabase (same count query as above)
+- Calculate price based on current tier and block count
+- Add pricePerBlock and monthlyTotal to the response
+
+The price must be calculated BEFORE blocks are reserved, using the pre-purchase claimed count.
+
+After calculating price, add these fields to the session_contracts insert:
+- price_per_block (the rate at time of purchase)
+- monthly_total (calculated total)
+
+If subscription_contracts table does not have these columns, add them via Supabase SQL before inserting.
+
+## Task 3: Verify Supabase schema
+
+Run this SQL in Supabase to check if price columns exist:
+```sql
+SELECT column_name FROM information_schema.columns 
+WHERE table_name = 'subscription_contracts';
+```
+
+If price_per_block and monthly_total columns do not exist, add them:
+```sql
+ALTER TABLE subscription_contracts 
+ADD COLUMN IF NOT EXISTS price_per_block numeric,
+ADD COLUMN IF NOT EXISTS monthly_total numeric;
+```
+
+## Task 4: Test the new API
+
+After deploying, test with:
+```
+curl https://neverend.vercel.app/api/price-tier
+```
+
+Expected response example:
+```json
+{
+  "totalClaimedBlocks": 4,
+  "currentTier": {
+    "monthlyFull": 1000,
+    "pricePerBlock": 0.40,
+    "minBlocks": 0,
+    "maxBlocks": 20000
+  },
+  "nextTier": {
+    "monthlyFull": 2000,
+    "pricePerBlock": 0.70,
+    "triggerBlocks": 20001,
+    "blocksRemaining": 19997
+  },
+  "permanentPurchaseUnlocked": false,
+  "permanentPurchasePrice": 24000
+}
+```
+
+## Completion
+
+After all tasks:
+git add api/price-tier.js api/reserve.js
+git commit -m "feat: dynamic price tier API based on cumulative claimed blocks"
+git push origin main
+npx vercel --prod
+
+Verify:
+curl https://neverend.vercel.app/api/price-tier returns 200 with correct data
+curl -X POST https://neverend.vercel.app/api/reserve with test data returns session_key
+
+Report what was changed and confirm both curl tests pass.

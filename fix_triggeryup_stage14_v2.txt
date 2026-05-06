@@ -1,0 +1,92 @@
+C:\neverEND\index.htmlを修正してください。
+修正前に必ずファイルを読んで現在のコードを確認してから変更すること。
+
+## 修正1：triggerYUpをfallingSpikesに追加
+
+2792-2795行付近の以下のコード：
+```javascript
+if(!f.triggered){
+  const xOk=f.triggerX==null||player.x>f.triggerX;
+  const yOk=f.triggerY==null||player.y>f.triggerY;
+  if(xOk&&yOk)f.triggered=true;
+}
+```
+
+以下に置き換え：
+```javascript
+if(!f.triggered){
+  const xOk=f.triggerX==null||player.x>f.triggerX;
+  const yOk=f.triggerY==null||player.y>f.triggerY;
+  const yUpOk=f.triggerYUp==null||player.y<f.triggerYUp;
+  if(xOk&&yOk&&yUpOk)f.triggered=true;
+}
+```
+
+## 修正2：triggerYUpをchasersに追加
+
+chasersのtrigger判定を探して以下に修正：
+```javascript
+if(!c.active){
+  const xOk=c.triggerX==null||player.x>c.triggerX;
+  const yOk=c.triggerY==null||player.y>c.triggerY;
+  const yUpOk=c.triggerYUp==null||player.y<c.triggerYUp;
+  if(xOk&&yOk&&yUpOk)c.active=true;
+}
+```
+
+## 修正3：triggerYUpをtrapsに追加
+
+trapsのtrigger判定を探して同様にtriggerYUp対応を追加する。
+既存のtrap trigger条件にyUpOk（triggerYUp==null または player.y<triggerYUp）を追加。
+
+## 修正4：Stage 14を完全置き換え
+
+// STAGE 14 — THE GAUNTLETから始まるオブジェクトを以下に置き換え：
+
+{name:'STAGE 14',sub:'There is only one way.',
+ plats:[
+   {x:0,y:0,w:16,h:720},{x:1264,y:0,w:16,h:720},
+   {x:0,y:0,w:1280,h:32},
+   {x:0,y:688,w:1280,h:32},
+   {x:16,y:192,w:1088,h:32},
+   {x:192,y:384,w:1088,h:32},
+   {x:16,y:576,w:1088,h:32},
+ ],
+ spikes:[
+   {x:1104,y:160,w:32,h:32},{x:1136,y:160,w:32,h:32},{x:1168,y:160,w:32,h:32},
+   {x:16,y:352,w:32,h:32},{x:48,y:352,w:32,h:32},{x:80,y:352,w:32,h:32},
+   {x:1104,y:544,w:32,h:32},{x:1136,y:544,w:32,h:32},{x:1168,y:544,w:32,h:32},
+ ],
+ traps:[
+   {x:400,y:160,w:32,h:32,tx:336,warn:false},
+   {x:600,y:160,w:32,h:32,tx:536,warn:false},
+   {x:800,y:160,w:32,h:32,tx:736,warn:false},
+   {x:400,y:352,w:32,h:32,tx:464,warn:false,triggerYUp:300},
+   {x:600,y:352,w:32,h:32,tx:664,warn:false,triggerYUp:300},
+   {x:800,y:352,w:32,h:32,tx:864,warn:false,triggerYUp:300},
+   {x:400,y:544,w:32,h:32,tx:336,warn:false,triggerY:400},
+   {x:600,y:544,w:32,h:32,tx:536,warn:false,triggerY:400},
+   {x:800,y:544,w:32,h:32,tx:736,warn:false,triggerY:400},
+ ],
+ fallingSpikes:[
+   {x:256,y:0,w:32,h:48,triggerX:208,speed:480,triggered:false,startY:0,currentY:0},
+   {x:512,y:0,w:32,h:48,triggerX:464,speed:480,triggered:false,startY:0,currentY:0},
+   {x:768,y:0,w:32,h:48,triggerX:720,speed:480,triggered:false,startY:0,currentY:0},
+   {x:1024,y:0,w:32,h:48,triggerX:976,speed:480,triggered:false,startY:0,currentY:0},
+   {x:256,y:192,w:32,h:48,triggerX:null,triggerYUp:280,speed:400,triggered:false,startY:192,currentY:192},
+   {x:512,y:192,w:32,h:48,triggerX:null,triggerYUp:280,speed:400,triggered:false,startY:192,currentY:192},
+   {x:768,y:192,w:32,h:48,triggerX:null,triggerYUp:280,speed:400,triggered:false,startY:192,currentY:192},
+   {x:256,y:384,w:32,h:48,triggerX:null,triggerY:400,speed:400,triggered:false,startY:384,currentY:384},
+   {x:512,y:384,w:32,h:48,triggerX:null,triggerY:400,speed:400,triggered:false,startY:384,currentY:384},
+   {x:768,y:384,w:32,h:48,triggerX:null,triggerY:400,speed:400,triggered:false,startY:384,currentY:384},
+ ],
+ fall:[],move:[],mimics:[],ceiling:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ hg:[{x:640,y:160,w:16,h:32},{x:640,y:576,w:16,h:32}],
+ goal:{x:16,y:608,w:64,h:80},spawn:{x:48,y:48}},
+
+## 完了後
+
+git add index.html
+git commit -m "feat: triggerYUp support, stage 14 redesign with triggerY/YUp traps"
+git push origin main
+npx vercel --prod

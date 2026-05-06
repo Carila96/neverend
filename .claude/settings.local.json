@@ -25,7 +25,12 @@
       "Bash(mv -f success.html public/success.html)",
       "Bash(ls \"docs/specification/map_design_rules .md\")",
       "Bash(rm \"map_design_rules.md\")",
-      "Bash(mv \"map_design_rules.md\" \"docs/specification/map_design_rules.md\")"
+      "Bash(mv \"map_design_rules.md\" \"docs/specification/map_design_rules.md\")",
+      "Bash(grep -v \"pendulums:\\\\[\\\\]\\\\|pendulums:$\")",
+      "Bash(python -c ' *)",
+      "Bash(where python *)",
+      "Bash(where python3 *)",
+      "Bash(Get-ChildItem \"C:\\\\neverEND\\\\public\\\\\" 2>&1 *)"
     ]
   }
 }

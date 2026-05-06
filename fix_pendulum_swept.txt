@@ -1,0 +1,49 @@
+C:\neverEND\index.htmlを修正してください。
+修正前に必ずファイルを読んで現在のコードを確認してから変更すること。
+
+## 修正1：playerオブジェクトにprevX・prevYを追加
+
+playerオブジェクトの初期定義を探してください（px, py, vx, vy等が定義されている箇所）。
+そこにprevX:0, prevY:0を追加してください。
+
+## 修正2：updateループの先頭でprevX・prevYを保存
+
+update関数内の最初のほう（プレイヤーの移動処理が始まる前）に以下を追加：
+player.prevX = player.x + player.w/2;
+player.prevY = player.y + player.h/2;
+
+## 修正3：振り子の当たり判定をsweep判定に変更
+
+現在の2716行付近のコード：
+```
+if(Math.sqrt((pcx-tipX)*(pcx-tipX)+(pcy-tipY)*(pcy-tipY))<=16){lastDeathCause='spike';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
+```
+
+これを以下に置き換えてください：
+```
+// Swept collision: check segment from prev frame to current frame against pendulum tip
+const ax=player.prevX||pcx, ay=player.prevY||pcy;
+const bx=pcx, by=pcy;
+const cx=tipX, cy=tipY, r=16;
+const dx=bx-ax, dy=by-ay;
+const fx=ax-cx, fy=ay-cy;
+const a=dx*dx+dy*dy;
+const b=2*(fx*dx+fy*dy);
+const c=fx*fx+fy*fy-r*r;
+const disc=b*b-4*a*c;
+let hit=false;
+if(a<0.0001){hit=c<=0;}
+else if(disc>=0){
+  const t1=(-b-Math.sqrt(disc))/(2*a);
+  const t2=(-b+Math.sqrt(disc))/(2*a);
+  if((t1>=0&&t1<=1)||(t2>=0&&t2<=1)||(t1<0&&t2>1))hit=true;
+}
+if(hit){lastDeathCause='spike';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
+```
+
+## 完了後
+
+git add index.html
+git commit -m "fix: pendulum swept collision to prevent pass-through on fast movement"
+git push origin main
+npx vercel --prod

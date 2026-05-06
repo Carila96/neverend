@@ -1,0 +1,177 @@
+Implement Phase 2: Update sales_page.html to use dynamic pricing from /api/price-tier (merged into /api/grid).
+
+Read app/pages/sales_page.html fully before making any changes.
+
+## Task 1: Fetch current price tier on page load
+
+At the top of the script section, add a function to fetch current pricing:
+
+```javascript
+let currentPriceTier = {
+  monthlyFull: 1000,
+  pricePerBlock: 0.40,
+  totalClaimedBlocks: 0,
+  nextTier: { monthlyFull: 2000, pricePerBlock: 0.70, triggerBlocks: 20001, blocksRemaining: 20001 },
+  permanentPurchaseUnlocked: false,
+  permanentPurchasePrice: 24000
+};
+
+async function fetchPriceTier() {
+  try {
+    const res = await fetch('/api/grid?tier=1');
+    const data = await res.json();
+    if (data.currentTier) {
+      currentPriceTier = data;
+      updatePriceDisplay();
+    }
+  } catch(e) {
+    console.warn('Price tier fetch failed, using defaults');
+  }
+}
+
+function updatePriceDisplay() {
+  const t = currentPriceTier;
+  // Update stat bar
+  const statEl = document.getElementById('statPriceFrom');
+  if (statEl) statEl.textContent = 'From $' + Math.ceil(t.currentTier.pricePerBlock) + '/block';
+  
+  // Update full stage price
+  const monoEl = document.getElementById('monoPrice');
+  if (monoEl) monoEl.textContent = '$' + t.currentTier.monthlyFull.toLocaleString() + '/mo';
+  
+  // Update progress bar
+  updateProgressBar();
+  
+  // Update preset prices
+  updatePresetPrices();
+}
+```
+
+Call fetchPriceTier() when the page loads (add at end of script).
+
+## Task 2: Add price progress bar to stats section
+
+Find the stats-bar div and add a new row below it showing:
+- Current price tier
+- Progress to next tier
+- Blocks remaining until next price increase
+
+```html
+<div id="priceTierBar" style="background:#0a0a18;border-bottom:1px solid #1e1e35;padding:12px 40px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+    <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#9aa2b5;letter-spacing:1px;">
+      CURRENT PRICE: <span id="tierCurrentPrice" style="color:#4ab8ff">$1,000/stage/mo</span>
+    </span>
+    <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#9aa2b5;letter-spacing:1px;">
+      NEXT: <span id="tierNextPrice" style="color:#f5c842">$2,000/stage/mo</span>
+    </span>
+  </div>
+  <div style="background:#1e1e35;height:6px;border-radius:0;overflow:hidden;">
+    <div id="tierProgressBar" style="background:linear-gradient(90deg,#4ab8ff,#4ade80);height:100%;width:0%;transition:width 0.5s;"></div>
+  </div>
+  <div style="margin-top:4px;font-family:'Share Tech Mono',monospace;font-size:9px;color:#6e7585;letter-spacing:1px;">
+    <span id="tierBlocksClaimed">0</span> blocks claimed — 
+    <span id="tierBlocksRemaining">20,001</span> blocks until next price increase
+  </div>
+</div>
+```
+
+Add updateProgressBar() function:
+```javascript
+function updateProgressBar() {
+  const t = currentPriceTier;
+  if (!t.currentTier) return;
+  
+  document.getElementById('tierCurrentPrice').textContent = '$' + t.currentTier.monthlyFull.toLocaleString() + '/stage/mo';
+  document.getElementById('tierBlocksClaimed').textContent = t.totalClaimedBlocks.toLocaleString();
+  
+  if (t.nextTier) {
+    document.getElementById('tierNextPrice').textContent = '$' + t.nextTier.monthlyFull.toLocaleString() + '/stage/mo';
+    document.getElementById('tierBlocksRemaining').textContent = t.nextTier.blocksRemaining.toLocaleString();
+    const progress = ((t.totalClaimedBlocks - t.currentTier.minBlocks) / (t.nextTier.triggerBlocks - t.currentTier.minBlocks)) * 100;
+    document.getElementById('tierProgressBar').style.width = Math.min(100, Math.max(0, progress)) + '%';
+  } else {
+    document.getElementById('tierNextPrice').textContent = 'MAX TIER';
+    document.getElementById('tierBlocksRemaining').textContent = '0';
+    document.getElementById('tierProgressBar').style.width = '100%';
+  }
+}
+```
+
+## Task 3: Update calculatePrice() to use dynamic price per block
+
+Find the calculatePrice() function and update it to use currentPriceTier:
+
+```javascript
+function calculatePrice(blockCount) {
+  const ppb = currentPriceTier.currentTier ? currentPriceTier.currentTier.pricePerBlock : 0.40;
+  let base = blockCount * ppb;
+  let discount = 0;
+  if (blockCount >= 1000) discount = 0.30;
+  else if (blockCount >= 500) discount = 0.20;
+  else if (blockCount >= 200) discount = 0.10;
+  const total = Math.max(1, base * (1 - discount));
+  return { base, disc: discount, total, annual: total * 10 };
+}
+```
+
+## Task 4: Update pricing table in HTML
+
+Find the pricing section (vol-table or price-ladder) and update to show the new 7-tier pricing:
+
+Replace the existing price-ladder with:
+```html
+<div class="price-ladder">
+  <div class="p-rung now"><div class="pr-p">$0.40</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--green)">NOW</div></div>
+  <div class="p-rung"><div class="pr-p">$0.70</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--muted)">20k blocks</div></div>
+  <div class="p-rung"><div class="pr-p">$1.10</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--muted)">50k blocks</div></div>
+  <div class="p-rung"><div class="pr-p">$1.60</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--muted)">90k blocks</div></div>
+  <div class="p-rung"><div class="pr-p">$2.40</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--gold)">140k — Lifetime unlock</div></div>
+  <div class="p-rung"><div class="pr-p">$3.10</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--muted)">300k blocks</div></div>
+  <div class="p-rung"><div class="pr-p">$4.00</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--accent)">800k — CAP</div></div>
+</div>
+```
+
+Also add a full-stage price table:
+```html
+<div class="vol-title" style="margin-bottom:4px;margin-top:32px;">FULL STAGE PRICING</div>
+<div class="sec-sub" style="margin-bottom:14px;">One stage = 9,216 blocks. Price rises as the world fills.</div>
+<div class="vol-table">
+  <div class="vol-row"><span class="v-blocks">Launch</span><span style="color:var(--green)">$1,000/mo — $10,000/yr</span></div>
+  <div class="vol-row"><span class="v-blocks">Growth</span><span style="color:var(--accent2)">$2,000 → $3,500 → $5,000/mo</span></div>
+  <div class="vol-row"><span class="v-blocks">Premium</span><span style="color:var(--gold)">$7,500/mo — Lifetime purchase unlocks ($180,000)</span></div>
+  <div class="vol-row"><span class="v-blocks">Cap</span><span style="color:var(--accent)">$10,000 → $12,500/mo</span></div>
+</div>
+```
+
+## Task 5: Remove minimum block count restriction
+
+Find any minimum block count validation (e.g. min="4" or min="10") in the custom block input and change to min="1".
+
+Find any text showing "4 blocks minimum" or "10 blocks minimum" and remove or update to just show "$1 minimum".
+
+## Task 6: Update selectMonopoly() to use dynamic price
+
+Find selectMonopoly() function and update the price display:
+```javascript
+function selectMonopoly(btn) {
+  monopolyMode = true;
+  // ... existing code ...
+  const mp = '$' + (currentPriceTier.currentTier ? currentPriceTier.currentTier.monthlyFull.toLocaleString() : '1,000') + '/mo';
+  // use mp for display
+}
+```
+
+Also update updateSummary() for monopoly mode to use currentPriceTier.currentTier.monthlyFull.
+
+## Completion
+
+After all changes:
+git add app/pages/sales_page.html
+git commit -m "feat: dynamic pricing UI, progress bar, updated price tables, $1 minimum"
+git push origin main
+npx vercel --prod
+
+Verify:
+- curl https://neverend.vercel.app/app/pages/sales_page.html returns 200
+- Report all changes made

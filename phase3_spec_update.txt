@@ -1,0 +1,152 @@
+Update the project specification document at C:\neverEND\neverend_handover_v1.md
+
+Read the current file first, then add/update the following sections. Do NOT remove existing content unless it directly contradicts the new information below.
+
+## Section to ADD or UPDATE: Pricing System
+
+### Price Tier System (FINAL - confirmed 2026-04-28)
+
+Pricing is based on cumulative claimed blocks across all stages (new purchases only, renewals do not count).
+
+| Cumulative Claimed Blocks | Full Stage Monthly | Per Block Price |
+|---|---|---|
+| 0 - 20,000 | $1,000/mo | $0.40/block |
+| 20,001 - 50,000 | $2,000/mo | $0.70/block |
+| 50,001 - 90,000 | $3,500/mo | $1.10/block |
+| 90,001 - 140,000 | $5,000/mo | $1.60/block |
+| 140,001 - 300,000 | $7,500/mo | $2.40/block |
+| 300,001 - 800,000 | $10,000/mo | $3.10/block |
+| 800,001+ | $12,500/mo | $4.00/block |
+
+**Price lock rule:** Buyer keeps their purchase price as long as subscription is active. Cancellation loses the locked price.
+
+**Annual plan:** 10 months upfront (2 months free). Applies to full stage purchases too.
+
+**Minimum purchase:** $1 or more. No minimum block count.
+
+**Volume discounts (apply to per-block purchases only, NOT full stage):**
+- 200-499 blocks: -10%
+- 500-999 blocks: -20%
+- 1,000+ blocks: -30%
+
+**Full stage monopoly rules:**
+- Buys entire stage at current full-stage price
+- No volume discount applied
+- Annual discount applies
+- If some blocks already owned by others, monopoly buyer does NOT immediately take them
+- When existing owners cancel, their blocks automatically transfer to the monopoly buyer
+- Full stage price does NOT change due to existing owned blocks
+
+**Maximum ownership:** 18,432 blocks per buyer (2 full stages = 2 × 9,216)
+
+### Permanent Purchase (Lifetime)
+
+- Unlocks when full-stage monthly price reaches $7,500
+- Price = buyer's current monthly price × 24 months
+- Cap: $10,000/mo and above → flat $240,000
+- Full-stage monopoly buyers only
+- One-time upfront, no recurring payments
+- No cancellation or refund after purchase
+
+### Price Progression (UI)
+
+- Publicly presented as "grid filling up" — do NOT explain as revenue-based internally
+- Progress bar shows claimed blocks vs next tier trigger
+- "Prices rise as the world fills" messaging
+- Early buyers lock in their price
+
+### Grid Specifications (CONFIRMED)
+
+- All stages: 128 × 72 = 9,216 blocks per stage
+- No creator zones, no sub-divided stages — all stages identical grid size
+- 1 block = 1 color, fixed
+- Retro mode: visual pixelation to 80×45 appearance only, grid data unchanged
+
+### API: /api/grid?tier=1
+
+Returns current price tier data:
+```json
+{
+  "totalClaimedBlocks": 4,
+  "currentTier": {
+    "monthlyFull": 1000,
+    "pricePerBlock": 0.40,
+    "minBlocks": 0,
+    "maxBlocks": 20000
+  },
+  "nextTier": {
+    "monthlyFull": 2000,
+    "pricePerBlock": 0.70,
+    "triggerBlocks": 20001,
+    "blocksRemaining": 19997
+  },
+  "permanentPurchaseUnlocked": false,
+  "permanentPurchasePrice": 24000
+}
+```
+
+### Supabase Schema Updates (applied 2026-04-28)
+
+reservation_sessions table:
+- anchor_x constraint updated: 0 to 127 (was 0 to 79)
+- anchor_y constraint updated: 0 to 71 (was 0 to 44)
+- Added: price_per_block (numeric)
+- Added: monthly_total (numeric)
+
+subscription_contracts table:
+- Added: price_per_block (numeric)
+- Added: monthly_total (numeric)
+
+owned_blocks table:
+- Supabase constraint: x < 128, y < 72 (updated from 80×45)
+
+### Deployment Configuration (CONFIRMED)
+
+vercel.json:
+```json
+{
+  "outputDirectory": ".",
+  "rewrites": [{ "source": "/api/:path*", "destination": "/api/:path*" }]
+}
+```
+
+package.json: "type": "module" (required for ESM imports in api/*.js)
+
+### File Structure
+
+- Game: C:\neverEND\index.html
+- Sales page: C:\neverEND\app\pages\sales_page.html
+- Mypage: C:\neverEND\app\pages\mypage.html
+- Success page: C:\neverEND\app\pages\success.html
+- Cancel page: C:\neverEND\app\pages\cancel.html
+- API files: C:\neverEND\api\*.js (12 files, Vercel Hobby limit)
+- Deploy: cd C:\neverEND && npx vercel --prod
+
+### Pre-launch Checklist (test play)
+
+- [ ] Stage 1-20 bug fixes complete
+- [ ] Supabase test data deleted
+- [ ] localStorage reset confirmed
+- [ ] Login flow tested (Google + email)
+- [ ] Login data syncs to Supabase player_profiles
+- [ ] Sales page purchase flow tested end-to-end
+- [ ] Stripe webhook confirmed working
+- [ ] Mypage displays correctly after login
+
+### Post-launch Items
+
+- [ ] Domain: neverend.game
+- [ ] Stripe production mode
+- [ ] DMCA registration (~$6)
+- [ ] BGM for stages 21+
+- [ ] Rankings feature (future)
+- [ ] Permanent purchase UI (unlocks at $7,500 tier)
+
+## Completion
+
+After updating the file:
+git add neverend_handover_v1.md
+git commit -m "docs: update spec with confirmed pricing system, grid specs, deployment config"
+git push origin main
+
+Report what sections were added or updated.

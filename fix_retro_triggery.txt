@@ -1,0 +1,106 @@
+C:\neverEND\index.htmlを修正してください。
+修正前に必ずファイルを読んで現在のコードを確認してから変更すること。
+
+## 修正1：drawRetroOverlay関数を軽量化
+
+現在の2347-2370行のdrawRetroOverlay関数を以下に置き換え。
+getImageData/putImageDataを削除して軽量化する。
+
+現在のコード（2347-2370行）を以下に置き換え：
+```javascript
+function drawRetroOverlay(){
+  // Scanlines
+  ctx.fillStyle='rgba(0,0,0,0.18)';
+  for(let y=0;y<H;y+=2)ctx.fillRect(0,y,W,1);
+  // Chroma shift (screen blend)
+  const amt=Math.sin(animT*7)*2+3;
+  ctx.save();ctx.globalCompositeOperation='screen';ctx.globalAlpha=0.10;
+  ctx.drawImage(canvas,amt,0,W,H,0,0,W,H);
+  ctx.drawImage(canvas,-amt,0,W,H,0,0,W,H);
+  ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.restore();
+  // Random noise lines (CSS-only, no getImageData)
+  if(Math.random()<0.12){
+    const gy=Math.floor(Math.random()*H),gh=Math.floor(Math.random()*3)+1;
+    const g=Math.floor(Math.random()*60)+20;
+    ctx.fillStyle=`rgba(${g},${g},${g},0.07)`;
+    ctx.fillRect(0,gy,W,gh);
+  }
+  // Vignette
+  const vg=ctx.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,H*.8);
+  vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,0.4)');
+  ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+}
+```
+
+## 修正2：レトロモード時にロゴを低解像度（60×45ドット）で描画
+
+ロゴをゲーム内に描画している処理を探す。
+`placement`または`logoImage`または`placedLogos`などの変数でcanvasに描画している箇所を探して確認する。
+
+ロゴ描画処理の直前に以下の低解像度化処理を追加する：
+
+```javascript
+// レトロモード時：60×45の低解像度で描画
+function drawLogoRetro(img, dx, dy, dw, dh){
+  if(!retroMode){ctx.drawImage(img,dx,dy,dw,dh);return;}
+  const cols=60,rows=45;
+  const sw=dw/cols,sh=dh/rows;
+  const off=document.createElement('canvas');off.width=cols;off.height=rows;
+  const oc=off.getContext('2d');
+  oc.drawImage(img,0,0,cols,rows);
+  ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(off,dx,dy,dw,dh);
+  ctx.imageSmoothingEnabled=true;
+}
+```
+
+この関数をdrawRetroOverlay関数の直後（2370行付近）に追加する。
+既存のロゴ描画でctx.drawImage(logoImg,...)を使っている箇所を探して、drawLogoRetro(logoImg,...)に置き換える。
+
+## 修正3：fallingSpikesにtriggerY対応を追加
+
+2783行付近の以下のコード：
+```javascript
+if(!f.triggered&&player.x>f.triggerX){f.triggered=true;}
+```
+
+以下に置き換え：
+```javascript
+if(!f.triggered){
+  const xOk=f.triggerX==null||player.x>f.triggerX;
+  const yOk=f.triggerY==null||player.y>f.triggerY;
+  if(xOk&&yOk)f.triggered=true;
+}
+```
+
+## 修正4：chasersにtriggerY対応を追加
+
+2789行付近の以下のコード：
+```javascript
+if(!c.active&&player.x>c.triggerX){c.active=true;}
+```
+
+以下に置き換え：
+```javascript
+if(!c.active){
+  const xOk=c.triggerX==null||player.x>c.triggerX;
+  const yOk=c.triggerY==null||player.y>c.triggerY;
+  if(xOk&&yOk)c.active=true;
+}
+```
+
+## 修正5：trapsにtriggerY対応を追加
+
+trapsのtrigger判定コードを探す（player.xとtrap.txを比較している箇所）。
+そこにも同様にtriggerY対応を追加する：
+```javascript
+// 既存のtrap trigger条件を探して
+// triggerY==nullまたはplayer.y>trap.triggerYの条件を追加
+```
+
+## 完了後
+
+git add index.html
+git commit -m "feat: retro mode performance fix, low-res logo, triggerY support for fallingSpikes/chasers/traps"
+git push origin main
+npx vercel --prod

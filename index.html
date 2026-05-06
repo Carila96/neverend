@@ -3320,8 +3320,8 @@ function drawTitle(){
   ctx.fillStyle='rgba(0,0,0,0.35)';ctx.fillRect(0,0,W,H);
   // 塔画像（白背景透過）
   ctx.save();
-  ctx.globalCompositeOperation='multiply';
-  ctx.globalAlpha=0.85;
+  ctx.globalCompositeOperation='screen';
+  ctx.globalAlpha=0.55;
   if(towerImg.complete&&towerImg.naturalWidth>0){
     ctx.drawImage(towerImg,0,0,380,720);
   }
@@ -3330,7 +3330,7 @@ function drawTitle(){
   const bestFloor=getStat('bestStage',0)||0;
   const totalFloors=100;
   if(bestFloor>0){
-    const towerTop=60,towerBase=660;
+    const towerTop=20,towerBase=680;
     const markerY=towerBase-(bestFloor/totalFloors)*(towerBase-towerTop);
     ctx.save();
     ctx.shadowColor='rgba(160,185,255,0.9)';
@@ -3338,14 +3338,14 @@ function drawTitle(){
     ctx.strokeStyle='rgba(160,185,255,0.85)';
     ctx.lineWidth=2;
     ctx.setLineDash([6,4]);
-    ctx.beginPath();ctx.moveTo(0,markerY);ctx.lineTo(380,markerY);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(240,markerY);ctx.lineTo(320,markerY);ctx.stroke();
     ctx.setLineDash([]);
     ctx.fillStyle='rgba(160,185,255,0.9)';
-    ctx.beginPath();ctx.arc(380,markerY,5,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(240,markerY,5,0,Math.PI*2);ctx.fill();
     ctx.shadowBlur=0;
     ctx.font='bold 11px "Courier New"';ctx.textAlign='left';
     ctx.fillStyle='rgba(255,255,255,0.85)';
-    ctx.fillText('BEST: '+bestFloor+'F',8,markerY-6);
+    ctx.fillText('BEST: '+bestFloor+'F',10,markerY-6);
     ctx.restore();
   }
   const pulse2=Math.sin(animT*1.5)*.1+.9;
@@ -3376,7 +3376,7 @@ function drawTitle(){
   ctx.fillText('END',sx+nw+gap,H/2-30);ctx.restore();
   neonText('30 seconds to live. Forever.',W/2,H/2+24,'rgba(160,185,255,0.75)',20,8,'center');
   ctx.save();ctx.fillStyle='rgba(140,140,160,0.4)';ctx.font='14px "Courier New"';ctx.textAlign='center';
-  ctx.fillText('How far can you get in 1 hour?',W/2,H/2+50);ctx.restore();
+  ctx.fillText('How far can you get up the tower?',W/2,H/2+50);ctx.restore();
   const pulse=Math.sin(animT*2)*.3+.7;
   neonText('[ SPACE ] START',W/2,H/2+90,`rgba(255,255,255,${pulse})`,24,14,'center');
   // Name display below START
@@ -3407,11 +3407,7 @@ function drawTitle(){
   ctx.fillText('YOUR DEATHS: '+(td>0?td.toLocaleString():'0'),20,H-30);
   ctx.fillStyle='rgba(220,120,120,0.8)';ctx.textAlign='left';
   ctx.fillText('WORLD DEATHS: '+Number(worldDeaths||0).toLocaleString(),20,H-14);
-  // 右下：BEST STAGE + HALL OF LEGENDS
-  if(tb>0){
-    ctx.fillStyle='rgba(160,185,255,0.8)';ctx.textAlign='right';
-    ctx.fillText('BEST: Stage '+tb,W-20,H-30);
-  }
+  // 右下：HALL OF LEGENDS
   ctx.fillStyle=testMode?'rgba(80,80,100,0.5)':'rgba(100,140,200,0.8)';ctx.textAlign='right';
   ctx.fillText(testMode?'[ HALL OF LEGENDS ] Coming Soon':'[ HALL OF LEGENDS ]',W-20,H-14);
   ctx.restore();

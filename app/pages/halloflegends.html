@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>HALL OF LEGENDS — neverEND</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://cokcftutqkwhfbmdnhgl.supabase.co">
+<link rel="preconnect" href="https://neverend.vercel.app">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -177,63 +179,58 @@ function fmtTime(secs){
   return m+'m';
 }
 
-// Stats + Test Pilots from /api/world-stats
-fetch('https://neverend.vercel.app/api/world-stats')
-  .then(r=>r.json())
-  .then(d=>{
-    document.getElementById('statDeaths').textContent=Number(d.total_deaths||0).toLocaleString();
-    document.getElementById('statFloor').textContent=(d.best_stage||0)+'F';
-    document.getElementById('statHours').textContent=Math.floor((d.total_play_time||0)/3600).toLocaleString()+'h';
-    const pilots=d.pilots||[];
-    if(pilots.length>0){
-      const grid=document.getElementById('pilotsGrid');
-      grid.innerHTML=pilots.map(n=>`<span class="pilot-name">${n.replace(/</g,'&lt;')}</span>`).join('');
-      document.getElementById('pilotsSection').style.display='block';
-    }
-  })
-  .catch(()=>{});
+function buildRankingHTML(data){
+  if(!data||data.length===0)return '<div class="empty">NO LEGENDS YET.<br><br>Be the first.</div>';
+  let html='<table class="rank-table"><thead><tr>';
+  html+='<th>#</th><th>NAME</th><th style="text-align:right">BEST FLOOR</th><th style="text-align:right">DEATHS</th><th style="text-align:right">PLAY TIME</th>';
+  html+='</tr></thead><tbody>';
+  data.forEach((r,i)=>{
+    const rank=i+1;
+    const rankClass=rank===1?'rank-num top1':rank===2?'rank-num top2':rank===3?'rank-num top3':'rank-num';
+    const medal=rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':rank;
+    html+=`<tr>
+      <td class="${rankClass}">${medal}</td>
+      <td class="rank-name">${(r.name||'Anonymous').replace(/</g,'&lt;')}</td>
+      <td class="rank-floor">${r.stage_reached||1}F</td>
+      <td class="rank-deaths">${(r.death_count||0).toLocaleString()}</td>
+      <td class="rank-time">${fmtTime(r.play_time||0)}</td>
+    </tr>`;
+  });
+  return html+'</tbody></table>';
+}
 
-// Ranking table from Supabase
-async function loadRanking(){
+document.addEventListener('DOMContentLoaded',()=>{
   const container=document.getElementById('rankingContainer');
-  try{
-    const sb=window.supabase.createClient(_SB_URL,_SB_KEY);
-    const {data,error}=await sb
-      .from('test_players')
+  const sb=window.supabase.createClient(_SB_URL,_SB_KEY);
+
+  // Kick off both fetches in parallel
+  Promise.all([
+    fetch('https://neverend.vercel.app/api/world-stats').then(r=>r.json()).catch(()=>({})),
+    sb.from('test_players')
       .select('name,stage_reached,death_count,play_time')
       .order('stage_reached',{ascending:false})
       .order('death_count',{ascending:true})
-      .limit(100);
+      .limit(100),
+  ]).then(([ws,rankRes])=>{
+    // Stats
+    document.getElementById('statDeaths').textContent=Number(ws.total_deaths||0).toLocaleString();
+    document.getElementById('statFloor').textContent=(ws.best_stage||0)+'F';
+    document.getElementById('statHours').textContent=Math.floor((ws.total_play_time||0)/3600).toLocaleString()+'h';
 
-    if(error)throw error;
-    if(!data||data.length===0){
-      container.innerHTML='<div class="empty">NO LEGENDS YET.<br><br>Be the first.</div>';
-      return;
+    // Test Pilots
+    const pilots=ws.pilots||[];
+    if(pilots.length>0){
+      document.getElementById('pilotsGrid').innerHTML=pilots.map(n=>`<span class="pilot-name">${n.replace(/</g,'&lt;')}</span>`).join('');
+      document.getElementById('pilotsSection').style.display='block';
     }
 
-    let html='<table class="rank-table"><thead><tr>';
-    html+='<th>#</th><th>NAME</th><th style="text-align:right">BEST FLOOR</th><th style="text-align:right">DEATHS</th><th style="text-align:right">PLAY TIME</th>';
-    html+='</tr></thead><tbody>';
-    data.forEach((r,i)=>{
-      const rank=i+1;
-      const rankClass=rank===1?'rank-num top1':rank===2?'rank-num top2':rank===3?'rank-num top3':'rank-num';
-      const medal=rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':rank;
-      html+=`<tr>
-        <td class="${rankClass}">${medal}</td>
-        <td class="rank-name">${(r.name||'Anonymous').replace(/</g,'&lt;')}</td>
-        <td class="rank-floor">${r.stage_reached||1}F</td>
-        <td class="rank-deaths">${(r.death_count||0).toLocaleString()}</td>
-        <td class="rank-time">${fmtTime(r.play_time||0)}</td>
-      </tr>`;
-    });
-    html+='</tbody></table>';
-    container.innerHTML=html;
-  }catch(err){
-    container.innerHTML='<div class="error-msg">Could not load data.<br>'+err.message+'</div>';
-  }
-}
-
-document.addEventListener('DOMContentLoaded',loadRanking);
+    // Ranking
+    if(rankRes.error)throw rankRes.error;
+    container.innerHTML=buildRankingHTML(rankRes.data);
+  }).catch(err=>{
+    container.innerHTML='<div class="error-msg">Could not load data.<br>'+(err&&err.message||'Network error')+'</div>';
+  });
+});
 </script>
 </body>
 </html>

@@ -3015,7 +3015,7 @@ function drawUI(){
   ctx.fillStyle=col;ctx.fillRect(barX,barY,barW*tp,24);
   ctx.restore();
   neonText(Math.max(0,timeLeft).toFixed(1)+'s',barX+barW+12,barY+18,'rgba(255,255,255,0.95)',15,8);
-  neonText(STAGES[Math.min(stageNum-1,STAGES.length-1)].name,W/2,32,'rgba(180,200,255,0.9)',24,10,'center');
+  neonText('FLOOR '+stageNum,W/2,32,'rgba(180,200,255,0.9)',24,10,'center');
   neonText('SCORE: '+score,W-190,32,'rgba(180,200,255,0.7)',13,6);
   if(hardMode)neonText('⚠ HARD',W/2,H-14,'rgba(255,80,60,0.8)',11,6,'center');
   if(adminMode)neonText('ADMIN',16,H-14,'rgba(255,220,50,0.7)',10,4);
@@ -3124,8 +3124,8 @@ function drawDead(){
   ctx.shadowColor=stageCol;ctx.shadowBlur=10;
   ctx.fillStyle=stageCol;ctx.font='bold 28px "Courier New"';
   const stageStr=isNewBest
-    ?'STAGE '+lastDeathStage+'   ★ NEW BEST!'
-    :'STAGE '+lastDeathStage+'   →   BEST '+best;
+    ?'FLOOR '+lastDeathStage+'   ★ NEW BEST!'
+    :'FLOOR '+lastDeathStage+'   →   BEST '+best;
   ctx.fillText(stageStr,W/2,H/2+10);
 
   // 死因メッセージ — 中サイズ
@@ -3206,7 +3206,7 @@ function drawMyPage(){
   ctx.fillStyle='rgba(74,184,255,0.95)';ctx.font='bold 18px "Courier New"';ctx.textAlign='center';
   ctx.fillText(playerName,W/2,68);
   ctx.fillStyle='rgba(160,180,220,0.6)';ctx.font='11px "Courier New"';
-  ctx.fillText('Deaths: '+getStat('totalDeaths').toLocaleString()+'   |   Best: Stage '+getStat('bestStage',1)+'   |   Time: '+ph+'h '+pm+'m',W/2,86);
+  ctx.fillText('Deaths: '+getStat('totalDeaths').toLocaleString()+'   |   Best: Floor '+getStat('bestStage',1)+'   |   Time: '+ph+'h '+pm+'m',W/2,86);
   ctx.restore();
 
   // Login status row
@@ -3306,7 +3306,7 @@ canvas.addEventListener('click',e=>{
       const _ov=document.getElementById('nameOverlay');if(_ov){_ov.classList.add('show');setTimeout(()=>document.getElementById('nameInputField').focus(),50);}
     }
     // Hall of Legends click (bottom-right area, disabled in testMode)
-    if(!testMode&&cx>=W-200&&cx<=W-20&&cy>=H-24&&cy<=H-4){window.open('/app/pages/mypage.html','_blank');}
+    if(!testMode&&cx>=W-200&&cx<=W-20&&cy>=H-24&&cy<=H-4){window.open('/app/pages/halloflegends.html','_blank');}
   } else if(state==='testcomplete'){
     if(cx>=_tcBtn.x&&cx<=_tcBtn.x+_tcBtn.w&&cy>=_tcBtn.y&&cy<=_tcBtn.y+_tcBtn.h){state='title';}
   } else if(state==='mypage'){
@@ -3652,7 +3652,7 @@ function update(dt){
         stopBGM();
         setTimeout(function(){resetRun();state='title';},5000);
       } else if(next<=STAGES.length){
-        loadStage(next);floatMsgs.push({txt:'STAGE '+next+'!',x:W/2,y:H/2,life:2,color:'rgba(255,220,50,1)'});
+        loadStage(next);floatMsgs.push({txt:'FLOOR '+next+'!',x:W/2,y:H/2,life:2,color:'rgba(255,220,50,1)'});
         if(testMode&&next===5&&!_stage5ToastShown){_stage5ToastShown=true;floatMsgs.push({txt:'Playing well! Your progress is being recorded for credits.',x:W/2,y:H/2+64,life:5,color:'rgba(100,255,180,0.95)'});}
         if(easyMode)floatMsgs.push({txt:'Cleared Baby Mode? Cool. Nobody cares.',x:W/2,y:H/2+48,life:3,color:'rgba(255,180,255,0.8)'});
         const nt=getBGMTrack(next);if(nt!==bgmTrack)startBGM(nt);
@@ -4008,7 +4008,7 @@ initCookieBanner();
 function shareDeathCount(){
   const deaths=getStat('totalDeaths');
   const best=getStat('bestStage',1);
-  const text=`I've died ${deaths} times in neverEND and my best is Stage ${best}. Can you beat that? #DamnRun #neverEND`;
+  const text=`I've died ${deaths} times in neverEND and my best is Floor ${best}. Can you beat that? #DamnRun #neverEND`;
   const url='https://neverend.vercel.app';
   const twitterUrl=`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
   window.open(twitterUrl,'_blank','width=600,height=400');
@@ -4157,7 +4157,7 @@ function _setLmMsg(txt,color){
 function shareDeathCount(){
   const deaths=getStat('totalDeaths');
   const best=getStat('bestStage',1);
-  const text=`I've died ${deaths} times in neverEND and my best is Stage ${best}. Can you beat that? #DamnRun #neverEND`;
+  const text=`I've died ${deaths} times in neverEND and my best is Floor ${best}. Can you beat that? #DamnRun #neverEND`;
   const url='https://neverend.vercel.app';
   const twitterUrl=`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
   window.open(twitterUrl,'_blank','width=600,height=400');

@@ -672,8 +672,6 @@ function drawStageMap(){
 }
 setStage(1);
 
-function generateMockGrid(id){const g={};let s=id*1337;for(let i=0;i<12+(id*3)%18;i++){s=(s*1664525+1013904223)&0x7fffffff;const c=s%GRID_COLS;s=(s*1664525+1013904223)&0x7fffffff;const r=s%GRID_ROWS;g[c+','+r]='claimed';}return g;}
-STAGES_DATA.forEach(function(s){gridStates[s.id]=generateMockGrid(s.id);});
 function getBlockState(c,r){return(gridStates[currentStage]&&gridStates[currentStage][c+','+r])||'available';}
 function fetchGridStates(stageId){fetch('/api/grid?stage_id='+stageId).then(function(r){return r.json();}).then(function(d){if(d&&d.blocks){const g={};d.blocks.forEach(function(b){g[b.x+','+b.y]=b.status;});gridStates[stageId]=g;if(currentStage===stageId)drawGrid();}}).catch(function(){});}
 
@@ -948,7 +946,7 @@ function applyGridZoom(){const wrap=document.getElementById('gridCanvasWrap');co
 function initGrid(){applyGridZoom();drawGrid();}
 function isDeleted(c,r){if(!selectedArea)return false;const lc=c-selectedArea.x,lr=r-selectedArea.y;return deletedBlocks.some(function(d){return d.x===lc&&d.y===lr;});}
 function getDisplayPixel(lc,lr){if(!pixelArtEdit||!pixelArtEdit[lr])return null;return pixelArtEdit[lr][lc]||null;}
-function hasConflict(x,y,w,h){for(let dr=0;dr<h;dr++)for(let dc=0;dc<w;dc++){if(isDeleted(x+dc,y+dr))continue;const st=getBlockState(x+dc,y+dr);if(st==='claimed')return true;}return false;}
+function hasConflict(x,y,w,h){for(let dr=0;dr<h;dr++)for(let dc=0;dc<w;dc++){if(isDeleted(x+dc,y+dr))continue;if(logoPlaced&&x+dc>=logoGridX&&x+dc<logoGridX+chosenW&&y+dr>=logoGridY&&y+dr<logoGridY+chosenH)continue;const st=getBlockState(x+dc,y+dr);if(st==='claimed')return true;}return false;}
 
 function drawGrid(){
   gridCtx.clearRect(0,0,1280,720);

@@ -328,6 +328,7 @@ function loadPlacement(){
 }
 
 const placement=loadPlacement();
+buildAchievements(0);
 if(!placement||!placement.stage_id){
   document.getElementById('emptyState').style.display='block';
 }else{
@@ -533,8 +534,10 @@ async function loadPurchases(userId){
       .select('id,stage_id,anchor_x,anchor_y,width,height,status,plan_type,created_at,monthly_total')
       .eq('user_id',userId)
       .order('created_at',{ascending:false});
-    if(ce){listEl.textContent='Could not load purchase data.';return;}
-    if(!contracts||contracts.length===0){listEl.textContent='No purchases found.';return;}
+    if(ce){listEl.textContent='Could not load purchase data.';buildAchievements(0);return;}
+    if(!contracts||contracts.length===0){listEl.textContent='No purchases found.';buildAchievements(0);return;}
+    const totalBlocks=contracts.reduce((sum,c)=>sum+(c.width||0)*(c.height||0),0);
+    buildAchievements(totalBlocks);
     let html='<div style="overflow-x:auto;"><table class="purchase-table"><thead><tr>';
     html+='<th>STAGE</th><th>POSITION</th><th>SIZE</th><th>PLAN</th><th>MONTHLY</th><th>STATUS</th><th>SINCE</th>';
     html+='</tr></thead><tbody>';

@@ -3743,66 +3743,76 @@ function update(dt){
 
 // ── TITLE SYSTEM ──
 const TITLES=[
-  // TIER 1: Instant unlock (dopamine hook)
-  {id:'welcome',name:'Welcome to Hell',desc:'Start the game for the first time',condition:()=>getStat('totalDeaths')>=0&&getStat('gamesStarted')>=1},
-  {id:'firstDeath',name:'First Death',desc:'Die for the first time',condition:()=>getStat('totalDeaths')>=1},
-  {id:'again',name:'Again.',desc:'Die twice',condition:()=>getStat('totalDeaths')>=2},
-  {id:'stillHere',name:'Still Here',desc:'Survive for 10 seconds',condition:()=>getStat('longestSurvival')>=10},
-  // TIER 2: Habit forming
-  {id:'gettingUsed',name:'Getting Used to It',desc:'Die 10 times',condition:()=>getStat('totalDeaths')>=10},
-  {id:'notGivingUp',name:'Not Giving Up',desc:'Die 50 times',condition:()=>getStat('totalDeaths')>=50},
-  {id:'stillPlaying',name:'Still Playing?',desc:'Die 100 times',condition:()=>getStat('totalDeaths')>=100},
-  {id:'timeSink',name:'Time Sink',desc:'Play for 5 minutes total',condition:()=>getStat('totalPlayTime')>=300},
-  {id:'cantStop',name:"Can't Stop",desc:'Play for 10 minutes total',condition:()=>getStat('totalPlayTime')>=600},
-  // TIER 3: Stage milestones
-  {id:'firstBlood',name:'First Blood',desc:'Reach Stage 2',condition:()=>getStat('bestStage',0)>=2},
-  {id:'gettingSomewhere',name:'Getting Somewhere',desc:'Reach Stage 5',condition:()=>getStat('bestStage',0)>=5},
-  {id:'doubleDigits',name:'Double Digits',desc:'Reach Stage 10',condition:()=>getStat('bestStage',0)>=10},
-  {id:'gettingSerious',name:'Getting Serious',desc:'Reach Stage 20',condition:()=>getStat('bestStage',0)>=20},
-  {id:'oneThird',name:'One Third',desc:'Reach Stage 30',condition:()=>getStat('bestStage',0)>=30},
-  {id:'halfway',name:'Halfway',desc:'Reach Stage 50',condition:()=>getStat('bestStage',0)>=50},
-  {id:'almostThere',name:'Almost There',desc:'Reach Stage 70',condition:()=>getStat('bestStage',0)>=70},
-  {id:'soClose',name:'So Close',desc:'Reach Stage 90',condition:()=>getStat('bestStage',0)>=90},
-  {id:'legend',name:'Legend',desc:'Reach Stage 100',condition:()=>getStat('bestStage',0)>=100},
-  {id:'closeOne',name:'Close One',desc:'Grab a timer with less than 1 second left',condition:()=>getStat('closeGrabs')>=1},
-  {id:'comebackKid',name:'Comeback Kid',desc:'Reach a new best stage with 5 seconds or less remaining',condition:()=>getStat('comebackCount')>=1},
-  {id:'speedDemon',name:'Speed Demon',desc:'Reach Stage 5 in under 3 minutes',condition:()=>getStat('speedDemon')>=1},
-  {id:'noBaby',name:'No Baby',desc:'Reach Stage 10 without activating Baby Mode',condition:()=>getStat('bestStage',0)>=10&&getStat('babyModeUses')===0},
-  {id:'ghost',name:'Ghost',desc:'Clear a stage without dying on that attempt',condition:()=>getStat('ghostClears')>=1},
-  // TIER 4: Hardcore
-  {id:'persistent',name:'Persistent',desc:'Die 500 times',condition:()=>getStat('totalDeaths')>=500},
-  {id:'unbreakable',name:'Unbreakable',desc:'Die 1,000 times',condition:()=>getStat('totalDeaths')>=1000},
-  {id:'oneHourClub',name:'One Hour Club',desc:'Play for 60 minutes total',condition:()=>getStat('totalPlayTime')>=3600},
-  // TIER 5: Madness
-  {id:'addicted',name:'Addicted',desc:'Die 2,000 times',condition:()=>getStat('totalDeaths')>=2000},
-  {id:'obsessed',name:'Obsessed',desc:'Play for 1 hour total',condition:()=>getStat('totalPlayTime')>=3600},
-  {id:'whyStillPlaying',name:'Why Are You Still Playing?',desc:'Play for 2 hours total',condition:()=>getStat('totalPlayTime')>=7200},
-  {id:'thereIsNoEnd',name:'There Is No End',desc:'Play for 5 hours total',condition:()=>getStat('totalPlayTime')>=18000},
-  {id:'youNeedHelp',name:'You Need Help',desc:'Die 5,000 times',condition:()=>getStat('totalDeaths')>=5000},
-  {id:'areYouOk',name:'Are You OK?',desc:'Die 10,000 times',condition:()=>getStat('totalDeaths')>=10000},
-  {id:'youBelongHere',name:'You Belong Here',desc:'Play for 10 hours total',condition:()=>getStat('totalPlayTime')>=36000},
-  // TIER 6: Meme / SNS viral
-  {id:'stuckInStage1',name:'Stuck in Stage 1',desc:'Die 50 times in Stage 1',condition:()=>getStat('stage1Deaths')>=50},
-  {id:'hopeless',name:'Hopeless',desc:'Die 100 times in Stage 1',condition:()=>getStat('stage1Deaths')>=100},
-  {id:'instantRegret',name:'Instant Regret',desc:'Die within 3 seconds of starting',condition:()=>getStat('instantDeaths')>=1},
-  {id:'speedrunToDeath',name:'Speedrun to Death',desc:'Die 5 times within 1 minute',condition:()=>getStat('rapidDeaths')>=1},
-  {id:'justOneMoreTry',name:'Just One More Try',desc:'Retry 20 times in a row',condition:()=>getStat('maxRetryStreak')>=20},
-  // TIER 7: Play style
-  {id:'nightOwl',name:'Night Owl',desc:'Play between midnight and 5am',condition:()=>getStat('nightOwl')>=1},
-  {id:'backAgain',name:'Back Again',desc:'Return to play a second session',condition:()=>getStat('totalSessions')>=2},
-  {id:'iGiveUp',name:'I Give Up',desc:'Activate Baby Mode',condition:()=>getStat('babyModeUses')>=1},
-  {id:'legendOfGivingUp',name:'Legend of Giving Up',desc:'Clear Stage 20 in Baby Mode',condition:()=>getStat('babyClear')>=1},
-  {id:'masochist',name:'Masochist',desc:'Die for the first time in Hard Mode',condition:()=>getStat('hardModeDeaths')>=1},
-  // TIER 8: Purchase (monetization)
-  {id:'firstPurchase',name:'First Purchase',desc:'Buy your first grid blocks',condition:()=>localStorage.getItem('neverend_contract_id')!==null},
-  {id:'gridOwner',name:'Grid Owner',desc:'Own 4 blocks',condition:()=>getStat('ownedBlocks')>=4},
-  {id:'expandingTerritory',name:'Expanding Territory',desc:'Own 20 blocks',condition:()=>getStat('ownedBlocks')>=20},
-  {id:'collector',name:'Collector',desc:'Own 50 blocks',condition:()=>getStat('ownedBlocks')>=50},
-  {id:'dominator',name:'Dominator',desc:'Own 200 blocks',condition:()=>getStat('ownedBlocks')>=200},
-  {id:'landlord',name:'Landlord',desc:'Own 500 blocks',condition:()=>getStat('ownedBlocks')>=500},
-  {id:'monopolist',name:'Monopolist',desc:"Own 50% of a stage",condition:()=>localStorage.getItem('neverend_monopoly_50')==='1'},
-  {id:'stageConqueror',name:'Stage Conqueror',desc:'Own an entire stage',condition:()=>localStorage.getItem('neverend_monopoly_owner')==='1'},
-  {id:'godOfGrid',name:'God of Grid',desc:'Conquer multiple stages',condition:()=>localStorage.getItem('neverend_multi_stage')==='1'},
+  // TIER 1: 即時
+  {id:'firstTimer',name:'Welcome to Hell',icon:'🔥',desc:'Start the game for the first time',condition:()=>getStat('gamesStarted')>=1},
+  {id:'firstDeath',name:'First Death',icon:'💀',desc:'Die for the first time',condition:()=>getStat('totalDeaths')>=1},
+  {id:'again',name:'Again.',icon:'🔄',desc:'Die twice',condition:()=>getStat('totalDeaths')>=2},
+  {id:'stillHere',name:'Still Here',icon:'⏱️',desc:'Survive for 10 seconds',condition:()=>getStat('totalPlayTime')>=10},
+
+  // TIER 2: 死亡数
+  {id:'die5',name:'Getting Started',icon:'😅',desc:'Die 5 times',condition:()=>getStat('totalDeaths')>=5},
+  {id:'die10',name:'Die 10 Times',icon:'😵',desc:'Die 10 times',condition:()=>getStat('totalDeaths')>=10},
+  {id:'die100',name:'Century of Pain',icon:'🩸',desc:'Die 100 times',condition:()=>getStat('totalDeaths')>=100},
+  {id:'die1000',name:'Thousand Deaths',icon:'⚰️',desc:'Die 1,000 times',condition:()=>getStat('totalDeaths')>=1000},
+  {id:'die10000',name:'Ten Thousand Deaths',icon:'💀💀',desc:'Die 10,000 times',condition:()=>getStat('totalDeaths')>=10000},
+  {id:'die100000',name:'Are You OK?',icon:'🏥',desc:'Die 100,000 times',condition:()=>getStat('totalDeaths')>=100000},
+
+  // TIER 3: フロア到達
+  {id:'floor1',name:'First Step',icon:'👣',desc:'Reach Floor 1',condition:()=>getStat('bestStage',0)>=1},
+  {id:'floor2',name:'Second Wind',icon:'💨',desc:'Reach Floor 2',condition:()=>getStat('bestStage',0)>=2},
+  {id:'floor5',name:'Five Floors Deep',icon:'🪜',desc:'Reach Floor 5',condition:()=>getStat('bestStage',0)>=5},
+  {id:'floor10',name:'10th Floor',icon:'🏃',desc:'Reach Floor 10',condition:()=>getStat('bestStage',0)>=10},
+  {id:'floor20',name:'20th Floor',icon:'⚡',desc:'Reach Floor 20',condition:()=>getStat('bestStage',0)>=20},
+  {id:'floor30',name:'30th Floor',icon:'🔥',desc:'Reach Floor 30',condition:()=>getStat('bestStage',0)>=30},
+  {id:'floor40',name:'40th Floor',icon:'🌑',desc:'Reach Floor 40',condition:()=>getStat('bestStage',0)>=40},
+  {id:'floor50',name:'50th Floor',icon:'👁️',desc:'Reach Floor 50',condition:()=>getStat('bestStage',0)>=50},
+  {id:'floor60',name:'60th Floor',icon:'🌪️',desc:'Reach Floor 60',condition:()=>getStat('bestStage',0)>=60},
+  {id:'floor70',name:'70th Floor',icon:'💎',desc:'Reach Floor 70',condition:()=>getStat('bestStage',0)>=70},
+  {id:'floor80',name:'80th Floor',icon:'👑',desc:'Reach Floor 80',condition:()=>getStat('bestStage',0)>=80},
+  {id:'floor90',name:'90th Floor',icon:'🌌',desc:'Reach Floor 90',condition:()=>getStat('bestStage',0)>=90},
+  {id:'floor99',name:'So Close. So Very Close.',icon:'😭',desc:'Reach Floor 99 — one floor from legend.',condition:()=>getStat('bestStage',0)>=99},
+  {id:'floor100',name:'LEGEND',icon:'🏆',desc:'Reach Floor 100. You are the first.',condition:()=>getStat('bestStage',0)>=100},
+
+  // TIER 4: タイム系
+  {id:'speedDemon',name:'Speed Demon',icon:'⚡',desc:'Reach Floor 5 in under 3 minutes',condition:()=>getStat('speedDemon')>=1},
+  {id:'clutch',name:'Clutch',icon:'😱',desc:'Clear a floor with less than 1 second left',condition:()=>getStat('comebackCount')>=1},
+  {id:'instantRegret',name:'Instant Regret',icon:'💥',desc:'Die within 3 seconds of starting',condition:()=>getStat('instantDeaths')>=1},
+  {id:'rapidFire',name:'Rapid Fire',icon:'🔫',desc:'Die 5 times within 1 minute',condition:()=>getStat('rapidDeaths')>=1},
+  {id:'justOneMoreTry',name:'Just One More Try',icon:'🎮',desc:'Retry 20 times in a row',condition:()=>getStat('maxRetryStreak')>=20},
+
+  // TIER 5: プレイ時間
+  {id:'play5min',name:'Warmed Up',icon:'🎯',desc:'Play for 5 minutes total',condition:()=>getStat('totalPlayTime')>=300},
+  {id:'play10min',name:'Committed',icon:'⏰',desc:'Play for 10 minutes total',condition:()=>getStat('totalPlayTime')>=600},
+  {id:'play30min',name:'Dedicated',icon:'🕐',desc:'Play for 30 minutes total',condition:()=>getStat('totalPlayTime')>=1800},
+  {id:'play1hour',name:'No Life',icon:'🌙',desc:'Play for 1 hour total',condition:()=>getStat('totalPlayTime')>=3600},
+  {id:'play2hours',name:'Send Help',icon:'🆘',desc:'Play for 2 hours total',condition:()=>getStat('totalPlayTime')>=7200},
+  {id:'play5hours',name:'This Is Fine',icon:'🔥',desc:'Play for 5 hours total',condition:()=>getStat('totalPlayTime')>=18000},
+
+  // TIER 6: ステージ1系
+  {id:'stuckInStage1',name:'Stuck in Floor 1',icon:'😰',desc:'Die 50 times in Floor 1',condition:()=>getStat('stage1Deaths')>=50},
+  {id:'instantRegret2',name:'Floor 1 Forever',icon:'🪦',desc:'Die 200 times in Floor 1',condition:()=>getStat('stage1Deaths')>=200},
+
+  // TIER 7: プレイスタイル
+  {id:'nightOwl',name:'Night Owl',icon:'🦉',desc:'Play between midnight and 5am',condition:()=>getStat('nightOwl')>=1},
+  {id:'backAgain',name:'Back Again',icon:'🔁',desc:'Return to play a second session',condition:()=>getStat('totalSessions')>=2},
+  {id:'iGiveUp',name:'I Give Up',icon:'🏳️',desc:'Activate Baby Mode',condition:()=>getStat('babyModeUses')>=1},
+  {id:'legendOfGivingUp',name:'Legend of Giving Up',icon:'🍼',desc:'Clear Floor 100 in Baby Mode',condition:()=>getStat('babyClear')>=1},
+  {id:'masochist',name:'Masochist',icon:'😈',desc:'Die for the first time in Hard Mode',condition:()=>getStat('hardModeDeaths')>=1},
+
+  // TIER 8: 購入連動
+  {id:'firstPurchase',name:'First Purchase',icon:'💰',desc:'Buy your first grid blocks',condition:()=>localStorage.getItem('neverend_contract_id')!==null},
+  {id:'gridOwner',name:'Grid Owner',icon:'🗺️',desc:'Own 4 blocks',condition:()=>getStat('ownedBlocks')>=4},
+  {id:'expandingTerritory',name:'Expanding Territory',icon:'📐',desc:'Own 20 blocks',condition:()=>getStat('ownedBlocks')>=20},
+  {id:'collector',name:'Collector',icon:'🗃️',desc:'Own 50 blocks',condition:()=>getStat('ownedBlocks')>=50},
+  {id:'dominator',name:'Dominator',icon:'⚔️',desc:'Own 200 blocks',condition:()=>getStat('ownedBlocks')>=200},
+  {id:'landlord',name:'Landlord',icon:'🏢',desc:'Own 500 blocks',condition:()=>getStat('ownedBlocks')>=500},
+  {id:'presence',name:'Presence',icon:'👁️',desc:'Own 1,000 blocks',condition:()=>getStat('ownedBlocks')>=1000},
+  {id:'monopolist',name:'Monopolist',icon:'🎯',desc:"Own 50% of a stage",condition:()=>localStorage.getItem('neverend_monopoly_50')==='1'},
+  {id:'stageConqueror',name:'Floor Conqueror',icon:'🏯',desc:'Own an entire floor',condition:()=>localStorage.getItem('neverend_monopoly_owner')==='1'},
+  {id:'godOfGrid',name:'God of Grid',icon:'🌐',desc:'Conquer multiple floors',condition:()=>localStorage.getItem('neverend_multi_stage')==='1'},
+
+  // TIER 9: テスト・特別
+  {id:'tester',name:'Test Pilot',icon:'🧪',desc:'Played during the test phase. A legend from the beginning.',condition:()=>localStorage.getItem('neverend_is_tester')==='1'},
 ];
 function getTitles(){try{return JSON.parse(localStorage.getItem('neverend_titles'))||[];}catch(_){return[];}}
 function hasTitle(id){return getTitles().includes(id);}
@@ -3829,7 +3839,7 @@ function checkTitlesOnClear(nextStage){
   if(nextStage>curBest&&timeLeft<=5)incStat('comebackCount');
   if(_stageAttemptDeaths===0)incStat('ghostClears');
   if(nextStage===5&&(Date.now()-sessionStartTime)<180000)setStat('speedDemon',1);
-  if(easyMode&&nextStage===21)incStat('babyClear');
+  if(easyMode&&nextStage===101)incStat('babyClear');
   // Update bestStage to include cleared stages
   if(nextStage>curBest)setStat('bestStage',nextStage);
   checkAllTitles();

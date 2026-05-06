@@ -3334,7 +3334,7 @@ function drawTitle(){
   const bestFloor=getStat('bestStage',0)||0;
   const totalFloors=100;
   if(bestFloor>0){
-    const towerTop=20,towerBase=680;
+    const towerTop=50,towerBase=650;
     const markerY=towerBase-(bestFloor/totalFloors)*(towerBase-towerTop);
     const pulse=Math.sin(animT*2.5)*0.4+0.6;
     ctx.save();

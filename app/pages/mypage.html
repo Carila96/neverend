@@ -161,6 +161,7 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
     <div class="title-modal-rank" id="titleModalRank"></div>
     <div class="title-modal-text" id="titleModalText"></div>
     <div class="title-modal-status" id="titleModalStatus"></div>
+    <button id="setAsTitleBtn" class="title-modal-close" style="display:none;background:var(--green);color:#000;border-color:var(--green);margin-right:8px;">SET AS TITLE</button>
     <button class="title-modal-close" onclick="document.getElementById('titleModal').classList.remove('open')">CLOSE</button>
   </div>
 </div>
@@ -295,6 +296,69 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
 <script>
 const BASE='https://neverend.vercel.app';
 const GRID_COLS=128,GRID_ROWS=72,CELL=10;
+
+function getStat(key,def){try{const v=localStorage.getItem('neverend_'+key);return v===null?(def||0):JSON.parse(v);}catch(_){return def||0;}}
+
+const GAME_TITLES=[
+  {id:'welcome',icon:'👾',name:'Welcome to Hell',desc:'Start the game for the first time',condition:()=>getStat('totalDeaths')>=0&&getStat('gamesStarted')>=1},
+  {id:'firstDeath',icon:'💀',name:'First Death',desc:'Die for the first time',condition:()=>getStat('totalDeaths')>=1},
+  {id:'again',icon:'🔄',name:'Again.',desc:'Die twice',condition:()=>getStat('totalDeaths')>=2},
+  {id:'stillHere',icon:'⏱',name:'Still Here',desc:'Survive for 10 seconds',condition:()=>getStat('longestSurvival')>=10},
+  {id:'gettingUsed',icon:'😑',name:'Getting Used to It',desc:'Die 10 times',condition:()=>getStat('totalDeaths')>=10},
+  {id:'notGivingUp',icon:'😤',name:'Not Giving Up',desc:'Die 50 times',condition:()=>getStat('totalDeaths')>=50},
+  {id:'stillPlaying',icon:'😰',name:'Still Playing?',desc:'Die 100 times',condition:()=>getStat('totalDeaths')>=100},
+  {id:'timeSink',icon:'⏰',name:'Time Sink',desc:'Play for 5 minutes total',condition:()=>getStat('totalPlayTime')>=300},
+  {id:'cantStop',icon:'🎮',name:"Can't Stop",desc:'Play for 10 minutes total',condition:()=>getStat('totalPlayTime')>=600},
+  {id:'firstBlood',icon:'🩸',name:'First Blood',desc:'Reach Stage 2',condition:()=>getStat('bestStage',0)>=2},
+  {id:'gettingSomewhere',icon:'📈',name:'Getting Somewhere',desc:'Reach Stage 5',condition:()=>getStat('bestStage',0)>=5},
+  {id:'doubleDigits',icon:'🔟',name:'Double Digits',desc:'Reach Stage 10',condition:()=>getStat('bestStage',0)>=10},
+  {id:'gettingSerious',icon:'🎯',name:'Getting Serious',desc:'Reach Stage 20',condition:()=>getStat('bestStage',0)>=20},
+  {id:'oneThird',icon:'📊',name:'One Third',desc:'Reach Stage 30',condition:()=>getStat('bestStage',0)>=30},
+  {id:'halfway',icon:'🏃',name:'Halfway',desc:'Reach Stage 50',condition:()=>getStat('bestStage',0)>=50},
+  {id:'almostThere',icon:'🚀',name:'Almost There',desc:'Reach Stage 70',condition:()=>getStat('bestStage',0)>=70},
+  {id:'soClose',icon:'😤',name:'So Close',desc:'Reach Stage 90',condition:()=>getStat('bestStage',0)>=90},
+  {id:'legend',icon:'⭐',name:'Legend',desc:'Reach Stage 100',condition:()=>getStat('bestStage',0)>=100},
+  {id:'closeOne',icon:'⚡',name:'Close One',desc:'Grab a timer with less than 1 second left',condition:()=>getStat('closeGrabs')>=1},
+  {id:'comebackKid',icon:'🔥',name:'Comeback Kid',desc:'Reach a new best stage with 5 seconds or less remaining',condition:()=>getStat('comebackCount')>=1},
+  {id:'speedDemon',icon:'💨',name:'Speed Demon',desc:'Reach Stage 5 in under 3 minutes',condition:()=>getStat('speedDemon')>=1},
+  {id:'noBaby',icon:'💪',name:'No Baby',desc:'Reach Stage 10 without activating Baby Mode',condition:()=>getStat('bestStage',0)>=10&&getStat('babyModeUses')===0},
+  {id:'ghost',icon:'👻',name:'Ghost',desc:'Clear a stage without dying on that attempt',condition:()=>getStat('ghostClears')>=1},
+  {id:'persistent',icon:'🤕',name:'Persistent',desc:'Die 500 times',condition:()=>getStat('totalDeaths')>=500},
+  {id:'unbreakable',icon:'🪨',name:'Unbreakable',desc:'Die 1,000 times',condition:()=>getStat('totalDeaths')>=1000},
+  {id:'oneHourClub',icon:'⌚',name:'One Hour Club',desc:'Play for 60 minutes total',condition:()=>getStat('totalPlayTime')>=3600},
+  {id:'addicted',icon:'🧠',name:'Addicted',desc:'Die 2,000 times',condition:()=>getStat('totalDeaths')>=2000},
+  {id:'obsessed',icon:'👁',name:'Obsessed',desc:'Play for 1 hour total',condition:()=>getStat('totalPlayTime')>=3600},
+  {id:'whyStillPlaying',icon:'🤔',name:'Why Are You Still Playing?',desc:'Play for 2 hours total',condition:()=>getStat('totalPlayTime')>=7200},
+  {id:'thereIsNoEnd',icon:'♾',name:'There Is No End',desc:'Play for 5 hours total',condition:()=>getStat('totalPlayTime')>=18000},
+  {id:'youNeedHelp',icon:'🆘',name:'You Need Help',desc:'Die 5,000 times',condition:()=>getStat('totalDeaths')>=5000},
+  {id:'areYouOk',icon:'❓',name:'Are You OK?',desc:'Die 10,000 times',condition:()=>getStat('totalDeaths')>=10000},
+  {id:'youBelongHere',icon:'🏠',name:'You Belong Here',desc:'Play for 10 hours total',condition:()=>getStat('totalPlayTime')>=36000},
+  {id:'stuckInStage1',icon:'😭',name:'Stuck in Stage 1',desc:'Die 50 times in Stage 1',condition:()=>getStat('stage1Deaths')>=50},
+  {id:'hopeless',icon:'☠',name:'Hopeless',desc:'Die 100 times in Stage 1',condition:()=>getStat('stage1Deaths')>=100},
+  {id:'instantRegret',icon:'😱',name:'Instant Regret',desc:'Die within 3 seconds of starting',condition:()=>getStat('instantDeaths')>=1},
+  {id:'speedrunToDeath',icon:'🏁',name:'Speedrun to Death',desc:'Die 5 times within 1 minute',condition:()=>getStat('rapidDeaths')>=1},
+  {id:'justOneMoreTry',icon:'🔁',name:'Just One More Try',desc:'Retry 20 times in a row',condition:()=>getStat('maxRetryStreak')>=20},
+  {id:'nightOwl',icon:'🦉',name:'Night Owl',desc:'Play between midnight and 5am',condition:()=>getStat('nightOwl')>=1},
+  {id:'backAgain',icon:'↩',name:'Back Again',desc:'Return to play a second session',condition:()=>getStat('totalSessions')>=2},
+  {id:'iGiveUp',icon:'🏳',name:'I Give Up',desc:'Activate Baby Mode',condition:()=>getStat('babyModeUses')>=1},
+  {id:'legendOfGivingUp',icon:'👑',name:'Legend of Giving Up',desc:'Clear Stage 20 in Baby Mode',condition:()=>getStat('babyClear')>=1},
+  {id:'masochist',icon:'😈',name:'Masochist',desc:'Die for the first time in Hard Mode',condition:()=>getStat('hardModeDeaths')>=1},
+  {id:'firstPurchase',icon:'💳',name:'First Purchase',desc:'Buy your first grid blocks',condition:()=>localStorage.getItem('neverend_contract_id')!==null},
+  {id:'gridOwner',icon:'🏢',name:'Grid Owner',desc:'Own 4 blocks',condition:()=>getStat('ownedBlocks')>=4},
+  {id:'expandingTerritory',icon:'🗺',name:'Expanding Territory',desc:'Own 20 blocks',condition:()=>getStat('ownedBlocks')>=20},
+  {id:'collector',icon:'📦',name:'Collector',desc:'Own 50 blocks',condition:()=>getStat('ownedBlocks')>=50},
+  {id:'dominator',icon:'⚔',name:'Dominator',desc:'Own 200 blocks',condition:()=>getStat('ownedBlocks')>=200},
+  {id:'landlord',icon:'🏰',name:'Landlord',desc:'Own 500 blocks',condition:()=>getStat('ownedBlocks')>=500},
+  {id:'monopolist',icon:'💎',name:'Monopolist',desc:'Own 50% of a stage',condition:()=>localStorage.getItem('neverend_monopoly_50')==='1'},
+  {id:'stageConqueror',icon:'🏆',name:'Stage Conqueror',desc:'Own an entire stage',condition:()=>localStorage.getItem('neverend_monopoly_owner')==='1'},
+  {id:'godOfGrid',icon:'🌐',name:'God of Grid',desc:'Conquer multiple stages',condition:()=>localStorage.getItem('neverend_multi_stage')==='1'},
+  {id:'tester',icon:'🧪',name:'Test Pilot',desc:'Played during the test phase.',condition:()=>localStorage.getItem('neverend_is_tester')==='1'},
+  {id:'floor10',icon:'🏃',name:'10th Floor',desc:'Reached Floor 10',condition:()=>parseInt(localStorage.getItem('neverend_bestStage')||0)>=10},
+  {id:'floor20',icon:'⚡',name:'20th Floor',desc:'Reached Floor 20',condition:()=>parseInt(localStorage.getItem('neverend_bestStage')||0)>=20},
+  {id:'floor30',icon:'💀',name:'30th Floor',desc:'Reached Floor 30',condition:()=>parseInt(localStorage.getItem('neverend_bestStage')||0)>=30},
+  {id:'floor40',icon:'🔱',name:'40th Floor',desc:'Reached Floor 40',condition:()=>parseInt(localStorage.getItem('neverend_bestStage')||0)>=40},
+  {id:'floor50',icon:'👁️',name:'50th Floor',desc:'Reached Floor 50',condition:()=>parseInt(localStorage.getItem('neverend_bestStage')||0)>=50},
+];
 
 // TITLES data — declared here (before init) to avoid TDZ when init() calls buildAchievements()
 var TITLES=[
@@ -463,18 +527,19 @@ function buildAchievements(blockCount){
 function renderTitlePage(){
   const grid=document.getElementById('achievementGrid');
   grid.innerHTML='';
+  const allTitles=GAME_TITLES.map(t=>({...t,earned:t.condition()}));
+  const sorted=[...allTitles.filter(t=>t.earned),...allTitles.filter(t=>!t.earned)];
   const start=titlesPage*TITLES_PER_PAGE;
-  const end=Math.min(start+TITLES_PER_PAGE,TITLES.length);
+  const end=Math.min(start+TITLES_PER_PAGE,sorted.length);
   for(let i=start;i<end;i++){
-    const t=TITLES[i];
-    const earned=blockCountGlobal>=t.minBlocks;
+    const t=sorted[i];
     const badge=document.createElement('div');
-    badge.className='achievement-badge'+(earned?'':' badge-locked');
-    badge.innerHTML='<div class="badge-icon">'+(earned?t.icon:'🔒')+'</div><div class="badge-name">'+t.name+'</div><div class="badge-desc">'+t.rank+' · '+t.minBlocks+'+ blocks</div>';
-    badge.onclick=function(){openTitleModal(t,earned);};
+    badge.className='achievement-badge'+(t.earned?'':' badge-locked');
+    badge.innerHTML='<div class="badge-icon">'+(t.earned?t.icon:'🔒')+'</div><div class="badge-name">'+t.name+'</div><div class="badge-desc">'+t.desc+'</div>';
+    badge.onclick=(function(tt){return function(){openTitleModal(tt,tt.earned);};})(t);
     grid.appendChild(badge);
   }
-  const totalPages=Math.ceil(TITLES.length/TITLES_PER_PAGE);
+  const totalPages=Math.ceil(sorted.length/TITLES_PER_PAGE);
   const pb=document.getElementById('titlePrevBtn'),nb=document.getElementById('titleNextBtn');
   if(pb)pb.disabled=titlesPage===0;
   if(nb)nb.disabled=(titlesPage+1)>=totalPages;
@@ -484,15 +549,26 @@ function renderTitlePage(){
 function openTitleModal(t,earned){
   document.getElementById('titleModalIcon').textContent=earned?t.icon:'🔒';
   document.getElementById('titleModalName').textContent=t.name;
-  document.getElementById('titleModalRank').textContent=t.rank+' — '+t.minBlocks+'+ BLOCKS';
-  document.getElementById('titleModalText').textContent=t.desc;
+  document.getElementById('titleModalRank').textContent=t.desc;
+  document.getElementById('titleModalText').textContent='';
   const s=document.getElementById('titleModalStatus');
-  if(earned){
-    let d='';
-    if(reservedAtGlobal){d=' · Since '+new Date(reservedAtGlobal).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});}
-    s.innerHTML='<span style="color:var(--green)">&#10003; EARNED'+d+'</span>';
-  }else{
-    s.innerHTML='<span style="color:var(--muted)">&#128274; LOCKED — need '+t.minBlocks+'+ blocks</span>';
+  s.innerHTML=earned
+    ?'<span style="color:var(--green)">&#10003; EARNED</span>'
+    :'<span style="color:var(--muted)">&#128274; LOCKED</span>';
+  const setBtn=document.getElementById('setAsTitleBtn');
+  if(setBtn){
+    if(earned){
+      setBtn.style.display='inline-block';
+      setBtn.textContent='SET AS TITLE';
+      setBtn.disabled=false;
+      setBtn.onclick=function(){
+        try{localStorage.setItem('neverend_active_title',t.id);}catch(_){}
+        setBtn.textContent='TITLE SET ✓';
+        setBtn.disabled=true;
+      };
+    }else{
+      setBtn.style.display='none';
+    }
   }
   document.getElementById('titleModal').classList.add('open');
 }

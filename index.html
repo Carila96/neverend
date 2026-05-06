@@ -3332,20 +3332,36 @@ function drawTitle(){
   if(bestFloor>0){
     const towerTop=20,towerBase=680;
     const markerY=towerBase-(bestFloor/totalFloors)*(towerBase-towerTop);
+    const pulse=Math.sin(animT*2.5)*0.4+0.6;
     ctx.save();
-    ctx.shadowColor='rgba(160,185,255,0.9)';
-    ctx.shadowBlur=12;
-    ctx.strokeStyle='rgba(160,185,255,0.85)';
-    ctx.lineWidth=2;
-    ctx.setLineDash([6,4]);
-    ctx.beginPath();ctx.moveTo(240,markerY);ctx.lineTo(320,markerY);ctx.stroke();
+    // テキスト幅を計測
+    ctx.font='bold 11px "Courier New"';
+    const label='BEST: '+bestFloor+'F ';
+    const labelW=ctx.measureText(label).width;
+    // テキスト「BEST: 5F」を塔の右端に表示
+    const textX=330;
+    ctx.fillStyle=`rgba(255,80,60,${pulse})`;
+    ctx.shadowColor='rgba(255,60,40,0.8)';ctx.shadowBlur=8;
+    ctx.textAlign='left';
+    ctx.fillText(label,textX,markerY+4);
+    // ▶を直後に表示
+    const triX=textX+labelW;
+    ctx.fillStyle=`rgba(255,60,40,${pulse})`;
+    ctx.shadowColor='rgba(255,60,40,0.9)';ctx.shadowBlur=12;
+    ctx.beginPath();
+    ctx.moveTo(triX,markerY-6);
+    ctx.lineTo(triX+14,markerY);
+    ctx.lineTo(triX,markerY+6);
+    ctx.closePath();ctx.fill();
+    // 横線（テキストから塔へ）
+    ctx.strokeStyle=`rgba(255,60,40,${pulse*0.6})`;
+    ctx.lineWidth=1;
+    ctx.setLineDash([3,3]);
+    ctx.beginPath();
+    ctx.moveTo(triX+16,markerY);
+    ctx.lineTo(230,markerY);
+    ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle='rgba(160,185,255,0.9)';
-    ctx.beginPath();ctx.arc(240,markerY,5,0,Math.PI*2);ctx.fill();
-    ctx.shadowBlur=0;
-    ctx.font='bold 11px "Courier New"';ctx.textAlign='left';
-    ctx.fillStyle='rgba(255,255,255,0.85)';
-    ctx.fillText('BEST: '+bestFloor+'F',10,markerY-6);
     ctx.restore();
   }
   const pulse2=Math.sin(animT*1.5)*.1+.9;

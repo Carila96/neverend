@@ -162,6 +162,9 @@ body{
 </head>
 <body>
 <canvas id="c" width="1280" height="720"></canvas>
+<div id="mypageOverlay" style="display:none;position:fixed;inset:0;z-index:1000;background:#000;">
+  <iframe id="mypageFrame" src="/app/pages/mypage.html" style="width:100%;height:100%;border:none;"></iframe>
+</div>
 <div id="nameOverlay">
   <h1>ENTER YOUR NAME</h1>
   <p>Your name will appear in credits if selected as a tester.</p>
@@ -3295,7 +3298,7 @@ canvas.addEventListener('click',e=>{
   const cx=(e.clientX-rect.left)*scaleX,cy=(e.clientY-rect.top)*scaleY;
   if(state==='title'){
     if(cx>=settingsBtn.x&&cx<=settingsBtn.x+settingsBtn.w&&cy>=settingsBtn.y&&cy<=settingsBtn.y+settingsBtn.h){openSettings();}
-    if(!testMode&&cx>=mpBtn.x&&cx<=mpBtn.x+mpBtn.w&&cy>=mpBtn.y&&cy<=mpBtn.y+mpBtn.h){state='mypage';}
+    if(!testMode&&cx>=mpBtn.x&&cx<=mpBtn.x+mpBtn.w&&cy>=mpBtn.y&&cy<=mpBtn.y+mpBtn.h){document.getElementById('mypageOverlay').style.display='block';document.getElementById('c').style.display='none';}
     // testMode: LOGIN button click (H/2+134 area)
     if(testMode&&!_currentUser&&cx>=W/2-200&&cx<=W/2+200&&cy>=H/2+122&&cy<=H/2+146){openLoginModal();}
     // ENTER YOUR NAME click (non-testMode, when no name set)

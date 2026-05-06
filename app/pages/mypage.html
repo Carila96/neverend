@@ -166,7 +166,10 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
 </div>
 
 <header>
-  <div class="logo">never<span>END</span></div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <button onclick="if(window.parent!==window){window.parent.document.getElementById('mypageOverlay').style.display='none';window.parent.document.querySelector('canvas').style.display='block';}else{window.location.href='/';}" style="background:none;border:1px solid rgba(74,184,255,0.4);color:var(--accent2);padding:6px 14px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;white-space:nowrap;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='rgba(74,184,255,0.4)'">[ BACK ]</button>
+    <div class="logo">never<span>END</span></div>
+  </div>
   <div style="display:flex;align-items:center;gap:20px;">
     <nav>
       <a href="/app/pages/sales_page.html">Grid</a>

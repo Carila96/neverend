@@ -65,6 +65,13 @@ export default async function handler(req, res) {
   const expires_at = new Date(Date.now() + TTL_MINUTES * 60 * 1000).toISOString();
   const session_key = randomBytes(32).toString('hex');
 
+  // 期限切れreservedを削除
+  await supabase
+    .from('owned_blocks')
+    .delete()
+    .eq('status', 'reserved')
+    .lt('expires_at', new Date().toISOString());
+
   // Check for conflicts — exclude expired reserved blocks
   const { data: rawConflicts } = await supabase
     .from('owned_blocks')

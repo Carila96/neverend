@@ -601,6 +601,7 @@ let colorTool='replace',selectedPaletteColor=null,selectedPaletteKey=null,brushS
 let currentStage=1,gridStates={};
 let logoGridX=0,logoGridY=0,logoPlaced=false,selectedArea=null;
 let editMode=false,deletedBlocks=[],deleteHistory=[],plan='monthly',gridEditIsClick=false;
+let _editRafId=null;
 let gridZoom=1,editZoomLevel=1,baseEditZoom=1;
 let editColorUndoStack=[];
 let miniH=0,miniS=1,miniV=1,miniDragSV=false,miniDragHue=false;
@@ -1014,6 +1015,8 @@ function applyGridEdit(e){
     deletedBlocks.push({x:lc,y:lr});deleteHistory.push({x:lc,y:lr,restore:false});
   }
   document.getElementById('undoBtn').disabled=!deleteHistory.length;
+  if(_editRafId)cancelAnimationFrame(_editRafId);
+  _editRafId=requestAnimationFrame(()=>{drawGrid();_editRafId=null;});
 }
 gridCanvas.addEventListener('click',function(e){
   if(editMode||monopolyMode)return;

@@ -600,7 +600,7 @@ let chosenW=0,chosenH=0,pixelArtOriginal=null,pixelArtEdit=null,customColors=[];
 let colorTool='replace',selectedPaletteColor=null,selectedPaletteKey=null,brushSize=1;
 let currentStage=1,gridStates={};
 let logoGridX=0,logoGridY=0,logoPlaced=false,selectedArea=null;
-let editMode=false,deletedBlocks=[],deleteHistory=[],plan='monthly';
+let editMode=false,deletedBlocks=[],deleteHistory=[],plan='monthly',gridEditIsClick=false;
 let gridZoom=1,editZoomLevel=1,baseEditZoom=1;
 let editColorUndoStack=[];
 let miniH=0,miniS=1,miniV=1,miniDragSV=false,miniDragHue=false;
@@ -743,7 +743,7 @@ document.addEventListener('mousemove',function(e){
   if(miniDragSV)updateMiniSVFromEvent(e);
   if(miniDragHue)updateMiniHueFromEvent(e);
   if(editDrag){const{x,y}=getEditPixelCoords(e);applyEditBrush(x,y);drawEditCanvas();updateEditStats();}
-  if(gridEditDrag)applyGridEdit(e);
+  if(gridEditDrag){gridEditIsClick=false;applyGridEdit(e);}
 });
 document.addEventListener('mouseup',function(){trimDrag=false;miniDragSV=false;miniDragHue=false;if(editDrag){editDrag=false;buildPalette();}gridEditDrag=false;if(editMode){updatePlaceInfo();drawGrid();}});
 
@@ -996,7 +996,7 @@ gridCanvas.addEventListener('mousemove',function(e){
   }else{tt.style.display='none';}
 });
 gridCanvas.addEventListener('mouseleave',function(){document.getElementById('tooltip').style.display='none';gridEditDrag=false;});
-gridCanvas.addEventListener('mousedown',function(e){if(editMode&&logoPlaced&&selectedArea){gridEditDrag=true;applyGridEdit(e);}});
+gridCanvas.addEventListener('mousedown',function(e){if(editMode&&logoPlaced&&selectedArea){gridEditDrag=true;gridEditIsClick=true;applyGridEdit(e);}});
 function applyGridEdit(e){
   const rect=gridCanvas.getBoundingClientRect();const sc=1280/rect.width;
   const c=Math.floor((e.clientX-rect.left)*sc/CELL);const r=Math.floor((e.clientY-rect.top)*sc/CELL);
@@ -1006,13 +1006,14 @@ function applyGridEdit(e){
   const lc=c-selectedArea.x,lr=r-selectedArea.y;
   const alreadyDel=deletedBlocks.some(function(d){return d.x===lc&&d.y===lr;});
   if(alreadyDel){
-    deletedBlocks=deletedBlocks.filter(function(d){return!(d.x===lc&&d.y===lr);});
-    deleteHistory.push({x:lc,y:lr,restore:true});
+    if(gridEditIsClick){
+      deletedBlocks=deletedBlocks.filter(function(d){return!(d.x===lc&&d.y===lr);});
+      deleteHistory.push({x:lc,y:lr,restore:true});
+    }
   }else{
     deletedBlocks.push({x:lc,y:lr});deleteHistory.push({x:lc,y:lr,restore:false});
   }
   document.getElementById('undoBtn').disabled=!deleteHistory.length;
-  drawGrid();
 }
 gridCanvas.addEventListener('click',function(e){
   if(editMode||monopolyMode)return;

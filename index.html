@@ -3334,32 +3334,31 @@ function drawTitle(){
     const markerY=towerBase-(bestFloor/totalFloors)*(towerBase-towerTop);
     const pulse=Math.sin(animT*2.5)*0.4+0.6;
     ctx.save();
-    // テキスト幅を計測
     ctx.font='bold 11px "Courier New"';
-    const label='BEST: '+bestFloor+'F ';
+    const label='BEST: '+bestFloor+'F';
     const labelW=ctx.measureText(label).width;
-    // テキスト「BEST: 5F」を塔の右端に表示
-    const textX=330;
-    ctx.fillStyle=`rgba(255,80,60,${pulse})`;
-    ctx.shadowColor='rgba(255,60,40,0.8)';ctx.shadowBlur=8;
-    ctx.textAlign='left';
-    ctx.fillText(label,textX,markerY+4);
-    // ▶を直後に表示
-    const triX=textX+labelW;
+    // ▶（塔を向く・塔の左側）
+    const triRightX=158;
+    const triLeftX=triRightX-14;
     ctx.fillStyle=`rgba(255,60,40,${pulse})`;
     ctx.shadowColor='rgba(255,60,40,0.9)';ctx.shadowBlur=12;
     ctx.beginPath();
-    ctx.moveTo(triX,markerY-6);
-    ctx.lineTo(triX+14,markerY);
-    ctx.lineTo(triX,markerY+6);
+    ctx.moveTo(triRightX,markerY);
+    ctx.lineTo(triLeftX,markerY-6);
+    ctx.lineTo(triLeftX,markerY+6);
     ctx.closePath();ctx.fill();
-    // 横線（テキストから塔へ）
-    ctx.strokeStyle=`rgba(255,60,40,${pulse*0.6})`;
+    // テキスト「BEST: 5F」▶の左
+    ctx.fillStyle=`rgba(255,80,60,${pulse})`;
+    ctx.shadowColor='rgba(255,60,40,0.8)';ctx.shadowBlur=8;
+    ctx.textAlign='right';
+    ctx.fillText(label,triLeftX-6,markerY+4);
+    // 横線（テキストの左端から少し左まで）
+    ctx.strokeStyle=`rgba(255,60,40,${pulse*0.5})`;
     ctx.lineWidth=1;
     ctx.setLineDash([3,3]);
     ctx.beginPath();
-    ctx.moveTo(triX+16,markerY);
-    ctx.lineTo(230,markerY);
+    ctx.moveTo(triLeftX-labelW-12,markerY);
+    ctx.lineTo(triLeftX-8,markerY);
     ctx.stroke();
     ctx.setLineDash([]);
     ctx.restore();

@@ -21,7 +21,6 @@
 html,body{height:100%;background:var(--bg);color:#c8d8f0;font-family:'Courier New',monospace;}
 body{min-height:100vh;padding:0 0 60px;}
 
-/* scanline overlay */
 body::before{
   content:'';position:fixed;inset:0;
   background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);
@@ -58,7 +57,6 @@ h1{
   margin-bottom:40px;text-transform:uppercase;
 }
 
-/* Section */
 .section{
   background:rgba(255,255,255,0.03);
   border:1px solid var(--border);
@@ -93,30 +91,33 @@ h1{
 .rank-deaths{color:rgba(255,100,100,0.8);text-align:right;font-size:13px;}
 .rank-time{color:var(--muted2);text-align:right;font-size:12px;}
 
-.loading{
-  text-align:center;padding:48px 20px;
-  color:var(--muted2);font-size:13px;letter-spacing:2px;
-}
-.empty{
-  text-align:center;padding:48px 20px;
-  color:var(--muted);font-size:12px;letter-spacing:2px;
-}
-.error-msg{
-  text-align:center;padding:32px 20px;
-  color:rgba(255,80,80,0.7);font-size:12px;letter-spacing:1px;
-}
+.loading{text-align:center;padding:48px 20px;color:var(--muted2);font-size:13px;letter-spacing:2px;}
+.empty{text-align:center;padding:48px 20px;color:var(--muted);font-size:12px;letter-spacing:2px;}
+.error-msg{text-align:center;padding:32px 20px;color:rgba(255,80,80,0.7);font-size:12px;letter-spacing:1px;}
 
-/* Stats bar */
-.stats-bar{
-  display:flex;gap:0;border-top:1px solid var(--border);
-}
+/* Stats bar — 3 cells */
+.stats-bar{display:flex;gap:0;}
 .stat-cell{
-  flex:1;padding:16px 20px;text-align:center;
+  flex:1;padding:20px 20px;text-align:center;
   border-right:1px solid var(--border);
 }
 .stat-cell:last-child{border-right:none;}
-.stat-val{font-size:22px;color:var(--gold);text-shadow:0 0 10px rgba(245,200,66,0.4);display:block;margin-bottom:4px;}
+.stat-val{font-size:24px;color:var(--gold);text-shadow:0 0 10px rgba(245,200,66,0.4);display:block;margin-bottom:6px;}
 .stat-lbl{font-size:10px;letter-spacing:3px;color:var(--muted2);text-transform:uppercase;}
+
+/* Test Pilots */
+.pilots-desc{
+  padding:14px 20px 6px;font-size:12px;color:var(--muted2);letter-spacing:1px;
+  border-bottom:1px solid var(--border);
+}
+.pilots-grid{
+  display:flex;flex-wrap:wrap;gap:10px 20px;padding:20px;
+}
+.pilot-name{
+  font-size:16px;color:var(--accent);
+  text-shadow:0 0 10px rgba(74,184,255,0.6),0 0 20px rgba(74,184,255,0.3);
+  letter-spacing:1px;
+}
 
 footer{
   text-align:center;padding:20px;
@@ -137,14 +138,13 @@ footer{
   <h1>Hall of Legends</h1>
   <div class="subtitle">Top players — sorted by floor reached</div>
 
-  <!-- Summary stats -->
+  <!-- Summary stats (3 cells only) -->
   <div class="section">
     <div class="section-title">// GLOBAL STATS</div>
-    <div class="stats-bar" id="statsBar">
-      <div class="stat-cell"><span class="stat-val" id="statPlayers">—</span><span class="stat-lbl">Players</span></div>
-      <div class="stat-cell"><span class="stat-val" id="statBestFloor">—</span><span class="stat-lbl">Best Floor</span></div>
-      <div class="stat-cell"><span class="stat-val" id="statTotalDeaths">—</span><span class="stat-lbl">Total Deaths</span></div>
-      <div class="stat-cell"><span class="stat-val" id="statTotalTime">—</span><span class="stat-lbl">Total Hours</span></div>
+    <div class="stats-bar">
+      <div class="stat-cell"><span class="stat-val" id="statFloor">—</span><span class="stat-lbl">Best Floor</span></div>
+      <div class="stat-cell"><span class="stat-val" id="statDeaths">—</span><span class="stat-lbl">Total Deaths</span></div>
+      <div class="stat-cell"><span class="stat-val" id="statHours">—</span><span class="stat-lbl">Total Hours</span></div>
     </div>
   </div>
 
@@ -152,8 +152,15 @@ footer{
   <div class="section">
     <div class="section-title">// FLOOR RANKING — TOP 100</div>
     <div id="rankingContainer">
-      <div class="loading" id="loadingMsg">LOADING...</div>
+      <div class="loading">LOADING...</div>
     </div>
+  </div>
+
+  <!-- Test Pilots (hidden until data loads) -->
+  <div class="section" id="pilotsSection" style="display:none;">
+    <div class="section-title">// TEST PILOTS</div>
+    <div class="pilots-desc">These players shaped neverEND from the very beginning.</div>
+    <div class="pilots-grid" id="pilotsGrid"></div>
   </div>
 </div>
 
@@ -170,13 +177,36 @@ function fmtTime(secs){
   return m+'m';
 }
 
+// Task 2: Stats from /api/world-stats
+fetch('https://neverend.vercel.app/api/world-stats')
+  .then(r=>r.json())
+  .then(d=>{
+    document.getElementById('statDeaths').textContent=Number(d.total_deaths||0).toLocaleString();
+    document.getElementById('statFloor').textContent=(d.best_stage||0)+'F';
+    document.getElementById('statHours').textContent=Math.floor((d.total_play_time||0)/3600).toLocaleString()+'h';
+  })
+  .catch(()=>{});
+
+// Task 3: Test Pilots from /api/test-pilots
+fetch('https://neverend.vercel.app/api/test-pilots')
+  .then(r=>r.json())
+  .then(d=>{
+    const pilots=d.pilots||[];
+    if(pilots.length===0)return;
+    const grid=document.getElementById('pilotsGrid');
+    grid.innerHTML=pilots.map(n=>`<span class="pilot-name">${n.replace(/</g,'&lt;')}</span>`).join('');
+    document.getElementById('pilotsSection').style.display='block';
+  })
+  .catch(()=>{});
+
+// Ranking table from Supabase
 async function loadRanking(){
   const container=document.getElementById('rankingContainer');
   try{
     const sb=window.supabase.createClient(_SB_URL,_SB_KEY);
     const {data,error}=await sb
       .from('test_players')
-      .select('name,stage_reached,death_count,play_time,registered_at')
+      .select('name,stage_reached,death_count,play_time')
       .order('stage_reached',{ascending:false})
       .order('death_count',{ascending:true})
       .limit(100);
@@ -187,16 +217,6 @@ async function loadRanking(){
       return;
     }
 
-    // Stats
-    const totalDeaths=data.reduce((s,r)=>s+(r.death_count||0),0);
-    const totalTime=data.reduce((s,r)=>s+(r.play_time||0),0);
-    const bestFloor=data[0]?.stage_reached||0;
-    document.getElementById('statPlayers').textContent=data.length.toLocaleString();
-    document.getElementById('statBestFloor').textContent=bestFloor+'F';
-    document.getElementById('statTotalDeaths').textContent=totalDeaths.toLocaleString();
-    document.getElementById('statTotalTime').textContent=Math.floor(totalTime/3600).toLocaleString()+'h';
-
-    // Table
     let html='<table class="rank-table"><thead><tr>';
     html+='<th>#</th><th>NAME</th><th style="text-align:right">BEST FLOOR</th><th style="text-align:right">DEATHS</th><th style="text-align:right">PLAY TIME</th>';
     html+='</tr></thead><tbody>';

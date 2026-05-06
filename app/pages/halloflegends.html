@@ -177,25 +177,19 @@ function fmtTime(secs){
   return m+'m';
 }
 
-// Task 2: Stats from /api/world-stats
+// Stats + Test Pilots from /api/world-stats
 fetch('https://neverend.vercel.app/api/world-stats')
   .then(r=>r.json())
   .then(d=>{
     document.getElementById('statDeaths').textContent=Number(d.total_deaths||0).toLocaleString();
     document.getElementById('statFloor').textContent=(d.best_stage||0)+'F';
     document.getElementById('statHours').textContent=Math.floor((d.total_play_time||0)/3600).toLocaleString()+'h';
-  })
-  .catch(()=>{});
-
-// Task 3: Test Pilots from /api/test-pilots
-fetch('https://neverend.vercel.app/api/test-pilots')
-  .then(r=>r.json())
-  .then(d=>{
     const pilots=d.pilots||[];
-    if(pilots.length===0)return;
-    const grid=document.getElementById('pilotsGrid');
-    grid.innerHTML=pilots.map(n=>`<span class="pilot-name">${n.replace(/</g,'&lt;')}</span>`).join('');
-    document.getElementById('pilotsSection').style.display='block';
+    if(pilots.length>0){
+      const grid=document.getElementById('pilotsGrid');
+      grid.innerHTML=pilots.map(n=>`<span class="pilot-name">${n.replace(/</g,'&lt;')}</span>`).join('');
+      document.getElementById('pilotsSection').style.display='block';
+    }
   })
   .catch(()=>{});
 

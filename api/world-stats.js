@@ -1,4 +1,5 @@
 // api/world-stats.js — GET /api/world-stats
+// Returns global stats + test pilot names.
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
@@ -6,16 +7,18 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
-  const [worldRes, playersRes] = await Promise.all([
+  const [worldRes, playersRes, pilotsRes] = await Promise.all([
     supabase.from('world_stats').select('total_deaths').eq('id', 1).single(),
     supabase.from('test_players').select('stage_reached,play_time'),
+    supabase.from('player_profiles').select('player_name').eq('is_tester', true).order('created_at', { ascending: true }),
   ]);
 
   const total_deaths = worldRes.data?.total_deaths || 0;
   const players = playersRes.data || [];
   const best_stage = players.reduce((m, p) => Math.max(m, p.stage_reached || 0), 0);
   const total_play_time = players.reduce((s, p) => s + (p.play_time || 0), 0);
+  const pilots = (pilotsRes.data || []).map(r => r.player_name).filter(Boolean);
 
   res.setHeader('Cache-Control', 's-maxage=10, stale-while-revalidate=30');
-  return res.status(200).json({ total_deaths, best_stage, total_play_time });
+  return res.status(200).json({ total_deaths, best_stage, total_play_time, pilots });
 }

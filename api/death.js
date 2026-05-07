@@ -13,7 +13,11 @@ export default async function handler(req, res) {
     return res.status(200).json({ total_deaths: data.total_deaths });
   }
   if (req.method === 'POST') {
-    await supabase.rpc('increment_deaths').catch(() => {});
+    try {
+      const { data: row } = await supabase.from('world_stats').select('total_deaths').eq('id', 1).single();
+      const next = (row?.total_deaths || 0) + 1;
+      await supabase.from('world_stats').update({ total_deaths: next }).eq('id', 1);
+    } catch (_) {}
     return res.status(200).json({ ok: true });
   }
   return res.status(405).json({ error: 'Method not allowed' });

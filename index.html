@@ -544,6 +544,10 @@ let worldDeaths=null;
 function _fetchWorldDeaths(){fetch('/api/death').then(r=>r.json()).then(d=>{if(d.total_deaths!=null)worldDeaths=d.total_deaths;}).catch(()=>{});}
 _fetchWorldDeaths();
 setInterval(()=>{if(state==='title')_fetchWorldDeaths();},60000);
+let _worldStatsCache=null;
+function _prefetchWorldStats(){fetch('/api/world-stats').then(r=>r.json()).then(d=>{_worldStatsCache=d;}).catch(()=>{});}
+_prefetchWorldStats();
+setInterval(()=>{if(state==='title')_prefetchWorldStats();},120000);
 // Track session count & night owl on load
 (function(){incStat('totalSessions');const h=new Date().getHours();if(h>=0&&h<5)setStat('nightOwl',1);})();
 
@@ -3318,7 +3322,7 @@ canvas.addEventListener('click',e=>{
       const _ov=document.getElementById('nameOverlay');if(_ov){_ov.classList.add('show');setTimeout(()=>document.getElementById('nameInputField').focus(),50);}
     }
     // Hall of Legends click (bottom-right area, disabled in testMode)
-    if(!testMode&&cx>=W-200&&cx<=W-20&&cy>=H-24&&cy<=H-4){window.open('/app/pages/halloflegends.html','_blank');}
+    if(!testMode&&cx>=W-200&&cx<=W-20&&cy>=H-24&&cy<=H-4){if(_worldStatsCache){localStorage.setItem('neverend_world_stats_cache',JSON.stringify(_worldStatsCache));}window.open('/app/pages/halloflegends.html','_blank');}
   } else if(state==='testcomplete'){
     if(cx>=_tcBtn.x&&cx<=_tcBtn.x+_tcBtn.w&&cy>=_tcBtn.y&&cy<=_tcBtn.y+_tcBtn.h){state='title';}
   } else if(state==='mypage'){

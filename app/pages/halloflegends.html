@@ -200,6 +200,8 @@ function buildRankingHTML(data){
 }
 
 (async function(){
+  const _cached=localStorage.getItem('neverend_world_stats_cache');
+  if(_cached){try{const c=JSON.parse(_cached);document.getElementById('statDeaths').textContent=Number(c.total_deaths||0).toLocaleString();document.getElementById('statFloor').textContent=(c.best_stage||0)+'F';document.getElementById('statHours').textContent=Math.floor((c.total_play_time||0)/3600).toLocaleString()+'h';}catch(_){}}
   const container=document.getElementById('rankingContainer');
   const sb=window.supabase.createClient(_SB_URL,_SB_KEY);
   try{

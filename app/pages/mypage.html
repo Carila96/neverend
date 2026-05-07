@@ -298,11 +298,12 @@ const BASE='https://neverend.vercel.app';
 const GRID_COLS=128,GRID_ROWS=72,CELL=10;
 
 function getStat(key,def){
+  if(def===undefined)def=0;
   try{
-    const v=localStorage.getItem('neverend_'+key);
-    if(v===null)return def!==undefined?def:0;
-    return isNaN(Number(v))?v:Number(v);
-  }catch(_){return def!==undefined?def:0;}
+    const save=JSON.parse(localStorage.getItem('neverend_save'))||{};
+    const v=save[key];
+    return v!==undefined?v:def;
+  }catch(_){return def;}
 }
 
 const GAME_TITLES=[

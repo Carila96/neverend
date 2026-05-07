@@ -3887,7 +3887,9 @@ function triggerDeath(){
   incStat('deaths_stage_'+lastDeathStage);
   if(lastDeathStage===1)incStat('stage1Deaths');
   if(hardMode)incStat('hardModeDeaths');
-  fetch('/api/death',{method:'POST'}).catch(()=>{});
+  fetch('/api/death',{method:'POST'}).then(r=>{
+    if(!r.ok)console.warn('death API failed:',r.status);
+  }).catch(e=>console.warn('death API error:',e));
   const best=getStat('bestStage',1);
   if(lastDeathStage>best)setStat('bestStage',lastDeathStage);
   incStat('totalStagesReached',lastDeathStage);

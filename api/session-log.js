@@ -9,11 +9,15 @@ export default async function handler(req, res) {
 
   try {
     const { session_time, death_count, max_stage_reached } = req.body || {};
-    await supabase.from('session_logs').insert({
-      session_time:    parseInt(session_time,    10) || 0,
-      death_count:     parseInt(death_count,     10) || 0,
-      max_stage_reached: parseInt(max_stage_reached, 10) || 1,
-    });
+    const stage = parseInt(max_stage_reached, 10) || 1;
+    await Promise.all([
+      supabase.from('session_logs').insert({
+        session_time:    parseInt(session_time, 10) || 0,
+        death_count:     parseInt(death_count,  10) || 0,
+        max_stage_reached: stage,
+      }),
+      supabase.from('world_stats').update({ best_stage: stage }).eq('id', 1).lt('best_stage', stage),
+    ]);
   } catch (_) {}
 
   return res.status(200).json({ ok: true });

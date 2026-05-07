@@ -14,6 +14,11 @@ export default async function handler(req, res) {
       death_count:       parseInt(death_count,       10) || 0,
       max_stage_reached: parseInt(max_stage_reached, 10) || 1,
     });
+    const { data: ws } = await supabase.from('world_stats').select('best_stage,total_play_time').eq('id', 1).single();
+    await supabase.from('world_stats').update({
+      best_stage:      Math.max(ws?.best_stage || 0, parseInt(max_stage_reached, 10) || 0),
+      total_play_time: (ws?.total_play_time || 0) + (parseInt(session_time, 10) || 0),
+    }).eq('id', 1);
   } catch (_) {}
 
   return res.status(200).json({ ok: true });

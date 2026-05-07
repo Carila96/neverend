@@ -9,14 +9,18 @@ export default async function handler(req, res) {
 
   try {
     const { session_time, death_count, max_stage_reached } = req.body || {};
-    const stage = parseInt(max_stage_reached, 10) || 1;
+    const deaths = parseInt(death_count,      10) || 0;
+    const stage  = parseInt(max_stage_reached, 10) || 1;
+    const time   = parseInt(session_time,      10) || 0;
+
+    const { data: ws } = await supabase.from('world_stats').select('*').eq('id', 1).single();
     await Promise.all([
-      supabase.from('session_logs').insert({
-        session_time:    parseInt(session_time, 10) || 0,
-        death_count:     parseInt(death_count,  10) || 0,
-        max_stage_reached: stage,
-      }),
-      supabase.from('world_stats').update({ best_stage: stage }).eq('id', 1).lt('best_stage', stage),
+      supabase.from('session_logs').insert({ session_time: time, death_count: deaths, max_stage_reached: stage }),
+      supabase.from('world_stats').update({
+        total_deaths:    (ws?.total_deaths    || 0) + deaths,
+        best_stage:      Math.max(ws?.best_stage    || 0, stage),
+        total_play_time: (ws?.total_play_time || 0) + time,
+      }).eq('id', 1),
     ]);
   } catch (_) {}
 

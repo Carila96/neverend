@@ -6,7 +6,7 @@
 <title>HALL OF LEGENDS — neverEND</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://cokcftutqkwhfbmdnhgl.supabase.co">
-<link rel="preconnect" href="https://neverend.vercel.app">
+<link rel="preconnect" href="https://neverend.vercel.app" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -199,38 +199,32 @@ function buildRankingHTML(data){
   return html+'</tbody></table>';
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
+(async function(){
   const container=document.getElementById('rankingContainer');
   const sb=window.supabase.createClient(_SB_URL,_SB_KEY);
-
-  // Kick off both fetches in parallel
-  Promise.all([
-    fetch('https://neverend.vercel.app/api/world-stats').then(r=>r.json()).catch(()=>({})),
-    sb.from('test_players')
-      .select('name,stage_reached,death_count,play_time')
-      .order('stage_reached',{ascending:false})
-      .order('death_count',{ascending:true})
-      .limit(100),
-  ]).then(([ws,rankRes])=>{
-    // Stats
+  try{
+    const [ws,rankRes]=await Promise.all([
+      fetch('https://neverend.vercel.app/api/world-stats').then(r=>r.json()).catch(()=>({})),
+      sb.from('test_players')
+        .select('name,stage_reached,death_count,play_time')
+        .order('stage_reached',{ascending:false})
+        .order('death_count',{ascending:true})
+        .limit(100),
+    ]);
     document.getElementById('statDeaths').textContent=Number(ws.total_deaths||0).toLocaleString();
     document.getElementById('statFloor').textContent=(ws.best_stage||0)+'F';
     document.getElementById('statHours').textContent=Math.floor((ws.total_play_time||0)/3600).toLocaleString()+'h';
-
-    // Test Pilots
     const pilots=ws.pilots||[];
     if(pilots.length>0){
       document.getElementById('pilotsGrid').innerHTML=pilots.map(n=>`<span class="pilot-name">${n.replace(/</g,'&lt;')}</span>`).join('');
       document.getElementById('pilotsSection').style.display='block';
     }
-
-    // Ranking
     if(rankRes.error)throw rankRes.error;
     container.innerHTML=buildRankingHTML(rankRes.data);
-  }).catch(err=>{
+  }catch(err){
     container.innerHTML='<div class="error-msg">Could not load data.<br>'+(err&&err.message||'Network error')+'</div>';
-  });
-});
+  }
+})();
 </script>
 </body>
 </html>

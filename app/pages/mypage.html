@@ -261,6 +261,29 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
       </div>
     </div>
 
+    <div class="section-block" id="nameChangeSection">
+      <div class="section-block-title">// PLAYER NAME</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;gap:10px;align-items:center;">
+          <input id="nameChangeInput" type="text" maxlength="20" placeholder="YOUR NAME"
+            style="background:#050510;border:1px solid var(--border);color:var(--text);
+            font-family:'Share Tech Mono',monospace;font-size:14px;letter-spacing:2px;
+            padding:10px 14px;width:260px;outline:none;"
+            onfocus="this.style.borderColor='var(--accent2)'"
+            onblur="this.style.borderColor='var(--border)'"/>
+          <button onclick="savePlayerName()" id="nameChangeSaveBtn"
+            class="btn-primary" style="padding:10px 20px;font-size:12px;">SAVE</button>
+        </div>
+        <div id="nameChangeMsg" style="font-family:'Share Tech Mono',monospace;
+          font-size:12px;letter-spacing:1px;min-height:16px;"></div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:11px;
+          color:var(--muted);line-height:1.7;">
+          ⚠ Once you change your name, your previous name may be taken by another
+          player and cannot be recovered. Login required to save changes.
+        </div>
+      </div>
+    </div>
+
     <!-- PURCHASES SECTION (shown when logged in via Supabase) -->
     <div class="section-block" id="purchaseSection" style="display:none;">
       <div class="section-block-title">// YOUR PURCHASES</div>
@@ -725,6 +748,46 @@ function closeSnsLoginModal(){
   const m=document.getElementById('snsLoginModal');
   if(m){m.style.display='none';}
 }
+
+async function savePlayerName(){
+  const input=document.getElementById('nameChangeInput');
+  const msg=document.getElementById('nameChangeMsg');
+  const btn=document.getElementById('nameChangeSaveBtn');
+  const name=(input.value||'').trim().slice(0,20);
+  if(!name){msg.style.color='var(--accent)';msg.textContent='Please enter a name.';return;}
+  if(!_sbClient){msg.style.color='var(--accent)';msg.textContent='Login required to save name.';return;}
+  const {data:{session}}=await _sbClient.auth.getSession();
+  if(!session){msg.style.color='var(--accent)';msg.textContent='Login required to save name.';return;}
+  btn.textContent='Saving...';btn.disabled=true;
+  msg.style.color='var(--muted)';msg.textContent='Checking availability...';
+  try{
+    const res=await fetch('/api/register-tester?name='+encodeURIComponent(name));
+    const data=await res.json();
+    if(data.taken){
+      const {data:own}=await _sbClient.from('player_profiles').select('player_name').eq('id',session.user.id).single();
+      if(!own||own.player_name?.toLowerCase()!==name.toLowerCase()){
+        msg.style.color='var(--accent)';msg.textContent='This name is already taken.';
+        btn.textContent='SAVE';btn.disabled=false;return;
+      }
+    }
+    const {error}=await _sbClient.from('player_profiles').upsert({
+      id:session.user.id,player_name:name
+    },{onConflict:'id'});
+    if(error)throw error;
+    localStorage.setItem('neverend_playername',name);
+    msg.style.color='var(--green)';msg.textContent='Name saved!';
+    setTimeout(()=>{msg.textContent='';},3000);
+  }catch(e){
+    msg.style.color='var(--accent)';msg.textContent='Error saving name. Try again.';
+  }
+  btn.textContent='SAVE';btn.disabled=false;
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const n=localStorage.getItem('neverend_playername')||'';
+  const inp=document.getElementById('nameChangeInput');
+  if(inp&&n)inp.value=n;
+});
 </script>
 
 <div id="snsLoginModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;">

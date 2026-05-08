@@ -131,7 +131,7 @@ footer{
 <body>
 
 <header>
-  <a href="/" class="back-btn">[ BACK TO GAME ]</a>
+  <button onclick="if(window.parent!==window){window.parent.document.getElementById('holOverlay').style.display='none';window.parent.document.querySelector('canvas').style.display='block';}else{window.location.href='/';}" style="background:none;border:1px solid rgba(74,184,255,0.4);color:#4ab8ff;padding:6px 14px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">[ BACK ]</button>
   <div class="logo">never<span>END</span></div>
   <div style="width:140px;"></div>
 </header>

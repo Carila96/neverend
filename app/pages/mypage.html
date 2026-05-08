@@ -178,10 +178,8 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
       <a href="/app/pages/sales_page.html" class="nav-cta">CLAIM YOUR SPACE</a>
     </nav>
     <div id="authArea">
-      <div id="loginButtons" style="display:flex;gap:8px;">
-        <button onclick="loginWith('google')" style="background:none;border:1px solid rgba(74,184,255,0.5);color:#4ab8ff;padding:7px 12px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;">GOOGLE</button>
-        <button onclick="loginWith('discord')" style="background:none;border:1px solid rgba(88,101,242,0.5);color:#5865f2;padding:7px 12px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;">DISCORD</button>
-        <button onclick="loginWith('twitter')" style="background:none;border:1px solid rgba(255,255,255,0.3);color:#fff;padding:7px 12px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;">X</button>
+      <div id="loginButtons">
+        <button onclick="openLoginModal()" style="background:none;border:1px solid rgba(74,184,255,0.5);color:#4ab8ff;padding:7px 20px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">[ LOGIN ]</button>
       </div>
       <button id="logoutBtn" onclick="handleLogout()" style="display:none;background:none;border:1px solid rgba(231,76,60,0.5);color:#e74c3c;padding:7px 14px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">LOGOUT</button>
     </div>
@@ -702,6 +700,25 @@ async function loadPurchases(userId){
     console.warn('loadPurchases error:',err);
   }
 }
+function openLoginModal(){
+  const m=document.getElementById('snsLoginModal');
+  if(m){m.style.display='flex';}
+}
+function closeSnsLoginModal(){
+  const m=document.getElementById('snsLoginModal');
+  if(m){m.style.display='none';}
+}
 </script>
+
+<div id="snsLoginModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#0e0e1a;border:1px solid #262640;padding:40px;min-width:320px;text-align:center;display:flex;flex-direction:column;gap:16px;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;letter-spacing:3px;">LOGIN</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#787f90;letter-spacing:1px;">Choose your login method</div>
+    <button onclick="loginWith('google')" style="width:100%;background:none;border:1px solid rgba(74,184,255,0.5);color:#4ab8ff;padding:12px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">GOOGLE</button>
+    <button onclick="loginWith('discord')" style="width:100%;background:none;border:1px solid rgba(88,101,242,0.5);color:#5865f2;padding:12px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">DISCORD</button>
+    <button onclick="loginWith('twitter')" style="width:100%;background:none;border:1px solid rgba(255,255,255,0.3);color:#fff;padding:12px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">X (TWITTER)</button>
+    <button onclick="closeSnsLoginModal()" style="background:none;border:none;color:#787f90;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;margin-top:8px;">CANCEL</button>
+  </div>
+</div>
 </body>
 </html>

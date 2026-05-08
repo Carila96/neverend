@@ -177,8 +177,13 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
       <a href="/app/pages/sales_page.html#pricing">Pricing</a>
       <a href="/app/pages/sales_page.html" class="nav-cta">CLAIM YOUR SPACE</a>
     </nav>
-    <div id="authArea" style="display:none;">
-      <button id="logoutBtn" onclick="handleLogout()" style="background:none;border:1px solid rgba(231,76,60,0.5);color:var(--accent);padding:7px 14px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;" onmouseover="this.style.background='rgba(231,76,60,0.1)'" onmouseout="this.style.background='none'">LOGOUT</button>
+    <div id="authArea">
+      <div id="loginButtons" style="display:flex;gap:8px;">
+        <button onclick="loginWith('google')" style="background:none;border:1px solid rgba(74,184,255,0.5);color:#4ab8ff;padding:7px 12px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;">GOOGLE</button>
+        <button onclick="loginWith('discord')" style="background:none;border:1px solid rgba(88,101,242,0.5);color:#5865f2;padding:7px 12px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;">DISCORD</button>
+        <button onclick="loginWith('twitter')" style="background:none;border:1px solid rgba(255,255,255,0.3);color:#fff;padding:7px 12px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;">X</button>
+      </div>
+      <button id="logoutBtn" onclick="handleLogout()" style="display:none;background:none;border:1px solid rgba(231,76,60,0.5);color:#e74c3c;padding:7px 14px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">LOGOUT</button>
     </div>
   </div>
 </header>
@@ -609,14 +614,38 @@ let _sbClient=null;
 (function initAuth(){
   if(window.supabase){
     _sbClient=window.supabase.createClient(_SB_URL,_SB_KEY);
+    _sbClient.auth.onAuthStateChange(function(event,session){
+      updateAuthUI(session);
+      if(session)loadPurchases(session.user.id);
+    });
     _sbClient.auth.getSession().then(function(r){
-      if(r.data&&r.data.session){
-        document.getElementById('authArea').style.display='block';
-        loadPurchases(r.data.session.user.id);
-      }
+      const session=r.data&&r.data.session?r.data.session:null;
+      updateAuthUI(session);
+      if(session)loadPurchases(session.user.id);
     });
   }
 })();
+
+function updateAuthUI(session){
+  const lb=document.getElementById('loginButtons');
+  const lo=document.getElementById('logoutBtn');
+  if(session){
+    if(lb)lb.style.display='none';
+    if(lo)lo.style.display='block';
+  }else{
+    if(lb)lb.style.display='flex';
+    if(lo)lo.style.display='none';
+  }
+}
+
+async function loginWith(provider){
+  if(!_sbClient)return;
+  await _sbClient.auth.signInWithOAuth({
+    provider:provider,
+    options:{redirectTo:window.location.href}
+  });
+}
+
 async function handleLogout(){
   if(_sbClient)await _sbClient.auth.signOut();
   window.location.href='/';

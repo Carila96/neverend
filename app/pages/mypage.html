@@ -173,10 +173,22 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
   </div>
   <div style="display:flex;align-items:center;gap:20px;">
     <nav>
-      <a href="/app/pages/sales_page.html">Grid</a>
-      <a href="/app/pages/sales_page.html#pricing">Pricing</a>
       <a href="/app/pages/sales_page.html" class="nav-cta">CLAIM YOUR SPACE</a>
     </nav>
+    <div id="nameChangeArea" style="display:flex;align-items:center;gap:8px;">
+      <input id="nameChangeInput" type="text" maxlength="20" placeholder="YOUR NAME"
+        style="background:#050510;border:1px solid var(--border);color:var(--text);
+        font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;
+        padding:6px 10px;width:160px;outline:none;"
+        onfocus="this.style.borderColor='var(--accent2)'"
+        onblur="this.style.borderColor='var(--border)'"/>
+      <button onclick="savePlayerName()" id="nameChangeSaveBtn"
+        style="background:none;border:1px solid rgba(74,184,255,0.5);color:#4ab8ff;
+        padding:6px 12px;font-family:'Share Tech Mono',monospace;font-size:10px;
+        letter-spacing:1px;cursor:pointer;text-transform:uppercase;">SAVE NAME</button>
+      <div id="nameChangeMsg" style="font-family:'Share Tech Mono',monospace;
+        font-size:10px;letter-spacing:1px;min-width:80px;"></div>
+    </div>
     <div id="authArea">
       <div id="loginButtons">
         <button onclick="openLoginModal()" style="background:none;border:1px solid rgba(74,184,255,0.5);color:#4ab8ff;padding:7px 20px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">[ LOGIN ]</button>
@@ -258,29 +270,6 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
         </div>
         <canvas id="gridCanvas" width="1280" height="720"></canvas>
         <div class="grid-note" id="gridNote">Loading grid data...</div>
-      </div>
-    </div>
-
-    <div class="section-block" id="nameChangeSection">
-      <div class="section-block-title">// PLAYER NAME</div>
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <div style="display:flex;gap:10px;align-items:center;">
-          <input id="nameChangeInput" type="text" maxlength="20" placeholder="YOUR NAME"
-            style="background:#050510;border:1px solid var(--border);color:var(--text);
-            font-family:'Share Tech Mono',monospace;font-size:14px;letter-spacing:2px;
-            padding:10px 14px;width:260px;outline:none;"
-            onfocus="this.style.borderColor='var(--accent2)'"
-            onblur="this.style.borderColor='var(--border)'"/>
-          <button onclick="savePlayerName()" id="nameChangeSaveBtn"
-            class="btn-primary" style="padding:10px 20px;font-size:12px;">SAVE</button>
-        </div>
-        <div id="nameChangeMsg" style="font-family:'Share Tech Mono',monospace;
-          font-size:12px;letter-spacing:1px;min-height:16px;"></div>
-        <div style="font-family:'Share Tech Mono',monospace;font-size:11px;
-          color:var(--muted);line-height:1.7;">
-          ⚠ Once you change your name, your previous name may be taken by another
-          player and cannot be recovered. Login required to save changes.
-        </div>
       </div>
     </div>
 

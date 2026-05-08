@@ -614,7 +614,17 @@ let _sbClient=null;
     _sbClient=window.supabase.createClient(_SB_URL,_SB_KEY);
     _sbClient.auth.onAuthStateChange(function(event,session){
       updateAuthUI(session);
-      if(session)loadPurchases(session.user.id);
+      if(session){
+        loadPurchases(session.user.id);
+        const playerName=localStorage.getItem('neverend_playername')||'';
+        _sbClient.from('player_profiles').upsert({
+          id:session.user.id,
+          player_name:playerName||session.user.user_metadata?.full_name||session.user.email?.split('@')[0]||'Player',
+          is_tester:localStorage.getItem('neverend_is_tester')==='1'
+        },{onConflict:'id'}).then(function(r){
+          if(r.error)console.warn('profile upsert error:',r.error);
+        });
+      }
     });
     _sbClient.auth.getSession().then(function(r){
       const session=r.data&&r.data.session?r.data.session:null;

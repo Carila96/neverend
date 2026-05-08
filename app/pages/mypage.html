@@ -616,13 +616,20 @@ let _sbClient=null;
       updateAuthUI(session);
       if(session){
         loadPurchases(session.user.id);
-        const playerName=localStorage.getItem('neverend_playername')||'';
-        _sbClient.from('player_profiles').upsert({
-          id:session.user.id,
-          player_name:playerName||session.user.user_metadata?.full_name||session.user.email?.split('@')[0]||'Player',
-          is_tester:localStorage.getItem('neverend_is_tester')==='1'
-        },{onConflict:'id'}).then(function(r){
-          if(r.error)console.warn('profile upsert error:',r.error);
+        _sbClient.from('player_profiles').select('player_name').eq('id',session.user.id).single().then(function(r){
+          const existingName=r.data&&r.data.player_name;
+          const localName=localStorage.getItem('neverend_playername')||'';
+          const nameToUse=existingName||(localName||session.user.user_metadata?.full_name||session.user.email?.split('@')[0]||'Player');
+          _sbClient.from('player_profiles').upsert({
+            id:session.user.id,
+            player_name:nameToUse,
+            is_tester:localStorage.getItem('neverend_is_tester')==='1'
+          },{onConflict:'id'}).then(function(r2){
+            if(r2.error)console.warn('profile upsert error:',r2.error);
+            if(!localStorage.getItem('neverend_playername')&&nameToUse){
+              localStorage.setItem('neverend_playername',nameToUse);
+            }
+          });
         });
       }
     });

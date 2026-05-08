@@ -1,0 +1,15 @@
+<svg width="1200" height="630" viewBox="0 0 680 357" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<pattern id="scan" x="0" y="0" width="1" height="4" patternUnits="userSpaceOnUse">
+  <rect x="0" y="0" width="1" height="2" fill="#000" opacity="0.3"/>
+</pattern>
+</defs>
+<rect width="680" height="357" fill="#050508"/>
+<rect x="0" y="0" width="680" height="357" fill="url(#scan)" opacity="0.15"/>
+<line x1="40" y1="40" x2="640" y2="40" stroke="#222244" stroke-width="0.5"/>
+<line x1="40" y1="317" x2="640" y2="317" stroke="#222244" stroke-width="0.5"/>
+<text x="110" y="168" font-family="'Courier New', monospace" font-size="96" font-weight="bold" fill="#ffffff">never</text>
+<text x="406" y="168" font-family="'Courier New', monospace" font-size="96" font-weight="bold" fill="#e74c3c">END</text>
+<text x="340" y="215" text-anchor="middle" font-family="'Courier New', monospace" font-size="18" fill="#9b8fc4" letter-spacing="2">30 seconds to live. Forever.</text>
+<text x="340" y="300" text-anchor="middle" font-family="'Courier New', monospace" font-size="13" fill="#444466" letter-spacing="3">neverend.vercel.app</text>
+</svg>

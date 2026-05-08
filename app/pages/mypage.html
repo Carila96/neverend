@@ -640,10 +640,22 @@ function updateAuthUI(session){
 
 async function loginWith(provider){
   if(!_sbClient)return;
-  await _sbClient.auth.signInWithOAuth({
+  const redirectTo=window.location.hostname==='localhost'
+    ?'http://localhost:3000/app/pages/mypage.html'
+    :'https://neverend.vercel.app/app/pages/mypage.html';
+  const {data,error}=await _sbClient.auth.signInWithOAuth({
     provider:provider,
-    options:{redirectTo:window.location.href}
+    options:{
+      redirectTo:redirectTo,
+      skipBrowserRedirect:true
+    }
   });
+  if(error){console.error(error);return;}
+  if(window.parent!==window){
+    window.parent.location.href=data.url;
+  }else{
+    window.location.href=data.url;
+  }
 }
 
 async function handleLogout(){

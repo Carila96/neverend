@@ -176,18 +176,7 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
       <a href="/app/pages/sales_page.html" class="nav-cta">CLAIM YOUR SPACE</a>
     </nav>
     <div id="nameChangeArea" style="display:flex;align-items:center;gap:8px;">
-      <input id="nameChangeInput" type="text" maxlength="20" placeholder="YOUR NAME"
-        style="background:#050510;border:1px solid var(--border);color:var(--text);
-        font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;
-        padding:6px 10px;width:160px;outline:none;"
-        onfocus="this.style.borderColor='var(--accent2)'"
-        onblur="this.style.borderColor='var(--border)'"/>
-      <button onclick="savePlayerName()" id="nameChangeSaveBtn"
-        style="background:none;border:1px solid rgba(74,184,255,0.5);color:#4ab8ff;
-        padding:6px 12px;font-family:'Share Tech Mono',monospace;font-size:10px;
-        letter-spacing:1px;cursor:pointer;text-transform:uppercase;">SAVE NAME</button>
-      <div id="nameChangeMsg" style="font-family:'Share Tech Mono',monospace;
-        font-size:10px;letter-spacing:1px;min-width:80px;"></div>
+      <button onclick="openNameChangeModal()" style="background:none;border:1px solid rgba(74,184,255,0.5);color:#4ab8ff;padding:6px 14px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;">CHANGE NAME</button>
     </div>
     <div id="authArea">
       <div id="loginButtons">
@@ -738,6 +727,25 @@ function closeSnsLoginModal(){
   if(m){m.style.display='none';}
 }
 
+function openNameChangeModal(){
+  const session_check=async()=>{
+    if(!_sbClient)return;
+    const {data:{session}}=await _sbClient.auth.getSession();
+    if(!session){
+      alert('Please login to change your name.');
+      return;
+    }
+    const inp=document.getElementById('nameChangeInput');
+    if(inp)inp.value=localStorage.getItem('neverend_playername')||'';
+    document.getElementById('nameChangeMsg').textContent='';
+    document.getElementById('nameChangeModal').style.display='flex';
+  };
+  session_check();
+}
+function closeNameChangeModal(){
+  document.getElementById('nameChangeModal').style.display='none';
+}
+
 async function savePlayerName(){
   const input=document.getElementById('nameChangeInput');
   const msg=document.getElementById('nameChangeMsg');
@@ -765,6 +773,7 @@ async function savePlayerName(){
     if(error)throw error;
     localStorage.setItem('neverend_playername',name);
     msg.style.color='var(--green)';msg.textContent='Name saved!';
+    setTimeout(()=>{closeNameChangeModal();},1200);
     setTimeout(()=>{msg.textContent='';},3000);
   }catch(e){
     msg.style.color='var(--accent)';msg.textContent='Error saving name. Try again.';
@@ -787,6 +796,31 @@ document.addEventListener('DOMContentLoaded',()=>{
     <button onclick="loginWith('discord')" style="width:100%;background:none;border:1px solid rgba(88,101,242,0.5);color:#5865f2;padding:12px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">DISCORD</button>
     <button onclick="loginWith('twitter')" style="width:100%;background:none;border:1px solid rgba(255,255,255,0.3);color:#fff;padding:12px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">X (TWITTER)</button>
     <button onclick="closeSnsLoginModal()" style="background:none;border:none;color:#787f90;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;margin-top:8px;">CANCEL</button>
+  </div>
+</div>
+<div id="nameChangeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#0e0e1a;border:1px solid #262640;padding:40px;min-width:360px;max-width:440px;display:flex;flex-direction:column;gap:16px;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;letter-spacing:3px;">CHANGE NAME</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#e74c3c;line-height:1.8;border:1px solid rgba(231,76,60,0.3);padding:12px;background:rgba(231,76,60,0.05);">
+      ⚠ Once you change your name, your previous name may be taken by another player and cannot be recovered.
+    </div>
+    <input id="nameChangeInput" type="text" maxlength="20" placeholder="YOUR NAME"
+      style="background:#050510;border:1px solid var(--border);color:var(--text);
+      font-family:'Share Tech Mono',monospace;font-size:14px;letter-spacing:2px;
+      padding:10px 14px;outline:none;width:100%;box-sizing:border-box;"
+      onfocus="this.style.borderColor='#4ab8ff'"
+      onblur="this.style.borderColor='var(--border)'"/>
+    <div id="nameChangeMsg" style="font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:1px;min-height:16px;"></div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="savePlayerName()" id="nameChangeSaveBtn"
+        style="flex:1;background:none;border:1px solid rgba(74,184,255,0.5);color:#4ab8ff;
+        padding:11px;font-family:'Share Tech Mono',monospace;font-size:12px;
+        letter-spacing:2px;cursor:pointer;text-transform:uppercase;">SAVE</button>
+      <button onclick="closeNameChangeModal()"
+        style="flex:1;background:none;border:1px solid var(--border);color:var(--muted2);
+        padding:11px;font-family:'Share Tech Mono',monospace;font-size:12px;
+        letter-spacing:2px;cursor:pointer;text-transform:uppercase;">CANCEL</button>
+    </div>
   </div>
 </div>
 </body>

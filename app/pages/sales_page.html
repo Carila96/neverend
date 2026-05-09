@@ -759,14 +759,10 @@ function getTrimmedDataUrl(){
   const scale=trimZoom;const sw=iw/scale,sh=ih/scale;
   const sx=Math.max(0,trimOffX*(iw-sw)/100);const sy=Math.max(0,trimOffY*(ih-sh)/100);
   const srcW=Math.min(sw,iw),srcH=Math.min(sh,ih);
-  const S=Math.max(srcW,srcH);
-  const off=document.createElement('canvas');off.width=S;off.height=S;
+  const off=document.createElement('canvas');
+  off.width=Math.round(srcW);off.height=Math.round(srcH);
   const oc=off.getContext('2d');
-  // transparent background (no fillRect)
-  const aspect=srcW/srcH;
-  let dw,dh,dx,dy;
-  if(aspect>=1){dw=S;dh=S/aspect;dx=0;dy=(S-dh)/2;}else{dh=S;dw=S*aspect;dx=(S-dw)/2;dy=0;}
-  oc.drawImage(img,sx,sy,srcW,srcH,dx,dy,dw,dh);
+  oc.drawImage(img,sx,sy,srcW,srcH,0,0,Math.round(srcW),Math.round(srcH));
   return off.toDataURL('image/png');
 }
 

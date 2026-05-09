@@ -798,7 +798,7 @@ function doConvert(w,h){
     const oc=off.getContext('2d');oc.imageSmoothingEnabled=true;oc.imageSmoothingQuality='high';
     // Maintain aspect ratio with letterboxing
     const iw=img.naturalWidth,ih=img.naturalHeight;
-    const scale=Math.min(w/iw,h/ih);
+    const scale=Math.max(w/iw,h/ih);
     const dw=iw*scale,dh=ih*scale;
     const ddx=Math.round((w-dw)/2),ddy=Math.round((h-dh)/2);
     oc.drawImage(img,ddx,ddy,Math.round(dw),Math.round(dh));

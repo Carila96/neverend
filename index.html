@@ -1307,15 +1307,15 @@ const STAGES=[
    {x:1056,y:608,w:32,h:32},{x:1088,y:608,w:32,h:32},
  ],
  fallingSpikes:[
-   {x:192,y:32,w:32,h:48,triggerX:128,speed:240,triggered:false,startY:32,currentY:32},
-   {x:336,y:32,w:32,h:48,triggerX:272,speed:280,triggered:false,startY:32,currentY:32},
-   {x:480,y:32,w:32,h:48,triggerX:416,speed:320,triggered:false,startY:32,currentY:32},
-   {x:624,y:32,w:32,h:48,triggerX:560,speed:260,triggered:false,startY:32,currentY:32},
-   {x:768,y:32,w:32,h:48,triggerX:704,speed:300,triggered:false,startY:32,currentY:32},
-   {x:912,y:32,w:32,h:48,triggerX:848,speed:340,triggered:false,startY:32,currentY:32},
-   {x:1056,y:32,w:32,h:48,triggerX:992,speed:270,triggered:false,startY:32,currentY:32},
+   {x:192,y:32,w:32,h:48,triggerX:128,speed:350,triggered:false,startY:32,currentY:32},
+   {x:336,y:32,w:32,h:48,triggerX:272,speed:350,triggered:false,startY:32,currentY:32},
+   {x:480,y:32,w:32,h:48,triggerX:416,speed:350,triggered:false,startY:32,currentY:32},
+   {x:624,y:32,w:32,h:48,triggerX:560,speed:350,triggered:false,startY:32,currentY:32},
+   {x:768,y:32,w:32,h:48,triggerX:704,speed:350,triggered:false,startY:32,currentY:32},
+   {x:912,y:32,w:32,h:48,triggerX:848,speed:350,triggered:false,startY:32,currentY:32},
+   {x:1056,y:32,w:32,h:48,triggerX:992,speed:350,triggered:false,startY:32,currentY:32},
  ],
- traps:[{x:640,y:608,w:32,h:32,tx:576,warn:false}],
+ traps:[{x:640,y:608,w:32,h:32,tx:576,warn:false},{x:880,y:608,w:32,h:32,tx:820,warn:false}],
  fall:[],move:[],mimics:[],ceiling:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
  hg:[{x:352,y:608,w:16,h:32},{x:800,y:608,w:16,h:32}],
  goal:{x:1168,y:528,w:80,h:112},spawn:{x:48,y:592}},
@@ -1364,7 +1364,11 @@ const STAGES=[
    {x:784,y:608,w:32,h:32,tx:720,warn:false},
    {x:944,y:608,w:32,h:32,tx:880,warn:false},
  ],
- fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],
+ pendulums:[
+   {pivotX:400,pivotY:458,length:150,speed:2.0,maxAngle:1.0,angle:0},
+   {pivotX:800,pivotY:458,length:150,speed:2.0,maxAngle:1.0,angle:0}
+ ],chasers:[],focusZones:[],darkness:{enabled:false},
  hg:[{x:384,y:608,w:16,h:32},{x:736,y:608,w:16,h:32}],
  goal:{x:1168,y:528,w:80,h:112},spawn:{x:48,y:592}},
 
@@ -1414,7 +1418,7 @@ const STAGES=[
    {x:464,y:320,w:48,h:32},{x:736,y:320,w:48,h:32},
  ],
  traps:[],fall:[],ceiling:[],
- move:[{x:528,y:208,w:112,h:16,vx:0,vy:20,rx:0,ry:64,sx:528,sy:208}],
+ move:[{x:464,y:218,w:112,h:16,vx:0,vy:30,rx:0,ry:64,sx:464,sy:218},{x:816,y:420,w:112,h:16,vx:0,vy:30,rx:0,ry:64,sx:816,sy:420}],
  mimics:[],
  chasers:[
    {x:-128,y:368,w:128,h:272,speed:80,triggerX:352,active:false},
@@ -1425,7 +1429,6 @@ const STAGES=[
  focusZones:[],darkness:{enabled:false},
  goal:{x:576,y:112,w:112,h:96},
  spawn:{x:144,y:592}}
-
 ,
 
 // STAGE 32 — VERTICAL LAVA ESCAPE
@@ -1433,24 +1436,26 @@ const STAGES=[
  plats:[
    {x:0,y:624,w:176,h:96},
    {x:0,y:0,w:1280,h:96},
-   {x:80,y:544,w:176,h:16},
-   {x:416,y:464,w:176,h:16,phantom:true},
-   {x:112,y:384,w:176,h:16},
-   {x:464,y:304,w:176,h:16,phantom:true},
-   {x:144,y:224,w:176,h:16},
-   {x:880,y:144,w:304,h:16},
+   {x:144,y:544,w:176,h:16},
+   {x:384,y:224,w:176,h:16,phantom:true},
+   {x:560,y:224,w:176,h:16},
+   {x:176,y:384,w:176,h:16},
+   {x:736,y:224,w:176,h:16,phantom:true},
+   {x:208,y:224,w:176,h:16},
+   {x:500,y:624,w:300,h:16},{x:500,y:528,w:16,h:96},{x:500,y:528,w:500,h:16},
+   {x:1152,y:624,w:128,h:16},
  ],
  spikes:[
    {x:96,y:512,w:32,h:32},
    {x:128,y:352,w:32,h:32},
    {x:160,y:192,w:32,h:32},
  ],
- traps:[],fall:[],ceiling:[],move:[],mimics:[],
+ traps:[{x:596,y:592,w:32,h:32}],fall:[],ceiling:[],move:[],mimics:[],
  chasers:[],pendulums:[],fallingSpikes:[],
  lava:[{y:720,speed:56,color:'rgba(255,80,0,0.9)'}],
- hg:[{x:464,y:432,w:16,h:32},{x:464,y:272,w:16,h:32}],
+ hg:[{x:200,y:416,w:16,h:32},{x:1184,y:592,w:16,h:32}],
  focusZones:[],darkness:{enabled:false},
- goal:{x:944,y:96,w:192,h:96},
+ goal:{x:532,y:528,w:128,h:96},
  spawn:{x:32,y:576}}
 
 ,

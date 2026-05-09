@@ -3596,7 +3596,7 @@ function update(dt){
       if(b.falling){b.vy+=(b.gravity||1.5);b.y+=b.vy;if(b.y>H+100)b.gone=true;}
     }
     for(const s of spikes){if(s.falling){s.vy+=1.5;s.y+=s.vy;}}
-    if(player.y>H+60){lastDeathCause='fall';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
+    if(player.y>H+60+cameraY){lastDeathCause='fall';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
     for(const s of spikes){
       if(s.y>H+50)continue;
       if(overlap(player,{x:s.x+4,y:s.y+4,w:s.w-8,h:s.h-8})){lastDeathCause='spike';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}

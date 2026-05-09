@@ -762,7 +762,6 @@ function getTrimmedDataUrl(){
   const S=Math.max(srcW,srcH);
   const off=document.createElement('canvas');off.width=S;off.height=S;
   const oc=off.getContext('2d');
-  // transparent background (no fillRect)
   const aspect=srcW/srcH;
   let dw,dh,dx,dy;
   if(aspect>=1){dw=S;dh=S/aspect;dx=0;dy=(S-dh)/2;}else{dh=S;dw=S*aspect;dx=(S-dw)/2;dy=0;}
@@ -796,12 +795,11 @@ function doConvert(w,h){
   img.onload=function(){
     const off=document.createElement('canvas');off.width=w;off.height=h;
     const oc=off.getContext('2d');oc.imageSmoothingEnabled=true;oc.imageSmoothingQuality='high';
-    // Maintain aspect ratio with letterboxing
     const iw=img.naturalWidth,ih=img.naturalHeight;
     const scale=Math.min(w/iw,h/ih);
-    const dw=iw*scale,dh=ih*scale;
+    const dw=Math.round(iw*scale),dh=Math.round(ih*scale);
     const ddx=Math.round((w-dw)/2),ddy=Math.round((h-dh)/2);
-    oc.drawImage(img,ddx,ddy,Math.round(dw),Math.round(dh));
+    oc.drawImage(img,ddx,ddy,dw,dh);
     const imgData=oc.getImageData(0,0,w,h);const data=imgData.data;
     const pixelArr=[];
     for(let i=0;i<data.length;i+=4){if(data[i+3]>=30)pixelArr.push([data[i],data[i+1],data[i+2]]);}

@@ -231,7 +231,10 @@ const ctx=canvas.getContext('2d');
 ctx.imageSmoothingEnabled=false;
 const W=1280,H=720,MAX_TIME=60;
 const GRID_W=40,GRID_H=22,CELL=32;
-const towerImg=new Image(); towerImg.src='/public/tower.png';
+const towerImg=new Image();
+towerImg.fetchPriority='high';
+towerImg.decoding='sync';
+towerImg.src='/public/tower.png';
 
 let volBGM=0.8,volSFX=0.8;
 
@@ -3112,13 +3115,25 @@ function drawDamn(){
 }
 
 function drawFloatMsgs(){
+  let titleY=60;
   for(const m of floatMsgs){
-    const a=Math.min(1,m.life/.8),rise=(1-Math.min(1,m.life/1.2))*30;
+    const a=Math.min(1,m.life/.8);
     const col=m.color||'rgba(150,255,210,1)';
-    ctx.save();ctx.shadowColor=col;ctx.shadowBlur=8;
-    ctx.fillStyle=col.replace(/[\d.]+\)$/,`${a})`);
-    ctx.font='bold 20px "Courier New"';ctx.textAlign='center';
-    ctx.fillText(m.txt,m.x,m.y-rise);ctx.restore();
+    ctx.save();
+    if(m.isTitle){
+      ctx.shadowColor=col;ctx.shadowBlur=8;
+      ctx.fillStyle=col.replace(/[\d.]+\)$/,`${a})`);
+      ctx.font='bold 16px "Courier New"';ctx.textAlign='center';
+      ctx.fillText(m.txt,W/2,titleY);
+      titleY+=24;
+    }else{
+      const rise=(1-Math.min(1,m.life/1.2))*30;
+      ctx.shadowColor=col;ctx.shadowBlur=8;
+      ctx.fillStyle=col.replace(/[\d.]+\)$/,`${a})`);
+      ctx.font='bold 20px "Courier New"';ctx.textAlign='center';
+      ctx.fillText(m.txt,m.x,m.y-rise);
+    }
+    ctx.restore();
   }
 }
 
@@ -3848,7 +3863,15 @@ function grantTitle(id){
   const arr=getTitles();arr.push(id);
   try{localStorage.setItem('neverend_titles',JSON.stringify(arr));}catch(_){}
   const def=TITLES.find(t=>t.id===id);
-  floatMsgs.push({txt:'TITLE UNLOCKED: '+(def?def.name:id),x:W/2,y:H/2-90,life:4,color:'rgba(255,220,50,1)'});
+  const existingCount=floatMsgs.filter(m=>m.txt&&m.txt.startsWith('TITLE UNLOCKED')).length;
+  floatMsgs.push({
+    txt:'TITLE UNLOCKED: '+(def?def.name:id),
+    x:W/2,
+    y:60+existingCount*28,
+    life:4,
+    color:'rgba(255,220,50,1)',
+    isTitle:true
+  });
 }
 function checkAllTitles(){
   if(adminMode)return;

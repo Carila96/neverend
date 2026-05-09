@@ -670,7 +670,7 @@ const STAGES=[
    {x:704,y:480,w:144,h:16,vx:-7.0,vy:0,rx:-80,ry:0,sx:784,sy:480},
  ],
  fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
- hg:[{x:352,y:496,w:16,h:32},{x:800,y:448,w:16,h:32}],
+ hg:[{x:352,y:496,w:16,h:32},{x:832,y:448,w:16,h:32}],
  goal:{x:1120,y:464,w:64,h:112},spawn:{x:48,y:528}},
 
 // STAGE 5 — THE CORRIDOR
@@ -1186,10 +1186,10 @@ const STAGES=[
    {x:0,y:0,w:1280,h:96},
    {x:608,y:464,w:64,h:16},
    {x:608,y:304,w:64,h:16},
+   {x:480,y:352,w:64,h:16},
+   {x:704,y:352,w:64,h:16},
  ],
  spikes:[
-   {x:96,y:96,w:32,h:32},{x:128,y:96,w:32,h:32},
-   {x:1088,y:96,w:32,h:32},{x:1120,y:96,w:32,h:32},
    {x:576,y:608,w:32,h:32},
  ],
  traps:[{x:256,y:608,w:32,h:32,tx:192,warn:false},{x:544,y:320,w:32,h:32,tx:480,warn:false}],
@@ -1197,7 +1197,9 @@ const STAGES=[
    {x:-96,y:544,w:96,h:96,speed:200,triggerX:0,active:false},
    {x:1376,y:544,w:96,h:96,speed:-200,triggerX:0,active:false},
  ],
- fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],focusZones:[],darkness:{enabled:false},
+ fall:[{x:96,y:96,w:32,h:32},{x:128,y:96,w:32,h:32},
+   {x:1088,y:96,w:32,h:32},{x:1120,y:96,w:32,h:32},],
+ move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],focusZones:[],darkness:{enabled:false},
  hg:[{x:400,y:608,w:16,h:32},{x:864,y:608,w:16,h:32}],
  goal:{x:608,y:192,w:80,h:112},spawn:{x:96,y:592}},
 

@@ -3858,20 +3858,29 @@ const TITLES=[
 ];
 function getTitles(){try{return JSON.parse(localStorage.getItem('neverend_titles'))||[];}catch(_){return[];}}
 function hasTitle(id){return getTitles().includes(id);}
+const _titleQueue=[];
+let _titleShowing=false;
+
 function grantTitle(id){
   if(hasTitle(id)||adminMode)return;
   const arr=getTitles();arr.push(id);
   try{localStorage.setItem('neverend_titles',JSON.stringify(arr));}catch(_){}
   const def=TITLES.find(t=>t.id===id);
-  const existingCount=floatMsgs.filter(m=>m.txt&&m.txt.startsWith('TITLE UNLOCKED')).length;
+  _titleQueue.push(def?def.name:id);
+  if(!_titleShowing)_showNextTitle();
+}
+
+function _showNextTitle(){
+  if(_titleQueue.length===0){_titleShowing=false;return;}
+  _titleShowing=true;
+  const name=_titleQueue.shift();
   floatMsgs.push({
-    txt:'TITLE UNLOCKED: '+(def?def.name:id),
-    x:W/2,
-    y:60+existingCount*28,
-    life:4,
+    txt:'TITLE UNLOCKED: '+name,
+    x:W/2,y:60,life:3,
     color:'rgba(255,220,50,1)',
     isTitle:true
   });
+  setTimeout(_showNextTitle,3200);
 }
 function checkAllTitles(){
   if(adminMode)return;

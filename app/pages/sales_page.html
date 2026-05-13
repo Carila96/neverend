@@ -82,6 +82,9 @@ nav a:hover{color:var(--accent2);}
 .size-btn.active{border-color:var(--accent2);background:rgba(74,184,255,0.08);color:var(--accent2);}
 .size-btn .sb-name{font-family:'Bebas Neue',sans-serif;font-size:13px;color:#fff;display:block;letter-spacing:1px;}
 .size-btn.active .sb-name{color:var(--accent2);}
+.sb-grid{display:block;font-size:11px;color:var(--accent2);letter-spacing:1px;margin:2px 0;}
+.sb-blocks{display:block;font-size:10px;color:var(--muted2);letter-spacing:0.5px;}
+.sb-name{display:block;font-size:14px;font-weight:bold;letter-spacing:2px;margin-bottom:2px;}
 .custom-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;}
 .custom-row input{width:80px;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:6px;font-family:'Share Tech Mono',monospace;font-size:11px;text-align:center;outline:none;}
 .size-stat{background:rgba(74,184,255,0.04);border:1px solid rgba(74,184,255,0.12);padding:8px 12px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);line-height:2;margin-bottom:12px;}
@@ -305,13 +308,60 @@ Transparent pixels are not counted as blocks.
     <div class="panel-hdr"><span class="panel-num">2</span><span class="panel-title">CHOOSE SIZE</span><span class="panel-check" id="sec2Done" style="display:none">&#10003;</span></div>
     <div class="panel-body">
       <div class="size-grid">
-        <button class="size-btn" onclick="selectPreset(2,2,this)"><span class="sb-name">NANO</span>1+ blocks<br><span style="color:var(--green)" id="nanoPrice">from $1/mo</span></button>
-        <button class="size-btn" onclick="selectPreset(7,7,this)"><span class="sb-name">SMALL</span>~50 blocks<br><span style="color:var(--green)" id="smallPrice">~$16/mo</span></button>
-        <button class="size-btn" onclick="selectPreset(15,14,this)"><span class="sb-name">MEDIUM</span>~200 blk -10%<br><span style="color:var(--green)" id="medPrice">~$59/mo</span></button>
-        <button class="size-btn" onclick="selectPreset(23,22,this)"><span class="sb-name">LARGE</span>~500 blk -20%<br><span style="color:var(--green)" id="largePrice">~$131/mo</span></button>
-        <button class="size-btn" onclick="selectPreset(32,32,this)"><span class="sb-name">XL</span>~1k blk -30%<br><span style="color:var(--green)" id="xlPrice">~$228/mo</span></button>
-        <button class="size-btn" id="monopolyBtn" onclick="selectMonopoly(this)"><span class="sb-name">FULL STAGE</span>9,216 blocks<br><span style="color:var(--gold)" id="monoPrice">$3,000/mo</span></button>
-        <button class="size-btn" id="customSizeBtn" onclick="selectCustom(this)"><span class="sb-name">CUSTOM</span>Enter count<br><span style="color:var(--muted)">min 1, max 9,216</span></button>
+        <button class="size-btn" onclick="selectPreset(2,2,this)">
+          <span class="sb-name">NANO</span>
+          <span class="sb-grid">2×2</span>
+          <span class="sb-blocks">1+ blocks</span>
+          <span style="color:var(--green)" id="nanoPrice">from $1/mo</span>
+        </button>
+        <button class="size-btn" onclick="selectPreset(7,7,this)">
+          <span class="sb-name">SMALL</span>
+          <span class="sb-grid">7×7</span>
+          <span class="sb-blocks">~50 blocks</span>
+          <span style="color:var(--green)" id="smallPrice">~$16/mo</span>
+        </button>
+        <button class="size-btn" onclick="selectPreset(15,14,this)">
+          <span class="sb-name">MEDIUM</span>
+          <span class="sb-grid">15×14</span>
+          <span class="sb-blocks">~200 blk -10%</span>
+          <span style="color:var(--green)" id="medPrice">~$59/mo</span>
+        </button>
+        <button class="size-btn" onclick="selectPreset(23,22,this)">
+          <span class="sb-name">LARGE</span>
+          <span class="sb-grid">23×22</span>
+          <span class="sb-blocks">~500 blk -20%</span>
+          <span style="color:var(--green)" id="largePrice">~$131/mo</span>
+        </button>
+        <button class="size-btn" onclick="selectPreset(48,22,this)">
+          <span class="sb-name">WIDE</span>
+          <span class="sb-grid">48×22</span>
+          <span class="sb-blocks">~1k blk -30% 横長</span>
+          <span style="color:var(--green)" id="widePrice">~$228/mo</span>
+        </button>
+        <button class="size-btn" onclick="selectPreset(22,48,this)">
+          <span class="sb-name">TALL</span>
+          <span class="sb-grid">22×48</span>
+          <span class="sb-blocks">~1k blk -30% 縦長</span>
+          <span style="color:var(--green)" id="tallPrice">~$228/mo</span>
+        </button>
+        <button class="size-btn" onclick="selectPreset(48,48,this)">
+          <span class="sb-name">XL</span>
+          <span class="sb-grid">48×48</span>
+          <span class="sb-blocks">~2.3k blk -30%</span>
+          <span style="color:var(--green)" id="xlPrice">~$532/mo</span>
+        </button>
+        <button class="size-btn" id="monopolyBtn" onclick="selectMonopoly(this)">
+          <span class="sb-name">FULL STAGE</span>
+          <span class="sb-grid">128×72</span>
+          <span class="sb-blocks">9,216 blocks</span>
+          <span style="color:var(--gold)" id="monoPrice">$3,000/mo</span>
+        </button>
+        <button class="size-btn" id="customSizeBtn" onclick="selectCustom(this)">
+          <span class="sb-name">CUSTOM</span>
+          <span class="sb-grid">自由設定</span>
+          <span class="sb-blocks">min 1, max 9,216</span>
+          <span style="color:var(--muted)">Enter count</span>
+        </button>
       </div>
       <div id="customInputs" style="display:none;margin-bottom:10px;">
         <div class="custom-row">

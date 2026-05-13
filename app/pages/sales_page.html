@@ -755,7 +755,7 @@ function loadImageFile(file){
   reader.onload=function(ev){
     const img=new Image();
     img.onload=function(){
-      uploadedImage=img;trimZoom=1;trimOffX=0;trimOffY=0;trimCropX=0;trimCropY=0;trimCropRatioW=1;trimCropRatioH=1;
+      uploadedImage=img;trimZoom=1;trimOffX=0;trimOffY=0;trimCropX=0.5;trimCropY=0.5;trimCropRatioW=1;trimCropRatioH=1;
       document.getElementById('trimZoom').value=100;
       document.getElementById('trimX').value=0;document.getElementById('trimY').value=0;
       document.getElementById('uploadFileName').textContent=file.name;
@@ -790,8 +790,8 @@ function drawTrimCanvas(){
   else{fh=dh;fw=dh*cropAspect;}
   fw=Math.min(fw,dw);fh=Math.min(fh,dh);
   const maxCropX=dw-fw,maxCropY=dh-fh;
-  const fcx=dx+trimCropX*maxCropX;
-  const fcy=dy+trimCropY*maxCropY;
+  const fcx=dx+Math.max(0,Math.min(1,trimCropX-0.5*(fw/dw)))*maxCropX;
+  const fcy=dy+Math.max(0,Math.min(1,trimCropY-0.5*(fh/dh)))*maxCropY;
   ctx.fillStyle='rgba(0,0,0,0.55)';
   ctx.fillRect(0,0,S,fcy);
   ctx.fillRect(0,fcy+fh,S,S-fcy-fh);
@@ -887,8 +887,8 @@ function getTrimmedDataUrl(){
   else{fh=srcH;fw=srcH*cropAspect;}
   fw=Math.min(fw,srcW);fh=Math.min(fh,srcH);
   const maxCropX=srcW-fw,maxCropY=srcH-fh;
-  const fcx=sx+trimCropX*maxCropX;
-  const fcy=sy+trimCropY*maxCropY;
+  const fcx=sx+Math.max(0,Math.min(maxCropX,trimCropX*maxCropX-fw*0.5));
+  const fcy=sy+Math.max(0,Math.min(maxCropY,trimCropY*maxCropY-fh*0.5));
   const off=document.createElement('canvas');
   off.width=Math.round(fw);off.height=Math.round(fh);
   const oc=off.getContext('2d');
@@ -899,13 +899,13 @@ function getTrimmedDataUrl(){
 function goToSection2(){if(!uploadedImage)return;markDone(1);unlockSec(2);setProgress(2);document.getElementById('sec2').scrollIntoView({behavior:'smooth',block:'start'});}
 
 let activeSizeBtn=null;
-function selectPreset(w,h,btn){monopolyMode=false;if(activeSizeBtn)activeSizeBtn.classList.remove('active');activeSizeBtn=btn;btn.classList.add('active');document.getElementById('customInputs').style.display='none';trimCropRatioW=w;trimCropRatioH=h;trimCropX=0;trimCropY=0;drawTrimCanvas();convertAndPreview(w,h);}
+function selectPreset(w,h,btn){monopolyMode=false;if(activeSizeBtn)activeSizeBtn.classList.remove('active');activeSizeBtn=btn;btn.classList.add('active');document.getElementById('customInputs').style.display='none';trimCropRatioW=w;trimCropRatioH=h;trimCropX=0.5;trimCropY=0.5;drawTrimCanvas();convertAndPreview(w,h);}
 function selectCustom(btn){monopolyMode=false;if(activeSizeBtn)activeSizeBtn.classList.remove('active');activeSizeBtn=btn;btn.classList.add('active');document.getElementById('customInputs').style.display='block';updateCustomInfo();}
 function selectMonopoly(btn){
   monopolyMode=true;if(activeSizeBtn)activeSizeBtn.classList.remove('active');activeSizeBtn=btn;btn.classList.add('active');
   document.getElementById('customInputs').style.display='none';
   chosenW=GRID_COLS;chosenH=GRID_ROWS;
-  if(uploadedImage){trimCropRatioW=128;trimCropRatioH=72;trimCropX=0;trimCropY=0;drawTrimCanvas();convertAndPreview(GRID_COLS,GRID_ROWS);}
+  if(uploadedImage){trimCropRatioW=128;trimCropRatioH=72;trimCropX=0.5;trimCropY=0.5;drawTrimCanvas();convertAndPreview(GRID_COLS,GRID_ROWS);}
   else{
     const mp='$'+(currentPriceTier.currentTier?currentPriceTier.currentTier.monthlyFull.toLocaleString():'1,000')+'/mo';
     document.getElementById('sec2Stats').innerHTML='<strong>FULL STAGE MONOPOLY</strong> — '+GRID_COLS+'×'+GRID_ROWS+'='+(GRID_COLS*GRID_ROWS).toLocaleString()+' blocks. Price: <strong>'+mp+'</strong><br><span style="color:var(--muted2);font-size:9px;">Upload an image first to continue.</span>';

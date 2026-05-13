@@ -266,10 +266,56 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
     <div class="section-block" id="purchaseSection" style="display:none;">
       <div class="section-block-title">// YOUR PURCHASES</div>
       <div id="purchaseList" style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--muted);">Loading...</div>
-      <div style="margin-top:14px;">
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
         <button class="btn-danger" style="max-width:220px;" onclick="openCancelModal()">CANCEL SUBSCRIPTION</button>
       </div>
     </div>
+
+<!-- 編集モーダル -->
+<div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 20px;">
+  <div style="background:#0e0e1a;border:1px solid #262640;padding:32px;max-width:900px;width:100%;display:flex;flex-direction:column;gap:20px;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;letter-spacing:3px;">EDIT PLACEMENT</div>
+
+    <!-- タブ -->
+    <div style="display:flex;gap:8px;">
+      <button id="editTabImg" onclick="setEditTab('image')" style="flex:1;padding:10px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;cursor:pointer;background:rgba(74,184,255,0.1);border:1px solid var(--accent2);color:var(--accent2);text-transform:uppercase;">CHANGE IMAGE</button>
+      <button id="editTabPos" onclick="setEditTab('position')" style="flex:1;padding:10px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;cursor:pointer;background:none;border:1px solid #262640;color:#787f90;text-transform:uppercase;">CHANGE POSITION</button>
+    </div>
+
+    <!-- 画像変更パネル -->
+    <div id="editPanelImage" style="display:flex;flex-direction:column;gap:16px;">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#787f90;letter-spacing:1px;">Upload a new image for your placement. Current image will be replaced immediately.</div>
+      <input type="file" id="editImageInput" accept="image/png,image/jpeg,image/gif" style="font-family:'Share Tech Mono',monospace;font-size:12px;color:#e0e4f0;" onchange="onEditImageSelected(this)">
+      <div id="editImagePreview" style="display:none;flex-direction:column;gap:12px;">
+        <canvas id="editPreviewCanvas" style="max-width:100%;border:1px solid #262640;image-rendering:pixelated;"></canvas>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:#787f90;" id="editImageStats"></div>
+      </div>
+    </div>
+
+    <!-- 位置変更パネル -->
+    <div id="editPanelPosition" style="display:none;flex-direction:column;gap:16px;">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#787f90;letter-spacing:1px;">Drag your logo to a new position within the same stage. Other claimed areas cannot be used.</div>
+      <div style="position:relative;display:inline-block;">
+        <canvas id="editGridCanvas" width="1280" height="720" style="width:100%;border:1px solid #262640;cursor:crosshair;image-rendering:pixelated;"></canvas>
+      </div>
+      <div id="editPosInfo" style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--accent2);"></div>
+    </div>
+
+    <!-- 注意書き -->
+    <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#e74c3c;line-height:1.8;border:1px solid rgba(231,76,60,0.3);padding:12px;background:rgba(231,76,60,0.05);">
+      ⚠ Your original position will be released and may be purchased by someone else.<br>
+      ⚠ Image changes take effect immediately and cannot be undone.<br>
+      ⚠ If your new position is already taken, the change cannot be applied.
+    </div>
+
+    <div id="editModalMsg" style="font-family:'Share Tech Mono',monospace;font-size:12px;min-height:16px;"></div>
+
+    <div style="display:flex;gap:10px;">
+      <button onclick="confirmEdit()" id="editConfirmBtn" style="flex:1;background:none;border:1px solid rgba(74,184,255,0.5);color:#4ab8ff;padding:12px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">CONFIRM CHANGES</button>
+      <button onclick="closeEditModal()" style="flex:1;background:none;border:1px solid #262640;color:#787f90;padding:12px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">CANCEL</button>
+    </div>
+  </div>
+</div>
 
   </div>
 </div>
@@ -702,7 +748,7 @@ async function loadPurchases(userId){
     const totalBlocks=contracts.reduce((sum,c)=>sum+(c.width||0)*(c.height||0),0);
     buildAchievements(totalBlocks);
     let html='<div style="overflow-x:auto;"><table class="purchase-table"><thead><tr>';
-    html+='<th>STAGE</th><th>POSITION</th><th>SIZE</th><th>PLAN</th><th>MONTHLY</th><th>STATUS</th><th>SINCE</th>';
+    html+='<th>STAGE</th><th>POSITION</th><th>SIZE</th><th>PLAN</th><th>MONTHLY</th><th>STATUS</th><th>SINCE</th><th>EDIT</th>';
     html+='</tr></thead><tbody>';
     contracts.forEach(c=>{
       const sc=c.status==='active'?'var(--green)':c.status==='cancelled'?'var(--accent)':'var(--muted2)';
@@ -714,6 +760,7 @@ async function loadPurchases(userId){
         <td style="color:var(--accent2)">$${c.monthly_total||'?'}</td>
         <td style="color:${sc}">${(c.status||'PENDING').toUpperCase()}</td>
         <td style="color:var(--muted)">${c.created_at?new Date(c.created_at).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}):'-'}</td>
+        <td><button onclick="openEditModal('${c.id}',${c.stage_id},${c.anchor_x},${c.anchor_y},${c.width},${c.height})" style="background:none;border:1px solid rgba(74,184,255,0.4);color:#4ab8ff;padding:4px 10px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;">EDIT</button></td>
       </tr>`;
     });
     html+='</tbody></table></div>';
@@ -791,6 +838,185 @@ document.addEventListener('DOMContentLoaded',()=>{
   const inp=document.getElementById('nameChangeInput');
   if(inp&&n)inp.value=n;
 });
+
+// EDIT MODAL
+let _editContractId=null,_editStageId=null;
+let _editAnchorX=null,_editAnchorY=null,_editW=null,_editH=null;
+let _editNewImage=null,_editNewX=null,_editNewY=null;
+let _editTab='image';
+let _editGridDrag=false,_editGridData=null;
+
+function openEditModal(contractId,stageId,ax,ay,w,h){
+  _editContractId=contractId;_editStageId=stageId;
+  _editAnchorX=ax;_editAnchorY=ay;_editW=w;_editH=h;
+  _editNewImage=null;_editNewX=ax;_editNewY=ay;
+  document.getElementById('editModal').style.display='flex';
+  document.getElementById('editImageInput').value='';
+  document.getElementById('editImagePreview').style.display='none';
+  document.getElementById('editModalMsg').textContent='';
+  setEditTab('image');
+  loadEditGrid(stageId,ax,ay,w,h);
+}
+
+function closeEditModal(){
+  document.getElementById('editModal').style.display='none';
+}
+
+function setEditTab(tab){
+  _editTab=tab;
+  const imgPanel=document.getElementById('editPanelImage');
+  const posPanel=document.getElementById('editPanelPosition');
+  const imgBtn=document.getElementById('editTabImg');
+  const posBtn=document.getElementById('editTabPos');
+  if(tab==='image'){
+    imgPanel.style.display='flex';posPanel.style.display='none';
+    imgBtn.style.background='rgba(74,184,255,0.1)';imgBtn.style.borderColor='var(--accent2)';imgBtn.style.color='var(--accent2)';
+    posBtn.style.background='none';posBtn.style.borderColor='#262640';posBtn.style.color='#787f90';
+  }else{
+    imgPanel.style.display='none';posPanel.style.display='flex';
+    posBtn.style.background='rgba(74,184,255,0.1)';posBtn.style.borderColor='var(--accent2)';posBtn.style.color='var(--accent2)';
+    imgBtn.style.background='none';imgBtn.style.borderColor='#262640';imgBtn.style.color='#787f90';
+  }
+}
+
+function onEditImageSelected(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const img=new Image();
+    img.onload=function(){
+      const canvas=document.getElementById('editPreviewCanvas');
+      canvas.width=_editW;canvas.height=_editH;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,_editW,_editH);
+      _editNewImage=canvas.toDataURL('image/png').split(',')[1];
+      document.getElementById('editImagePreview').style.display='flex';
+      document.getElementById('editImageStats').textContent='New image: '+_editW+'×'+_editH+' blocks';
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function loadEditGrid(stageId,ax,ay,w,h){
+  const canvas=document.getElementById('editGridCanvas');
+  const ctx=canvas.getContext('2d');
+  const COLS=128,ROWS=72,CELL=10;
+  ctx.fillStyle='#050508';ctx.fillRect(0,0,1280,720);
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      ctx.fillStyle=(c+r)%2===0?'#1c1c28':'#1a1a26';
+      ctx.fillRect(c*CELL,r*CELL,CELL,CELL);
+    }
+  }
+  ctx.fillStyle='rgba(74,184,255,0.3)';
+  ctx.fillRect(ax*CELL,ay*CELL,w*CELL,h*CELL);
+  ctx.strokeStyle='rgba(74,184,255,0.9)';ctx.lineWidth=2;
+  ctx.strokeRect(ax*CELL,ay*CELL,w*CELL,h*CELL);
+  try{
+    const res=await fetch('https://neverend.vercel.app/api/grid?stage_id='+stageId);
+    const data=await res.json();
+    _editGridData=data;
+    (data.blocks||[]).forEach(b=>{
+      if(b.status==='claimed'&&!(b.x>=ax&&b.x<ax+w&&b.y>=ay&&b.y<ay+h)){
+        ctx.fillStyle='rgba(40,60,100,0.6)';
+        ctx.fillRect(b.x*CELL,b.y*CELL,CELL,CELL);
+      }
+    });
+  }catch(e){console.warn('grid load error:',e);}
+  updateEditGridHighlight();
+}
+
+function updateEditGridHighlight(){
+  const canvas=document.getElementById('editGridCanvas');
+  const ctx=canvas.getContext('2d');
+  const CELL=10;
+  const nx=_editNewX,ny=_editNewY;
+  if(nx!==_editAnchorX||ny!==_editAnchorY){
+    ctx.fillStyle='rgba(74,222,128,0.25)';
+    ctx.fillRect(nx*CELL,ny*CELL,_editW*CELL,_editH*CELL);
+    ctx.strokeStyle='rgba(74,222,128,0.9)';ctx.lineWidth=2;
+    ctx.strokeRect(nx*CELL,ny*CELL,_editW*CELL,_editH*CELL);
+    document.getElementById('editPosInfo').textContent=
+      'New position: col '+(nx+1)+', row '+(ny+1)+' ('+_editW+'×'+_editH+')';
+  }
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  const canvas=document.getElementById('editGridCanvas');
+  if(!canvas)return;
+  canvas.addEventListener('click',function(e){
+    if(_editTab!=='position')return;
+    const rect=canvas.getBoundingClientRect();
+    const scaleX=1280/rect.width,scaleY=720/rect.height;
+    const mx=(e.clientX-rect.left)*scaleX,my=(e.clientY-rect.top)*scaleY;
+    const CELL=10;
+    let nx=Math.floor(mx/CELL),ny=Math.floor(my/CELL);
+    nx=Math.max(0,Math.min(128-_editW,nx));
+    ny=Math.max(0,Math.min(72-_editH,ny));
+    const blocks=(_editGridData&&_editGridData.blocks)||[];
+    let conflict=false;
+    for(let dy=0;dy<_editH;dy++){
+      for(let dx=0;dx<_editW;dx++){
+        const bx=nx+dx,by=ny+dy;
+        const isOwn=bx>=_editAnchorX&&bx<_editAnchorX+_editW&&by>=_editAnchorY&&by<_editAnchorY+_editH;
+        if(!isOwn){
+          const taken=blocks.find(b=>b.x===bx&&b.y===by&&b.status==='claimed');
+          if(taken){conflict=true;break;}
+        }
+      }
+      if(conflict)break;
+    }
+    if(conflict){
+      document.getElementById('editPosInfo').style.color='#e74c3c';
+      document.getElementById('editPosInfo').textContent='This position is already taken. Choose another.';
+      return;
+    }
+    document.getElementById('editPosInfo').style.color='var(--accent2)';
+    _editNewX=nx;_editNewY=ny;
+    loadEditGrid(_editStageId,_editAnchorX,_editAnchorY,_editW,_editH);
+  });
+});
+
+async function confirmEdit(){
+  const hasImageChange=_editNewImage!==null;
+  const hasPosChange=_editNewX!==_editAnchorX||_editNewY!==_editAnchorY;
+  if(!hasImageChange&&!hasPosChange){
+    document.getElementById('editModalMsg').style.color='#e74c3c';
+    document.getElementById('editModalMsg').textContent='No changes made.';
+    return;
+  }
+  const btn=document.getElementById('editConfirmBtn');
+  btn.disabled=true;btn.textContent='SAVING...';
+  document.getElementById('editModalMsg').style.color='#787f90';
+  document.getElementById('editModalMsg').textContent='Applying changes...';
+  try{
+    if(hasImageChange){
+      const res=await fetch('https://neverend.vercel.app/api/stage-logo',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({contract_id:_editContractId,image_data:_editNewImage,image_type:'image/png'})
+      });
+      if(!res.ok)throw new Error('Image update failed');
+    }
+    if(hasPosChange){
+      if(!_sbClient)throw new Error('Not logged in');
+      const{error}=await _sbClient.from('owned_blocks')
+        .update({x:_editNewX,y:_editNewY,anchor_x:_editNewX,anchor_y:_editNewY})
+        .eq('contract_id',_editContractId);
+      if(error)throw new Error('Position update failed: '+error.message);
+      await _sbClient.from('subscription_contracts')
+        .update({anchor_x:_editNewX,anchor_y:_editNewY})
+        .eq('id',_editContractId);
+    }
+    document.getElementById('editModalMsg').style.color='#4ade80';
+    document.getElementById('editModalMsg').textContent='Changes saved successfully!';
+    setTimeout(()=>{closeEditModal();location.reload();},1500);
+  }catch(err){
+    document.getElementById('editModalMsg').style.color='#e74c3c';
+    document.getElementById('editModalMsg').textContent=err.message||'Error saving changes.';
+  }
+  btn.disabled=false;btn.textContent='CONFIRM CHANGES';
+}
 </script>
 
 <div id="snsLoginModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;">

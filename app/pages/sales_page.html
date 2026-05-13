@@ -69,9 +69,18 @@ nav a:hover{color:var(--accent2);}
 .upload-drop h3{font-family:'Bebas Neue',sans-serif;font-size:14px;color:#fff;margin-bottom:3px;}
 .upload-drop p{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted2);letter-spacing:1px;line-height:1.8;}
 #fileInput{display:none;}
-.sq-canvas-wrap{position:relative;background:#000;border:1px solid var(--border);overflow:hidden;cursor:grab;aspect-ratio:1/1;}
+.trim-area-wrap{display:flex;flex-direction:column;gap:4px;}
+.trim-mode-btns{display:flex;gap:4px;margin-bottom:2px;}
+.trim-mode-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);padding:3px 8px;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;cursor:pointer;}
+.trim-mode-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(74,184,255,0.06);}
+.trim-canvas-row{display:flex;gap:4px;align-items:stretch;}
+.sq-canvas-wrap{position:relative;background:#000;border:1px solid var(--border);overflow:hidden;cursor:grab;flex:1;aspect-ratio:1/1;}
 .sq-canvas-wrap:active{cursor:grabbing;}
 #trimCanvas{display:block;width:100%;height:100%;}
+.trim-vslider-wrap{display:flex;align-items:center;justify-content:center;width:20px;}
+.trim-vslider{writing-mode:vertical-lr;height:100%;width:20px;accent-color:var(--accent2);cursor:pointer;}
+.trim-hslider-wrap{padding-right:24px;}
+.trim-hslider{width:100%;accent-color:var(--accent2);cursor:pointer;}
 .trim-ctrl{display:flex;align-items:center;gap:6px;margin-top:5px;}
 .trim-ctrl label{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;width:24px;flex-shrink:0;}
 .trim-ctrl input[type=range]{flex:1;accent-color:var(--accent2);}
@@ -289,14 +298,22 @@ Transparent pixels are not counted as blocks.
           <div style="margin-top:8px;">
             <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">TRIM</div>
             <div class="trim-ctrl"><label>ZOOM</label><input type="range" id="trimZoom" min="100" max="400" value="100" oninput="updateTrim()"><span class="trim-val" id="trimZoomVal">100%</span></div>
-            <div class="trim-ctrl"><label>X</label><input type="range" id="trimX" min="0" max="100" value="0" oninput="updateTrim()"><span class="trim-val" id="trimXVal">0</span></div>
-            <div class="trim-ctrl"><label>Y</label><input type="range" id="trimY" min="0" max="100" value="0" oninput="updateTrim()"><span class="trim-val" id="trimYVal">0</span></div>
           </div>
         </div>
         <div>
-          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:5px;">PREVIEW — drag to pan</div>
-          <div class="sq-canvas-wrap" id="trimWrap"><canvas id="trimCanvas" width="400" height="400"></canvas></div>
-          <p style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted2);margin-top:4px;letter-spacing:1px;">Drag the blue frame to select which area to use.</p>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:5px;">PREVIEW</div>
+          <div class="trim-area-wrap">
+            <div class="trim-mode-btns">
+              <button class="trim-mode-btn active" id="trimModeMove" onclick="setTrimMode('move')">MOVE IMAGE</button>
+              <button class="trim-mode-btn" id="trimModeCrop" onclick="setTrimMode('crop')">ADJUST FRAME</button>
+            </div>
+            <div class="trim-canvas-row">
+              <div class="sq-canvas-wrap" id="trimWrap"><canvas id="trimCanvas" width="400" height="400"></canvas></div>
+              <div class="trim-vslider-wrap"><input type="range" class="trim-vslider" id="trimVSlider" min="0" max="100" value="0" oninput="onTrimSlider()"></div>
+            </div>
+            <div class="trim-hslider-wrap"><input type="range" class="trim-hslider" id="trimHSlider" min="0" max="100" value="0" oninput="onTrimSlider()"></div>
+            <p style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted2);margin-top:4px;letter-spacing:1px;" id="trimHint">Drag to pan image.</p>
+          </div>
         </div>
       </div>
       <div style="margin-top:14px;display:flex;justify-content:flex-end;">
@@ -659,9 +676,11 @@ function calculatePrice(blockCount){
 let GRID_COLS=128,GRID_ROWS=72,CELL=10;
 let monopolyMode=false,uploadedImage=null;
 let trimZoom=1,trimOffX=0,trimOffY=0,trimDrag=false,trimDragSX=0,trimDragSY=0,trimDragOX=0,trimDragOY=0;
-let trimCropRatioW=1,trimCropRatioH=1;
-let trimCropX=0,trimCropY=0;
+let trimCropX=0,trimCropY=0,trimCropW=1,trimCropH=1;
 let trimCropDrag=false,trimCropDragSX=0,trimCropDragSY=0,trimCropDragOX=0,trimCropDragOY=0;
+let trimCropResize=false,trimResizeCorner=null,trimCropResizeOW=1,trimCropResizeOH=1,trimCropResizeOX=0,trimCropResizeOY=0;
+let trimMode='move';
+let _trimDW=400,_trimDH=400,_trimDX=0,_trimDY=0;
 let chosenW=0,chosenH=0,pixelArtOriginal=null,pixelArtEdit=null,customColors=[];
 let colorTool='replace',selectedPaletteColor=null,selectedPaletteKey=null,brushSize=1;
 let currentStage=1,gridStates={};
@@ -755,9 +774,11 @@ function loadImageFile(file){
   reader.onload=function(ev){
     const img=new Image();
     img.onload=function(){
-      uploadedImage=img;trimZoom=1;trimOffX=0;trimOffY=0;trimCropX=0.5;trimCropY=0.5;trimCropRatioW=1;trimCropRatioH=1;
+      uploadedImage=img;trimZoom=1;trimOffX=0;trimOffY=0;trimCropX=0;trimCropY=0;trimCropW=1;trimCropH=1;
       document.getElementById('trimZoom').value=100;
-      document.getElementById('trimX').value=0;document.getElementById('trimY').value=0;
+      const _hs=document.getElementById('trimHSlider');const _vs=document.getElementById('trimVSlider');
+      if(_hs)_hs.value=0;if(_vs)_vs.value=0;
+      setTrimMode('move');
       document.getElementById('uploadFileName').textContent=file.name;
       document.getElementById('uploadDims').textContent=img.naturalWidth+'×'+img.naturalHeight+' px';
       document.getElementById('uploadFileInfo').style.display='block';
@@ -783,15 +804,12 @@ function drawTrimCanvas(){
   let dw,dh,dx,dy;
   if(aspect>=1){dw=S;dh=S/aspect;dx=0;dy=(S-dh)/2;}
   else{dh=S;dw=S*aspect;dx=(S-dw)/2;dy=0;}
+  _trimDW=dw;_trimDH=dh;_trimDX=dx;_trimDY=dy;
   ctx.drawImage(img,sx,sy,srcW,srcH,dx,dy,dw,dh);
-  const cropAspect=trimCropRatioW/trimCropRatioH;
-  let fw,fh;
-  if(cropAspect>=aspect){fw=dw;fh=dw/cropAspect;}
-  else{fh=dh;fw=dh*cropAspect;}
-  fw=Math.min(fw,dw);fh=Math.min(fh,dh);
-  const maxCropX=dw-fw,maxCropY=dh-fh;
-  const fcx=dx+Math.max(0,Math.min(1,trimCropX-0.5*(fw/dw)))*maxCropX;
-  const fcy=dy+Math.max(0,Math.min(1,trimCropY-0.5*(fh/dh)))*maxCropY;
+  const fcx=dx+trimCropX*dw;
+  const fcy=dy+trimCropY*dh;
+  const fw=trimCropW*dw;
+  const fh=trimCropH*dh;
   ctx.fillStyle='rgba(0,0,0,0.55)';
   ctx.fillRect(0,0,S,fcy);
   ctx.fillRect(0,fcy+fh,S,S-fcy-fh);
@@ -804,15 +822,34 @@ function drawTrimCanvas(){
     ctx.beginPath();ctx.moveTo(fcx+fw*i/3,fcy);ctx.lineTo(fcx+fw*i/3,fcy+fh);ctx.stroke();
     ctx.beginPath();ctx.moveTo(fcx,fcy+fh*i/3);ctx.lineTo(fcx+fw,fcy+fh*i/3);ctx.stroke();
   }
-  ctx.fillStyle='rgba(74,184,255,0.9)';ctx.font='10px monospace';ctx.textAlign='left';
-  ctx.fillText(trimCropRatioW+'×'+trimCropRatioH,fcx+4,fcy+14);
+  if(trimMode==='crop'){
+    ctx.fillStyle='rgba(74,184,255,0.9)';
+    const hs=6;
+    ctx.fillRect(fcx-hs,fcy-hs,hs*2,hs*2);
+    ctx.fillRect(fcx+fw-hs,fcy-hs,hs*2,hs*2);
+    ctx.fillRect(fcx-hs,fcy+fh-hs,hs*2,hs*2);
+    ctx.fillRect(fcx+fw-hs,fcy+fh-hs,hs*2,hs*2);
+  }
 }
 
 function updateTrim(){
   trimZoom=parseInt(document.getElementById('trimZoom').value)/100;
-  trimOffX=parseInt(document.getElementById('trimX').value);trimOffY=parseInt(document.getElementById('trimY').value);
   document.getElementById('trimZoomVal').textContent=Math.round(trimZoom*100)+'%';
-  document.getElementById('trimXVal').textContent=trimOffX;document.getElementById('trimYVal').textContent=trimOffY;
+  drawTrimCanvas();
+}
+function setTrimMode(mode){
+  trimMode=mode;
+  document.getElementById('trimModeMove').classList.toggle('active',mode==='move');
+  document.getElementById('trimModeCrop').classList.toggle('active',mode==='crop');
+  const hint=document.getElementById('trimHint');
+  if(hint)hint.textContent=mode==='move'?'Drag to pan image.':'Drag frame to move. Drag corners to resize.';
+  const wrap=document.getElementById('trimWrap');
+  if(wrap)wrap.style.cursor=mode==='move'?'grab':'default';
+  drawTrimCanvas();
+}
+function onTrimSlider(){
+  trimOffX=parseInt(document.getElementById('trimHSlider').value);
+  trimOffY=parseInt(document.getElementById('trimVSlider').value);
   drawTrimCanvas();
 }
 
@@ -822,25 +859,24 @@ trimWrap.addEventListener('mousedown',function(e){
   const rect=canvas.getBoundingClientRect();
   const scaleX=canvas.width/rect.width,scaleY=canvas.height/rect.height;
   const mx=(e.clientX-rect.left)*scaleX,my=(e.clientY-rect.top)*scaleY;
-  const S=canvas.width;
-  const img=uploadedImage;
-  if(!img){trimDrag=true;trimDragSX=e.clientX;trimDragSY=e.clientY;trimDragOX=trimOffX;trimDragOY=trimOffY;e.preventDefault();return;}
-  const iw=img.naturalWidth,ih=img.naturalHeight;
-  const scale=trimZoom;const sw=iw/scale,sh=ih/scale;
-  const srcW=Math.min(sw,iw),srcH=Math.min(sh,ih);
-  const aspect=srcW/srcH;
-  let dw,dh,dx,dy;
-  if(aspect>=1){dw=S;dh=S/aspect;dx=0;dy=(S-dh)/2;}
-  else{dh=S;dw=S*aspect;dx=(S-dw)/2;dy=0;}
-  const cropAspect=trimCropRatioW/trimCropRatioH;
-  let fw,fh;
-  if(cropAspect>=aspect){fw=dw;fh=dw/cropAspect;}
-  else{fh=dh;fw=dh*cropAspect;}
-  fw=Math.min(fw,dw);fh=Math.min(fh,dh);
-  const maxCropX=dw-fw,maxCropY=dh-fh;
-  const fcx=dx+trimCropX*maxCropX;
-  const fcy=dy+trimCropY*maxCropY;
-  if(mx>=fcx&&mx<=fcx+fw&&my>=fcy&&my<=fcy+fh){
+  if(!uploadedImage||trimMode==='move'){
+    trimDrag=true;trimDragSX=e.clientX;trimDragSY=e.clientY;trimDragOX=trimOffX;trimDragOY=trimOffY;e.preventDefault();return;
+  }
+  const dw=_trimDW,dh=_trimDH,dx=_trimDX,dy=_trimDY;
+  const fcx=dx+trimCropX*dw,fcy=dy+trimCropY*dh;
+  const fw=trimCropW*dw,fh=trimCropH*dh;
+  const hs=12;
+  const corners={tl:[fcx,fcy],tr:[fcx+fw,fcy],bl:[fcx,fcy+fh],br:[fcx+fw,fcy+fh]};
+  let hit=null;
+  for(const[name,[cx,cy]] of Object.entries(corners)){
+    if(Math.abs(mx-cx)<hs&&Math.abs(my-cy)<hs){hit=name;break;}
+  }
+  if(hit){
+    trimCropResize=true;trimResizeCorner=hit;
+    trimCropResizeOW=trimCropW;trimCropResizeOH=trimCropH;
+    trimCropResizeOX=trimCropX;trimCropResizeOY=trimCropY;
+    trimDragSX=e.clientX;trimDragSY=e.clientY;
+  }else if(mx>=fcx&&mx<=fcx+fw&&my>=fcy&&my<=fcy+fh){
     trimCropDrag=true;trimCropDragSX=e.clientX;trimCropDragSY=e.clientY;
     trimCropDragOX=trimCropX;trimCropDragOY=trimCropY;
   }else{
@@ -851,19 +887,43 @@ trimWrap.addEventListener('mousedown',function(e){
 document.addEventListener('mousemove',function(e){
   if(trimDrag){
     const canvas=document.getElementById('trimCanvas');
-    const dx=trimDragSX-e.clientX,dy=trimDragSY-e.clientY;
-    trimOffX=Math.max(0,Math.min(100,trimDragOX+dx/canvas.offsetWidth*100));
-    trimOffY=Math.max(0,Math.min(100,trimDragOY+dy/canvas.offsetHeight*100));
-    document.getElementById('trimX').value=Math.round(trimOffX);document.getElementById('trimY').value=Math.round(trimOffY);
-    document.getElementById('trimXVal').textContent=Math.round(trimOffX);document.getElementById('trimYVal').textContent=Math.round(trimOffY);
+    const ddx=trimDragSX-e.clientX,ddy=trimDragSY-e.clientY;
+    trimOffX=Math.max(0,Math.min(100,trimDragOX+ddx/canvas.offsetWidth*100));
+    trimOffY=Math.max(0,Math.min(100,trimDragOY+ddy/canvas.offsetHeight*100));
+    const hs=document.getElementById('trimHSlider');const vs=document.getElementById('trimVSlider');
+    if(hs)hs.value=Math.round(trimOffX);if(vs)vs.value=Math.round(trimOffY);
     drawTrimCanvas();
   }
   if(trimCropDrag){
     const canvas=document.getElementById('trimCanvas');
-    const dx2=(e.clientX-trimCropDragSX)/canvas.offsetWidth;
-    const dy2=(e.clientY-trimCropDragSY)/canvas.offsetHeight;
-    trimCropX=Math.max(0,Math.min(1,trimCropDragOX+dx2));
-    trimCropY=Math.max(0,Math.min(1,trimCropDragOY+dy2));
+    const cw=canvas.offsetWidth*(_trimDW/canvas.width),ch=canvas.offsetHeight*(_trimDH/canvas.height);
+    const dx2=(e.clientX-trimCropDragSX)/cw;
+    const dy2=(e.clientY-trimCropDragSY)/ch;
+    trimCropX=Math.max(0,Math.min(1-trimCropW,trimCropDragOX+dx2));
+    trimCropY=Math.max(0,Math.min(1-trimCropH,trimCropDragOY+dy2));
+    drawTrimCanvas();
+  }
+  if(trimCropResize){
+    const canvas=document.getElementById('trimCanvas');
+    const cw=canvas.offsetWidth*(_trimDW/canvas.width),ch=canvas.offsetHeight*(_trimDH/canvas.height);
+    const ddx=(e.clientX-trimDragSX)/cw,ddy=(e.clientY-trimDragSY)/ch;
+    if(trimResizeCorner==='tl'){
+      const nx=Math.max(0,Math.min(trimCropResizeOX+trimCropResizeOW-0.05,trimCropResizeOX+ddx));
+      const ny=Math.max(0,Math.min(trimCropResizeOY+trimCropResizeOH-0.05,trimCropResizeOY+ddy));
+      trimCropW=trimCropResizeOW-(nx-trimCropResizeOX);trimCropH=trimCropResizeOH-(ny-trimCropResizeOY);
+      trimCropX=nx;trimCropY=ny;
+    }else if(trimResizeCorner==='tr'){
+      const ny=Math.max(0,Math.min(trimCropResizeOY+trimCropResizeOH-0.05,trimCropResizeOY+ddy));
+      trimCropW=Math.max(0.05,Math.min(1-trimCropResizeOX,trimCropResizeOW+ddx));
+      trimCropH=trimCropResizeOH-(ny-trimCropResizeOY);trimCropY=ny;
+    }else if(trimResizeCorner==='bl'){
+      const nx=Math.max(0,Math.min(trimCropResizeOX+trimCropResizeOW-0.05,trimCropResizeOX+ddx));
+      trimCropW=trimCropResizeOW-(nx-trimCropResizeOX);trimCropX=nx;
+      trimCropH=Math.max(0.05,Math.min(1-trimCropResizeOY,trimCropResizeOH+ddy));
+    }else if(trimResizeCorner==='br'){
+      trimCropW=Math.max(0.05,Math.min(1-trimCropResizeOX,trimCropResizeOW+ddx));
+      trimCropH=Math.max(0.05,Math.min(1-trimCropResizeOY,trimCropResizeOH+ddy));
+    }
     drawTrimCanvas();
   }
   if(miniDragSV)updateMiniSVFromEvent(e);
@@ -871,7 +931,7 @@ document.addEventListener('mousemove',function(e){
   if(editDrag){const{x,y}=getEditPixelCoords(e);applyEditBrush(x,y);drawEditCanvas();updateEditStats();}
   if(gridEditDrag){gridEditIsClick=false;applyGridEdit(e);}
 });
-document.addEventListener('mouseup',function(){trimDrag=false;trimCropDrag=false;miniDragSV=false;miniDragHue=false;if(editDrag){editDrag=false;buildPalette();}gridEditDrag=false;if(editMode){updatePlaceInfo();drawGrid();}});
+document.addEventListener('mouseup',function(){trimDrag=false;trimCropDrag=false;trimCropResize=false;trimResizeCorner=null;miniDragSV=false;miniDragHue=false;if(editDrag){editDrag=false;buildPalette();}gridEditDrag=false;if(editMode){updatePlaceInfo();drawGrid();}});
 
 function getTrimmedDataUrl(){
   if(!uploadedImage)return null;
@@ -880,15 +940,10 @@ function getTrimmedDataUrl(){
   const sx=Math.max(0,trimOffX*(iw-sw)/100);
   const sy=Math.max(0,trimOffY*(ih-sh)/100);
   const srcW=Math.min(sw,iw),srcH=Math.min(sh,ih);
-  const aspect=srcW/srcH;
-  const cropAspect=trimCropRatioW/trimCropRatioH;
-  let fw,fh;
-  if(cropAspect>=aspect){fw=srcW;fh=srcW/cropAspect;}
-  else{fh=srcH;fw=srcH*cropAspect;}
-  fw=Math.min(fw,srcW);fh=Math.min(fh,srcH);
-  const maxCropX=srcW-fw,maxCropY=srcH-fh;
-  const fcx=sx+Math.max(0,Math.min(maxCropX,trimCropX*maxCropX-fw*0.5));
-  const fcy=sy+Math.max(0,Math.min(maxCropY,trimCropY*maxCropY-fh*0.5));
+  const fcx=sx+trimCropX*srcW;
+  const fcy=sy+trimCropY*srcH;
+  const fw=Math.max(1,trimCropW*srcW);
+  const fh=Math.max(1,trimCropH*srcH);
   const off=document.createElement('canvas');
   off.width=Math.round(fw);off.height=Math.round(fh);
   const oc=off.getContext('2d');
@@ -899,13 +954,13 @@ function getTrimmedDataUrl(){
 function goToSection2(){if(!uploadedImage)return;markDone(1);unlockSec(2);setProgress(2);document.getElementById('sec2').scrollIntoView({behavior:'smooth',block:'start'});}
 
 let activeSizeBtn=null;
-function selectPreset(w,h,btn){monopolyMode=false;if(activeSizeBtn)activeSizeBtn.classList.remove('active');activeSizeBtn=btn;btn.classList.add('active');document.getElementById('customInputs').style.display='none';trimCropRatioW=w;trimCropRatioH=h;trimCropX=0.5;trimCropY=0.5;drawTrimCanvas();convertAndPreview(w,h);}
+function selectPreset(w,h,btn){monopolyMode=false;if(activeSizeBtn)activeSizeBtn.classList.remove('active');activeSizeBtn=btn;btn.classList.add('active');document.getElementById('customInputs').style.display='none';trimCropX=0;trimCropY=0;trimCropW=1;trimCropH=1;const _hs=document.getElementById('trimHSlider');const _vs=document.getElementById('trimVSlider');if(_hs)_hs.value=0;if(_vs)_vs.value=0;drawTrimCanvas();convertAndPreview(w,h);}
 function selectCustom(btn){monopolyMode=false;if(activeSizeBtn)activeSizeBtn.classList.remove('active');activeSizeBtn=btn;btn.classList.add('active');document.getElementById('customInputs').style.display='block';updateCustomInfo();}
 function selectMonopoly(btn){
   monopolyMode=true;if(activeSizeBtn)activeSizeBtn.classList.remove('active');activeSizeBtn=btn;btn.classList.add('active');
   document.getElementById('customInputs').style.display='none';
   chosenW=GRID_COLS;chosenH=GRID_ROWS;
-  if(uploadedImage){trimCropRatioW=128;trimCropRatioH=72;trimCropX=0.5;trimCropY=0.5;drawTrimCanvas();convertAndPreview(GRID_COLS,GRID_ROWS);}
+  if(uploadedImage){trimCropX=0;trimCropY=0;trimCropW=1;trimCropH=1;drawTrimCanvas();convertAndPreview(GRID_COLS,GRID_ROWS);}
   else{
     const mp='$'+(currentPriceTier.currentTier?currentPriceTier.currentTier.monthlyFull.toLocaleString():'1,000')+'/mo';
     document.getElementById('sec2Stats').innerHTML='<strong>FULL STAGE MONOPOLY</strong> — '+GRID_COLS+'×'+GRID_ROWS+'='+(GRID_COLS*GRID_ROWS).toLocaleString()+' blocks. Price: <strong>'+mp+'</strong><br><span style="color:var(--muted2);font-size:9px;">Upload an image first to continue.</span>';

@@ -376,7 +376,6 @@ Transparent pixels are not counted as blocks.
         </button>
         <button class="size-btn" id="customSizeBtn" onclick="selectCustom(this)">
           <span class="sb-name">CUSTOM</span>
-          <span class="sb-grid">自由設定</span>
           <span class="sb-blocks">min 1, max 9,216</span>
           <span style="color:var(--muted)">Enter count</span>
         </button>
@@ -761,9 +760,11 @@ function drawStageMap(){
     const tx=s.x*sx,ty=s.y*sy,tw=s.w*sx,th=s.h*sy;
     mctx.beginPath();mctx.moveTo(tx,ty+th);mctx.lineTo(tx+tw/2,ty);mctx.lineTo(tx+tw,ty+th);mctx.closePath();mctx.fill();
   });
-  // トラップ
+  // トラップ（warn:trueのみ表示）
   mctx.strokeStyle='rgba(255,150,50,0.8)';mctx.lineWidth=1;
-  (m.traps||[]).forEach(t=>{mctx.strokeRect(t.x*sx,t.y*sy,t.w*sx,t.h*sy);});
+  (m.traps||[]).forEach(t=>{
+    if(t.warn)mctx.strokeRect(t.x*sx,t.y*sy,t.w*sx,t.h*sy);
+  });
   // 動く足場
   mctx.strokeStyle='rgba(100,200,255,0.5)';mctx.lineWidth=1;
   (m.move||[]).forEach(p=>{mctx.strokeRect(p.x*sx,p.y*sy,p.w*sx,p.h*sy);});

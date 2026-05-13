@@ -538,8 +538,9 @@ Transparent pixels are not counted as blocks.
           <div class="price-box">
             <div class="p-row"><span>BASE PRICE</span><span class="p-amt" id="priceBase">--</span></div>
             <div class="p-row"><span>VOLUME DISCOUNT</span><span class="p-disc" id="priceDisc">--</span></div>
-            <div class="p-row total"><span id="priceTotalLabel">MONTHLY TOTAL</span><span class="p-amt" id="priceTotal">--</span></div>
-            <div class="p-row" id="annualRow" style="display:none;flex-direction:column;gap:2px;"><span>BILLED ANNUALLY</span><div style="display:flex;align-items:baseline;justify-content:space-between;"><span class="p-amt" id="priceAnnual">--</span><span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--green);letter-spacing:0.5px;" id="priceEffective"></span></div></div>
+            <div class="p-row total"><span>MONTHLY TOTAL</span><span class="p-amt" id="priceTotal">--</span></div>
+            <div class="p-row" id="annualRow" style="display:none;"><span>ANNUAL TOTAL</span><span class="p-amt" id="priceAnnual">--</span></div>
+            <div class="p-row" id="effectiveRow" style="display:none;"><span>EFFECTIVE RATE</span><span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--green);letter-spacing:0.5px;" id="priceEffective">--</span></div>
           </div>
           <div class="checkout-err" id="checkoutError"></div>
           <div id="adminPlaceBar" style="display:none;margin-bottom:8px;padding:10px 14px;background:#1a0a00;border:1px solid #ff6600;border-radius:4px;">
@@ -1282,17 +1283,16 @@ function updateSummary(){
   document.getElementById('priceDisc').textContent=r.disc>0?'-'+(r.disc*100).toFixed(0)+'%':'--';
   document.getElementById('priceTotal').textContent='$'+Math.round(r.total);
   const annRow=document.getElementById('annualRow');
-  const totalLabel=document.getElementById('priceTotalLabel');
+  const effRow=document.getElementById('effectiveRow');
   if(plan==='annual'){
     annRow.style.display='flex';
     document.getElementById('priceAnnual').textContent='$'+Math.round(r.annual)+'/yr';
     const eff=Math.round(r.annual/12);
-    const effEl=document.getElementById('priceEffective');
-    if(effEl)effEl.textContent='実質 $'+eff+'/mo・2ヶ月分無料';
-    if(totalLabel)totalLabel.textContent='MONTHLY TOTAL（年間）';
+    document.getElementById('priceEffective').textContent='$'+eff+'/mo (2 months free)';
+    if(effRow)effRow.style.display='flex';
   }else{
     annRow.style.display='none';
-    if(totalLabel)totalLabel.textContent='MONTHLY TOTAL';
+    if(effRow)effRow.style.display='none';
   }
   renderSec6Preview();
 }

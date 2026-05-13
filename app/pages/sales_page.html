@@ -226,6 +226,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
 .footer-copy{font-size:9px;color:#333;letter-spacing:1px;}
 #tooltip{position:fixed;background:var(--panel2);border:1px solid var(--border2);padding:7px 10px;font-family:'Share Tech Mono',monospace;font-size:10px;pointer-events:none;z-index:500;display:none;max-width:160px;line-height:1.8;}
 </style>
+<script src="/public/stages-data.js"></script>
 </head>
 <body>
 <div id="tooltip"><span id="ttCoord" style="color:var(--accent2)"></span> <span id="ttStatus"></span></div>
@@ -608,8 +609,11 @@ Transparent pixels are not counted as blocks.
 </footer>
 <script>
 (function(){var prev=localStorage.getItem('neverend_placement');if(prev){try{var p=JSON.parse(prev);if(p.session_key)fetch('/api/cancel-reservation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_key:p.session_key})}).catch(function(){});}catch(e){}localStorage.removeItem('neverend_placement');}})();
-const STAGES_DATA=[{id:1,name:'STAGE 1',sub:'Learn to survive.',type:'standard'},{id:2,name:'STAGE 2',sub:'The floor is a lie.',type:'standard'},{id:3,name:'STAGE 3',sub:'Which way is right?',type:'standard'},{id:4,name:'STAGE 4',sub:'Nothing stays still.',type:'standard'},{id:5,name:'STAGE 5',sub:'The chaos zone.',type:'creator'},{id:6,name:'STAGE 6',sub:'Trust nothing.',type:'standard'},{id:7,name:'STAGE 7',sub:'Going up.',type:'standard'},{id:8,name:'STAGE 8',sub:'Nothing is safe.',type:'standard'},{id:9,name:'STAGE 9',sub:"One mistake.",type:'standard'},{id:10,name:'STAGE 10',sub:'You made it?',type:'creator'},{id:11,name:'STAGE 11',sub:'The wall.',type:'standard'},{id:12,name:'STAGE 12',sub:'Sink or swim.',type:'standard'},{id:13,name:'STAGE 13',sub:'No floor.',type:'standard'},{id:14,name:'STAGE 14',sub:'Mirrors.',type:'standard'},{id:15,name:'STAGE 15',sub:'Fire and ice.',type:'creator'},{id:16,name:'STAGE 16',sub:'The gauntlet.',type:'standard'},{id:17,name:'STAGE 17',sub:'Descent.',type:'standard'},{id:18,name:'STAGE 18',sub:'Labyrinth.',type:'standard'},{id:19,name:'STAGE 19',sub:'Almost there.',type:'standard'},{id:20,name:'STAGE 20',sub:'The final test.',type:'creator'}];
-const STAGE_MAPS={1:{plats:[[0,640,1280,80],[480,576,96,16]],spikes:[[528,544,32,32]],goal:[1184,528,80,112],spawn:[48,592]},2:{plats:[[0,640,192,80],[224,592,128,16],[416,544,128,16],[608,496,128,16],[800,448,128,16],[992,400,128,16],[1152,352,128,368]],spikes:[[224,560,32,32],[992,368,32,32]],goal:[1168,240,64,112],spawn:[48,592]},3:{plats:[[0,640,1280,80],[368,480,32,160],[880,480,32,160],[880,320,400,32]],spikes:[[608,608,32,32],[128,608,32,32],[1104,608,32,32]],goal:[1056,208,64,112],spawn:[48,592]},4:{plats:[[0,576,176,144],[1104,576,176,144]],spikes:[[176,688,32,32],[208,688,32,32],[240,688,32,32],[272,688,32,32],[304,688,32,32],[336,688,32,32],[368,688,32,32],[400,688,32,32],[432,688,32,32],[464,688,32,32],[496,688,32,32],[528,688,32,32],[560,688,32,32],[592,688,32,32],[624,688,32,32],[656,688,32,32],[688,688,32,32],[720,688,32,32],[752,688,32,32],[784,688,32,32],[816,688,32,32],[848,688,32,32],[880,688,32,32],[912,688,32,32],[944,688,32,32],[976,688,32,32],[1008,688,32,32],[1040,688,32,32],[1072,688,32,32]],goal:[1120,464,64,112],spawn:[48,528]},5:{plats:[[0,656,1280,64],[0,0,1280,96],[640,96,32,464],[0,96,32,560]],spikes:[[128,624,32,32],[800,624,32,32],[832,624,32,32],[864,624,32,32]],goal:[48,528,64,128],spawn:[1200,608]},6:{plats:[[0,384,112,336],[112,464,112,16],[224,528,112,16],[336,592,112,16],[448,624,384,96],[832,592,112,16],[944,528,112,16],[1056,464,112,16],[1168,384,112,336],[576,512,64,16]],spikes:[[336,560,32,32],[896,560,32,32]],goal:[576,272,64,112],spawn:[48,336]},7:{plats:[[0,0,16,720],[1264,0,16,720],[0,0,1280,32],[16,656,528,64],[736,656,528,64],[16,176,192,16],[16,352,192,16],[16,528,192,16],[1072,272,192,16],[1072,448,192,16],[256,528,128,16],[432,496,128,16],[560,448,144,16]],spikes:[[544,672,32,32],[576,672,32,32],[608,672,32,32],[640,672,32,32],[672,672,32,32],[704,672,32,32],[16,144,32,32],[16,320,32,32]],goal:[576,544,128,112],spawn:[80,80]},8:{plats:[[0,640,304,80],[320,576,128,16],[512,512,128,16],[704,480,256,16],[1024,528,128,16],[1184,576,96,144]],spikes:[[320,544,32,32],[1184,544,32,32]],goal:[1200,464,64,112],spawn:[48,592]},9:{plats:[[0,640,320,80],[320,576,128,16],[512,448,128,16],[704,496,96,16],[960,448,128,16],[1152,576,128,16],[1152,640,128,80]],spikes:[[320,544,32,32]],goal:[1168,464,80,112],spawn:[48,592]},10:{plats:[[0,0,16,720],[1264,0,16,720],[16,624,192,96],[256,528,144,16],[448,448,144,16],[640,368,144,16],[832,288,144,16],[1024,208,240,16],[1024,208,240,512]],spikes:[[256,496,32,32],[832,256,32,32]],goal:[1040,96,80,112],spawn:[80,576]}};
+const STAGES_DATA=(function(){
+  return (typeof STAGES_GEO!=='undefined'?STAGES_GEO:[]).map(function(s,i){
+    return Object.assign({id:i+1,type:'standard'},s);
+  });
+})();
 /*
 SUPABASE: owned_blocks table constraint must be updated to:
 x >= 0 AND x < 128
@@ -741,20 +745,43 @@ function updatePresetPrices(){
 
 function drawStageMap(){
   const mc=document.getElementById('stageMapCanvas');const mctx=mc.getContext('2d');
-  const MW=400,MH=225,SX=1280,SY=720,sx=MW/SX,sy=MH/SY;
+  const MW=400,MH=225,GW=1280,GH=720,sx=MW/GW,sy=MH/GH;
   mctx.fillStyle='#07070f';mctx.fillRect(0,0,MW,MH);
-  const m=STAGE_MAPS[currentStage];
-  if(!m){mctx.fillStyle='rgba(100,100,120,0.5)';mctx.font='12px monospace';mctx.textAlign='center';mctx.fillText('Stage '+currentStage,MW/2,MH/2);return;}
+  const m=STAGES_DATA[currentStage-1];
+  if(!m){
+    mctx.fillStyle='rgba(74,184,255,0.5)';mctx.font='bold 14px monospace';mctx.textAlign='center';
+    mctx.fillText('FLOOR '+currentStage,MW/2,MH/2);return;
+  }
+  // 足場
   mctx.strokeStyle='rgba(74,184,255,0.75)';mctx.lineWidth=1;
-  (m.plats||[]).forEach(function(p){mctx.strokeRect(p[0]*sx+.5,p[1]*sy+.5,p[2]*sx,p[3]*sy);});
+  (m.plats||[]).forEach(p=>{mctx.strokeRect(p.x*sx,p.y*sy,p.w*sx,p.h*sy);});
+  // スパイク
   mctx.fillStyle='rgba(231,76,60,0.95)';
-  (m.spikes||[]).forEach(function(s){var bx=s[0]*sx,by=(s[1]+s[3])*sy,tw=Math.max(2,s[2]*sx),th=Math.max(2,s[3]*sy);mctx.beginPath();mctx.moveTo(bx+tw/2,by-th);mctx.lineTo(bx,by);mctx.lineTo(bx+tw,by);mctx.closePath();mctx.fill();});
-  mctx.strokeStyle='rgba(74,222,128,0.9)';mctx.lineWidth=1.5;
-  if(m.goal){mctx.strokeRect(m.goal[0]*sx,m.goal[1]*sy,m.goal[2]*sx,m.goal[3]*sy);}
-  mctx.fillStyle='rgba(74,184,255,0.9)';
-  if(m.spawn){mctx.beginPath();mctx.arc(m.spawn[0]*sx,m.spawn[1]*sy,3.5,0,Math.PI*2);mctx.fill();}
-  (m.traps||[]).forEach(function(t){mctx.strokeStyle='rgba(255,140,0,0.8)';mctx.lineWidth=1;mctx.strokeRect(t[0]*sx,t[1]*sy,t[2]*sx,t[3]*sy);});
-  mctx.fillStyle='rgba(245,200,66,0.35)';mctx.fillRect(0,0,MW,3);
+  (m.spikes||[]).forEach(s=>{
+    const tx=s.x*sx,ty=s.y*sy,tw=s.w*sx,th=s.h*sy;
+    mctx.beginPath();mctx.moveTo(tx,ty+th);mctx.lineTo(tx+tw/2,ty);mctx.lineTo(tx+tw,ty+th);mctx.closePath();mctx.fill();
+  });
+  // トラップ
+  mctx.strokeStyle='rgba(255,150,50,0.8)';mctx.lineWidth=1;
+  (m.traps||[]).forEach(t=>{mctx.strokeRect(t.x*sx,t.y*sy,t.w*sx,t.h*sy);});
+  // 動く足場
+  mctx.strokeStyle='rgba(100,200,255,0.5)';mctx.lineWidth=1;
+  (m.move||[]).forEach(p=>{mctx.strokeRect(p.x*sx,p.y*sy,p.w*sx,p.h*sy);});
+  // 溶岩
+  mctx.fillStyle='rgba(255,80,0,0.4)';
+  (m.lava||[]).forEach(l=>{mctx.fillRect(0,(l.y||GH)*sy,MW,MH);});
+  // ゴール
+  if(m.goal){
+    mctx.strokeStyle='rgba(74,222,128,0.9)';mctx.lineWidth=1.5;
+    mctx.strokeRect(m.goal.x*sx,m.goal.y*sy,m.goal.w*sx,m.goal.h*sy);
+  }
+  // スポーン
+  if(m.spawn){
+    mctx.fillStyle='rgba(74,184,255,0.9)';
+    mctx.beginPath();mctx.arc(m.spawn.x*sx,m.spawn.y*sy,3.5,0,Math.PI*2);mctx.fill();
+  }
+  // 上部バー
+  mctx.fillStyle='rgba(74,184,255,0.35)';mctx.fillRect(0,0,MW,3);
 }
 setStage(1);
 
@@ -1136,16 +1163,15 @@ function hasConflict(x,y,w,h){for(let dr=0;dr<h;dr++)for(let dc=0;dc<w;dc++){if(
 
 function drawGrid(){
   gridCtx.clearRect(0,0,1280,720);
-  const m=STAGE_MAPS[currentStage];
+  const m=STAGES_DATA[currentStage-1];
   if(m){
     gridCtx.strokeStyle='rgba(74,184,255,0.1)';gridCtx.lineWidth=0.5;
-    (m.plats||[]).forEach(function(p){gridCtx.strokeRect(p[0],p[1],p[2],p[3]);});
+    (m.plats||[]).forEach(function(p){gridCtx.strokeRect(p.x,p.y,p.w,p.h);});
     gridCtx.fillStyle='rgba(231,76,60,0.2)';
-    (m.spikes||[]).forEach(function(s){gridCtx.beginPath();gridCtx.moveTo(s[0]+s[2]/2,s[1]);gridCtx.lineTo(s[0],s[1]+s[3]);gridCtx.lineTo(s[0]+s[2],s[1]+s[3]);gridCtx.closePath();gridCtx.fill();});
+    (m.spikes||[]).forEach(function(s){gridCtx.beginPath();gridCtx.moveTo(s.x+s.w/2,s.y);gridCtx.lineTo(s.x,s.y+s.h);gridCtx.lineTo(s.x+s.w,s.y+s.h);gridCtx.closePath();gridCtx.fill();});
     gridCtx.strokeStyle='rgba(74,222,128,0.18)';gridCtx.lineWidth=1;
-    if(m.goal){gridCtx.strokeRect(m.goal[0],m.goal[1],m.goal[2],m.goal[3]);}
-    gridCtx.fillStyle='rgba(245,200,66,0.25)';gridCtx.fillRect(0,0,1280,6);
-    gridCtx.fillStyle='rgba(245,200,66,0.6)';gridCtx.fillRect(0,0,800,6);
+    if(m.goal){gridCtx.strokeRect(m.goal.x,m.goal.y,m.goal.w,m.goal.h);}
+    gridCtx.fillStyle='rgba(74,184,255,0.15)';gridCtx.fillRect(0,0,1280,6);
   }
   const lx=logoPlaced&&selectedArea?selectedArea.x:logoGridX;
   const ly=logoPlaced&&selectedArea?selectedArea.y:logoGridY;
@@ -1264,17 +1290,17 @@ function renderSec6Preview(){
   const W=640,H=360,sx=W/1280,sy=H/720;
   const mctx=mapC.getContext('2d');const lctx=logoC.getContext('2d');
   mctx.fillStyle='#07070f';mctx.fillRect(0,0,W,H);
-  const m=STAGE_MAPS[currentStage];
+  const m=STAGES_DATA[currentStage-1];
   if(m){
     mctx.strokeStyle='rgba(74,184,255,0.7)';mctx.lineWidth=0.8;
-    (m.plats||[]).forEach(function(p){mctx.strokeRect(p[0]*sx,p[1]*sy,p[2]*sx,p[3]*sy);});
+    (m.plats||[]).forEach(function(p){mctx.strokeRect(p.x*sx,p.y*sy,p.w*sx,p.h*sy);});
     mctx.fillStyle='rgba(231,76,60,0.9)';
-    (m.spikes||[]).forEach(function(s){var bx=s[0]*sx,by=(s[1]+s[3])*sy,tw=Math.max(2,s[2]*sx),th=Math.max(2,s[3]*sy);mctx.beginPath();mctx.moveTo(bx+tw/2,by-th);mctx.lineTo(bx,by);mctx.lineTo(bx+tw,by);mctx.closePath();mctx.fill();});
+    (m.spikes||[]).forEach(function(s){var tx=s.x*sx,ty=s.y*sy,tw=s.w*sx,th=s.h*sy;mctx.beginPath();mctx.moveTo(tx,ty+th);mctx.lineTo(tx+tw/2,ty);mctx.lineTo(tx+tw,ty+th);mctx.closePath();mctx.fill();});
     mctx.strokeStyle='rgba(74,222,128,0.9)';mctx.lineWidth=1.5;
-    if(m.goal){mctx.strokeRect(m.goal[0]*sx,m.goal[1]*sy,m.goal[2]*sx,m.goal[3]*sy);}
+    if(m.goal){mctx.strokeRect(m.goal.x*sx,m.goal.y*sy,m.goal.w*sx,m.goal.h*sy);}
     mctx.fillStyle='rgba(74,184,255,0.9)';
-    if(m.spawn){mctx.beginPath();mctx.arc(m.spawn[0]*sx,m.spawn[1]*sy,4,0,Math.PI*2);mctx.fill();}
-    mctx.fillStyle='rgba(245,200,66,0.4)';mctx.fillRect(0,0,W,4);mctx.fillStyle='rgba(245,200,66,0.7)';mctx.fillRect(0,0,W*0.62,4);
+    if(m.spawn){mctx.beginPath();mctx.arc(m.spawn.x*sx,m.spawn.y*sy,4,0,Math.PI*2);mctx.fill();}
+    mctx.fillStyle='rgba(74,184,255,0.35)';mctx.fillRect(0,0,W,4);
   }
   lctx.clearRect(0,0,W,H);
   if(pixelArtEdit&&selectedArea){

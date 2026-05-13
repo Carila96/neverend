@@ -296,7 +296,7 @@ Transparent pixels are not counted as blocks.
         <div>
           <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:5px;">PREVIEW — drag to pan</div>
           <div class="sq-canvas-wrap" id="trimWrap"><canvas id="trimCanvas" width="400" height="400"></canvas></div>
-          <p style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted2);margin-top:4px;letter-spacing:1px;">Square crop. Transparent padding added automatically.</p>
+          <p style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted2);margin-top:4px;letter-spacing:1px;">Drag the blue frame to select which area to use.</p>
         </div>
       </div>
       <div style="margin-top:14px;display:flex;justify-content:flex-end;">
@@ -649,13 +649,19 @@ function updateProgressBar(){
 function calculatePrice(blockCount){
   const ppb=currentPriceTier.currentTier?currentPriceTier.currentTier.pricePerBlock:0.40;
   let base=blockCount*ppb;let discount=0;
-  if(blockCount>=1000)discount=0.30;else if(blockCount>=500)discount=0.20;else if(blockCount>=200)discount=0.10;
+  if(blockCount>=4609)discount=0.35;
+  else if(blockCount>=1001)discount=0.30;
+  else if(blockCount>=501)discount=0.20;
+  else if(blockCount>=200)discount=0.10;
   const total=Math.max(1,base*(1-discount));
   return{base,disc:discount,total,annual:total*10};
 }
 let GRID_COLS=128,GRID_ROWS=72,CELL=10;
 let monopolyMode=false,uploadedImage=null;
 let trimZoom=1,trimOffX=0,trimOffY=0,trimDrag=false,trimDragSX=0,trimDragSY=0,trimDragOX=0,trimDragOY=0;
+let trimCropRatioW=1,trimCropRatioH=1;
+let trimCropX=0,trimCropY=0;
+let trimCropDrag=false,trimCropDragSX=0,trimCropDragSY=0,trimCropDragOX=0,trimCropDragOY=0;
 let chosenW=0,chosenH=0,pixelArtOriginal=null,pixelArtEdit=null,customColors=[];
 let colorTool='replace',selectedPaletteColor=null,selectedPaletteKey=null,brushSize=1;
 let currentStage=1,gridStates={};
@@ -749,7 +755,7 @@ function loadImageFile(file){
   reader.onload=function(ev){
     const img=new Image();
     img.onload=function(){
-      uploadedImage=img;trimZoom=1;trimOffX=0;trimOffY=0;
+      uploadedImage=img;trimZoom=1;trimOffX=0;trimOffY=0;trimCropX=0;trimCropY=0;trimCropRatioW=1;trimCropRatioH=1;
       document.getElementById('trimZoom').value=100;
       document.getElementById('trimX').value=0;document.getElementById('trimY').value=0;
       document.getElementById('uploadFileName').textContent=file.name;
@@ -770,15 +776,36 @@ function drawTrimCanvas(){
   if(!uploadedImage)return;
   const img=uploadedImage;const iw=img.naturalWidth,ih=img.naturalHeight;
   const scale=trimZoom;const sw=iw/scale,sh=ih/scale;
-  const sx=Math.max(0,trimOffX*(iw-sw)/100);const sy=Math.max(0,trimOffY*(ih-sh)/100);
+  const sx=Math.max(0,trimOffX*(iw-sw)/100);
+  const sy=Math.max(0,trimOffY*(ih-sh)/100);
   const srcW=Math.min(sw,iw),srcH=Math.min(sh,ih);
   const aspect=srcW/srcH;
   let dw,dh,dx,dy;
-  if(aspect>=1){dw=S;dh=S/aspect;dx=0;dy=(S-dh)/2;}else{dh=S;dw=S*aspect;dx=(S-dw)/2;dy=0;}
+  if(aspect>=1){dw=S;dh=S/aspect;dx=0;dy=(S-dh)/2;}
+  else{dh=S;dw=S*aspect;dx=(S-dw)/2;dy=0;}
   ctx.drawImage(img,sx,sy,srcW,srcH,dx,dy,dw,dh);
-  ctx.strokeStyle='rgba(74,184,255,0.4)';ctx.lineWidth=1.5;ctx.strokeRect(1,1,S-2,S-2);
-  ctx.strokeStyle='rgba(74,184,255,0.1)';ctx.lineWidth=0.5;
-  for(let i=1;i<4;i++){ctx.beginPath();ctx.moveTo(S*i/4,0);ctx.lineTo(S*i/4,S);ctx.stroke();ctx.beginPath();ctx.moveTo(0,S*i/4);ctx.lineTo(S,S*i/4);ctx.stroke();}
+  const cropAspect=trimCropRatioW/trimCropRatioH;
+  let fw,fh;
+  if(cropAspect>=aspect){fw=dw;fh=dw/cropAspect;}
+  else{fh=dh;fw=dh*cropAspect;}
+  fw=Math.min(fw,dw);fh=Math.min(fh,dh);
+  const maxCropX=dw-fw,maxCropY=dh-fh;
+  const fcx=dx+trimCropX*maxCropX;
+  const fcy=dy+trimCropY*maxCropY;
+  ctx.fillStyle='rgba(0,0,0,0.55)';
+  ctx.fillRect(0,0,S,fcy);
+  ctx.fillRect(0,fcy+fh,S,S-fcy-fh);
+  ctx.fillRect(0,fcy,fcx,fh);
+  ctx.fillRect(fcx+fw,fcy,S-fcx-fw,fh);
+  ctx.strokeStyle='rgba(74,184,255,0.9)';ctx.lineWidth=2;
+  ctx.strokeRect(fcx,fcy,fw,fh);
+  ctx.strokeStyle='rgba(74,184,255,0.3)';ctx.lineWidth=0.5;
+  for(let i=1;i<3;i++){
+    ctx.beginPath();ctx.moveTo(fcx+fw*i/3,fcy);ctx.lineTo(fcx+fw*i/3,fcy+fh);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(fcx,fcy+fh*i/3);ctx.lineTo(fcx+fw,fcy+fh*i/3);ctx.stroke();
+  }
+  ctx.fillStyle='rgba(74,184,255,0.9)';ctx.font='10px monospace';ctx.textAlign='left';
+  ctx.fillText(trimCropRatioW+'×'+trimCropRatioH,fcx+4,fcy+14);
 }
 
 function updateTrim(){
@@ -790,7 +817,37 @@ function updateTrim(){
 }
 
 const trimWrap=document.getElementById('trimWrap');
-trimWrap.addEventListener('mousedown',function(e){trimDrag=true;trimDragSX=e.clientX;trimDragSY=e.clientY;trimDragOX=trimOffX;trimDragOY=trimOffY;e.preventDefault();});
+trimWrap.addEventListener('mousedown',function(e){
+  const canvas=document.getElementById('trimCanvas');
+  const rect=canvas.getBoundingClientRect();
+  const scaleX=canvas.width/rect.width,scaleY=canvas.height/rect.height;
+  const mx=(e.clientX-rect.left)*scaleX,my=(e.clientY-rect.top)*scaleY;
+  const S=canvas.width;
+  const img=uploadedImage;
+  if(!img){trimDrag=true;trimDragSX=e.clientX;trimDragSY=e.clientY;trimDragOX=trimOffX;trimDragOY=trimOffY;e.preventDefault();return;}
+  const iw=img.naturalWidth,ih=img.naturalHeight;
+  const scale=trimZoom;const sw=iw/scale,sh=ih/scale;
+  const srcW=Math.min(sw,iw),srcH=Math.min(sh,ih);
+  const aspect=srcW/srcH;
+  let dw,dh,dx,dy;
+  if(aspect>=1){dw=S;dh=S/aspect;dx=0;dy=(S-dh)/2;}
+  else{dh=S;dw=S*aspect;dx=(S-dw)/2;dy=0;}
+  const cropAspect=trimCropRatioW/trimCropRatioH;
+  let fw,fh;
+  if(cropAspect>=aspect){fw=dw;fh=dw/cropAspect;}
+  else{fh=dh;fw=dh*cropAspect;}
+  fw=Math.min(fw,dw);fh=Math.min(fh,dh);
+  const maxCropX=dw-fw,maxCropY=dh-fh;
+  const fcx=dx+trimCropX*maxCropX;
+  const fcy=dy+trimCropY*maxCropY;
+  if(mx>=fcx&&mx<=fcx+fw&&my>=fcy&&my<=fcy+fh){
+    trimCropDrag=true;trimCropDragSX=e.clientX;trimCropDragSY=e.clientY;
+    trimCropDragOX=trimCropX;trimCropDragOY=trimCropY;
+  }else{
+    trimDrag=true;trimDragSX=e.clientX;trimDragSY=e.clientY;trimDragOX=trimOffX;trimDragOY=trimOffY;
+  }
+  e.preventDefault();
+});
 document.addEventListener('mousemove',function(e){
   if(trimDrag){
     const canvas=document.getElementById('trimCanvas');
@@ -801,36 +858,54 @@ document.addEventListener('mousemove',function(e){
     document.getElementById('trimXVal').textContent=Math.round(trimOffX);document.getElementById('trimYVal').textContent=Math.round(trimOffY);
     drawTrimCanvas();
   }
+  if(trimCropDrag){
+    const canvas=document.getElementById('trimCanvas');
+    const dx2=(e.clientX-trimCropDragSX)/canvas.offsetWidth;
+    const dy2=(e.clientY-trimCropDragSY)/canvas.offsetHeight;
+    trimCropX=Math.max(0,Math.min(1,trimCropDragOX+dx2));
+    trimCropY=Math.max(0,Math.min(1,trimCropDragOY+dy2));
+    drawTrimCanvas();
+  }
   if(miniDragSV)updateMiniSVFromEvent(e);
   if(miniDragHue)updateMiniHueFromEvent(e);
   if(editDrag){const{x,y}=getEditPixelCoords(e);applyEditBrush(x,y);drawEditCanvas();updateEditStats();}
   if(gridEditDrag){gridEditIsClick=false;applyGridEdit(e);}
 });
-document.addEventListener('mouseup',function(){trimDrag=false;miniDragSV=false;miniDragHue=false;if(editDrag){editDrag=false;buildPalette();}gridEditDrag=false;if(editMode){updatePlaceInfo();drawGrid();}});
+document.addEventListener('mouseup',function(){trimDrag=false;trimCropDrag=false;miniDragSV=false;miniDragHue=false;if(editDrag){editDrag=false;buildPalette();}gridEditDrag=false;if(editMode){updatePlaceInfo();drawGrid();}});
 
 function getTrimmedDataUrl(){
   if(!uploadedImage)return null;
   const img=uploadedImage;const iw=img.naturalWidth,ih=img.naturalHeight;
   const scale=trimZoom;const sw=iw/scale,sh=ih/scale;
-  const sx=Math.max(0,trimOffX*(iw-sw)/100);const sy=Math.max(0,trimOffY*(ih-sh)/100);
+  const sx=Math.max(0,trimOffX*(iw-sw)/100);
+  const sy=Math.max(0,trimOffY*(ih-sh)/100);
   const srcW=Math.min(sw,iw),srcH=Math.min(sh,ih);
+  const aspect=srcW/srcH;
+  const cropAspect=trimCropRatioW/trimCropRatioH;
+  let fw,fh;
+  if(cropAspect>=aspect){fw=srcW;fh=srcW/cropAspect;}
+  else{fh=srcH;fw=srcH*cropAspect;}
+  fw=Math.min(fw,srcW);fh=Math.min(fh,srcH);
+  const maxCropX=srcW-fw,maxCropY=srcH-fh;
+  const fcx=sx+trimCropX*maxCropX;
+  const fcy=sy+trimCropY*maxCropY;
   const off=document.createElement('canvas');
-  off.width=Math.round(srcW);off.height=Math.round(srcH);
+  off.width=Math.round(fw);off.height=Math.round(fh);
   const oc=off.getContext('2d');
-  oc.drawImage(img,sx,sy,srcW,srcH,0,0,Math.round(srcW),Math.round(srcH));
+  oc.drawImage(img,fcx,fcy,fw,fh,0,0,Math.round(fw),Math.round(fh));
   return off.toDataURL('image/png');
 }
 
 function goToSection2(){if(!uploadedImage)return;markDone(1);unlockSec(2);setProgress(2);document.getElementById('sec2').scrollIntoView({behavior:'smooth',block:'start'});}
 
 let activeSizeBtn=null;
-function selectPreset(w,h,btn){monopolyMode=false;if(activeSizeBtn)activeSizeBtn.classList.remove('active');activeSizeBtn=btn;btn.classList.add('active');document.getElementById('customInputs').style.display='none';convertAndPreview(w,h);}
+function selectPreset(w,h,btn){monopolyMode=false;if(activeSizeBtn)activeSizeBtn.classList.remove('active');activeSizeBtn=btn;btn.classList.add('active');document.getElementById('customInputs').style.display='none';trimCropRatioW=w;trimCropRatioH=h;trimCropX=0;trimCropY=0;drawTrimCanvas();convertAndPreview(w,h);}
 function selectCustom(btn){monopolyMode=false;if(activeSizeBtn)activeSizeBtn.classList.remove('active');activeSizeBtn=btn;btn.classList.add('active');document.getElementById('customInputs').style.display='block';updateCustomInfo();}
 function selectMonopoly(btn){
   monopolyMode=true;if(activeSizeBtn)activeSizeBtn.classList.remove('active');activeSizeBtn=btn;btn.classList.add('active');
   document.getElementById('customInputs').style.display='none';
   chosenW=GRID_COLS;chosenH=GRID_ROWS;
-  if(uploadedImage){convertAndPreview(GRID_COLS,GRID_ROWS);}
+  if(uploadedImage){trimCropRatioW=128;trimCropRatioH=72;trimCropX=0;trimCropY=0;drawTrimCanvas();convertAndPreview(GRID_COLS,GRID_ROWS);}
   else{
     const mp='$'+(currentPriceTier.currentTier?currentPriceTier.currentTier.monthlyFull.toLocaleString():'1,000')+'/mo';
     document.getElementById('sec2Stats').innerHTML='<strong>FULL STAGE MONOPOLY</strong> — '+GRID_COLS+'×'+GRID_ROWS+'='+(GRID_COLS*GRID_ROWS).toLocaleString()+' blocks. Price: <strong>'+mp+'</strong><br><span style="color:var(--muted2);font-size:9px;">Upload an image first to continue.</span>';

@@ -680,24 +680,50 @@ let _sbClient=null;
 async function _syncProfileOnLogin(session){
   if(!_sbClient||!session)return;
   try{
-    // DBから既存プロフィールを取得
     const {data:profile}=await _sbClient
       .from('player_profiles')
       .select('player_name,best_stage,total_deaths,total_play_time')
       .eq('id',session.user.id)
       .single();
 
+    // ローカルの現在値
+    let localSave={};
+    try{localSave=JSON.parse(localStorage.getItem('neverend_save'))||{};}catch(_){}
+    const localDeaths=localSave.totalDeaths||0;
+    const localBest=localSave.bestStage||0;
+    const localTime=localSave.totalPlayTime||0;
+
     if(profile&&profile.player_name){
-      // DBに名前が存在する → DBの値をlocalStorageに上書き
+      // DBに名前がある → 名前はDBを優先
       localStorage.setItem('neverend_playername',profile.player_name);
-      // DBのゲーム統計をlocalStorageに上書き
-      try{
-        const save=JSON.parse(localStorage.getItem('neverend_save'))||{};
-        if(profile.best_stage>0)save.bestStage=profile.best_stage;
-        if(profile.total_deaths>0)save.totalDeaths=profile.total_deaths;
-        if(profile.total_play_time>0)save.totalPlayTime=profile.total_play_time;
-        localStorage.setItem('neverend_save',JSON.stringify(save));
-      }catch(_){}
+
+      // 統計はDBとローカルの最大値・合算を取る
+      const dbDeaths=profile.total_deaths||0;
+      const dbBest=profile.best_stage||0;
+      const dbTime=profile.total_play_time||0;
+
+      // ベストフロアは最大値
+      const mergedBest=Math.max(localBest,dbBest);
+      // 死亡数・プレイ時間はDBの値をベースにローカルの差分を加算
+      // （ローカルがDBより大きい場合はローカルを採用）
+      const mergedDeaths=Math.max(localDeaths,dbDeaths);
+      const mergedTime=Math.max(localTime,dbTime);
+
+      // localStorageを更新
+      localSave.bestStage=mergedBest;
+      localSave.totalDeaths=mergedDeaths;
+      localSave.totalPlayTime=mergedTime;
+      try{localStorage.setItem('neverend_save',JSON.stringify(localSave));}catch(_){}
+
+      // DBも最新値で更新
+      await _sbClient.from('player_profiles').upsert({
+        id:session.user.id,
+        player_name:profile.player_name,
+        best_stage:mergedBest,
+        total_deaths:mergedDeaths,
+        total_play_time:Math.floor(mergedTime)
+      },{onConflict:'id'});
+
     }else{
       // DBに名前がない → localStorageの名前をDBに保存
       const localName=localStorage.getItem('neverend_playername')||
@@ -706,7 +732,10 @@ async function _syncProfileOnLogin(session){
       await _sbClient.from('player_profiles').upsert({
         id:session.user.id,
         player_name:localName,
-        is_tester:localStorage.getItem('neverend_is_tester')==='1'
+        is_tester:localStorage.getItem('neverend_is_tester')==='1',
+        best_stage:localBest,
+        total_deaths:localDeaths,
+        total_play_time:Math.floor(localTime)
       },{onConflict:'id'});
       localStorage.setItem('neverend_playername',localName);
     }

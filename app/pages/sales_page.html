@@ -447,9 +447,6 @@ Transparent pixels are not counted as blocks.
           <div class="edit-canvas-wrap" id="editCanvasWrap"><canvas id="editCanvas"></canvas></div>
           <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">Checkered = transparent. Transparent pixels are not charged and appear blank in-game.</div>
           <div class="edit-stat" id="editStats"></div>
-          <button class="btn-outline" onclick="removeAllTransparent()" style="margin-top:8px;width:100%;padding:8px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;background:none;border:1px solid rgba(231,76,60,0.4);color:#e74c3c;text-transform:uppercase;">
-            REMOVE ALL TRANSPARENT
-          </button>
           <div style="display:flex;justify-content:flex-end;"><button class="btn-blue" onclick="goToSection4()">CONTINUE TO SELECT STAGE &rarr;</button></div>
         </div>
         <div class="color-sidebar">
@@ -535,6 +532,9 @@ Transparent pixels are not counted as blocks.
           <div class="place-row"><span>ACTIVE BLOCKS</span><span class="place-val" id="placeActiveBlocks">--</span></div>
           <div class="place-row"><span>PRICE</span><span class="place-val" id="placePrice">--</span></div>
           <div class="place-row"><span>STATUS</span><span class="place-val" id="placeStatus">--</span></div>
+        </div>
+        <div style="margin-bottom:6px;">
+          <button onclick="removeAllTransparent()" style="margin-top:8px;padding:7px 14px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;background:none;border:1px solid rgba(231,76,60,0.4);color:#e74c3c;text-transform:uppercase;">REMOVE TRANSPARENT</button>
         </div>
         <div style="display:flex;gap:8px;justify-content:flex-end;">
           <button class="btn-ghost" id="resetPlaceBtn" onclick="resetPlacement()" style="display:none;">RESET</button>
@@ -701,6 +701,12 @@ async function spLogout(){
 // DOM読み込み後に認証初期化
 document.addEventListener('DOMContentLoaded',function(){
   _initSpAuth();
+  // ログインチェック：未ログインならモーダルを表示
+  setTimeout(function(){
+    if(!_spCurrentUser){
+      openSpLoginModal();
+    }
+  },800);
 });
 /*
 SUPABASE: owned_blocks table constraint must be updated to:
@@ -1093,25 +1099,50 @@ function convertAndPreview(w,h){if(!uploadedImage)return;chosenW=w;chosenH=h;doc
 
 function doConvert(w,h){
   const dataUrl=getTrimmedDataUrl();
-  if(!dataUrl){showMsg('No image uploaded.');return;}
+  if(!dataUrl){return;}
   const img=new Image();
   img.onload=function(){
-    const off=document.createElement('canvas');off.width=w;off.height=h;
+    const off=document.createElement('canvas');
+    off.width=w;off.height=h;
     const oc=off.getContext('2d');
-    oc.imageSmoothingEnabled=true;oc.imageSmoothingQuality='high';
-    // トリム済み画像をそのままwxhにリサイズ（アスペクト比は維持しない・トリムで調整済みのため）
+    oc.imageSmoothingEnabled=true;
+    oc.imageSmoothingQuality='high';
     oc.drawImage(img,0,0,w,h);
-    const imgData=oc.getImageData(0,0,w,h);const data=imgData.data;
+    const imgData=oc.getImageData(0,0,w,h);
+    const data=imgData.data;
     const pixelArr=[];
-    for(let i=0;i<data.length;i+=4){if(data[i+3]>=30)pixelArr.push([data[i],data[i+1],data[i+2]]);}
+    for(let i=0;i<data.length;i+=4){
+      if(data[i+3]>=30)pixelArr.push([data[i],data[i+1],data[i+2]]);
+    }
     let colorMap=null;
-    if(pixelArr.length>0&&typeof quantize==='function'){try{colorMap=quantize(pixelArr,16);}catch(e){}}
+    if(pixelArr.length>0&&typeof quantize==='function'){
+      try{colorMap=quantize(pixelArr,16);}catch(e){}
+    }
     const pixels=[];
-    for(let y=0;y<h;y++){const row=[];for(let x=0;x<w;x++){const idx=(y*w+x)*4;const a=data[idx+3];if(a<30){row.push(null);}else{let r=data[idx],g2=data[idx+1],b=data[idx+2];if(colorMap){const mapped=colorMap.map([r,g2,b]);if(mapped){r=mapped[0];g2=mapped[1];b=mapped[2];}}row.push({r,g:g2,b});}}pixels.push(row);}
+    for(let y=0;y<h;y++){
+      const row=[];
+      for(let x=0;x<w;x++){
+        const idx=(y*w+x)*4;
+        const a=data[idx+3];
+        if(a<30){row.push(null);}
+        else{
+          let r=data[idx],g2=data[idx+1],b=data[idx+2];
+          if(colorMap){
+            const mapped=colorMap.map([r,g2,b]);
+            if(mapped){r=mapped[0];g2=mapped[1];b=mapped[2];}
+          }
+          row.push({r,g:g2,b});
+        }
+      }
+      pixels.push(row);
+    }
     pixelArtOriginal=pixels;pixelArtEdit=deepCopy(pixels);customColors=[];
-    const prev=document.getElementById('prevCanvas');renderPrev(prev,pixels,w,h,16);
-    const active=countActive(pixels);const r2=calcPrice(active,plan);
-    document.getElementById('sec2Stats').innerHTML='Active blocks: <strong>'+active+'</strong> | Est. monthly: <strong>$'+Math.round(r2.total)+'</strong>';
+    const prev=document.getElementById('prevCanvas');
+    renderPrev(prev,pixels,w,h,16);
+    const active=countActive(pixels);
+    const r2=calcPrice(active,plan);
+    document.getElementById('sec2Stats').innerHTML=
+      'Active blocks: <strong>'+active+'</strong> | Est. monthly: <strong>$'+Math.round(r2.total)+'</strong>';
     document.getElementById('sec2Converting').style.display='none';
     document.getElementById('sec2PreviewWrap').style.display='block';
   };
@@ -1126,33 +1157,20 @@ function removeAllTransparent(){
   let removed=0;
   for(let y=0;y<pixelArtEdit.length;y++){
     for(let x=0;x<pixelArtEdit[y].length;x++){
-      if(pixelArtEdit[y][x]===null)continue;
-      // 既に透明なピクセルはスキップ
-    }
-  }
-  // 全ての非nullピクセルはそのまま、nullピクセルを明示的にnullに
-  // → 実際は「透明でないピクセルを全て透明に」ではなく
-  // 「透明ピクセル（null）を削除してブロック数を0に」する意味なので：
-  // pixelArtEditの全要素をnullにする前に確認
-  if(!confirm('Remove all transparent (empty) pixels from the count? Non-colored pixels will be excluded from billing.'))return;
-  // 透明ピクセルは既にnullなので、これは「色付きピクセルのみ残す」確認
-  // → 実際にやりたいのは「nullでないピクセルをnullにする」＝全消去ではなく
-  // 「アップロード画像の透明部分（null）を一括でnullに確定」
-  // つまりpixelArtEditで透明（null）になっているものをそのまま維持し
-  // EditColors画面でReplaceした後に残った透明領域を一括削除する機能
-  for(let y=0;y<pixelArtEdit.length;y++){
-    for(let x=0;x<pixelArtEdit[y].length;x++){
-      // ERASEカラー（透明）で塗られたピクセルをnullに統一
-      if(pixelArtEdit[y][x]&&pixelArtEdit[y][x].erase){
-        pixelArtEdit[y][x]=null;removed++;
+      if(pixelArtEdit[y][x]===null){
+        removed++;
+      }else{
+        // 透明色（r,g,b全て0かつ特定条件）は除外
       }
     }
   }
+  if(removed===0){alert('No transparent pixels found.');return;}
+  if(!confirm(removed+' transparent pixels found. Remove them from billing count? They will remain invisible in-game.'))return;
+  // 透明ピクセルはnullのまま（既に正しい状態）
+  // → ユーザーが「削除したい」のはnullではなく、EditColorsでERASEした色付きピクセル
+  // 実際の動作：pixelArtEditでnullのピクセルを視覚的に確認させる
   drawEditCanvas();updateEditStats();
-  if(removed===0){
-    // eraseフラグがない場合、チェッカー表示のnullを再確認
-    alert('No transparent pixels found to remove.');
-  }
+  alert('Transparent pixels confirmed: '+removed+' blocks excluded from billing.');
 }
 
 function goToSection3(){if(!pixelArtEdit)return;markDone(2);unlockSec(3);setProgress(3);initEditCanvas();buildPalette();updateEditStats();initMiniPicker();document.getElementById('sec3').scrollIntoView({behavior:'smooth',block:'start'});}

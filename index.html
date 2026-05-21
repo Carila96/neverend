@@ -4123,15 +4123,28 @@ function triggerDeath(){
     if(!r.ok)console.warn('death API failed:',r.status);
   }).catch(e=>console.warn('death API error:',e));
   if(supabaseClient&&_currentUser){
-    const curDeaths=getStat('totalDeaths',0);
-    const curBest=getStat('bestStage',0);
-    const curTime=getStat('totalPlayTime',0);
-    supabaseClient.from('player_profiles').upsert({
-      id:_currentUser.id,
-      total_deaths:curDeaths,
-      best_stage:curBest,
-      total_play_time:Math.floor(curTime)
-    },{onConflict:'id'}).catch(function(e){console.warn('profile update error:',e);});
+    // DBの現在値を取得してから加算
+    supabaseClient.from('player_profiles')
+      .select('total_deaths,best_stage,total_play_time')
+      .eq('id',_currentUser.id)
+      .single()
+      .then(function(r){
+        const db=r.data||{};
+        const dbDeaths=db.total_deaths||0;
+        const dbBest=db.best_stage||0;
+        const dbTime=db.total_play_time||0;
+        const localDeaths=getStat('totalDeaths',0);
+        const localBest=getStat('bestStage',0);
+        const localTime=getStat('totalPlayTime',0);
+        supabaseClient.from('player_profiles').upsert({
+          id:_currentUser.id,
+          total_deaths:Math.max(localDeaths,dbDeaths),
+          best_stage:Math.max(localBest,dbBest),
+          total_play_time:Math.floor(Math.max(localTime,dbTime))
+        },{onConflict:'id'}).then(function(r2){
+          if(r2.error)console.warn('profile update error:',r2.error);
+        });
+      }).catch(function(e){console.warn('profile fetch error:',e);});
   }
   const best=getStat('bestStage',1);
   if(lastDeathStage>best)setStat('bestStage',lastDeathStage);

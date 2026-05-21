@@ -692,10 +692,15 @@ function closeSpLoginModal(){
 
 async function spLoginWith(provider){
   if(!_sbClient)return;
-  await _sbClient.auth.signInWithOAuth({
+  const redirectTo='https://neverend.vercel.app/app/pages/sales_page.html';
+  const {data,error}=await _sbClient.auth.signInWithOAuth({
     provider:provider,
-    options:{redirectTo:window.location.href}
+    options:{
+      redirectTo:redirectTo,
+      skipBrowserRedirect:false
+    }
   });
+  if(error){console.error(error);return;}
 }
 
 async function spLogout(){

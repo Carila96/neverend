@@ -756,9 +756,7 @@ function updateAuthUI(session){
 
 async function loginWith(provider){
   if(!_sbClient)return;
-  const redirectTo=window.location.hostname==='localhost'
-    ?'http://localhost:3000/app/pages/mypage.html'
-    :'https://neverend.vercel.app/app/pages/mypage.html';
+  const redirectTo='https://neverend.vercel.app/app/pages/mypage.html';
   const {data,error}=await _sbClient.auth.signInWithOAuth({
     provider:provider,
     options:{
@@ -767,10 +765,12 @@ async function loginWith(provider){
     }
   });
   if(error){console.error(error);return;}
-  if(window.parent!==window){
-    window.parent.location.href=data.url;
-  }else{
-    window.location.href=data.url;
+  if(data&&data.url){
+    if(window.parent!==window){
+      window.parent.location.href=data.url;
+    }else{
+      window.location.href=data.url;
+    }
   }
 }
 

@@ -704,7 +704,21 @@ async function spLoginWith(provider){
 }
 
 async function spLogout(){
-  if(_sbClient)await _sbClient.auth.signOut();
+  if(_sbClient){
+    await _sbClient.auth.signOut({scope:'global'});
+  }
+  try{
+    Object.keys(localStorage).forEach(function(key){
+      if(key.startsWith('sb-')||key.includes('supabase')){
+        localStorage.removeItem(key);
+      }
+    });
+    Object.keys(sessionStorage).forEach(function(key){
+      if(key.startsWith('sb-')||key.includes('supabase')){
+        sessionStorage.removeItem(key);
+      }
+    });
+  }catch(e){}
   _spCurrentUser=null;
   _updateSpAuthUI(null);
 }

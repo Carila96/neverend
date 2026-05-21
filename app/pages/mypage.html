@@ -775,7 +775,23 @@ async function loginWith(provider){
 }
 
 async function handleLogout(){
-  if(_sbClient)await _sbClient.auth.signOut();
+  if(_sbClient){
+    // Supabaseのセッションを完全にクリア
+    await _sbClient.auth.signOut({scope:'global'});
+  }
+  // SupabaseのCookieとlocalStorageのセッションを手動でクリア
+  try{
+    Object.keys(localStorage).forEach(function(key){
+      if(key.startsWith('sb-')||key.includes('supabase')){
+        localStorage.removeItem(key);
+      }
+    });
+    Object.keys(sessionStorage).forEach(function(key){
+      if(key.startsWith('sb-')||key.includes('supabase')){
+        sessionStorage.removeItem(key);
+      }
+    });
+  }catch(e){}
   window.location.href='/';
 }
 

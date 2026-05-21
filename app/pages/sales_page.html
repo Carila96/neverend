@@ -233,7 +233,18 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
 <div id="tooltip"><span id="ttCoord" style="color:var(--accent2)"></span> <span id="ttStatus"></span></div>
 <header>
   <div class="logo">never<span>END</span></div>
-  <nav><a href="/" style="color:rgba(255,255,255,0.5);font-size:12px;font-family:'Share Tech Mono',monospace;text-decoration:none;margin-right:16px;">← BACK TO GAME</a><a href="#">How It Works</a><a href="#pricing">Pricing</a><a href="/app/pages/terms.html#content-policy" target="_blank">Content Policy</a><a href="#sec1" class="nav-cta">CLAIM YOUR SPACE</a></nav>
+  <nav>
+    <a href="/">← BACK TO GAME</a>
+    <a href="#">How It Works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="/app/pages/terms.html#content-policy">Content Policy</a>
+    <a href="#sec1" class="nav-cta">CLAIM YOUR SPACE</a>
+  </nav>
+  <div id="spAuthArea" style="display:flex;align-items:center;gap:10px;">
+    <div id="spUserName" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent2);display:none;"></div>
+    <button id="spLoginBtn" onclick="openSpLoginModal()" style="background:none;border:1px solid rgba(74,184,255,0.5);color:#4ab8ff;padding:7px 16px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">[ LOGIN ]</button>
+    <button id="spLogoutBtn" onclick="spLogout()" style="display:none;background:none;border:1px solid rgba(231,76,60,0.5);color:#e74c3c;padding:7px 14px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">LOGOUT</button>
+  </div>
 </header>
 <section class="hero">
   <div class="hero-eyebrow">// BACKGROUND GRID PLACEMENT MARKETPLACE</div>
@@ -436,6 +447,9 @@ Transparent pixels are not counted as blocks.
           <div class="edit-canvas-wrap" id="editCanvasWrap"><canvas id="editCanvas"></canvas></div>
           <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">Checkered = transparent. Transparent pixels are not charged and appear blank in-game.</div>
           <div class="edit-stat" id="editStats"></div>
+          <button class="btn-outline" onclick="removeAllTransparent()" style="margin-top:8px;width:100%;padding:8px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;background:none;border:1px solid rgba(231,76,60,0.4);color:#e74c3c;text-transform:uppercase;">
+            REMOVE ALL TRANSPARENT
+          </button>
           <div style="display:flex;justify-content:flex-end;"><button class="btn-blue" onclick="goToSection4()">CONTINUE TO SELECT STAGE &rarr;</button></div>
         </div>
         <div class="color-sidebar">
@@ -630,11 +644,64 @@ const STAGES_DATA=(function(){
 const _SB_URL_SP='https://cokcftutqkwhfbmdnhgl.supabase.co';
 const _SB_KEY_SP='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNva2NmdHV0cWt3aGZibWRuaGdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjk1NjIsImV4cCI6MjA5MDY0NTU2Mn0.FkDkRI8Ec5P07EKEZiGMA_kQ44rK0Pu6Hy_yeWBO3cQ';
 let _sbClient=null;
-(function(){
-  if(window.supabase){
-    _sbClient=window.supabase.createClient(_SB_URL_SP,_SB_KEY_SP);
+let _spCurrentUser=null;
+
+function _initSpAuth(){
+  if(!window.supabase)return;
+  _sbClient=window.supabase.createClient(_SB_URL_SP,_SB_KEY_SP);
+  _sbClient.auth.onAuthStateChange(function(event,session){
+    _spCurrentUser=session?session.user:null;
+    _updateSpAuthUI(session);
+  });
+  _sbClient.auth.getSession().then(function(r){
+    const session=r.data&&r.data.session?r.data.session:null;
+    _spCurrentUser=session?session.user:null;
+    _updateSpAuthUI(session);
+  });
+}
+
+function _updateSpAuthUI(session){
+  const loginBtn=document.getElementById('spLoginBtn');
+  const logoutBtn=document.getElementById('spLogoutBtn');
+  const userName=document.getElementById('spUserName');
+  if(session){
+    if(loginBtn)loginBtn.style.display='none';
+    if(logoutBtn)logoutBtn.style.display='block';
+    if(userName){
+      const name=session.user.user_metadata?.full_name||session.user.email?.split('@')[0]||'User';
+      userName.textContent=name;
+      userName.style.display='block';
+    }
+    // ログイン成功時にモーダルを閉じる
+    closeSpLoginModal();
+  }else{
+    if(loginBtn)loginBtn.style.display='block';
+    if(logoutBtn)logoutBtn.style.display='none';
+    if(userName)userName.style.display='none';
   }
-})();
+}
+
+function openSpLoginModal(){document.getElementById('spLoginModal').style.display='flex';}
+function closeSpLoginModal(){document.getElementById('spLoginModal').style.display='none';}
+
+async function spLoginWith(provider){
+  if(!_sbClient)return;
+  await _sbClient.auth.signInWithOAuth({
+    provider:provider,
+    options:{redirectTo:window.location.href}
+  });
+}
+
+async function spLogout(){
+  if(_sbClient)await _sbClient.auth.signOut();
+  _spCurrentUser=null;
+  _updateSpAuthUI(null);
+}
+
+// DOM読み込み後に認証初期化
+document.addEventListener('DOMContentLoaded',function(){
+  _initSpAuth();
+});
 /*
 SUPABASE: owned_blocks table constraint must be updated to:
 x >= 0 AND x < 128
@@ -1025,12 +1092,14 @@ function applyCustomBlocks(){const n=Math.max(1,Math.min(9216,parseInt(document.
 function convertAndPreview(w,h){if(!uploadedImage)return;chosenW=w;chosenH=h;document.getElementById('sec2Converting').style.display='block';document.getElementById('sec2PreviewWrap').style.display='none';setTimeout(function(){doConvert(w,h);},30);}
 
 function doConvert(w,h){
-  const dataUrl=getTrimmedDataUrl()||uploadedImage.src;
+  const dataUrl=getTrimmedDataUrl();
+  if(!dataUrl){showMsg('No image uploaded.');return;}
   const img=new Image();
   img.onload=function(){
     const off=document.createElement('canvas');off.width=w;off.height=h;
-    const oc=off.getContext('2d');oc.imageSmoothingEnabled=true;oc.imageSmoothingQuality='high';
-    const iw=img.naturalWidth,ih=img.naturalHeight;
+    const oc=off.getContext('2d');
+    oc.imageSmoothingEnabled=true;oc.imageSmoothingQuality='high';
+    // トリム済み画像をそのままwxhにリサイズ（アスペクト比は維持しない・トリムで調整済みのため）
     oc.drawImage(img,0,0,w,h);
     const imgData=oc.getImageData(0,0,w,h);const data=imgData.data;
     const pixelArr=[];
@@ -1043,13 +1112,48 @@ function doConvert(w,h){
     const prev=document.getElementById('prevCanvas');renderPrev(prev,pixels,w,h,16);
     const active=countActive(pixels);const r2=calcPrice(active,plan);
     document.getElementById('sec2Stats').innerHTML='Active blocks: <strong>'+active+'</strong> | Est. monthly: <strong>$'+Math.round(r2.total)+'</strong>';
-    document.getElementById('sec2Converting').style.display='none';document.getElementById('sec2PreviewWrap').style.display='block';
+    document.getElementById('sec2Converting').style.display='none';
+    document.getElementById('sec2PreviewWrap').style.display='block';
   };
   img.src=dataUrl;
 }
 function renderPrev(canvas,pixels,w,h,bpx){canvas.width=w*bpx;canvas.height=h*bpx;const ctx2=canvas.getContext('2d');ctx2.imageSmoothingEnabled=false;ctx2.fillStyle='#000';ctx2.fillRect(0,0,canvas.width,canvas.height);for(let y=0;y<h;y++){for(let x=0;x<w;x++){const px=pixels[y][x];if(px){ctx2.fillStyle='rgb('+px.r+','+px.g+','+px.b+')';ctx2.fillRect(x*bpx,y*bpx,bpx,bpx);}}}}
 function deepCopy(p){return p.map(function(row){return row.map(function(px){return px?{r:px.r,g:px.g,b:px.b}:null;});});}
 function countActive(pixels){let n=0;pixels.forEach(function(row){row.forEach(function(px){if(px!==null)n++;});});return n;}
+
+function removeAllTransparent(){
+  if(!pixelArtEdit)return;
+  let removed=0;
+  for(let y=0;y<pixelArtEdit.length;y++){
+    for(let x=0;x<pixelArtEdit[y].length;x++){
+      if(pixelArtEdit[y][x]===null)continue;
+      // 既に透明なピクセルはスキップ
+    }
+  }
+  // 全ての非nullピクセルはそのまま、nullピクセルを明示的にnullに
+  // → 実際は「透明でないピクセルを全て透明に」ではなく
+  // 「透明ピクセル（null）を削除してブロック数を0に」する意味なので：
+  // pixelArtEditの全要素をnullにする前に確認
+  if(!confirm('Remove all transparent (empty) pixels from the count? Non-colored pixels will be excluded from billing.'))return;
+  // 透明ピクセルは既にnullなので、これは「色付きピクセルのみ残す」確認
+  // → 実際にやりたいのは「nullでないピクセルをnullにする」＝全消去ではなく
+  // 「アップロード画像の透明部分（null）を一括でnullに確定」
+  // つまりpixelArtEditで透明（null）になっているものをそのまま維持し
+  // EditColors画面でReplaceした後に残った透明領域を一括削除する機能
+  for(let y=0;y<pixelArtEdit.length;y++){
+    for(let x=0;x<pixelArtEdit[y].length;x++){
+      // ERASEカラー（透明）で塗られたピクセルをnullに統一
+      if(pixelArtEdit[y][x]&&pixelArtEdit[y][x].erase){
+        pixelArtEdit[y][x]=null;removed++;
+      }
+    }
+  }
+  drawEditCanvas();updateEditStats();
+  if(removed===0){
+    // eraseフラグがない場合、チェッカー表示のnullを再確認
+    alert('No transparent pixels found to remove.');
+  }
+}
 
 function goToSection3(){if(!pixelArtEdit)return;markDone(2);unlockSec(3);setProgress(3);initEditCanvas();buildPalette();updateEditStats();initMiniPicker();document.getElementById('sec3').scrollIntoView({behavior:'smooth',block:'start'});}
 
@@ -1383,13 +1487,8 @@ async function adminFreePlacement(){
 async function proceedToCheckout(){
   clearCheckoutError();
   // ログインチェック
-  if(!_sbClient){
-    showCheckoutError('Please log in to purchase. Login is required to manage your placement.');
-    return;
-  }
-  const {data:{session:_sess}}=await _sbClient.auth.getSession();
-  if(!_sess){
-    showCheckoutError('Please log in before purchasing. Click LOGIN in the top right.');
+  if(!_spCurrentUser){
+    openSpLoginModal();
     return;
   }
   if(!selectedArea){showCheckoutError('Please complete all steps first.');return;}
@@ -1416,5 +1515,15 @@ function rgbToHsv(r,g,b){r/=255;g/=255;b/=255;const max=Math.max(r,g,b),min=Math
 function rgbToHex(r,g,b){return'#'+[r,g,b].map(function(v){return v.toString(16).padStart(2,'0');}).join('');}
 fetchPriceTier();
 </script>
+<div id="spLoginModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#0e0e1a;border:1px solid #262640;padding:40px;min-width:360px;max-width:420px;display:flex;flex-direction:column;gap:16px;text-align:center;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;letter-spacing:3px;">LOGIN TO PURCHASE</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#787f90;letter-spacing:1px;line-height:1.8;">Login is required to manage your placement.<br>Your purchase will be linked to your account.</div>
+    <button onclick="spLoginWith('google')" style="width:100%;background:none;border:1px solid rgba(74,184,255,0.5);color:#4ab8ff;padding:12px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">GOOGLE</button>
+    <button onclick="spLoginWith('discord')" style="width:100%;background:none;border:1px solid rgba(88,101,242,0.5);color:#5865f2;padding:12px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">DISCORD</button>
+    <button onclick="spLoginWith('twitter')" style="width:100%;background:none;border:1px solid rgba(255,255,255,0.3);color:#fff;padding:12px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">X (TWITTER)</button>
+    <button onclick="closeSpLoginModal()" style="background:none;border:none;color:#787f90;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;margin-top:4px;">CANCEL</button>
+  </div>
+</div>
 </body>
 </html>

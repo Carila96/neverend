@@ -682,7 +682,13 @@ function _updateSpAuthUI(session){
 }
 
 function openSpLoginModal(){document.getElementById('spLoginModal').style.display='flex';}
-function closeSpLoginModal(){document.getElementById('spLoginModal').style.display='none';}
+function closeSpLoginModal(){
+  document.getElementById('spLoginModal').style.display='none';
+  // 未ログインの場合はゲームに戻る
+  if(!_spCurrentUser){
+    window.location.href='/';
+  }
+}
 
 async function spLoginWith(provider){
   if(!_sbClient)return;
@@ -1062,18 +1068,25 @@ function getTrimmedDataUrl(){
   const iw=img.naturalWidth,ih=img.naturalHeight;
   const scale=trimZoom;
   const sw=iw/scale,sh=ih/scale;
-  const sx=Math.max(0,trimOffX*(iw-sw)/100);
-  const sy=Math.max(0,trimOffY*(ih-sh)/100);
-  const srcW=Math.min(sw,iw),srcH=Math.min(sh,ih);
-  const cropX=sx+trimCropX*srcW;
-  const cropY=sy+trimCropY*srcH;
-  const cropW=Math.max(1,trimCropW*srcW);
-  const cropH=Math.max(1,trimCropH*srcH);
+  const sx=Math.max(0,Math.min(iw-1,trimOffX*(iw-sw)/100));
+  const sy=Math.max(0,Math.min(ih-1,trimOffY*(ih-sh)/100));
+  const srcW=Math.min(sw,iw-sx);
+  const srcH=Math.min(sh,ih-sy);
+  // トリム枠の適用
+  const cropX=sx+Math.max(0,trimCropX)*srcW;
+  const cropY=sy+Math.max(0,trimCropY)*srcH;
+  const cropW=Math.max(1,Math.min(trimCropW,1)*srcW);
+  const cropH=Math.max(1,Math.min(trimCropH,1)*srcH);
+  // クランプ
+  const finalX=Math.max(0,Math.min(iw-1,cropX));
+  const finalY=Math.max(0,Math.min(ih-1,cropY));
+  const finalW=Math.max(1,Math.min(cropW,iw-finalX));
+  const finalH=Math.max(1,Math.min(cropH,ih-finalY));
   const off=document.createElement('canvas');
-  off.width=Math.round(cropW);
-  off.height=Math.round(cropH);
+  off.width=Math.round(finalW);
+  off.height=Math.round(finalH);
   const oc=off.getContext('2d');
-  oc.drawImage(img,cropX,cropY,cropW,cropH,0,0,off.width,off.height);
+  oc.drawImage(img,finalX,finalY,finalW,finalH,0,0,off.width,off.height);
   return off.toDataURL('image/png');
 }
 
@@ -1154,23 +1167,52 @@ function countActive(pixels){let n=0;pixels.forEach(function(row){row.forEach(fu
 
 function removeAllTransparent(){
   if(!pixelArtEdit)return;
-  let removed=0;
+  // チェッカー柄（透明）に見えているピクセルを探す
+  // EditColorsでERASEツールを使ったピクセルはnullになっている
+  // Place on Gridでは選択範囲全体（chosenW×chosenH）が正方形で扱われる
+  // → nullピクセルを除いた最小外接矩形に範囲を縮小する
+  let minX=chosenW,minY=chosenH,maxX=0,maxY=0;
+  let hasActive=false;
   for(let y=0;y<pixelArtEdit.length;y++){
     for(let x=0;x<pixelArtEdit[y].length;x++){
-      if(pixelArtEdit[y][x]===null){
-        removed++;
-      }else{
-        // 透明色（r,g,b全て0かつ特定条件）は除外
+      if(pixelArtEdit[y][x]!==null){
+        minX=Math.min(minX,x);minY=Math.min(minY,y);
+        maxX=Math.max(maxX,x);maxY=Math.max(maxY,y);
+        hasActive=true;
       }
     }
   }
-  if(removed===0){alert('No transparent pixels found.');return;}
-  if(!confirm(removed+' transparent pixels found. Remove them from billing count? They will remain invisible in-game.'))return;
-  // 透明ピクセルはnullのまま（既に正しい状態）
-  // → ユーザーが「削除したい」のはnullではなく、EditColorsでERASEした色付きピクセル
-  // 実際の動作：pixelArtEditでnullのピクセルを視覚的に確認させる
-  drawEditCanvas();updateEditStats();
-  alert('Transparent pixels confirmed: '+removed+' blocks excluded from billing.');
+  if(!hasActive){alert('No active pixels found.');return;}
+  const newW=maxX-minX+1;
+  const newH=maxY-minY+1;
+  if(newW===chosenW&&newH===chosenH){
+    alert('No transparent border to remove. All pixels are active.');return;
+  }
+  if(!confirm('Trim placement area from '+chosenW+'×'+chosenH+' to '+newW+'×'+newH+'? This will reduce your block count and cost.'))return;
+  // pixelArtEditを切り取り
+  const newPixels=[];
+  for(let y=minY;y<=maxY;y++){
+    const row=[];
+    for(let x=minX;x<=maxX;x++){
+      row.push(pixelArtEdit[y][x]);
+    }
+    newPixels.push(row);
+  }
+  pixelArtEdit=newPixels;
+  pixelArtOriginal=deepCopy(newPixels);
+  chosenW=newW;chosenH=newH;
+  // グリッドキャンバスを再描画
+  const prev=document.getElementById('prevCanvas');
+  renderPrev(prev,pixelArtEdit,chosenW,chosenH,16);
+  const active=countActive(pixelArtEdit);
+  const r2=calcPrice(active,plan);
+  document.getElementById('sec2Stats').innerHTML=
+    'Active blocks: <strong>'+active+'</strong> | Est. monthly: <strong>$'+Math.round(r2.total)+'</strong>';
+  // 配置リセット
+  logoPlaced=false;selectedArea=null;
+  updatePlaceInfo();
+  drawGrid();
+  alert('Done! Area trimmed to '+newW+'×'+newH+'. Reposition your logo on the grid.');
 }
 
 function goToSection3(){if(!pixelArtEdit)return;markDone(2);unlockSec(3);setProgress(3);initEditCanvas();buildPalette();updateEditStats();initMiniPicker();document.getElementById('sec3').scrollIntoView({behavior:'smooth',block:'start'});}

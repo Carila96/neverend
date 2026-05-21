@@ -227,6 +227,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
 #tooltip{position:fixed;background:var(--panel2);border:1px solid var(--border2);padding:7px 10px;font-family:'Share Tech Mono',monospace;font-size:10px;pointer-events:none;z-index:500;display:none;max-width:160px;line-height:1.8;}
 </style>
 <script src="/public/stages-data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 <div id="tooltip"><span id="ttCoord" style="color:var(--accent2)"></span> <span id="ttStatus"></span></div>
@@ -459,6 +460,18 @@ Transparent pixels are not counted as blocks.
           <div class="stage-sel-row">
             <button class="stage-arr" id="stagePrevBtn" onclick="changeStage(-1)" disabled>&#9664;</button>
             <div class="stage-sel-wrap"><select id="stageSelect" onchange="setStage(parseInt(this.value))"></select></div>
+<div style="display:flex;align-items:center;gap:6px;margin-top:8px;">
+  <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;">JUMP TO:</span>
+  <input type="number" id="stageJumpInput" min="1" max="75" value="1"
+    style="width:60px;background:var(--panel2);border:1px solid var(--border);
+    color:var(--text);font-family:'Share Tech Mono',monospace;font-size:12px;
+    padding:4px 6px;outline:none;text-align:center;"
+    onkeydown="if(event.key==='Enter'){const n=parseInt(this.value);if(n>=1&&n<=STAGES_DATA.length)setStage(n);}">
+  <button onclick="const n=parseInt(document.getElementById('stageJumpInput').value);if(n>=1&&n<=STAGES_DATA.length)setStage(n);"
+    style="background:none;border:1px solid var(--border);color:var(--muted2);
+    padding:4px 10px;font-family:'Share Tech Mono',monospace;font-size:10px;
+    letter-spacing:1px;cursor:pointer;text-transform:uppercase;">GO</button>
+</div>
             <button class="stage-arr" id="stageNextBtn" onclick="changeStage(1)">&#9654;</button>
           </div>
           <div id="stageBadge" class="stage-badge">STANDARD</div>
@@ -613,6 +626,14 @@ const STAGES_DATA=(function(){
   return (typeof STAGES_GEO!=='undefined'?STAGES_GEO:[]).map(function(s,i){
     return Object.assign({id:i+1,type:'standard'},s);
   });
+})();
+const _SB_URL_SP='https://cokcftutqkwhfbmdnhgl.supabase.co';
+const _SB_KEY_SP='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNva2NmdHV0cWt3aGZibWRuaGdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjk1NjIsImV4cCI6MjA5MDY0NTU2Mn0.FkDkRI8Ec5P07EKEZiGMA_kQ44rK0Pu6Hy_yeWBO3cQ';
+let _sbClient=null;
+(function(){
+  if(window.supabase){
+    _sbClient=window.supabase.createClient(_SB_URL_SP,_SB_KEY_SP);
+  }
 })();
 /*
 SUPABASE: owned_blocks table constraint must be updated to:
@@ -1360,7 +1381,18 @@ async function adminFreePlacement(){
   }catch(err){showCheckoutError('Connection error.');placeBtn.disabled=false;placeBtn.textContent='PLACE FREE';}
 }
 async function proceedToCheckout(){
-  clearCheckoutError();if(!selectedArea){showCheckoutError('Please complete all steps first.');return;}
+  clearCheckoutError();
+  // ログインチェック
+  if(!_sbClient){
+    showCheckoutError('Please log in to purchase. Login is required to manage your placement.');
+    return;
+  }
+  const {data:{session:_sess}}=await _sbClient.auth.getSession();
+  if(!_sess){
+    showCheckoutError('Please log in before purchasing. Click LOGIN in the top right.');
+    return;
+  }
+  if(!selectedArea){showCheckoutError('Please complete all steps first.');return;}
   const btn=document.getElementById('ctaBtn');btn.disabled=true;btn.textContent='RESERVING...';
   const s=STAGES_DATA[currentStage-1];const BASE='https://neverend.vercel.app';
   try{

@@ -663,30 +663,55 @@ let _sbClient=null;
       updateAuthUI(session);
       if(session){
         loadPurchases(session.user.id);
-        _sbClient.from('player_profiles').select('player_name').eq('id',session.user.id).single().then(function(r){
-          const existingName=r.data&&r.data.player_name;
-          const localName=localStorage.getItem('neverend_playername')||'';
-          const nameToUse=existingName||(localName||session.user.user_metadata?.full_name||session.user.email?.split('@')[0]||'Player');
-          _sbClient.from('player_profiles').upsert({
-            id:session.user.id,
-            player_name:nameToUse,
-            is_tester:localStorage.getItem('neverend_is_tester')==='1'
-          },{onConflict:'id'}).then(function(r2){
-            if(r2.error)console.warn('profile upsert error:',r2.error);
-            if(!localStorage.getItem('neverend_playername')&&nameToUse){
-              localStorage.setItem('neverend_playername',nameToUse);
-            }
-          });
-        });
+        _syncProfileOnLogin(session);
       }
     });
     _sbClient.auth.getSession().then(function(r){
       const session=r.data&&r.data.session?r.data.session:null;
       updateAuthUI(session);
-      if(session)loadPurchases(session.user.id);
+      if(session){
+        loadPurchases(session.user.id);
+        _syncProfileOnLogin(session);
+      }
     });
   }
 })();
+
+async function _syncProfileOnLogin(session){
+  if(!_sbClient||!session)return;
+  try{
+    // DBから既存プロフィールを取得
+    const {data:profile}=await _sbClient
+      .from('player_profiles')
+      .select('player_name,best_stage,total_deaths,total_play_time')
+      .eq('id',session.user.id)
+      .single();
+
+    if(profile&&profile.player_name){
+      // DBに名前が存在する → DBの値をlocalStorageに上書き
+      localStorage.setItem('neverend_playername',profile.player_name);
+      // DBのゲーム統計をlocalStorageに上書き
+      try{
+        const save=JSON.parse(localStorage.getItem('neverend_save'))||{};
+        if(profile.best_stage>0)save.bestStage=profile.best_stage;
+        if(profile.total_deaths>0)save.totalDeaths=profile.total_deaths;
+        if(profile.total_play_time>0)save.totalPlayTime=profile.total_play_time;
+        localStorage.setItem('neverend_save',JSON.stringify(save));
+      }catch(_){}
+    }else{
+      // DBに名前がない → localStorageの名前をDBに保存
+      const localName=localStorage.getItem('neverend_playername')||
+        session.user.user_metadata?.full_name||
+        session.user.email?.split('@')[0]||'Player';
+      await _sbClient.from('player_profiles').upsert({
+        id:session.user.id,
+        player_name:localName,
+        is_tester:localStorage.getItem('neverend_is_tester')==='1'
+      },{onConflict:'id'});
+      localStorage.setItem('neverend_playername',localName);
+    }
+  }catch(e){console.warn('profile sync error:',e);}
+}
 
 function updateAuthUI(session){
   const lb=document.getElementById('loginButtons');

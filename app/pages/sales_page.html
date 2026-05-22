@@ -684,9 +684,16 @@ function _updateSpAuthUI(session){
 function openSpLoginModal(){document.getElementById('spLoginModal').style.display='flex';}
 function closeSpLoginModal(){
   document.getElementById('spLoginModal').style.display='none';
-  // 未ログインの場合はゲームに戻る
   if(!_spCurrentUser){
-    window.location.href='/';
+    // 未ログインの場合はマイページに戻る
+    if(window.parent!==window){
+      window.parent.document.getElementById('mypageOverlay').style.display='block';
+      window.parent.document.getElementById('holOverlay').style.display='none';
+      const parentCanvas=window.parent.document.querySelector('canvas');
+      if(parentCanvas)parentCanvas.style.display='none';
+    }else{
+      window.location.href='/';
+    }
   }
 }
 

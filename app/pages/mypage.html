@@ -757,8 +757,15 @@ function updateAuthUI(session){
 async function loginWith(provider){
   if(!_sbClient)return;
   try{
+    console.log('Attempting login with provider:', provider);
+    console.log('sbClient:', _sbClient);
+
+    // Twitterの場合はprovider名を確認
+    const providerName = provider === 'twitter' ? 'twitter' : provider;
+    console.log('Provider name:', providerName);
+
     const{data,error}=await _sbClient.auth.signInWithOAuth({
-      provider:provider,
+      provider:providerName,
       options:{
         redirectTo:'https://neverend.vercel.app',
         skipBrowserRedirect:true

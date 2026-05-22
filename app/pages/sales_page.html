@@ -685,19 +685,7 @@ function openSpLoginModal(){document.getElementById('spLoginModal').style.displa
 function closeSpLoginModal(){
   document.getElementById('spLoginModal').style.display='none';
   if(!_spCurrentUser){
-    // 未ログインの場合はマイページに戻る
-    if(window.parent!==window){
-      // iframeの場合：販売ページを非表示にしてマイページを表示
-      const overlay=window.parent.document.getElementById('mypageOverlay');
-      const canvas=window.parent.document.querySelector('canvas');
-      if(overlay)overlay.style.display='block';
-      if(canvas)canvas.style.display='none';
-      // 販売ページのiframeをリセット
-      const salesFrame=window.parent.document.querySelector('iframe');
-      if(salesFrame)salesFrame.src='about:blank';
-    }else{
-      window.location.href='/';
-    }
+    window.close();
   }
 }
 

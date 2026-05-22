@@ -763,7 +763,7 @@ async function loginWith(provider){
       skipBrowserRedirect:true
     }
   });
-  if(error){console.error(error);return;}
+  if(error){console.error('OAuth error:',error);return;}
   if(data&&data.url){
     if(window.parent!==window){
       window.parent.location.href=data.url;

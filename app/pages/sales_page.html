@@ -685,7 +685,16 @@ function openSpLoginModal(){document.getElementById('spLoginModal').style.displa
 function closeSpLoginModal(){
   document.getElementById('spLoginModal').style.display='none';
   if(!_spCurrentUser){
-    window.close();
+    // 新しいタブで開かれた場合はタブを閉じる
+    // 同じタブで開かれた場合はhistory.backで戻る
+    // window.opener（元のタブ）がある場合はそちらに戻る
+    if(window.opener&&!window.opener.closed){
+      window.close();
+    }else if(window.history.length>1){
+      window.history.back();
+    }else{
+      window.location.href='/';
+    }
   }
 }
 

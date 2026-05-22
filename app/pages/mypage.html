@@ -756,12 +756,21 @@ function updateAuthUI(session){
 
 async function loginWith(provider){
   if(!_sbClient)return;
-  await _sbClient.auth.signInWithOAuth({
+  const{data,error}=await _sbClient.auth.signInWithOAuth({
     provider:provider,
     options:{
-      redirectTo:'https://neverend.vercel.app'
+      redirectTo:'https://neverend.vercel.app',
+      skipBrowserRedirect:true
     }
   });
+  if(error){console.error(error);return;}
+  if(data&&data.url){
+    if(window.parent!==window){
+      window.parent.location.href=data.url;
+    }else{
+      window.location.href=data.url;
+    }
+  }
 }
 
 async function handleLogout(){

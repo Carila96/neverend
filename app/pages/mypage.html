@@ -756,20 +756,31 @@ function updateAuthUI(session){
 
 async function loginWith(provider){
   if(!_sbClient)return;
-  const{data,error}=await _sbClient.auth.signInWithOAuth({
-    provider:provider,
-    options:{
-      redirectTo:'https://neverend.vercel.app',
-      skipBrowserRedirect:true
+  try{
+    const{data,error}=await _sbClient.auth.signInWithOAuth({
+      provider:provider,
+      options:{
+        redirectTo:'https://neverend.vercel.app',
+        skipBrowserRedirect:true
+      }
+    });
+    if(error){
+      console.error('OAuth error:',error);
+      alert('Login error: '+error.message);
+      return;
     }
-  });
-  if(error){console.error('OAuth error:',error);return;}
-  if(data&&data.url){
-    if(window.parent!==window){
-      window.parent.location.href=data.url;
+    if(data&&data.url){
+      if(window.parent!==window){
+        window.parent.location.href=data.url;
+      }else{
+        window.location.href=data.url;
+      }
     }else{
-      window.location.href=data.url;
+      alert('No URL returned from OAuth');
     }
+  }catch(e){
+    console.error('Login exception:',e);
+    alert('Login failed: '+e.message);
   }
 }
 

@@ -524,6 +524,7 @@ function _getDisplayName(){
   return _getPlayerName()||_currentNoname||'Noname';
 }
 function _setPlayerName(n){try{localStorage.setItem('neverend_playername',n);}catch(_){}}
+let _currentNoname='';
 (function initNameInput(){
   const overlay=document.getElementById('nameOverlay');
   if(overlay)overlay.style.display='none';
@@ -537,8 +538,6 @@ function _setPlayerName(n){try{localStorage.setItem('neverend_playername',n);}ca
     _currentNoname=noname;
   }
 })();
-
-let _currentNoname='';
 
 // ======== GAME STATE ========
 let state='title',keys={},prevKeys={};

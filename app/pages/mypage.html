@@ -782,6 +782,10 @@ async function handleLogout(){
       }
     });
   }catch(e){}
+  // ログアウト時に名前をlocalStorageから削除
+  try{
+    localStorage.removeItem('neverend_playername');
+  }catch(e){}
   window.location.href='/';
 }
 

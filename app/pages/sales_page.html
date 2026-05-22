@@ -701,7 +701,11 @@ async function spLoginWith(provider){
   });
   if(error){console.error(error);return;}
   if(data&&data.url){
-    window.location.href=data.url;
+    if(window.parent!==window){
+      window.parent.location.href=data.url;
+    }else{
+      window.location.href=data.url;
+    }
   }
 }
 

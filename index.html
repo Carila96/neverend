@@ -513,40 +513,32 @@ const testMode=_urlParams.get('mode')==='test'||_urlParams.get('test')==='1'||_u
 if(testMode)sessionStorage.setItem('neverend_testmode','1');
 
 // ======== NAME INPUT ========
-function _getPlayerName(){try{return localStorage.getItem('neverend_playername');}catch(_){return null;}}
+function _getPlayerName(){
+  try{
+    const saved=localStorage.getItem('neverend_playername');
+    if(saved)return saved;
+    return null;
+  }catch(_){return null;}
+}
+function _getDisplayName(){
+  return _getPlayerName()||_currentNoname||'Noname';
+}
 function _setPlayerName(n){try{localStorage.setItem('neverend_playername',n);}catch(_){}}
 (function initNameInput(){
   const overlay=document.getElementById('nameOverlay');
-  const field=document.getElementById('nameInputField');
-  function _finishName(name){
-    _setPlayerName(name);
-    overlay.classList.remove('show');
-  }
-  document.getElementById('nameStartBtn').addEventListener('click',async()=>{
-    const name=(field.value||'').trim().slice(0,20);
-    if(name){
-      const msgEl=document.getElementById('nameErrorMsg');
-      if(msgEl)msgEl.textContent='Checking...';
-      try{
-        const res=await fetch('/api/register-tester?name='+encodeURIComponent(name));
-        const data=await res.json();
-        if(data.taken){
-          if(msgEl)msgEl.textContent='This name is already taken. Please choose another.';
-          msgEl.style.color='#e74c3c';
-          return;
-        }
-        if(msgEl)msgEl.textContent='';
-      }catch(e){}
+  if(overlay)overlay.style.display='none';
+  // 未ログイン時はNonameにランダム番号を付与（sessionStorage）
+  if(!_getPlayerName()){
+    let noname=sessionStorage.getItem('neverend_noname');
+    if(!noname){
+      noname='Noname'+Math.floor(1000+Math.random()*9000);
+      sessionStorage.setItem('neverend_noname',noname);
     }
-    _finishName(name);
-  });
-  document.getElementById('nameSkipBtn').addEventListener('click',()=>{_finishName('');});
-  field.addEventListener('keydown',e=>{if(e.key==='Enter'){_finishName((field.value||'').trim().slice(0,20));}});
-  if(_getPlayerName()===null){
-    overlay.classList.add('show');
-    setTimeout(()=>field.focus(),50);
+    _currentNoname=noname;
   }
 })();
+
+let _currentNoname='';
 
 // ======== GAME STATE ========
 let state='title',keys={},prevKeys={};
@@ -3550,15 +3542,9 @@ function drawTitle(){
   neonText('[ SPACE ] START',W/2,H/2+90,`rgba(255,255,255,${pulse})`,24,14,'center');
   // Name display below START
   ctx.save();ctx.font='12px "Courier New"';ctx.textAlign='center';
-  const _pn=_getPlayerName();
-  if(_pn){
-    ctx.fillStyle='rgba(160,180,220,0.7)';
-    ctx.fillText('Playing as: '+_pn,W/2,H/2+114);
-  } else {
-    const _np=Math.sin(animT*1.5)*.15+.6;
-    ctx.fillStyle=`rgba(180,160,100,${_np})`;
-    ctx.fillText('[ ENTER YOUR NAME ]',W/2,H/2+114);
-  }
+  const _pn=_getDisplayName();
+  ctx.fillStyle='rgba(160,180,220,0.7)';
+  ctx.fillText('Playing as: '+_pn,W/2,H/2+114);
   ctx.restore();
   ctx.save();ctx.fillStyle='rgba(100,120,160,0.6)';ctx.font='13px "Courier New"';ctx.textAlign='center';
   ctx.fillText('← →  MOVE    SPACE  JUMP    F / ESC  PAUSE',W/2,H-36);ctx.restore();
@@ -4389,6 +4375,31 @@ async function initSupabase(){
     supabaseClient=window.supabase.createClient(_SURL,_SKEY);
     supabaseClient.auth.onAuthStateChange(function(_event,session){
       _currentUser=session?session.user:null;
+      if(session){
+        // DBから名前を取得
+        supabaseClient.from('player_profiles')
+          .select('player_name')
+          .eq('id',session.user.id)
+          .single()
+          .then(function(r){
+            if(r.data&&r.data.player_name){
+              localStorage.setItem('neverend_playername',r.data.player_name);
+              _currentNoname='';
+            }else{
+              // 名前未設定 → 名前入力モーダルを表示
+              _showNameInputModal();
+            }
+          });
+      }else{
+        localStorage.removeItem('neverend_playername');
+        // ログアウト時はNonameに戻す
+        let noname=sessionStorage.getItem('neverend_noname');
+        if(!noname){
+          noname='Noname'+Math.floor(1000+Math.random()*9000);
+          sessionStorage.setItem('neverend_noname',noname);
+        }
+        _currentNoname=noname;
+      }
     });
     const {data:{session}}=await supabaseClient.auth.getSession();
     _currentUser=session?session.user:null;
@@ -4403,6 +4414,67 @@ function openLoginModal(){
 }
 function closeLoginModal(){
   document.getElementById('loginModal').classList.remove('open');
+}
+function _showNameInputModal(){
+  // 既存のloginModalを名前入力用に転用
+  const modal=document.getElementById('loginModal');
+  if(!modal)return;
+  const inner=document.getElementById('loginModal-inner');
+  if(!inner)return;
+  inner.innerHTML=`
+    <div class="lm-title">ENTER YOUR NAME</div>
+    <div style="font-size:10px;color:#777;letter-spacing:1px;text-align:center;margin-bottom:8px;">
+      This name will appear in your profile and Hall of Legends.
+    </div>
+    <input class="lm-input" id="lmNameInput" type="text" maxlength="20"
+      placeholder="YOUR NAME" autocomplete="off"/>
+    <button class="lm-submit" onclick="_submitLoginName()">[ SET NAME ]</button>
+    <div class="lm-msg" id="lmNameMsg"></div>
+  `;
+  modal.classList.add('open');
+  setTimeout(function(){
+    const inp=document.getElementById('lmNameInput');
+    if(inp)inp.focus();
+  },100);
+}
+async function _submitLoginName(){
+  const inp=document.getElementById('lmNameInput');
+  const msg=document.getElementById('lmNameMsg');
+  if(!inp)return;
+  const name=(inp.value||'').trim().slice(0,20);
+  if(!name){
+    if(msg){msg.style.color='#e74c3c';msg.textContent='Please enter a name.';}
+    return;
+  }
+  if(!supabaseClient||!_currentUser){
+    closeLoginModal();return;
+  }
+  if(msg){msg.style.color='#aaa';msg.textContent='Checking...';}
+  // 重複チェック
+  try{
+    const res=await fetch('/api/register-tester?name='+encodeURIComponent(name));
+    const data=await res.json();
+    if(data.taken){
+      // 自分の名前かチェック
+      const {data:own}=await supabaseClient.from('player_profiles')
+        .select('player_name').eq('id',_currentUser.id).single();
+      if(!own||own.player_name?.toLowerCase()!==name.toLowerCase()){
+        if(msg){msg.style.color='#e74c3c';msg.textContent='This name is already taken.';}
+        return;
+      }
+    }
+    // DBに保存
+    await supabaseClient.from('player_profiles').upsert({
+      id:_currentUser.id,
+      player_name:name
+    },{onConflict:'id'});
+    localStorage.setItem('neverend_playername',name);
+    _currentNoname='';
+    closeLoginModal();
+    floatMsgs.push({txt:'Welcome, '+name+'!',x:W/2,y:H/2-60,life:3,color:'rgba(100,255,180,1)'});
+  }catch(e){
+    if(msg){msg.style.color='#e74c3c';msg.textContent='Error. Please try again.';}
+  }
 }
 function toggleLoginMode(){
   _loginMode=_loginMode==='login'?'register':'login';

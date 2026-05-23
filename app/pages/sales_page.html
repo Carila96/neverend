@@ -1231,31 +1231,31 @@ function countActive(pixels){let n=0;pixels.forEach(function(row){row.forEach(fu
 
 function removeAllTransparent(){
   if(!pixelArtEdit)return;
-  let count=0;
+  const newDeletes=[];
   for(let y=0;y<pixelArtEdit.length;y++){
     for(let x=0;x<pixelArtEdit[y].length;x++){
       if(pixelArtEdit[y][x]===null){
         const alreadyDel=deletedBlocks.some(function(d){return d.x===x&&d.y===y;});
         if(!alreadyDel){
-          deletedBlocks.push({x:x,y:y});
-          deleteHistory.push({x:x,y:y,restore:false});
-          count++;
+          newDeletes.push({x:x,y:y});
         }
       }
     }
   }
-  if(count===0){
-    alert('No transparent pixels found.');return;
+  if(newDeletes.length===0){
+    alert('No transparent pixels to remove.');return;
   }
-  document.getElementById('undoBtn').disabled=false;
+  // Undo/Redoスタックに一括操作として積む
+  newDeletes.forEach(function(d){
+    deletedBlocks.push({x:d.x,y:d.y});
+    deleteHistory.push({x:d.x,y:d.y,restore:false});
+  });
+  _redoStack=[];
+  const undoBtn=document.getElementById('undoBtn');
+  const redoBtn=document.getElementById('redoBtn');
+  if(undoBtn)undoBtn.disabled=false;
+  if(redoBtn)redoBtn.disabled=true;
   drawGrid();
-  // sec2Statsも更新（selectedAreaがない場合用）
-  if(!selectedArea){
-    const active2=countActive(pixelArtEdit);
-    const r3=calcPrice(Math.max(0,active2),plan);
-    document.getElementById('sec2Stats').innerHTML=
-      'Active blocks: <strong>'+active2+'</strong> | Est. monthly: <strong>$'+Math.round(r3.total)+'</strong>';
-  }
   updatePlaceInfo();
 }
 
@@ -1465,10 +1465,32 @@ function drawGrid(){
     else if(inLogo){const lpx=getDisplayPixel(lc,lr);if(lpx){const alpha=logoPlaced?1:0.75;gridCtx.fillStyle='rgba('+lpx.r+','+lpx.g+','+lpx.b+','+alpha+')';gridCtx.fillRect(px,py,CELL,CELL);}else{gridCtx.fillStyle=(c+r)%2===0?'rgba(74,184,255,0.07)':'rgba(74,184,255,0.04)';gridCtx.fillRect(px,py,CELL,CELL);}gridCtx.strokeStyle=conflict?'rgba(231,76,60,0.3)':'rgba(74,184,255,0.12)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);}
     else{gridCtx.fillStyle='rgba(255,255,255,0.02)';gridCtx.fillRect(px,py,CELL,CELL);gridCtx.strokeStyle='rgba(255,255,255,0.05)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);}
   }}
-  if(logoPlaced&&selectedArea||(!logoPlaced&&chosenW)){
+  // deletedBlocksを除いた実際の範囲で枠を描画
+  if(logoPlaced&&selectedArea&&pixelArtEdit){
+    let minGX=Infinity,minGY=Infinity,maxGX=-Infinity,maxGY=-Infinity;
+    let hasAny=false;
+    for(let yr=0;yr<pixelArtEdit.length;yr++){
+      for(let xc=0;xc<pixelArtEdit[yr].length;xc++){
+        if(pixelArtEdit[yr][xc]===null)continue;
+        if(deletedBlocks.some(function(d){return d.x===xc&&d.y===yr;}))continue;
+        const gc=selectedArea.x+xc,gr=selectedArea.y+yr;
+        minGX=Math.min(minGX,gc);minGY=Math.min(minGY,gr);
+        maxGX=Math.max(maxGX,gc);maxGY=Math.max(maxGY,gr);
+        hasAny=true;
+      }
+    }
+    if(hasAny){
+      gridCtx.strokeStyle='rgba(74,184,255,0.9)';
+      gridCtx.lineWidth=2;
+      gridCtx.strokeRect(
+        minGX*CELL,minGY*CELL,
+        (maxGX-minGX+1)*CELL,(maxGY-minGY+1)*CELL
+      );
+    }
+  }else if(!logoPlaced&&chosenW){
     const bx=lx*CELL,by=ly*CELL,bw=lw*CELL,bh=lh*CELL;
     gridCtx.strokeStyle=conflict?'rgba(231,76,60,0.9)':'rgba(0,200,255,0.8)';
-    gridCtx.lineWidth=2;if(!logoPlaced)gridCtx.setLineDash([6,3]);
+    gridCtx.lineWidth=2;gridCtx.setLineDash([6,3]);
     gridCtx.strokeRect(bx,by,bw,bh);gridCtx.setLineDash([]);
   }
   if(editMode){gridCtx.strokeStyle='rgba(245,200,66,0.4)';gridCtx.lineWidth=2;gridCtx.strokeRect(1,1,1278,718);}

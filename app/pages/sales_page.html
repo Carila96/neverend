@@ -1249,10 +1249,6 @@ function removeAllTransparent(){
     alert('No transparent pixels found.');return;
   }
   document.getElementById('undoBtn').disabled=false;
-  const active=countActive(pixelArtEdit)-deletedBlocks.length;
-  const r2=calcPrice(Math.max(0,active),plan);
-  document.getElementById('sec2Stats').innerHTML=
-    'Active blocks: <strong>'+Math.max(0,active)+'</strong> | Est. monthly: <strong>$'+Math.round(r2.total)+'</strong>';
   drawGrid();updatePlaceInfo();
 }
 
@@ -1494,12 +1490,7 @@ function applyGridEdit(e){
   _editRafId=requestAnimationFrame(()=>{
     drawGrid();
     _editRafId=null;
-    const active=countActive(pixelArtEdit)-deletedBlocks.length;
-    const r2=calcPrice(Math.max(0,active),plan);
-    document.getElementById('sec2Stats').innerHTML=
-      'Active blocks: <strong>'+Math.max(0,active)+'</strong> | Est. monthly: <strong>$'+Math.round(r2.total)+'</strong>';
-    const pi=document.getElementById('placeInfo');
-    if(pi)updatePlaceInfo();
+    updatePlaceInfo();
   });
 }
 gridCanvas.addEventListener('click',function(e){

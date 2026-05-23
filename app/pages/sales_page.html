@@ -1241,30 +1241,19 @@ function removeAllTransparent(){
     for(let x=0;x<pixelArtEdit[y].length;x++){
       if(pixelArtEdit[y][x]===null){
         const alreadyDel=deletedBlocks.some(function(d){return d.x===x&&d.y===y;});
-        if(!alreadyDel){
-          newDeletes.push({x:x,y:y});
-        }
+        if(!alreadyDel)newDeletes.push({x:x,y:y});
       }
     }
   }
-  if(newDeletes.length===0){
-    alert('No transparent pixels to remove.');return;
-  }
-  // Undo/Redoスタックに一括操作として積む
-  newDeletes.forEach(function(d){
-    deletedBlocks.push({x:d.x,y:d.y});
-    deleteHistory.push({x:d.x,y:d.y,restore:false});
-  });
+  if(newDeletes.length===0){alert('No transparent pixels to remove.');return;}
+  newDeletes.forEach(function(d){deletedBlocks.push({x:d.x,y:d.y});});
+  // 一括操作として1つのエントリーをdeleteHistoryに積む
+  deleteHistory.push({bulk:true,items:newDeletes,restore:false});
   _redoStack=[];
-  const undoBtn=document.getElementById('undoBtn');
-  const redoBtn=document.getElementById('redoBtn');
-  if(undoBtn)undoBtn.disabled=false;
-  if(redoBtn)redoBtn.disabled=true;
   const pub=document.getElementById('placeUndoBtn');
   const prb=document.getElementById('placeRedoBtn');
   if(pub)pub.disabled=false;
   if(prb)prb.disabled=true;
-  document.getElementById('placeUndoRedoBar').style.display='flex';
   drawGrid();
   updatePlaceInfo();
 }
@@ -1625,34 +1614,53 @@ function undoLastDelete(){
   if(!deleteHistory.length)return;
   const last=deleteHistory.pop();
   _redoStack.push(last);
-  if(last.restore){
-    deletedBlocks.push({x:last.x,y:last.y});
+  if(last.bulk){
+    // 一括操作を一度に元に戻す
+    last.items.forEach(function(d){
+      deletedBlocks=deletedBlocks.filter(function(b){return!(b.x===d.x&&b.y===d.y);});
+    });
   }else{
-    deletedBlocks=deletedBlocks.filter(function(d){return!(d.x===last.x&&d.y===last.y);});
+    if(last.restore){
+      deletedBlocks.push({x:last.x,y:last.y});
+    }else{
+      deletedBlocks=deletedBlocks.filter(function(d){return!(d.x===last.x&&d.y===last.y);});
+    }
   }
-  document.getElementById('undoBtn').disabled=!deleteHistory.length;
-  document.getElementById('redoBtn').disabled=false;
   const pub=document.getElementById('placeUndoBtn');
   const prb=document.getElementById('placeRedoBtn');
+  const ub=document.getElementById('undoBtn');
+  const rb=document.getElementById('redoBtn');
   if(pub)pub.disabled=!deleteHistory.length;
   if(prb)prb.disabled=false;
+  if(ub)ub.disabled=!deleteHistory.length;
+  if(rb)rb.disabled=false;
   drawGrid();updatePlaceInfo();
 }
 function redoLastDelete(){
   if(!_redoStack.length)return;
   const last=_redoStack.pop();
   deleteHistory.push(last);
-  if(last.restore){
-    deletedBlocks=deletedBlocks.filter(function(d){return!(d.x===last.x&&d.y===last.y);});
+  if(last.bulk){
+    // 一括操作を一度にやり直す
+    last.items.forEach(function(d){
+      const alreadyDel=deletedBlocks.some(function(b){return b.x===d.x&&b.y===d.y;});
+      if(!alreadyDel)deletedBlocks.push({x:d.x,y:d.y});
+    });
   }else{
-    deletedBlocks.push({x:last.x,y:last.y});
+    if(last.restore){
+      deletedBlocks=deletedBlocks.filter(function(d){return!(d.x===last.x&&d.y===last.y);});
+    }else{
+      deletedBlocks.push({x:last.x,y:last.y});
+    }
   }
-  document.getElementById('undoBtn').disabled=false;
-  document.getElementById('redoBtn').disabled=!_redoStack.length;
-  const pub2=document.getElementById('placeUndoBtn');
-  const prb2=document.getElementById('placeRedoBtn');
-  if(pub2)pub2.disabled=false;
-  if(prb2)prb2.disabled=!_redoStack.length;
+  const pub=document.getElementById('placeUndoBtn');
+  const prb=document.getElementById('placeRedoBtn');
+  const ub=document.getElementById('undoBtn');
+  const rb=document.getElementById('redoBtn');
+  if(pub)pub.disabled=false;
+  if(prb)prb.disabled=!_redoStack.length;
+  if(ub)ub.disabled=false;
+  if(rb)rb.disabled=!_redoStack.length;
   drawGrid();updatePlaceInfo();
 }
 function resetPlacement(){logoPlaced=false;selectedArea=null;editMode=false;deletedBlocks=[];deleteHistory=[];document.getElementById('placeInfo').style.display='none';document.getElementById('confirmPlaceBtn').style.display='none';document.getElementById('editBlocksBtn').style.display='none';document.getElementById('resetPlaceBtn').style.display='none';document.getElementById('gridEditBar').style.display='none';document.getElementById('gridHint').textContent='Move mouse to position logo. Click to place.';drawGrid();}

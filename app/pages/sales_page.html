@@ -668,8 +668,8 @@ function _updateSpAuthUI(session){
     if(loginBtn)loginBtn.style.display='none';
     if(logoutBtn)logoutBtn.style.display='block';
     if(userName){
-      const name=session.user.user_metadata?.full_name||session.user.email?.split('@')[0]||'User';
-      userName.textContent=name;
+      const savedName=localStorage.getItem('neverend_playername');
+      userName.textContent=savedName||'neverEND';
       userName.style.display='block';
     }
     // ログイン成功時にモーダルを閉じる
@@ -1228,7 +1228,8 @@ function removeAllTransparent(){
   let hasActive=false;
   for(let y=0;y<pixelArtEdit.length;y++){
     for(let x=0;x<pixelArtEdit[y].length;x++){
-      if(pixelArtEdit[y][x]!==null){
+      const isDeleted=deletedBlocks.some(function(d){return d.x===x&&d.y===y;});
+      if(pixelArtEdit[y][x]!==null&&!isDeleted){
         minX=Math.min(minX,x);minY=Math.min(minY,y);
         maxX=Math.max(maxX,x);maxY=Math.max(maxY,y);
         hasActive=true;
@@ -1467,7 +1468,16 @@ function applyGridEdit(e){
   }
   document.getElementById('undoBtn').disabled=!deleteHistory.length;
   if(_editRafId)cancelAnimationFrame(_editRafId);
-  _editRafId=requestAnimationFrame(()=>{drawGrid();_editRafId=null;});
+  _editRafId=requestAnimationFrame(()=>{
+    drawGrid();
+    _editRafId=null;
+    const active=countActive(pixelArtEdit)-deletedBlocks.length;
+    const r2=calcPrice(Math.max(0,active),plan);
+    document.getElementById('sec2Stats').innerHTML=
+      'Active blocks: <strong>'+Math.max(0,active)+'</strong> | Est. monthly: <strong>$'+Math.round(r2.total)+'</strong>';
+    const pi=document.getElementById('placeInfo');
+    if(pi)updatePlaceInfo();
+  });
 }
 gridCanvas.addEventListener('click',function(e){
   if(editMode||monopolyMode)return;

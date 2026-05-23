@@ -1246,10 +1246,10 @@ function removeAllTransparent(){
   // 一括操作として1つのエントリーをdeleteHistoryに積む
   deleteHistory.push({bulk:true,items:newDeletes,restore:false});
   _redoStack=[];
-  const pub=document.getElementById('placeUndoBtn');
-  const prb=document.getElementById('placeRedoBtn');
-  if(pub)pub.disabled=false;
-  if(prb)prb.disabled=true;
+  const ub=document.getElementById('undoBtn');
+  const rb=document.getElementById('redoBtn');
+  if(ub)ub.disabled=false;
+  if(rb)rb.disabled=true;
   drawGrid();
   updatePlaceInfo();
 }

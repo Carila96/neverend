@@ -1607,6 +1607,7 @@ function countActivePlaced(){
 function enterEditMode(){if(!logoPlaced||!selectedArea)return;editMode=true;document.getElementById('gridEditBar').style.display='flex';document.getElementById('editBlocksBtn').style.display='none';document.getElementById('confirmPlaceBtn').style.display='none';document.getElementById('gridHint').textContent='EDIT MODE: click or drag blocks to delete them. Click deleted block to restore.';gridCanvas.style.cursor='crosshair';drawGrid();}
 function exitEditMode(){editMode=false;document.getElementById('gridEditBar').style.display='none';document.getElementById('editBlocksBtn').style.display='block';document.getElementById('confirmPlaceBtn').style.display='block';document.getElementById('gridHint').textContent='Placement ready. Confirm or edit further.';gridCanvas.style.cursor='crosshair';updatePlaceInfo();drawGrid();}
 function undoLastDelete(){
+  console.log('undoLastDelete called, deleteHistory:', deleteHistory.length, 'last:', deleteHistory[deleteHistory.length-1]);
   if(!deleteHistory.length)return;
   const last=deleteHistory.pop();
   _redoStack.push(last);

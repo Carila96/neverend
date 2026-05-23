@@ -1249,7 +1249,15 @@ function removeAllTransparent(){
     alert('No transparent pixels found.');return;
   }
   document.getElementById('undoBtn').disabled=false;
-  drawGrid();updatePlaceInfo();
+  drawGrid();
+  // sec2Statsも更新（selectedAreaがない場合用）
+  if(!selectedArea){
+    const active2=countActive(pixelArtEdit);
+    const r3=calcPrice(Math.max(0,active2),plan);
+    document.getElementById('sec2Stats').innerHTML=
+      'Active blocks: <strong>'+active2+'</strong> | Est. monthly: <strong>$'+Math.round(r3.total)+'</strong>';
+  }
+  updatePlaceInfo();
 }
 
 function goToSection3(){if(!pixelArtEdit)return;markDone(2);unlockSec(3);setProgress(3);initEditCanvas();buildPalette();updateEditStats();initMiniPicker();document.getElementById('sec3').scrollIntoView({behavior:'smooth',block:'start'});}
@@ -1490,7 +1498,14 @@ function applyGridEdit(e){
   _editRafId=requestAnimationFrame(()=>{
     drawGrid();
     _editRafId=null;
-    updatePlaceInfo();
+    if(!selectedArea){
+      const active2=countActive(pixelArtEdit);
+      const r3=calcPrice(Math.max(0,active2),plan);
+      document.getElementById('sec2Stats').innerHTML=
+        'Active blocks: <strong>'+active2+'</strong> | Est. monthly: <strong>$'+Math.round(r3.total)+'</strong>';
+    }else{
+      updatePlaceInfo();
+    }
   });
 }
 gridCanvas.addEventListener('click',function(e){

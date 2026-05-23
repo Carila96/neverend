@@ -526,8 +526,8 @@ Transparent pixels are not counted as blocks.
         <div class="grid-edit-bar" id="gridEditBar" style="display:none;">
           <span class="edit-mode-hint">&#9998; EDIT MODE &mdash; click or drag to delete/restore blocks</span>
           <div style="display:flex;gap:6px;margin-left:auto;align-items:center;">
-            <button class="btn-ghost" onclick="undoLastDelete()" id="undoBtn" disabled title="Undo">&#8592; UNDO</button>
-            <button class="btn-ghost" onclick="redoLastDelete()" id="redoBtn" disabled title="Redo">REDO &#8594;</button>
+            <button class="btn-ghost" onclick="undoLastDelete()" id="undoBtn" disabled>&#8592; UNDO</button>
+            <button class="btn-ghost" onclick="redoLastDelete()" id="redoBtn" disabled>REDO &#8594;</button>
             <button onclick="removeAllTransparent()" style="padding:5px 12px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;background:none;border:1px solid rgba(231,76,60,0.4);color:#e74c3c;text-transform:uppercase;">REMOVE TRANSPARENT</button>
             <button class="btn-warn" onclick="exitEditMode()">DONE EDITING</button>
           </div>
@@ -546,10 +546,6 @@ Transparent pixels are not counted as blocks.
           <button class="btn-ghost" id="resetPlaceBtn" onclick="resetPlacement()" style="display:none;">RESET</button>
           <button class="btn-warn" id="editBlocksBtn" onclick="enterEditMode()" style="display:none;">EDIT BLOCKS</button>
           <button class="btn-blue" id="confirmPlaceBtn" onclick="confirmPlacement()" style="display:none;" disabled>CONFIRM PLACEMENT &rarr;</button>
-        </div>
-        <div id="placeUndoRedoBar" style="display:flex;gap:6px;margin-top:6px;">
-          <button class="btn-ghost" onclick="undoLastDelete()" id="placeUndoBtn" disabled>&#8592; UNDO</button>
-          <button class="btn-ghost" onclick="redoLastDelete()" id="placeRedoBtn" disabled>REDO &#8594;</button>
         </div>
       </div>
     </div>
@@ -1608,8 +1604,8 @@ function countActivePlaced(){
   }
   return total-deleted;
 }
-function enterEditMode(){if(!logoPlaced||!selectedArea)return;editMode=true;document.getElementById('gridEditBar').style.display='flex';document.getElementById('editBlocksBtn').style.display='none';document.getElementById('confirmPlaceBtn').style.display='none';document.getElementById('gridHint').textContent='EDIT MODE: click or drag blocks to delete them. Click deleted block to restore.';gridCanvas.style.cursor='crosshair';document.getElementById('placeUndoRedoBar').style.display='flex';drawGrid();}
-function exitEditMode(){editMode=false;document.getElementById('gridEditBar').style.display='none';document.getElementById('editBlocksBtn').style.display='block';document.getElementById('confirmPlaceBtn').style.display='block';document.getElementById('gridHint').textContent='Placement ready. Confirm or edit further.';gridCanvas.style.cursor='crosshair';document.getElementById('placeUndoRedoBar').style.display='flex';updatePlaceInfo();drawGrid();}
+function enterEditMode(){if(!logoPlaced||!selectedArea)return;editMode=true;document.getElementById('gridEditBar').style.display='flex';document.getElementById('editBlocksBtn').style.display='none';document.getElementById('confirmPlaceBtn').style.display='none';document.getElementById('gridHint').textContent='EDIT MODE: click or drag blocks to delete them. Click deleted block to restore.';gridCanvas.style.cursor='crosshair';drawGrid();}
+function exitEditMode(){editMode=false;document.getElementById('gridEditBar').style.display='none';document.getElementById('editBlocksBtn').style.display='block';document.getElementById('confirmPlaceBtn').style.display='block';document.getElementById('gridHint').textContent='Placement ready. Confirm or edit further.';gridCanvas.style.cursor='crosshair';updatePlaceInfo();drawGrid();}
 function undoLastDelete(){
   if(!deleteHistory.length)return;
   const last=deleteHistory.pop();

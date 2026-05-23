@@ -833,6 +833,7 @@ let colorTool='replace',selectedPaletteColor=null,selectedPaletteKey=null,brushS
 let currentStage=1,gridStates={};
 let logoGridX=0,logoGridY=0,logoPlaced=false,selectedArea=null;
 let editMode=false,deletedBlocks=[],deleteHistory=[],plan='monthly',gridEditIsClick=false;
+let _redoStack=[];
 let _editRafId=null;
 let gridZoom=1,editZoomLevel=1,baseEditZoom=1;
 let editColorUndoStack=[];
@@ -1620,7 +1621,6 @@ function countActivePlaced(){
 }
 function enterEditMode(){if(!logoPlaced||!selectedArea)return;editMode=true;document.getElementById('gridEditBar').style.display='flex';document.getElementById('editBlocksBtn').style.display='none';document.getElementById('confirmPlaceBtn').style.display='none';document.getElementById('gridHint').textContent='EDIT MODE: click or drag blocks to delete them. Click deleted block to restore.';gridCanvas.style.cursor='crosshair';document.getElementById('placeUndoRedoBar').style.display='flex';drawGrid();}
 function exitEditMode(){editMode=false;document.getElementById('gridEditBar').style.display='none';document.getElementById('editBlocksBtn').style.display='block';document.getElementById('confirmPlaceBtn').style.display='block';document.getElementById('gridHint').textContent='Placement ready. Confirm or edit further.';gridCanvas.style.cursor='crosshair';document.getElementById('placeUndoRedoBar').style.display='flex';updatePlaceInfo();drawGrid();}
-let _redoStack=[];
 function undoLastDelete(){
   if(!deleteHistory.length)return;
   const last=deleteHistory.pop();

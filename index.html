@@ -4068,7 +4068,7 @@ function checkTitlesOnClear(nextStage){
       best_stage:nextStage,
       total_deaths:getStat('totalDeaths',0),
       total_play_time:Math.floor(getStat('totalPlayTime',0))
-    },{onConflict:'id'}).catch(function(e){console.warn('profile sync error:',e);});
+    },{onConflict:'id'}).then(function(r){if(r&&r.error)console.warn('profile sync error:',r.error);});
   }
   checkAllTitles();
 }
@@ -4144,7 +4144,7 @@ function triggerDeath(){
         },{onConflict:'id'}).then(function(r2){
           if(r2.error)console.warn('profile update error:',r2.error);
         });
-      }).catch(function(e){console.warn('profile fetch error:',e);});
+      }).then(function(r){if(r&&r.error)console.warn('profile fetch error:',r.error);});
   }
   const best=getStat('bestStage',1);
   if(lastDeathStage>best)setStat('bestStage',lastDeathStage);

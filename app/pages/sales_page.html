@@ -1453,10 +1453,9 @@ function drawGrid(){
   for(let r=0;r<GRID_ROWS;r++){for(let c=0;c<GRID_COLS;c++){
     const px=c*CELL,py=r*CELL;const state=getBlockState(c,r);const inLogo=c>=lx&&c<lx+lw&&r>=ly&&r<ly+lh;const lc=c-lx,lr=r-ly;const deleted=inLogo&&isDeleted(c,r);
     if(deleted){
-      // 削除済みブロックは空きブロックと同じ色で表示（紫ではなく透明扱い）
-      gridCtx.fillStyle=(c+r)%2===0?'#1c1c28':'#1a1a26';
+      gridCtx.fillStyle='rgba(160,60,220,0.3)';
       gridCtx.fillRect(px,py,CELL,CELL);
-      gridCtx.strokeStyle='#232335';
+      gridCtx.strokeStyle='rgba(160,60,220,0.5)';
       gridCtx.lineWidth=0.5;
       gridCtx.strokeRect(px,py,CELL,CELL);
     }
@@ -1466,31 +1465,33 @@ function drawGrid(){
     else{gridCtx.fillStyle='rgba(255,255,255,0.02)';gridCtx.fillRect(px,py,CELL,CELL);gridCtx.strokeStyle='rgba(255,255,255,0.05)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);}
   }}
   if(logoPlaced&&selectedArea){
-    if(deletedBlocks.length>0&&pixelArtEdit){
-      // 削除済みを除いた外接矩形
-      let minGX=Infinity,minGY=Infinity,maxGX=-Infinity,maxGY=-Infinity;
-      let hasAny=false;
-      for(let yr=0;yr<pixelArtEdit.length;yr++){
-        for(let xc=0;xc<pixelArtEdit[yr].length;xc++){
-          if(pixelArtEdit[yr][xc]===null)continue;
-          if(deletedBlocks.some(function(d){return d.x===xc&&d.y===yr;}))continue;
-          const gc=selectedArea.x+xc;
-          const gr=selectedArea.y+yr;
-          minGX=Math.min(minGX,gc);minGY=Math.min(minGY,gr);
-          maxGX=Math.max(maxGX,gc);maxGY=Math.max(maxGY,gr);
-          hasAny=true;
+    if(!editMode){
+      // DoneEditing後：削除マスを除いた各マスを個別に枠で囲む
+      if(pixelArtEdit){
+        gridCtx.strokeStyle='rgba(74,184,255,0.9)';
+        gridCtx.lineWidth=1.5;
+        for(let yr=0;yr<pixelArtEdit.length;yr++){
+          for(let xc=0;xc<pixelArtEdit[yr].length;xc++){
+            if(deletedBlocks.some(function(d){return d.x===xc&&d.y===yr;}))continue;
+            const gc=selectedArea.x+xc;
+            const gr=selectedArea.y+yr;
+            // 隣接する残マスとの境界のみ枠を描く
+            const top=yr===0||deletedBlocks.some(function(d){return d.x===xc&&d.y===yr-1;});
+            const bottom=yr===pixelArtEdit.length-1||deletedBlocks.some(function(d){return d.x===xc&&d.y===yr+1;});
+            const left=xc===0||deletedBlocks.some(function(d){return d.x===xc-1&&d.y===yr;});
+            const right=xc===pixelArtEdit[yr].length-1||deletedBlocks.some(function(d){return d.x===xc+1&&d.y===yr;});
+            const px2=gc*CELL,py2=gr*CELL;
+            gridCtx.beginPath();
+            if(top){gridCtx.moveTo(px2,py2);gridCtx.lineTo(px2+CELL,py2);}
+            if(bottom){gridCtx.moveTo(px2,py2+CELL);gridCtx.lineTo(px2+CELL,py2+CELL);}
+            if(left){gridCtx.moveTo(px2,py2);gridCtx.lineTo(px2,py2+CELL);}
+            if(right){gridCtx.moveTo(px2+CELL,py2);gridCtx.lineTo(px2+CELL,py2+CELL);}
+            gridCtx.stroke();
+          }
         }
       }
-      if(hasAny){
-        gridCtx.strokeStyle='rgba(74,184,255,0.9)';
-        gridCtx.lineWidth=2;
-        gridCtx.strokeRect(
-          minGX*CELL,minGY*CELL,
-          (maxGX-minGX+1)*CELL,(maxGY-minGY+1)*CELL
-        );
-      }
     }else{
-      // 削除なし：selectedArea全体を枠で囲む
+      // Edit中：selectedArea全体を枠で囲む（変化なし）
       gridCtx.strokeStyle='rgba(74,184,255,0.9)';
       gridCtx.lineWidth=2;
       gridCtx.strokeRect(

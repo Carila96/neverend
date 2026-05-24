@@ -1594,19 +1594,16 @@ function updatePlaceInfo(){
 }
 function countActivePlaced(){
   if(!pixelArtEdit)return 0;
-  let total=0;
-  let deleted=0;
+  let count=0;
   for(let yr=0;yr<pixelArtEdit.length;yr++){
     for(let xc=0;xc<pixelArtEdit[yr].length;xc++){
-      if(pixelArtEdit[yr][xc]!==null){
-        total++;
-        if(deletedBlocks.some(function(d){return d.x===xc&&d.y===yr;})){
-          deleted++;
-        }
+      // deletedBlocksに含まれていなければカウント（nullも含む）
+      if(!deletedBlocks.some(function(d){return d.x===xc&&d.y===yr;})){
+        count++;
       }
     }
   }
-  return total-deleted;
+  return count;
 }
 function enterEditMode(){if(!logoPlaced||!selectedArea)return;editMode=true;document.getElementById('gridEditBar').style.display='flex';document.getElementById('editBlocksBtn').style.display='none';document.getElementById('confirmPlaceBtn').style.display='none';document.getElementById('gridHint').textContent='EDIT MODE: click or drag blocks to delete them. Click deleted block to restore.';gridCanvas.style.cursor='crosshair';drawGrid();}
 function exitEditMode(){editMode=false;document.getElementById('gridEditBar').style.display='none';document.getElementById('editBlocksBtn').style.display='block';document.getElementById('confirmPlaceBtn').style.display='block';document.getElementById('gridHint').textContent='Placement ready. Confirm or edit further.';gridCanvas.style.cursor='crosshair';updatePlaceInfo();drawGrid();}

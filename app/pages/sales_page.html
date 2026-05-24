@@ -1562,6 +1562,10 @@ gridCanvas.addEventListener('click',function(e){
   const py=Math.max(0,Math.min(GRID_ROWS-chosenH,r-Math.floor(chosenH/2)));
   logoGridX=px;logoGridY=py;logoPlaced=true;selectedArea={x:px,y:py,w:chosenW,h:chosenH};deletedBlocks=[];deleteHistory=[];
   const conflict=hasConflict(px,py,chosenW,chosenH);
+  console.log('pixelArtEdit total pixels:',
+    pixelArtEdit ? pixelArtEdit.reduce((s,r)=>s+r.filter(p=>p!==null).length,0) : 'null',
+    'deletedBlocks:', deletedBlocks.length
+  );
   updatePlaceInfo();
   document.getElementById('confirmPlaceBtn').style.display='block';document.getElementById('confirmPlaceBtn').disabled=conflict;
   document.getElementById('editBlocksBtn').style.display='block';

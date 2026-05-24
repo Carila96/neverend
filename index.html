@@ -3835,7 +3835,7 @@ function update(dt){
       if(!darknessState.active&&darknessState.timer>=darknessState.interval){darknessState.active=true;darknessState.timer=0;}
       else if(darknessState.active&&darknessState.timer>=darknessState.duration){darknessState.active=false;darknessState.timer=0;}
     }
-    if(overlap(player,goal)){if(!adminMode){incStat('points',50);incStat('totalClears');}if(easyMode)easyModeSavedStage=stageNum+1;
+    if(state==='play'&&overlap(player,goal)){if(!adminMode){incStat('points',50);incStat('totalClears');}if(easyMode)easyModeSavedStage=stageNum+1;
       const next=stageNum+1;
       checkTitlesOnClear(next);
       timeLeft=Math.min(MAX_TIME,timeLeft+3);score+=500+Math.floor(timeLeft*10);sfxGoal();

@@ -4315,7 +4315,7 @@ function loop(ts){
       });
       // Edge vignette (replaces full red flash)
       deathTimer+=dt;
-      const vigAlpha=Math.min(0.6,Math.max(0,(0.5-Math.min(deathTimer,0.5))*1.2));
+      const vigAlpha=0.5;
       if(vigAlpha>0){
         const grad=ctx.createRadialGradient(W/2,H/2,H*0.3,W/2,H/2,H*0.8);
         grad.addColorStop(0,'rgba(0,0,0,0)');

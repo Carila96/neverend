@@ -1466,20 +1466,20 @@ function drawGrid(){
   }}
   if(logoPlaced&&selectedArea){
     if(!editMode){
-      // DoneEditing後：削除マスを除いた各マスを個別に枠で囲む
       if(pixelArtEdit){
         gridCtx.strokeStyle='rgba(74,184,255,0.9)';
         gridCtx.lineWidth=1.5;
         for(let yr=0;yr<pixelArtEdit.length;yr++){
           for(let xc=0;xc<pixelArtEdit[yr].length;xc++){
+            // nullピクセルはスキップ（deletedBlocksではなくpixelArtEditのnullを参照）
+            if(pixelArtEdit[yr][xc]===null)continue;
             if(deletedBlocks.some(function(d){return d.x===xc&&d.y===yr;}))continue;
             const gc=selectedArea.x+xc;
             const gr=selectedArea.y+yr;
-            // 隣接する残マスとの境界のみ枠を描く
-            const top=yr===0||deletedBlocks.some(function(d){return d.x===xc&&d.y===yr-1;});
-            const bottom=yr===pixelArtEdit.length-1||deletedBlocks.some(function(d){return d.x===xc&&d.y===yr+1;});
-            const left=xc===0||deletedBlocks.some(function(d){return d.x===xc-1&&d.y===yr;});
-            const right=xc===pixelArtEdit[yr].length-1||deletedBlocks.some(function(d){return d.x===xc+1&&d.y===yr;});
+            const top=yr===0||pixelArtEdit[yr-1][xc]===null||deletedBlocks.some(function(d){return d.x===xc&&d.y===yr-1;});
+            const bottom=yr===pixelArtEdit.length-1||pixelArtEdit[yr+1][xc]===null||deletedBlocks.some(function(d){return d.x===xc&&d.y===yr+1;});
+            const left=xc===0||pixelArtEdit[yr][xc-1]===null||deletedBlocks.some(function(d){return d.x===xc-1&&d.y===yr;});
+            const right=xc===pixelArtEdit[yr].length-1||pixelArtEdit[yr][xc+1]===null||deletedBlocks.some(function(d){return d.x===xc+1&&d.y===yr;});
             const px2=gc*CELL,py2=gr*CELL;
             gridCtx.beginPath();
             if(top){gridCtx.moveTo(px2,py2);gridCtx.lineTo(px2+CELL,py2);}
@@ -1577,7 +1577,7 @@ gridCanvas.addEventListener('click',function(e){
 
 function updatePlaceInfo(){
   if(!selectedArea)return;
-  const active=countActivePlaced();
+  const active=countTotalPlaced();
   const r=monopolyMode?{total:isCreator(currentStage)?3300:3000}:calcPrice(active,plan);
   // sec2Statsも同期
   const sec2=document.getElementById('sec2Stats');
@@ -1598,7 +1598,19 @@ function countActivePlaced(){
   let count=0;
   for(let yr=0;yr<pixelArtEdit.length;yr++){
     for(let xc=0;xc<pixelArtEdit[yr].length;xc++){
-      // deletedBlocksに含まれていなければカウント（nullも含む）
+      // pixelArtEditのnullを除外、deletedBlocksも除外
+      if(pixelArtEdit[yr][xc]===null)continue;
+      if(deletedBlocks.some(function(d){return d.x===xc&&d.y===yr;}))continue;
+      count++;
+    }
+  }
+  return count;
+}
+function countTotalPlaced(){
+  if(!pixelArtEdit)return 0;
+  let count=0;
+  for(let yr=0;yr<pixelArtEdit.length;yr++){
+    for(let xc=0;xc<pixelArtEdit[yr].length;xc++){
       if(!deletedBlocks.some(function(d){return d.x===xc&&d.y===yr;})){
         count++;
       }

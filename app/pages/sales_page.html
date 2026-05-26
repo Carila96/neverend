@@ -1577,7 +1577,7 @@ gridCanvas.addEventListener('click',function(e){
 
 function updatePlaceInfo(){
   if(!selectedArea)return;
-  const active=countTotalPlaced();
+  const active=countActivePlaced();
   const r=monopolyMode?{total:isCreator(currentStage)?3300:3000}:calcPrice(active,plan);
   // sec2Statsも同期
   const sec2=document.getElementById('sec2Stats');
@@ -1598,22 +1598,8 @@ function countActivePlaced(){
   let count=0;
   for(let yr=0;yr<pixelArtEdit.length;yr++){
     for(let xc=0;xc<pixelArtEdit[yr].length;xc++){
-      // pixelArtEditのnullを除外、deletedBlocksも除外
-      if(pixelArtEdit[yr][xc]===null)continue;
       if(deletedBlocks.some(function(d){return d.x===xc&&d.y===yr;}))continue;
       count++;
-    }
-  }
-  return count;
-}
-function countTotalPlaced(){
-  if(!pixelArtEdit)return 0;
-  let count=0;
-  for(let yr=0;yr<pixelArtEdit.length;yr++){
-    for(let xc=0;xc<pixelArtEdit[yr].length;xc++){
-      if(!deletedBlocks.some(function(d){return d.x===xc&&d.y===yr;})){
-        count++;
-      }
     }
   }
   return count;

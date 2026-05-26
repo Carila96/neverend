@@ -1599,6 +1599,7 @@ function countActivePlaced(){
   for(let yr=0;yr<pixelArtEdit.length;yr++){
     for(let xc=0;xc<pixelArtEdit[yr].length;xc++){
       if(deletedBlocks.some(function(d){return d.x===xc&&d.y===yr;}))continue;
+      if(pixelArtEdit[yr][xc]===null)continue;
       count++;
     }
   }

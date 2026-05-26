@@ -830,6 +830,7 @@ let currentStage=1,gridStates={};
 let logoGridX=0,logoGridY=0,logoPlaced=false,selectedArea=null;
 let editMode=false,deletedBlocks=[],deleteHistory=[],plan='monthly',gridEditIsClick=false;
 let _redoStack=[];
+let activeBlockCount=0;
 let _editRafId=null;
 let gridZoom=1,editZoomLevel=1,baseEditZoom=1;
 let editColorUndoStack=[];
@@ -1250,6 +1251,7 @@ function removeAllTransparent(){
   const rb=document.getElementById('redoBtn');
   if(ub)ub.disabled=false;
   if(rb)rb.disabled=true;
+  activeBlockCount=chosenW*chosenH-deletedBlocks.length;
   drawGrid();
   updatePlaceInfo();
 }
@@ -1542,6 +1544,7 @@ function applyGridEdit(e){
   document.getElementById('undoBtn').disabled=!deleteHistory.length;
   if(_editRafId)cancelAnimationFrame(_editRafId);
   _editRafId=requestAnimationFrame(()=>{
+    activeBlockCount=chosenW*chosenH-deletedBlocks.length;
     drawGrid();
     _editRafId=null;
     if(!selectedArea){
@@ -1562,11 +1565,8 @@ gridCanvas.addEventListener('click',function(e){
   const px=Math.max(0,Math.min(GRID_COLS-chosenW,c-Math.floor(chosenW/2)));
   const py=Math.max(0,Math.min(GRID_ROWS-chosenH,r-Math.floor(chosenH/2)));
   logoGridX=px;logoGridY=py;logoPlaced=true;selectedArea={x:px,y:py,w:chosenW,h:chosenH};deletedBlocks=[];deleteHistory=[];
+  activeBlockCount=chosenW*chosenH;
   const conflict=hasConflict(px,py,chosenW,chosenH);
-  console.log('pixelArtEdit total pixels:',
-    pixelArtEdit ? pixelArtEdit.reduce((s,r)=>s+r.filter(p=>p!==null).length,0) : 'null',
-    'deletedBlocks:', deletedBlocks.length
-  );
   updatePlaceInfo();
   document.getElementById('confirmPlaceBtn').style.display='block';document.getElementById('confirmPlaceBtn').disabled=conflict;
   document.getElementById('editBlocksBtn').style.display='block';
@@ -1577,18 +1577,7 @@ gridCanvas.addEventListener('click',function(e){
 
 function updatePlaceInfo(){
   if(!selectedArea)return;
-  const active=(function(){
-    if(!pixelArtEdit)return 0;
-    let count=0;
-    for(let yr=0;yr<pixelArtEdit.length;yr++){
-      for(let xc=0;xc<pixelArtEdit[yr].length;xc++){
-        if(deletedBlocks.some(function(d){return d.x===xc&&d.y===yr;}))continue;
-        if(!editMode&&pixelArtEdit[yr][xc]===null)continue;
-        count++;
-      }
-    }
-    return count;
-  })();
+  const active=activeBlockCount;
   const r=monopolyMode?{total:isCreator(currentStage)?3300:3000}:calcPrice(active,plan);
   // sec2Statsも同期
   const sec2=document.getElementById('sec2Stats');
@@ -1625,9 +1614,7 @@ function exitEditMode(){
       }
     });
   }
-  // UIを更新してからdeletedBlocksをリセット
-  updatePlaceInfo();
-  drawGrid();
+  activeBlockCount=chosenW*chosenH-deletedBlocks.length;
   deletedBlocks=[];
   deleteHistory=[];
   _redoStack=[];

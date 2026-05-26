@@ -831,6 +831,7 @@ let logoGridX=0,logoGridY=0,logoPlaced=false,selectedArea=null;
 let editMode=false,deletedBlocks=[],deleteHistory=[],plan='monthly',gridEditIsClick=false;
 let _redoStack=[];
 let activeBlockCount=0;
+let _editDone=false;
 let _editRafId=null;
 let gridZoom=1,editZoomLevel=1,baseEditZoom=1;
 let editColorUndoStack=[];
@@ -1467,21 +1468,36 @@ function drawGrid(){
     else{gridCtx.fillStyle='rgba(255,255,255,0.02)';gridCtx.fillRect(px,py,CELL,CELL);gridCtx.strokeStyle='rgba(255,255,255,0.05)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);}
   }}
   if(logoPlaced&&selectedArea){
-    if(!editMode){
+    if(editMode){
+      // Edit中：selectedArea全体を枠で囲む
+      gridCtx.strokeStyle='rgba(74,184,255,0.9)';
+      gridCtx.lineWidth=2;
+      gridCtx.strokeRect(
+        selectedArea.x*CELL,selectedArea.y*CELL,
+        selectedArea.w*CELL,selectedArea.h*CELL
+      );
+    }else if(deletedBlocks.length===0&&!_editDone){
+      // Edit前（配置直後）：selectedArea全体を枠で囲む
+      gridCtx.strokeStyle='rgba(74,184,255,0.9)';
+      gridCtx.lineWidth=2;
+      gridCtx.strokeRect(
+        selectedArea.x*CELL,selectedArea.y*CELL,
+        selectedArea.w*CELL,selectedArea.h*CELL
+      );
+    }else{
+      // Done後：pixelArtEditのnullを除いた輪郭を描く
       if(pixelArtEdit){
         gridCtx.strokeStyle='rgba(74,184,255,0.9)';
         gridCtx.lineWidth=1.5;
         for(let yr=0;yr<pixelArtEdit.length;yr++){
           for(let xc=0;xc<pixelArtEdit[yr].length;xc++){
-            // nullピクセルはスキップ（deletedBlocksではなくpixelArtEditのnullを参照）
             if(pixelArtEdit[yr][xc]===null)continue;
-            if(deletedBlocks.some(function(d){return d.x===xc&&d.y===yr;}))continue;
             const gc=selectedArea.x+xc;
             const gr=selectedArea.y+yr;
-            const top=yr===0||pixelArtEdit[yr-1][xc]===null||deletedBlocks.some(function(d){return d.x===xc&&d.y===yr-1;});
-            const bottom=yr===pixelArtEdit.length-1||pixelArtEdit[yr+1][xc]===null||deletedBlocks.some(function(d){return d.x===xc&&d.y===yr+1;});
-            const left=xc===0||pixelArtEdit[yr][xc-1]===null||deletedBlocks.some(function(d){return d.x===xc-1&&d.y===yr;});
-            const right=xc===pixelArtEdit[yr].length-1||pixelArtEdit[yr][xc+1]===null||deletedBlocks.some(function(d){return d.x===xc+1&&d.y===yr;});
+            const top=yr===0||pixelArtEdit[yr-1][xc]===null;
+            const bottom=yr===pixelArtEdit.length-1||pixelArtEdit[yr+1][xc]===null;
+            const left=xc===0||pixelArtEdit[yr][xc-1]===null;
+            const right=xc===pixelArtEdit[yr].length-1||pixelArtEdit[yr][xc+1]===null;
             const px2=gc*CELL,py2=gr*CELL;
             gridCtx.beginPath();
             if(top){gridCtx.moveTo(px2,py2);gridCtx.lineTo(px2+CELL,py2);}
@@ -1492,14 +1508,6 @@ function drawGrid(){
           }
         }
       }
-    }else{
-      // Edit中：selectedArea全体を枠で囲む（変化なし）
-      gridCtx.strokeStyle='rgba(74,184,255,0.9)';
-      gridCtx.lineWidth=2;
-      gridCtx.strokeRect(
-        selectedArea.x*CELL,selectedArea.y*CELL,
-        selectedArea.w*CELL,selectedArea.h*CELL
-      );
     }
   }else if(!logoPlaced&&chosenW){
     const bx=lx*CELL,by=ly*CELL,bw=lw*CELL,bh=lh*CELL;
@@ -1564,7 +1572,7 @@ gridCanvas.addEventListener('click',function(e){
   if(c<0||c>=GRID_COLS||r<0||r>=GRID_ROWS)return;
   const px=Math.max(0,Math.min(GRID_COLS-chosenW,c-Math.floor(chosenW/2)));
   const py=Math.max(0,Math.min(GRID_ROWS-chosenH,r-Math.floor(chosenH/2)));
-  logoGridX=px;logoGridY=py;logoPlaced=true;selectedArea={x:px,y:py,w:chosenW,h:chosenH};deletedBlocks=[];deleteHistory=[];
+  logoGridX=px;logoGridY=py;logoPlaced=true;selectedArea={x:px,y:py,w:chosenW,h:chosenH};deletedBlocks=[];_editDone=false;deleteHistory=[];
   activeBlockCount=chosenW*chosenH;
   const conflict=hasConflict(px,py,chosenW,chosenH);
   updatePlaceInfo();
@@ -1616,6 +1624,7 @@ function exitEditMode(){
   }
   activeBlockCount=chosenW*chosenH-deletedBlocks.length;
   deletedBlocks=[];
+  _editDone=true;
   deleteHistory=[];
   _redoStack=[];
   document.getElementById('gridEditBar').style.display='none';

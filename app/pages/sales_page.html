@@ -1688,7 +1688,7 @@ function updateSummary(){
   const s=STAGES_DATA[currentStage-1];
   let active,r;
   if(monopolyMode){active=GRID_COLS*GRID_ROWS;const mf=currentPriceTier.currentTier?currentPriceTier.currentTier.monthlyFull:1000;r={base:mf,disc:0,total:mf,annual:mf*10};}
-  else{active=countActivePlaced();r=calcPrice(active,plan);}
+  else{active=activeBlockCount;r=calcPrice(active,plan);}
   document.getElementById('sumStage').textContent=s.name+(monopolyMode?' (MONOPOLY)':'');
   document.getElementById('sumPos').textContent=monopolyMode?'Full Stage':'col '+(selectedArea.x+1)+', row '+(selectedArea.y+1);
   document.getElementById('sumSize').textContent=monopolyMode?'Entire Stage':chosenW+'×'+chosenH+' blocks';

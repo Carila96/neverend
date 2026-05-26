@@ -1599,7 +1599,6 @@ function countActivePlaced(){
   for(let yr=0;yr<pixelArtEdit.length;yr++){
     for(let xc=0;xc<pixelArtEdit[yr].length;xc++){
       if(deletedBlocks.some(function(d){return d.x===xc&&d.y===yr;}))continue;
-      if(pixelArtEdit[yr][xc]===null)continue;
       count++;
     }
   }
@@ -1608,7 +1607,6 @@ function countActivePlaced(){
 function enterEditMode(){if(!logoPlaced||!selectedArea)return;editMode=true;document.getElementById('gridEditBar').style.display='flex';document.getElementById('editBlocksBtn').style.display='none';document.getElementById('confirmPlaceBtn').style.display='none';document.getElementById('gridHint').textContent='EDIT MODE: click or drag blocks to delete them. Click deleted block to restore.';gridCanvas.style.cursor='crosshair';drawGrid();}
 function exitEditMode(){
   editMode=false;
-  // 削除済みマスをpixelArtEditからnullに反映
   if(pixelArtEdit){
     deletedBlocks.forEach(function(d){
       if(pixelArtEdit[d.y]&&pixelArtEdit[d.y][d.x]!==undefined){
@@ -1616,7 +1614,9 @@ function exitEditMode(){
       }
     });
   }
-  // deletedBlocksをリセット（pixelArtEditに反映済みのため）
+  // UIを更新してからdeletedBlocksをリセット
+  updatePlaceInfo();
+  drawGrid();
   deletedBlocks=[];
   deleteHistory=[];
   _redoStack=[];

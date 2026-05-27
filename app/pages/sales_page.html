@@ -171,12 +171,14 @@ nav a:hover{color:var(--accent2);}
 .grid-edit-bar{display:flex;gap:8px;padding:7px 14px;border-top:1px solid var(--border);flex-wrap:wrap;align-items:center;background:var(--panel);}
 .edit-mode-hint{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--gold);letter-spacing:1px;}
 .place-info{background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.2);padding:10px 14px;margin:10px 0;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:2;}
-.place-row{display:flex;justify-content:space-between;}
-.place-val{color:var(--accent2);}
+.place-row{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.place-row span:first-child{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px;}
+.place-val{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent2);letter-spacing:2px;}
 .pay-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
 .order-box{background:var(--panel2);border:1px solid var(--border);padding:14px;margin-bottom:14px;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:2.2;}
-.orow{display:flex;justify-content:space-between;}
-.oval{color:var(--accent2);}
+.sum-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+.sum-label{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px;}
+.sum-val{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent2);letter-spacing:1px;}
 .plan-tabs{display:flex;margin-bottom:12px;border:1px solid var(--border);}
 .plan-tab{flex:1;background:none;border:none;color:var(--muted);padding:9px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;}
 .plan-tab.active{background:var(--accent2);color:#000;font-weight:700;}
@@ -413,7 +415,7 @@ Transparent pixels are not counted as blocks.
       <div id="sec2Converting" style="display:none;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);margin-bottom:8px;">Converting...</div>
       <div id="sec2PreviewWrap" style="display:none;">
         <div class="prev-single"><div class="prev-lbl">ON GRID PREVIEW (1:1)</div><div class="prev-inner"><canvas id="prevCanvas"></canvas></div></div>
-        <div class="size-stat" id="sec2Stats"></div>
+        <div id="sec2Stats" style="font-family:'Share Tech Mono',monospace;font-size:16px;color:var(--text);padding:12px 16px;background:rgba(74,184,255,0.06);border:1px solid rgba(74,184,255,0.2);margin-top:8px;letter-spacing:1px;"></div>
         <p style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);margin-bottom:10px;">Only colored (non-transparent) blocks are charged.</p>
         <div style="display:flex;justify-content:flex-end;"><button class="btn-blue" onclick="goToSection3()">CONTINUE TO EDIT COLORS &rarr;</button></div>
       </div>
@@ -557,11 +559,11 @@ Transparent pixels are not counted as blocks.
         <div>
           <div style="font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);margin-bottom:6px;">ORDER SUMMARY</div>
           <div class="order-box">
-            <div class="orow"><span>STAGE</span><span class="oval" id="sumStage">--</span></div>
-            <div class="orow"><span>POSITION</span><span class="oval" id="sumPos">--</span></div>
-            <div class="orow"><span>SIZE</span><span class="oval" id="sumSize">--</span></div>
-            <div class="orow"><span>ACTIVE BLOCKS</span><span class="oval" id="sumBlocks">--</span></div>
-            <div class="orow"><span>EST. MONTHLY</span><span class="oval" id="sumPrice">--</span></div>
+            <div class="sum-row"><span class="sum-label">STAGE</span><span class="sum-val" id="sumStage">--</span></div>
+            <div class="sum-row"><span class="sum-label">POSITION</span><span class="sum-val" id="sumPos">--</span></div>
+            <div class="sum-row"><span class="sum-label">SIZE</span><span class="sum-val" id="sumSize">--</span></div>
+            <div class="sum-row"><span class="sum-label">ACTIVE BLOCKS</span><span class="sum-val" id="sumBlocks">--</span></div>
+            <div class="sum-row"><span class="sum-label">EST. MONTHLY</span><span class="sum-val" id="sumPrice">--</span></div>
           </div>
           <div style="font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);margin-bottom:6px;">BILLING PLAN</div>
           <div class="plan-tabs">
@@ -571,7 +573,7 @@ Transparent pixels are not counted as blocks.
           <div class="price-box">
             <div class="p-row"><span>BASE PRICE</span><span class="p-amt" id="priceBase">--</span></div>
             <div class="p-row"><span>VOLUME DISCOUNT</span><span class="p-disc" id="priceDisc">--</span></div>
-            <div class="p-row total"><span>MONTHLY TOTAL</span><span class="p-amt" id="priceTotal">--</span></div>
+            <div class="p-row total"><span>MONTHLY TOTAL</span><span class="p-amt" id="priceTotal" style="font-size:32px;color:var(--green);">--</span></div>
             <div class="p-row" id="annualRow" style="display:none;"><span>ANNUAL TOTAL</span><span class="p-amt" id="priceAnnual">--</span></div>
             <div class="p-row" id="effectiveRow" style="display:none;"><span>EFFECTIVE RATE</span><span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--green);letter-spacing:0.5px;" id="priceEffective">--</span></div>
           </div>
@@ -584,6 +586,7 @@ Transparent pixels are not counted as blocks.
             </div>
           </div>
           <button class="btn-primary w100" id="ctaBtn" onclick="proceedToCheckout()">PROCEED TO PAYMENT</button>
+          <p style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);text-align:center;margin-top:8px;letter-spacing:1px;">Changed your mind? Use your browser's back button to return.</p>
           <p class="note">By proceeding you agree to our <a href="/app/pages/terms.html" target="_blank">Terms of Service</a> and <a href="/app/pages/terms.html" target="_blank">Privacy Policy</a>.<br>First month prorated. Billing auto-renews. Cancel anytime.</p>
         </div>
         <div>

@@ -1476,7 +1476,7 @@ function drawGrid(){
         selectedArea.x*CELL,selectedArea.y*CELL,
         selectedArea.w*CELL,selectedArea.h*CELL
       );
-    }else if(deletedBlocks.length===0&&!_editDone){
+    }else if(!_editDone){
       // Edit前（配置直後）：selectedArea全体を枠で囲む
       gridCtx.strokeStyle='rgba(74,184,255,0.9)';
       gridCtx.lineWidth=2;

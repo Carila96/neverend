@@ -1805,7 +1805,12 @@ async function proceedToCheckout(){
     const coData=await coRes.json();
     if(!coRes.ok||(!coData.url&&!coData.subscription_url&&!coData.payment_url)){showCheckoutError('Payment setup failed.');btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';return;}
     localStorage.setItem('neverend_placement',JSON.stringify({session_key}));
-    window.location.href=coData.subscription_url||coData.payment_url||coData.url;
+    const checkoutUrl=coData.subscription_url||coData.payment_url||coData.url;
+    if(window.parent!==window){
+      window.parent.location.href=checkoutUrl;
+    }else{
+      window.location.href=checkoutUrl;
+    }
   }catch(err){showCheckoutError('Connection error.');btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';}
 }
 

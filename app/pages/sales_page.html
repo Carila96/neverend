@@ -505,7 +505,7 @@ Transparent pixels are not counted as blocks.
     <div class="panel-body" style="padding:0;">
       <div class="grid-wrap">
         <div class="grid-hdr">
-          <div class="grid-info-txt"><strong id="gridStageName">STAGE 1</strong> &nbsp;|&nbsp; <span id="gridBlockInfo">128&times;72 | 10&times;10px</span></div>
+          <div class="grid-info-txt"><strong id="gridStageName">STAGE 1</strong> | <span id="gridBlockInfo">128&times;72 | 10&times;10px</span></div>
           <div class="grid-legend">
             <div class="leg-item"><div class="leg-dot leg-avail"></div>AVAIL</div>
             <div class="leg-item"><div class="leg-dot leg-claimed"></div>CLAIMED</div>
@@ -519,7 +519,7 @@ Transparent pixels are not counted as blocks.
           <label>ZOOM</label>
           <input type="range" id="gridZoomSlider" min="1" max="6" value="1" step="0.5" oninput="updateGridZoom()">
           <span class="grid-zoom-val" id="gridZoomVal">1&times;</span>
-          <span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);margin-left:12px;">drag to pan when zoomed</span>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted2);letter-spacing:1px;">drag to pan when zoomed</span>
         </div>
         <div class="grid-canvas-wrap" id="gridCanvasWrap" style="overflow:hidden;">
           <canvas id="gridCanvas" width="1280" height="720"></canvas>
@@ -535,19 +535,24 @@ Transparent pixels are not counted as blocks.
           </div>
         </div>
       </div>
-      <div style="padding:10px 14px;">
-        <div class="place-info" id="placeInfo" style="display:none;">
-          <div class="place-row"><span>POSITION</span><span class="place-val" id="placePos">--</span></div>
-          <div class="place-row"><span>SIZE</span><span class="place-val" id="placeSize">--</span></div>
-          <div class="place-row"><span>ACTIVE BLOCKS</span><span class="place-val" id="placeActiveBlocks">--</span></div>
-          <div class="place-row"><span>PRICE</span><span class="place-val" id="placePrice">--</span></div>
-          <div class="place-row"><span>STATUS</span><span class="place-val" id="placeStatus">--</span></div>
-        </div>
-
-        <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <!-- 横並びレイアウト：情報パネルを右に -->
+      <div style="display:grid;grid-template-columns:1fr 320px;gap:0;border-top:1px solid var(--border);">
+        <!-- 左：ボタン -->
+        <div style="padding:12px 16px;display:flex;align-items:center;gap:8px;">
+          <div id="gridHintSub" style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);flex:1;"></div>
           <button class="btn-ghost" id="resetPlaceBtn" onclick="resetPlacement()" style="display:none;">RESET</button>
           <button class="btn-warn" id="editBlocksBtn" onclick="enterEditMode()" style="display:none;">EDIT BLOCKS</button>
           <button class="btn-blue" id="confirmPlaceBtn" onclick="confirmPlacement()" style="display:none;" disabled>CONFIRM PLACEMENT &rarr;</button>
+        </div>
+        <!-- 右：情報パネル -->
+        <div style="border-left:1px solid var(--border);background:rgba(0,0,0,0.2);">
+          <div class="place-info" id="placeInfo" style="display:none;margin:0;border:none;border-radius:0;">
+            <div class="place-row"><span>POSITION</span><span class="place-val" id="placePos">--</span></div>
+            <div class="place-row"><span>SIZE</span><span class="place-val" id="placeSize">--</span></div>
+            <div class="place-row"><span>ACTIVE</span><span class="place-val" id="placeActiveBlocks">--</span></div>
+            <div class="place-row"><span>PRICE</span><span class="place-val" id="placePrice">--</span></div>
+            <div class="place-row"><span>STATUS</span><span class="place-val" id="placeStatus">--</span></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1438,7 +1443,19 @@ function isDeleted(c,r){
   return deletedBlocks.some(function(d){return d.x===lc&&d.y===lr;});
 }
 function getDisplayPixel(lc,lr){if(!pixelArtEdit||!pixelArtEdit[lr])return null;return pixelArtEdit[lr][lc]||null;}
-function hasConflict(x,y,w,h){for(let dr=0;dr<h;dr++)for(let dc=0;dc<w;dc++){if(isDeleted(x+dc,y+dr))continue;const st=getBlockState(x+dc,y+dr);if(st==='claimed'||st==='reserved')return true;}return false;}
+function hasConflict(x,y,w,h){
+  for(let dr=0;dr<h;dr++){
+    for(let dc=0;dc<w;dc++){
+      const bx=x+dc,by=y+dr;
+      const lc=bx-(selectedArea?selectedArea.x:x);
+      const lr=by-(selectedArea?selectedArea.y:y);
+      if(deletedBlocks.some(function(d){return d.x===lc&&d.y===lr;}))continue;
+      const st=getBlockState(bx,by);
+      if(st==='claimed'||st==='reserved')return true;
+    }
+  }
+  return false;
+}
 
 function drawGrid(){
   gridCtx.clearRect(0,0,1280,720);

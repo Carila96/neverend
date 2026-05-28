@@ -1814,7 +1814,7 @@ async function proceedToCheckout(){
   const btn=document.getElementById('ctaBtn');btn.disabled=true;btn.textContent='RESERVING...';
   const s=STAGES_DATA[currentStage-1];const BASE='https://neverend.vercel.app';
   try{
-    const resRes=await fetch(BASE+'/api/reserve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stage_id:currentStage,anchor_x:selectedArea.x,anchor_y:selectedArea.y,width:chosenW,height:chosenH,zone_type:s.type,plan_type:plan})});
+    const resRes=await fetch(BASE+'/api/reserve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stage_id:currentStage,anchor_x:selectedArea.x,anchor_y:selectedArea.y,width:chosenW,height:chosenH,zone_type:s.type,plan_type:plan,deleted_blocks:deletedBlocks})});
     const resData=await resRes.json();
     if(!resRes.ok||!resData.session_key){const msg=resData.message||resData.error||'';showCheckoutError(msg.toLowerCase().includes('overlap')||msg.toLowerCase().includes('conflict')?'This area is already taken.':'Reservation failed: '+msg);btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';return;}
     const session_key=resData.session_key;btn.textContent='UPLOADING LOGO...';

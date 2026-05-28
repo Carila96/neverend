@@ -19,14 +19,15 @@ const PRICE_TIERS = [
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { stage_id, anchor_x, anchor_y, width, height, zone_type, plan_type, admin_key } = req.body;
+  const { stage_id, anchor_x, anchor_y, width, height, zone_type, plan_type, admin_key, deleted_blocks } = req.body;
   if (!stage_id || anchor_x == null || anchor_y == null || !width || !height || !zone_type || !plan_type)
     return res.status(400).json({ error: 'Missing required fields' });
+  const deletedSet = new Set((Array.isArray(deleted_blocks) ? deleted_blocks : []).map(d => `${d.x},${d.y}`));
 
   if (anchor_x < 0 || anchor_x + width > 128 || anchor_y < 0 || anchor_y + height > 72)
     return res.status(400).json({ error: "Placement out of grid bounds (128x72)" });
 
-  const block_count = width * height;
+  const block_count = width * height - (Array.isArray(deleted_blocks) ? deleted_blocks.length : 0);
 
   // Admin free placement — bypass conflict check, insert directly as claimed
   if (admin_key) {
@@ -82,9 +83,10 @@ export default async function handler(req, res) {
     .gte('y', anchor_y).lt('y', anchor_y + height);
 
   const now = new Date().toISOString();
-  const conflicts = (rawConflicts || []).filter(b =>
-    b.status === 'claimed' || (b.status === 'reserved' && b.expires_at && b.expires_at > now)
-  );
+  const conflicts = (rawConflicts || []).filter(b => {
+    if (deletedSet.has(`${b.x - anchor_x},${b.y - anchor_y}`)) return false;
+    return b.status === 'claimed' || (b.status === 'reserved' && b.expires_at && b.expires_at > now);
+  });
 
   if (conflicts.length > 0)
     return res.status(409).json({
@@ -93,10 +95,11 @@ export default async function handler(req, res) {
       conflicts: conflicts.map(b => ({ x: b.x, y: b.y, status: b.status })),
     });
 
-  // Insert one row per block as reserved
+  // Insert one row per block as reserved (skip deleted_blocks)
   const blocks = [];
   for (let dy = 0; dy < height; dy++)
-    for (let dx = 0; dx < width; dx++)
+    for (let dx = 0; dx < width; dx++) {
+      if (deletedSet.has(`${dx},${dy}`)) continue;
       blocks.push({
         stage_id,
         x: anchor_x + dx,
@@ -105,6 +108,7 @@ export default async function handler(req, res) {
         reserved_at: new Date().toISOString(),
         expires_at,
       });
+    }
 
   const { error: insertError } = await supabase.from('owned_blocks').insert(blocks);
   if (insertError) {

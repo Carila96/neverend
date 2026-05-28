@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -62,7 +62,7 @@ nav a:hover{color:var(--accent2);}
 .btn-warn{background:none;border:1px solid rgba(245,200,66,0.4);color:var(--gold);padding:7px 12px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;}
 .btn-warn:hover{background:rgba(245,200,66,0.08);}
 .w100{width:100%;display:block;margin-bottom:8px;}
-.upload-layout{display:grid;grid-template-columns:240px 1fr;gap:16px;align-items:start;}
+.upload-layout{display:grid;grid-template-columns:1fr 1.8fr;gap:20px;align-items:start;}
 .upload-drop{border:2px dashed var(--border2);padding:16px 10px;text-align:center;cursor:pointer;transition:all 0.25s;background:var(--panel2);}
 .upload-drop:hover{border-color:var(--accent2);background:rgba(74,184,255,0.04);}
 .upload-icon{font-size:20px;margin-bottom:6px;color:var(--muted);}
@@ -74,7 +74,7 @@ nav a:hover{color:var(--accent2);}
 .trim-mode-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);padding:3px 8px;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;cursor:pointer;}
 .trim-mode-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(74,184,255,0.06);}
 .trim-canvas-row{display:flex;gap:4px;align-items:stretch;}
-.sq-canvas-wrap{position:relative;background:#000;border:1px solid var(--border);overflow:hidden;cursor:grab;flex:1;aspect-ratio:1/1;}
+.sq-canvas-wrap{position:relative;background:#000;border:1px solid var(--border);overflow:hidden;cursor:grab;flex:1;min-height:320px;}
 .sq-canvas-wrap:active{cursor:grabbing;}
 #trimCanvas{display:block;width:100%;height:100%;}
 .trim-vslider-wrap{display:flex;align-items:center;justify-content:center;width:20px;}
@@ -85,8 +85,8 @@ nav a:hover{color:var(--accent2);}
 .trim-ctrl label{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;width:24px;flex-shrink:0;}
 .trim-ctrl input[type=range]{flex:1;accent-color:var(--accent2);}
 .trim-val{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--accent2);min-width:26px;text-align:right;}
-.size-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
-.size-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);padding:8px 10px;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;text-align:center;line-height:1.7;flex:1;min-width:90px;}
+.size-grid{display:grid;grid-template-columns:repeat(9,1fr);gap:6px;margin-bottom:14px;}
+.size-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);padding:8px 6px;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;text-align:center;line-height:1.7;width:100%;}
 .size-btn:hover{border-color:var(--accent2);}
 .size-btn.active{border-color:var(--accent2);background:rgba(74,184,255,0.08);color:var(--accent2);}
 .size-btn .sb-name{font-family:'Bebas Neue',sans-serif;font-size:13px;color:#fff;display:block;letter-spacing:1px;}
@@ -102,7 +102,7 @@ nav a:hover{color:var(--accent2);}
 .prev-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted2);padding:4px 8px;border-bottom:1px solid var(--border);background:var(--panel);}
 .prev-inner{display:flex;align-items:center;justify-content:center;padding:8px;min-height:60px;}
 .prev-inner canvas{image-rendering:pixelated;max-width:100%;}
-.color-main-layout{display:grid;grid-template-columns:1fr 200px;gap:12px;align-items:start;min-width:0;}
+.color-main-layout{display:grid;grid-template-columns:1fr 220px;gap:16px;align-items:start;min-width:0;}
 .color-toolbar{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center;}
 .ctool-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);padding:6px 10px;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
 .ctool-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(74,184,255,0.08);}
@@ -110,7 +110,7 @@ nav a:hover{color:var(--accent2);}
 .edit-zoom-bar label{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;}
 .edit-zoom-bar input{width:70px;accent-color:var(--accent2);}
 .edit-zoom-val{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--accent2);}
-.edit-canvas-wrap{overflow:auto;overflow-x:auto;overflow-y:auto;max-height:400px;border:1px solid var(--border);background:var(--panel2);margin-bottom:8px;min-width:0;}
+.edit-canvas-wrap{overflow:auto;max-height:500px;border:1px solid var(--border);background:var(--panel2);margin-bottom:8px;min-width:0;}
 #editCanvas{display:block;image-rendering:pixelated;cursor:crosshair;}
 .edit-stat{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);margin-bottom:8px;}
 .color-sidebar{background:var(--panel2);border:1px solid var(--border);padding:10px;position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow-y:auto;}
@@ -135,7 +135,7 @@ nav a:hover{color:var(--accent2);}
 .mini-hex-row label{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--muted);flex-shrink:0;}
 #miniHexInput{flex:1;background:var(--panel);border:1px solid var(--border);color:var(--text);padding:3px 5px;font-family:'Share Tech Mono',monospace;font-size:9px;outline:none;}
 .mini-preview-sw{width:100%;height:18px;border:1px solid var(--border);margin-bottom:6px;}
-.stage-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;}
+.stage-layout{display:grid;grid-template-columns:1fr 1.4fr;gap:20px;align-items:start;}
 .stage-sel-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
 .stage-arr{background:none;border:1px solid var(--border);color:var(--muted2);width:32px;height:32px;cursor:pointer;font-size:12px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .stage-arr:hover:not(:disabled){border-color:var(--accent2);color:var(--accent2);}
@@ -171,9 +171,9 @@ nav a:hover{color:var(--accent2);}
 .grid-edit-bar{display:flex;gap:8px;padding:7px 14px;border-top:1px solid var(--border);flex-wrap:wrap;align-items:center;background:var(--panel);}
 .edit-mode-hint{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--gold);letter-spacing:1px;}
 .place-info{background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.2);padding:10px 14px;margin:10px 0;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:2;}
-.place-row{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.place-row{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,0.05);}
 .place-row span:first-child{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px;}
-.place-val{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent2);letter-spacing:2px;}
+.place-val{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent2);letter-spacing:1px;}
 .pay-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
 .order-box{background:var(--panel2);border:1px solid var(--border);padding:14px;margin-bottom:14px;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:2.2;}
 .sum-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
@@ -298,29 +298,32 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
         <div>
           <div class="upload-drop" id="uploadZone" onclick="document.getElementById('fileInput').click()">
             <div class="upload-icon">&#8679;</div>
-            <h3>Drop image</h3>
+            <h3>DROP IMAGE</h3>
             <p>PNG JPG GIF &bull; max 2MB<br><span style="color:var(--accent2)">PNG transparency preserved</span></p>
           </div>
           <input type="file" id="fileInput" accept="image/*">
-          <p style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:8px;line-height:1.8;">
-💡 TIP: Square images work best for NANO / SMALL / MEDIUM.<br>
-For widescreen logos, choose LARGE or XL.<br>
-Transparent pixels are not counted as blocks.
-</p>
-          <div id="uploadFileInfo" style="display:none;margin-top:6px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted2);padding:5px 7px;background:var(--panel2);border:1px solid var(--border);">
+          <div id="uploadFileInfo" style="display:none;margin-top:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);padding:6px 8px;background:var(--panel2);border:1px solid var(--border);">
             <span id="uploadFileName" style="color:var(--accent2)"></span><br><span id="uploadDims"></span>
           </div>
-          <div style="margin-top:8px;">
-            <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">TRIM</div>
+          <p style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:10px;line-height:1.9;">
+            &#128161; Square images work best for NANO / SMALL / MEDIUM.<br>
+            For widescreen logos, choose LARGE or XL.<br>
+            Transparent pixels are not counted as blocks.
+          </p>
+          <div style="margin-top:12px;">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">TRIM</div>
             <div class="trim-ctrl"><label>ZOOM</label><input type="range" id="trimZoom" min="100" max="400" value="100" oninput="updateTrim()"><span class="trim-val" id="trimZoomVal">100%</span></div>
+          </div>
+          <div style="margin-top:16px;">
+            <button class="btn-blue" id="uploadContinueBtn" onclick="goToSection2()" disabled style="width:100%;">CONTINUE TO SIZE &rarr;</button>
           </div>
         </div>
         <div>
-          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:5px;">PREVIEW</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">PREVIEW</div>
           <div class="trim-area-wrap">
             <div class="trim-mode-btns">
-              <button class="trim-mode-btn active" id="trimModeMove" onclick="setTrimMode('move')">MOVE IMAGE</button>
-              <button class="trim-mode-btn" id="trimModeCrop" onclick="setTrimMode('crop')">ADJUST FRAME</button>
+              <button class="trim-mode-btn active" id="trimModeMove" onclick="setTrimMode('move')">&#128247; MOVE IMAGE</button>
+              <button class="trim-mode-btn" id="trimModeCrop" onclick="setTrimMode('crop')">&#9986; ADJUST FRAME</button>
             </div>
             <div class="trim-canvas-row">
               <div class="sq-canvas-wrap" id="trimWrap"><canvas id="trimCanvas" width="400" height="400"></canvas></div>
@@ -331,132 +334,139 @@ Transparent pixels are not counted as blocks.
           </div>
         </div>
       </div>
-      <div style="margin-top:14px;display:flex;justify-content:flex-end;">
-        <button class="btn-blue" id="uploadContinueBtn" onclick="goToSection2()" disabled>CONTINUE TO SIZE &rarr;</button>
-      </div>
     </div>
   </div>
   <div class="flow-panel locked" id="sec2">
     <div class="panel-hdr"><span class="panel-num">2</span><span class="panel-title">CHOOSE SIZE</span><span class="panel-check" id="sec2Done" style="display:none">&#10003;</span></div>
     <div class="panel-body">
-      <div class="size-grid">
-        <button class="size-btn" onclick="selectPreset(2,2,this)">
-          <span class="sb-name">NANO</span>
-          <span class="sb-grid">2×2</span>
-          <span class="sb-blocks">1+ blocks</span>
-          <span style="color:var(--green)" id="nanoPrice">from $1/mo</span>
-        </button>
-        <button class="size-btn" onclick="selectPreset(7,7,this)">
-          <span class="sb-name">SMALL</span>
-          <span class="sb-grid">7×7</span>
-          <span class="sb-blocks">~50 blocks</span>
-          <span style="color:var(--green)" id="smallPrice">~$16/mo</span>
-        </button>
-        <button class="size-btn" onclick="selectPreset(15,14,this)">
-          <span class="sb-name">MEDIUM</span>
-          <span class="sb-grid">15×14</span>
-          <span class="sb-blocks">~200 blk -10%</span>
-          <span style="color:var(--green)" id="medPrice">~$59/mo</span>
-        </button>
-        <button class="size-btn" onclick="selectPreset(23,22,this)">
-          <span class="sb-name">LARGE</span>
-          <span class="sb-grid">23×22</span>
-          <span class="sb-blocks">~500 blk -20%</span>
-          <span style="color:var(--green)" id="largePrice">~$131/mo</span>
-        </button>
-        <button class="size-btn" onclick="selectPreset(48,22,this)">
-          <span class="sb-name">WIDE</span>
-          <span class="sb-grid">48×22</span>
-          <span class="sb-blocks">~1k blk -30% 横長</span>
-          <span style="color:var(--green)" id="widePrice">~$228/mo</span>
-        </button>
-        <button class="size-btn" onclick="selectPreset(22,48,this)">
-          <span class="sb-name">TALL</span>
-          <span class="sb-grid">22×48</span>
-          <span class="sb-blocks">~1k blk -30% 縦長</span>
-          <span style="color:var(--green)" id="tallPrice">~$228/mo</span>
-        </button>
-        <button class="size-btn" onclick="selectPreset(48,48,this)">
-          <span class="sb-name">XL</span>
-          <span class="sb-grid">48×48</span>
-          <span class="sb-blocks">~2.3k blk -30%</span>
-          <span style="color:var(--green)" id="xlPrice">~$532/mo</span>
-        </button>
-        <button class="size-btn" id="monopolyBtn" onclick="selectMonopoly(this)">
-          <span class="sb-name">FULL STAGE</span>
-          <span class="sb-grid">128×72</span>
-          <span class="sb-blocks">9,216 blocks</span>
-          <span style="color:var(--gold)" id="monoPrice">$3,000/mo</span>
-        </button>
-        <button class="size-btn" id="customSizeBtn" onclick="selectCustom(this)">
-          <span class="sb-name">CUSTOM</span>
-          <span class="sb-blocks">min 1, max 9,216</span>
-          <span style="color:var(--muted)">Enter count</span>
-        </button>
-      </div>
-      <div id="customInputs" style="display:none;margin-bottom:10px;">
-        <div class="custom-row">
-          <input type="number" id="customBlocks" value="50" min="1" max="9216" oninput="updateCustomInfo()">
-          <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted)">blocks</span>
-          <button class="btn-ghost" onclick="applyCustomBlocks()">APPLY</button>
+      <div style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start;">
+        <div>
+          <div class="size-grid">
+            <button class="size-btn" onclick="selectPreset(2,2,this)">
+              <span class="sb-name">NANO</span>
+              <span class="sb-grid">2&times;2</span>
+              <span class="sb-blocks">1+ blocks</span>
+              <span style="color:var(--green)" id="nanoPrice">from $1/mo</span>
+            </button>
+            <button class="size-btn" onclick="selectPreset(7,7,this)">
+              <span class="sb-name">SMALL</span>
+              <span class="sb-grid">7&times;7</span>
+              <span class="sb-blocks">~50 blocks</span>
+              <span style="color:var(--green)" id="smallPrice">~$16/mo</span>
+            </button>
+            <button class="size-btn" onclick="selectPreset(15,14,this)">
+              <span class="sb-name">MEDIUM</span>
+              <span class="sb-grid">15&times;14</span>
+              <span class="sb-blocks">~200 blk -10%</span>
+              <span style="color:var(--green)" id="medPrice">~$59/mo</span>
+            </button>
+            <button class="size-btn" onclick="selectPreset(23,22,this)">
+              <span class="sb-name">LARGE</span>
+              <span class="sb-grid">23&times;22</span>
+              <span class="sb-blocks">~500 blk -20%</span>
+              <span style="color:var(--green)" id="largePrice">~$131/mo</span>
+            </button>
+            <button class="size-btn" onclick="selectPreset(48,22,this)">
+              <span class="sb-name">WIDE</span>
+              <span class="sb-grid">48&times;22</span>
+              <span class="sb-blocks">~1k blk -30%</span>
+              <span style="color:var(--green)" id="widePrice">~$228/mo</span>
+            </button>
+            <button class="size-btn" onclick="selectPreset(22,48,this)">
+              <span class="sb-name">TALL</span>
+              <span class="sb-grid">22&times;48</span>
+              <span class="sb-blocks">~1k blk -30%</span>
+              <span style="color:var(--green)" id="tallPrice">~$228/mo</span>
+            </button>
+            <button class="size-btn" onclick="selectPreset(48,48,this)">
+              <span class="sb-name">XL</span>
+              <span class="sb-grid">48&times;48</span>
+              <span class="sb-blocks">~2.3k blk -30%</span>
+              <span style="color:var(--green)" id="xlPrice">~$532/mo</span>
+            </button>
+            <button class="size-btn" id="monopolyBtn" onclick="selectMonopoly(this)">
+              <span class="sb-name">FULL STAGE</span>
+              <span class="sb-grid">128&times;72</span>
+              <span class="sb-blocks">9,216 blocks</span>
+              <span style="color:var(--gold)" id="monoPrice">$3,000/mo</span>
+            </button>
+            <button class="size-btn" id="customSizeBtn" onclick="selectCustom(this)">
+              <span class="sb-name">CUSTOM</span>
+              <span class="sb-blocks">min 1, max 9,216</span>
+              <span style="color:var(--muted)">Enter count</span>
+            </button>
+          </div>
+          <div id="customInputs" style="display:none;margin-bottom:10px;">
+            <div class="custom-row">
+              <input type="number" id="customBlocks" value="50" min="1" max="9216" oninput="updateCustomInfo()">
+              <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted)">blocks</span>
+              <button class="btn-ghost" onclick="applyCustomBlocks()">APPLY</button>
+            </div>
+            <div id="customInfo" style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);line-height:2;"></div>
+          </div>
+          <div id="sec2Converting" style="display:none;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);padding:12px;text-align:center;letter-spacing:2px;">Converting...</div>
+          <div id="sec2PreviewWrap" style="display:none;">
+            <div class="prev-single"><div class="prev-lbl">ON GRID PREVIEW (1:1)</div><div class="prev-inner"><canvas id="prevCanvas"></canvas></div></div>
+            <div id="sec2Stats" style="font-family:'Share Tech Mono',monospace;font-size:16px;color:var(--text);padding:12px 16px;background:rgba(74,184,255,0.06);border:1px solid rgba(74,184,255,0.2);margin-top:8px;letter-spacing:1px;"></div>
+            <p style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);margin-bottom:10px;">Only colored (non-transparent) blocks are charged.</p>
+            <div style="display:flex;justify-content:flex-end;"><button class="btn-blue" onclick="goToSection3()">CONTINUE TO EDIT COLORS &rarr;</button></div>
+          </div>
         </div>
-        <div id="customInfo" style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);line-height:2;"></div>
-      </div>
-      <div style="background:var(--panel2);border:1px solid var(--border);padding:14px 16px;margin-bottom:10px;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:2;color:var(--muted2);">
-        <div style="color:var(--accent2);font-size:9px;letter-spacing:2px;margin-bottom:6px;">PRICING &amp; ESCALATION</div>
-        <div>Current price: <span style="color:#fff" id="pricePerBlockDisplay">$0.40</span>/block &mdash; Full stage: <span style="color:#fff" id="fullStageDisplay">$1,000/mo</span></div>
-        <div style="margin-top:6px;color:var(--muted);font-size:9px;">Price rises globally as blocks are claimed across all stages:</div>
-        <div style="margin-top:4px;">• 0&ndash;20k blocks &rarr; <span style="color:var(--gold)">$0.40/block</span></div>
-        <div>• 20k&ndash;50k blocks &rarr; <span style="color:var(--gold)">$0.70/block</span></div>
-        <div>• 50k&ndash;90k blocks &rarr; <span style="color:var(--gold)">$1.10/block</span></div>
-        <div>• 90k+ blocks &rarr; <span style="color:var(--gold)">$1.60–$4.00/block</span></div>
-        <div style="margin-top:6px;color:var(--green);font-size:9px;">Your purchase price is locked permanently. Cancel anytime.</div>
-      </div>
-      <div id="sec2Converting" style="display:none;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);margin-bottom:8px;">Converting...</div>
-      <div id="sec2PreviewWrap" style="display:none;">
-        <div class="prev-single"><div class="prev-lbl">ON GRID PREVIEW (1:1)</div><div class="prev-inner"><canvas id="prevCanvas"></canvas></div></div>
-        <div id="sec2Stats" style="font-family:'Share Tech Mono',monospace;font-size:16px;color:var(--text);padding:12px 16px;background:rgba(74,184,255,0.06);border:1px solid rgba(74,184,255,0.2);margin-top:8px;letter-spacing:1px;"></div>
-        <p style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);margin-bottom:10px;">Only colored (non-transparent) blocks are charged.</p>
-        <div style="display:flex;justify-content:flex-end;"><button class="btn-blue" onclick="goToSection3()">CONTINUE TO EDIT COLORS &rarr;</button></div>
+        <div style="background:var(--panel2);border:1px solid var(--border);padding:16px;">
+          <div style="color:var(--accent2);font-size:10px;letter-spacing:2px;margin-bottom:12px;font-family:'Share Tech Mono',monospace;">PRICING &amp; ESCALATION</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text);margin-bottom:8px;">
+            Current: <span style="color:#fff;font-size:14px;" id="pricePerBlockDisplay">$0.40</span>/block
+          </div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text);margin-bottom:14px;">
+            Full stage: <span style="color:var(--gold);font-size:14px;" id="fullStageDisplay">$1,000/mo</span>
+          </div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:8px;letter-spacing:1px;">Price rises globally as blocks are claimed:</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:10px;line-height:2.2;">
+            <div>0&ndash;20k &rarr; <span style="color:var(--gold)">$0.40/block</span></div>
+            <div>20k&ndash;50k &rarr; <span style="color:var(--gold)">$0.70/block</span></div>
+            <div>50k&ndash;90k &rarr; <span style="color:var(--gold)">$1.10/block</span></div>
+            <div>90k+ &rarr; <span style="color:var(--gold)">$1.60&ndash;$4.00/block</span></div>
+          </div>
+          <div style="margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--green);line-height:1.8;">Your purchase price is locked permanently. Cancel anytime.</div>
+        </div>
       </div>
     </div>
   </div>
   <div class="flow-panel locked" id="sec3">
     <div class="panel-hdr"><span class="panel-num">3</span><span class="panel-title">EDIT COLORS</span><span class="panel-check" id="sec3Done" style="display:none">&#10003;</span></div>
     <div class="panel-body">
-      <div class="color-toolbar">
-        <button class="ctool-btn active" id="toolPan" onclick="setColorTool('pan')" title="Pan image">&#9995; PAN</button>
-        <button class="ctool-btn" id="toolReplace" onclick="setColorTool('replace')" title="Replace color">REPLACE</button>
-        <button class="ctool-btn" id="toolEyedropper" onclick="setColorTool('eyedropper')" title="Pick color">EYEDROPPER</button>
-        <button class="btn-ghost" onclick="undoEditColor()" id="editUndoBtn" disabled title="Undo">&#8592; UNDO</button>
-        <button class="btn-ghost" onclick="redoEditColor()" id="editRedoBtn" disabled title="Redo">REDO &#8594;</button>
-        <button class="btn-ghost" onclick="resetEditPixels()" style="margin-left:auto;" title="Reset">RESET</button>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-        <span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;">BRUSH</span>
-        <button class="ctool-btn active" id="brush1" onclick="setBrushSize(1,this)">1PX</button>
-        <button class="ctool-btn" id="brush3" onclick="setBrushSize(3,this)">3PX</button>
-        <button class="ctool-btn" id="brush5" onclick="setBrushSize(5,this)">5PX</button>
-      </div>
-      <div id="toolHint" style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted2);margin-bottom:6px;letter-spacing:1px;">PAN: drag to move image.</div>
-      <div class="edit-zoom-bar">
-        <label>ZOOM</label>
-        <input type="range" id="editZoomSlider" min="1" max="8" value="1" step="1" oninput="updateEditZoom()">
-        <span class="edit-zoom-val" id="editZoomVal">1&times;</span>
-      </div>
       <div class="color-main-layout">
         <div style="min-width:0;overflow:hidden;">
           <div class="edit-canvas-wrap" id="editCanvasWrap"><canvas id="editCanvas"></canvas></div>
+          <div class="edit-zoom-bar">
+            <label>ZOOM</label>
+            <input type="range" id="editZoomSlider" min="1" max="8" value="1" step="1" oninput="updateEditZoom()">
+            <span class="edit-zoom-val" id="editZoomVal">1&times;</span>
+          </div>
           <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">Checkered = transparent. Transparent pixels are not charged and appear blank in-game.</div>
           <div class="edit-stat" id="editStats"></div>
-          <div style="display:flex;justify-content:flex-end;"><button class="btn-blue" onclick="goToSection4()">CONTINUE TO SELECT STAGE &rarr;</button></div>
+          <div style="display:flex;justify-content:flex-end;margin-top:8px;"><button class="btn-blue" onclick="goToSection4()">CONTINUE TO SELECT STAGE &rarr;</button></div>
         </div>
         <div class="color-sidebar">
+          <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;">
+            <button class="ctool-btn active" id="toolPan" onclick="setColorTool('pan')">&#9995; PAN</button>
+            <button class="ctool-btn" id="toolReplace" onclick="setColorTool('replace')">REPLACE</button>
+            <button class="ctool-btn" id="toolEyedropper" onclick="setColorTool('eyedropper')">EYEDROP</button>
+          </div>
+          <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;">
+            <button class="btn-ghost" onclick="undoEditColor()" id="editUndoBtn" disabled>&#8592; UNDO</button>
+            <button class="btn-ghost" onclick="redoEditColor()" id="editRedoBtn" disabled>REDO &#8594;</button>
+            <button class="btn-ghost" onclick="resetEditPixels()">RESET</button>
+          </div>
+          <div style="display:flex;gap:4px;align-items:center;margin-bottom:10px;">
+            <span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;">BRUSH</span>
+            <button class="ctool-btn active" id="brush1" onclick="setBrushSize(1,this)">1PX</button>
+            <button class="ctool-btn" id="brush3" onclick="setBrushSize(3,this)">3PX</button>
+            <button class="ctool-btn" id="brush5" onclick="setBrushSize(5,this)">5PX</button>
+          </div>
+          <div id="toolHint" style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted2);margin-bottom:10px;letter-spacing:1px;">PAN: drag to move image.</div>
           <div class="cs-title">PALETTE</div>
-          <button class="ctool-btn" id="toolTransparent" onclick="setColorTool('transparent')"
-            style="width:100%;margin-bottom:8px;padding:8px;font-size:10px;letter-spacing:1px;">
-            &#9003; TRANSPARENT
-          </button>
+          <button class="ctool-btn" id="toolTransparent" onclick="setColorTool('transparent')" style="width:100%;margin-bottom:8px;padding:8px;font-size:10px;letter-spacing:1px;">&#8999; TRANSPARENT</button>
           <div class="pal-groups" id="palGroups"></div>
           <hr class="cs-divider">
           <div class="cs-add-title">ADD COLOR</div>
@@ -477,26 +487,21 @@ Transparent pixels are not counted as blocks.
           <div class="stage-sel-row">
             <button class="stage-arr" id="stagePrevBtn" onclick="changeStage(-1)" disabled>&#9664;</button>
             <div class="stage-sel-wrap"><select id="stageSelect" onchange="setStage(parseInt(this.value))"></select></div>
-<div style="display:flex;align-items:center;gap:6px;margin-top:8px;">
-  <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;">JUMP TO:</span>
-  <input type="number" id="stageJumpInput" min="1" max="75" value="1"
-    style="width:60px;background:var(--panel2);border:1px solid var(--border);
-    color:var(--text);font-family:'Share Tech Mono',monospace;font-size:12px;
-    padding:4px 6px;outline:none;text-align:center;"
-    onkeydown="if(event.key==='Enter'){const n=parseInt(this.value);if(n>=1&&n<=STAGES_DATA.length)setStage(n);}">
-  <button onclick="const n=parseInt(document.getElementById('stageJumpInput').value);if(n>=1&&n<=STAGES_DATA.length)setStage(n);"
-    style="background:none;border:1px solid var(--border);color:var(--muted2);
-    padding:4px 10px;font-family:'Share Tech Mono',monospace;font-size:10px;
-    letter-spacing:1px;cursor:pointer;text-transform:uppercase;">GO</button>
-</div>
             <button class="stage-arr" id="stageNextBtn" onclick="changeStage(1)">&#9654;</button>
           </div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+            <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;">JUMP TO:</span>
+            <input type="number" id="stageJumpInput" min="1" max="75" value="1" style="width:60px;background:var(--panel2);border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:12px;padding:4px 6px;outline:none;text-align:center;" onkeydown="if(event.key==='Enter'){const n=parseInt(this.value);if(n>=1&&n<=STAGES_DATA.length)setStage(n);}">
+            <button onclick="const n=parseInt(document.getElementById('stageJumpInput').value);if(n>=1&&n<=STAGES_DATA.length)setStage(n);" style="background:none;border:1px solid var(--border);color:var(--muted2);padding:4px 10px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;">GO</button>
+          </div>
           <div id="stageBadge" class="stage-badge">STANDARD</div>
-          <div class="stage-info" id="stageInfoText"></div>
-          <div class="stage-price-info" id="stagePriceInfo"></div>
-          <button class="btn-blue w100" onclick="confirmStage()">SELECT THIS STAGE &rarr;</button>
+          <div class="stage-info" id="stageInfoText" style="font-size:13px;margin-bottom:10px;"></div>
+          <div class="stage-price-info" id="stagePriceInfo" style="font-size:12px;margin-bottom:14px;"></div>
+          <button class="btn-blue w100" onclick="confirmStage()" style="padding:12px;font-size:12px;">SELECT THIS STAGE &rarr;</button>
         </div>
-        <div><canvas id="stageMapCanvas" width="400" height="225"></canvas></div>
+        <div>
+          <canvas id="stageMapCanvas" width="400" height="225" style="width:100%;"></canvas>
+        </div>
       </div>
     </div>
   </div>

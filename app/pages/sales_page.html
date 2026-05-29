@@ -294,19 +294,19 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
   <div class="flow-panel" id="sec1">
     <div class="panel-hdr"><span class="panel-num">1</span><span class="panel-title">UPLOAD &amp; TRIM</span><span class="panel-check" id="sec1Done" style="display:none">&#10003;</span></div>
     <div class="panel-body">
-      <div class="upload-layout">
-        <div>
+      <div style="display:flex;gap:32px;align-items:flex-start;justify-content:center;">
+        <div style="width:320px;flex-shrink:0;">
           <div class="upload-drop" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-            <div class="upload-icon">&#8679;</div>
+            <div class="upload-icon">↑</div>
             <h3>DROP IMAGE</h3>
-            <p>PNG JPG GIF &bull; max 2MB<br><span style="color:var(--accent2)">PNG transparency preserved</span></p>
+            <p>PNG JPG GIF • max 2MB<br><span style="color:var(--accent2)">PNG transparency preserved</span></p>
           </div>
           <input type="file" id="fileInput" accept="image/*">
           <div id="uploadFileInfo" style="display:none;margin-top:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);padding:6px 8px;background:var(--panel2);border:1px solid var(--border);">
             <span id="uploadFileName" style="color:var(--accent2)"></span><br><span id="uploadDims"></span>
           </div>
           <p style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1px;margin-top:10px;line-height:2;font-weight:500;">
-            &#128161; Square images work best for NANO / SMALL / MEDIUM.<br>
+            💡 Square images work best for NANO / SMALL / MEDIUM.<br>
             For widescreen logos, choose LARGE or XL.<br>
             Transparent pixels are not counted as blocks.
           </p>
@@ -315,25 +315,25 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
             <div class="trim-ctrl"><label>ZOOM</label><input type="range" id="trimZoom" min="100" max="400" value="100" oninput="updateTrim()"><span class="trim-val" id="trimZoomVal">100%</span></div>
           </div>
           <div style="margin-top:16px;">
-            <button class="btn-blue" id="uploadContinueBtn" onclick="goToSection2()" disabled style="width:100%;">CONTINUE TO SIZE &rarr;</button>
+            <button class="btn-blue" id="uploadContinueBtn" onclick="goToSection2()" disabled style="width:100%;padding:12px;font-size:12px;">CONTINUE TO SIZE →</button>
           </div>
-          <div style="text-align:center;margin-top:16px;">
-            <canvas id="charCanvas" width="160" height="120" style="image-rendering:pixelated;opacity:0.7;display:block;margin:0 auto;"></canvas>
+          <div style="display:flex;justify-content:center;align-items:center;margin-top:24px;min-height:120px;">
+            <canvas id="charCanvas" width="160" height="120" style="image-rendering:pixelated;opacity:0.7;display:block;"></canvas>
           </div>
         </div>
-        <div>
+        <div style="flex:1;max-width:600px;">
           <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">PREVIEW</div>
           <div class="trim-area-wrap">
             <div class="trim-mode-btns">
-              <button class="trim-mode-btn active" id="trimModeMove" onclick="setTrimMode('move')">&#128247; MOVE IMAGE</button>
-              <button class="trim-mode-btn" id="trimModeCrop" onclick="setTrimMode('crop')">&#9986; ADJUST FRAME</button>
+              <button class="trim-mode-btn active" id="trimModeMove" onclick="setTrimMode('move')">📷 MOVE IMAGE</button>
+              <button class="trim-mode-btn" id="trimModeCrop" onclick="setTrimMode('crop')">✂ ADJUST FRAME</button>
             </div>
             <div class="trim-canvas-row">
               <div class="sq-canvas-wrap" id="trimWrap"><canvas id="trimCanvas" width="400" height="400"></canvas></div>
               <div class="trim-vslider-wrap"><input type="range" class="trim-vslider" id="trimVSlider" min="0" max="100" value="0" oninput="onTrimSlider()"></div>
             </div>
             <div class="trim-hslider-wrap"><input type="range" class="trim-hslider" id="trimHSlider" min="0" max="100" value="0" oninput="onTrimSlider()"></div>
-            <p style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted2);margin-top:4px;letter-spacing:1px;" id="trimHint">Drag to pan image.</p>
+            <p style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted2);margin-top:4px;letter-spacing:1px;" id="trimHint">Drag to pan image.</p>
           </div>
         </div>
       </div>

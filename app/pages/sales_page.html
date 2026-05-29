@@ -62,7 +62,7 @@ nav a:hover{color:var(--accent2);}
 .btn-warn{background:none;border:1px solid rgba(245,200,66,0.4);color:var(--gold);padding:7px 12px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;}
 .btn-warn:hover{background:rgba(245,200,66,0.08);}
 .w100{width:100%;display:block;margin-bottom:8px;}
-.upload-layout{display:grid;grid-template-columns:1fr 1.4fr;gap:20px;align-items:start;}
+.upload-layout{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start;max-width:1000px;margin:0 auto;}
 .upload-drop{border:2px dashed var(--border2);padding:16px 10px;text-align:center;cursor:pointer;transition:all 0.25s;background:var(--panel2);}
 .upload-drop:hover{border-color:var(--accent2);background:rgba(74,184,255,0.04);}
 .upload-icon{font-size:20px;margin-bottom:6px;color:var(--muted);}
@@ -73,7 +73,7 @@ nav a:hover{color:var(--accent2);}
 .trim-mode-btns{display:flex;gap:4px;margin-bottom:2px;}
 .trim-mode-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);padding:3px 8px;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;cursor:pointer;}
 .trim-mode-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(74,184,255,0.06);}
-.trim-canvas-row{display:flex;gap:4px;align-items:flex-end;}
+.trim-canvas-row{display:flex;gap:4px;align-items:stretch;}
 .sq-canvas-wrap{position:relative;background:#000;border:1px solid var(--border);overflow:hidden;cursor:grab;width:560px;height:560px;}
 .sq-canvas-wrap:active{cursor:grabbing;}
 #trimCanvas{display:block;width:100%;height:100%;}
@@ -317,6 +317,9 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
           <div style="margin-top:16px;">
             <button class="btn-blue" id="uploadContinueBtn" onclick="goToSection2()" disabled style="width:100%;">CONTINUE TO SIZE &rarr;</button>
           </div>
+          <div style="text-align:center;margin-top:16px;">
+            <canvas id="charCanvas" width="200" height="300" style="image-rendering:pixelated;opacity:0.6;"></canvas>
+          </div>
         </div>
         <div>
           <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">PREVIEW</div>
@@ -328,7 +331,6 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
             <div class="trim-canvas-row">
               <div class="sq-canvas-wrap" id="trimWrap"><canvas id="trimCanvas" width="400" height="400"></canvas></div>
               <div class="trim-vslider-wrap"><input type="range" class="trim-vslider" id="trimVSlider" min="0" max="100" value="0" oninput="onTrimSlider()"></div>
-              <canvas id="charCanvas" width="120" height="300" style="display:block;image-rendering:pixelated;opacity:0.7;margin-left:16px;align-self:flex-end;"></canvas>
             </div>
             <div class="trim-hslider-wrap"><input type="range" class="trim-hslider" id="trimHSlider" min="0" max="100" value="0" oninput="onTrimSlider()"></div>
             <p style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted2);margin-top:4px;letter-spacing:1px;" id="trimHint">Drag to pan image.</p>
@@ -1849,10 +1851,10 @@ fetchPriceTier();
   const canvas=document.getElementById('charCanvas');
   if(!canvas)return;
   const ctx=canvas.getContext('2d');
-  const x=15,y=20;
+  const x=70,y=30;
   const charCol='rgba(220,235,210,0.92)';
   ctx.save();
-  ctx.scale(2,2);
+  ctx.scale(2.5,2.5);
   ctx.shadowColor=charCol;ctx.shadowBlur=14;
   ctx.strokeStyle=charCol;ctx.fillStyle='rgba(0,0,0,0.72)';ctx.lineWidth=2.5;
   ctx.beginPath();ctx.moveTo(x-2,y+12);ctx.lineTo(x+30,y+12);ctx.stroke();

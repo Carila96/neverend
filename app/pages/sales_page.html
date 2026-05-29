@@ -320,17 +320,19 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
         </div>
         <div>
           <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">PREVIEW</div>
-          <div class="trim-area-wrap">
-            <div class="trim-mode-btns">
-              <button class="trim-mode-btn active" id="trimModeMove" onclick="setTrimMode('move')">&#128247; MOVE IMAGE</button>
-              <button class="trim-mode-btn" id="trimModeCrop" onclick="setTrimMode('crop')">&#9986; ADJUST FRAME</button>
+          <div style="max-width:420px;">
+            <div class="trim-area-wrap">
+              <div class="trim-mode-btns">
+                <button class="trim-mode-btn active" id="trimModeMove" onclick="setTrimMode('move')">&#128247; MOVE IMAGE</button>
+                <button class="trim-mode-btn" id="trimModeCrop" onclick="setTrimMode('crop')">&#9986; ADJUST FRAME</button>
+              </div>
+              <div class="trim-canvas-row">
+                <div class="sq-canvas-wrap" id="trimWrap"><canvas id="trimCanvas" width="400" height="400"></canvas></div>
+                <div class="trim-vslider-wrap"><input type="range" class="trim-vslider" id="trimVSlider" min="0" max="100" value="0" oninput="onTrimSlider()"></div>
+              </div>
+              <div class="trim-hslider-wrap"><input type="range" class="trim-hslider" id="trimHSlider" min="0" max="100" value="0" oninput="onTrimSlider()"></div>
+              <p style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted2);margin-top:4px;letter-spacing:1px;" id="trimHint">Drag to pan image.</p>
             </div>
-            <div class="trim-canvas-row">
-              <div class="sq-canvas-wrap" id="trimWrap"><canvas id="trimCanvas" width="400" height="400"></canvas></div>
-              <div class="trim-vslider-wrap"><input type="range" class="trim-vslider" id="trimVSlider" min="0" max="100" value="0" oninput="onTrimSlider()"></div>
-            </div>
-            <div class="trim-hslider-wrap"><input type="range" class="trim-hslider" id="trimHSlider" min="0" max="100" value="0" oninput="onTrimSlider()"></div>
-            <p style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted2);margin-top:4px;letter-spacing:1px;" id="trimHint">Drag to pan image.</p>
           </div>
         </div>
       </div>

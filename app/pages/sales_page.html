@@ -293,9 +293,14 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
   </div>
   <div class="flow-panel" id="sec1">
     <div class="panel-hdr"><span class="panel-num">1</span><span class="panel-title">UPLOAD &amp; TRIM</span><span class="panel-check" id="sec1Done" style="display:none">&#10003;</span></div>
-    <div class="panel-body">
-      <div style="display:flex;gap:40px;align-items:flex-start;padding:0 40px;">
-        <div style="width:320px;flex-shrink:0;">
+    <div class="panel-body" style="padding:24px 0;">
+      <div style="display:flex;align-items:flex-start;">
+
+        <!-- 余白A -->
+        <div style="flex:1;"></div>
+
+        <!-- 左カラム：説明文 -->
+        <div style="width:280px;flex-shrink:0;display:flex;flex-direction:column;">
           <div class="upload-drop" id="uploadZone" onclick="document.getElementById('fileInput').click()">
             <div class="upload-icon">↑</div>
             <h3>DROP IMAGE</h3>
@@ -317,11 +322,15 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
           <div style="margin-top:16px;">
             <button class="btn-blue" id="uploadContinueBtn" onclick="goToSection2()" disabled style="width:100%;padding:12px;font-size:12px;">CONTINUE TO SIZE →</button>
           </div>
-          <div style="display:flex;justify-content:center;align-items:center;margin-top:24px;min-height:120px;">
-            <canvas id="charCanvas" width="160" height="120" style="image-rendering:pixelated;opacity:0.7;display:block;"></canvas>
-          </div>
         </div>
-        <div style="flex:1;max-width:600px;">
+
+        <!-- 余白B（説明文とプレビューの間）＋キャラクター配置 -->
+        <div style="flex:1;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;align-self:stretch;">
+          <canvas id="charCanvas" width="160" height="120" style="image-rendering:pixelated;opacity:0.7;display:block;margin-top:auto;margin-bottom:auto;"></canvas>
+        </div>
+
+        <!-- 右カラム：プレビュー -->
+        <div style="width:560px;flex-shrink:0;">
           <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">PREVIEW</div>
           <div class="trim-area-wrap">
             <div class="trim-mode-btns">
@@ -332,10 +341,14 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
               <div class="sq-canvas-wrap" id="trimWrap"><canvas id="trimCanvas" width="400" height="400"></canvas></div>
               <div class="trim-vslider-wrap"><input type="range" class="trim-vslider" id="trimVSlider" min="0" max="100" value="0" oninput="onTrimSlider()"></div>
             </div>
-            <div class="trim-hslider-wrap"><input type="range" class="trim-hslider" id="trimHSlider" min="0" max="100" value="0" oninput="onTrimSlider()"></div>
+            <div class="trim-hslider-wrap" style="max-width:560px;"><input type="range" class="trim-hslider" id="trimHSlider" min="0" max="100" value="0" oninput="onTrimSlider()"></div>
             <p style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted2);margin-top:4px;letter-spacing:1px;" id="trimHint">Drag to pan image.</p>
           </div>
         </div>
+
+        <!-- 余白C -->
+        <div style="flex:1;"></div>
+
       </div>
     </div>
   </div>

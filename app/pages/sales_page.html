@@ -74,12 +74,12 @@ nav a:hover{color:var(--accent2);}
 .trim-mode-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);padding:3px 8px;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;cursor:pointer;}
 .trim-mode-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(74,184,255,0.06);}
 .trim-canvas-row{display:flex;gap:4px;align-items:stretch;}
-.sq-canvas-wrap{position:relative;background:#000;border:1px solid var(--border);overflow:hidden;cursor:grab;width:560px;height:560px;}
+.sq-canvas-wrap{position:relative;background:#000;border:1px solid var(--border);overflow:hidden;cursor:grab;width:480px;height:480px;}
 .sq-canvas-wrap:active{cursor:grabbing;}
 #trimCanvas{display:block;width:100%;height:100%;}
-.trim-vslider-wrap{display:flex;align-items:center;justify-content:center;width:20px;height:560px;}
-.trim-vslider{writing-mode:vertical-lr;height:560px;width:20px;accent-color:var(--accent2);cursor:pointer;}
-.trim-hslider-wrap{max-width:560px;}
+.trim-vslider-wrap{display:flex;align-items:center;justify-content:center;width:20px;height:480px;}
+.trim-vslider{writing-mode:vertical-lr;height:480px;width:20px;accent-color:var(--accent2);cursor:pointer;}
+.trim-hslider-wrap{max-width:480px;}
 .trim-hslider{width:100%;accent-color:var(--accent2);cursor:pointer;}
 .trim-ctrl{display:flex;align-items:center;gap:6px;margin-top:5px;}
 .trim-ctrl label{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;width:24px;flex-shrink:0;}
@@ -318,7 +318,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
           </div>
           <button class="btn-blue" id="uploadContinueBtn" onclick="goToSection2()" disabled style="width:100%;padding:12px;font-size:12px;">CONTINUE TO SIZE →</button>
           <div style="flex:1;display:flex;justify-content:center;align-items:center;">
-            <canvas id="charCanvas" width="240" height="180" style="image-rendering:pixelated;opacity:0.7;display:block;"></canvas>
+            <canvas id="charCanvas" width="200" height="150" style="image-rendering:pixelated;opacity:0.7;display:block;"></canvas>
           </div>
         </div>
 
@@ -1632,7 +1632,8 @@ gridCanvas.addEventListener('click',function(e){
   if(c<0||c>=GRID_COLS||r<0||r>=GRID_ROWS)return;
   const px=Math.max(0,Math.min(GRID_COLS-chosenW,c-Math.floor(chosenW/2)));
   const py=Math.max(0,Math.min(GRID_ROWS-chosenH,r-Math.floor(chosenH/2)));
-  logoGridX=px;logoGridY=py;logoPlaced=true;selectedArea={x:px,y:py,w:chosenW,h:chosenH};deletedBlocks=[];_editDone=false;deleteHistory=[];
+  logoGridX=px;logoGridY=py;logoPlaced=true;selectedArea={x:px,y:py,w:chosenW,h:chosenH};
+  // deletedBlocksとdeleteHistoryはリセットしない（Edit内容を保持）
   activeBlockCount=chosenW*chosenH;
   const conflict=hasConflict(px,py,chosenW,chosenH);
   updatePlaceInfo();
@@ -1904,10 +1905,10 @@ fetchPriceTier();
   if(!canvas)return;
   const ctx=canvas.getContext('2d');
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  const scale=3;
+  const scale=2;
   ctx.save();
   ctx.scale(scale,scale);
-  const x=40,y=10;
+  const x=50,y=10;
   const charCol='rgba(220,235,210,0.92)';
   ctx.shadowColor=charCol;ctx.shadowBlur=7;
   ctx.strokeStyle=charCol;ctx.fillStyle='rgba(0,0,0,0.72)';ctx.lineWidth=1.5;

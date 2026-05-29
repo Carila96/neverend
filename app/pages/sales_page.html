@@ -62,24 +62,24 @@ nav a:hover{color:var(--accent2);}
 .btn-warn{background:none;border:1px solid rgba(245,200,66,0.4);color:var(--gold);padding:7px 12px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;}
 .btn-warn:hover{background:rgba(245,200,66,0.08);}
 .w100{width:100%;display:block;margin-bottom:8px;}
-.upload-layout{display:grid;grid-template-columns:1fr 1.8fr;gap:20px;align-items:start;}
+.upload-layout{display:grid;grid-template-columns:1fr 1.4fr;gap:20px;align-items:start;}
 .upload-drop{border:2px dashed var(--border2);padding:16px 10px;text-align:center;cursor:pointer;transition:all 0.25s;background:var(--panel2);}
 .upload-drop:hover{border-color:var(--accent2);background:rgba(74,184,255,0.04);}
 .upload-icon{font-size:20px;margin-bottom:6px;color:var(--muted);}
-.upload-drop h3{font-family:'Bebas Neue',sans-serif;font-size:14px;color:#fff;margin-bottom:3px;}
-.upload-drop p{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted2);letter-spacing:1px;line-height:1.8;}
+.upload-drop h3{font-family:'Bebas Neue',sans-serif;font-size:18px;color:#fff;margin-bottom:6px;font-weight:700;}
+.upload-drop p{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted2);letter-spacing:1px;line-height:2;}
 #fileInput{display:none;}
 .trim-area-wrap{display:flex;flex-direction:column;gap:4px;}
 .trim-mode-btns{display:flex;gap:4px;margin-bottom:2px;}
 .trim-mode-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);padding:3px 8px;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;cursor:pointer;}
 .trim-mode-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(74,184,255,0.06);}
 .trim-canvas-row{display:flex;gap:4px;align-items:stretch;max-width:85%;}
-.sq-canvas-wrap{position:relative;background:#000;border:1px solid var(--border);overflow:hidden;cursor:grab;width:490px;height:490px;}
+.sq-canvas-wrap{position:relative;background:#000;border:1px solid var(--border);overflow:hidden;cursor:grab;width:560px;height:560px;}
 .sq-canvas-wrap:active{cursor:grabbing;}
 #trimCanvas{display:block;width:100%;height:100%;}
-.trim-vslider-wrap{display:flex;align-items:center;justify-content:center;width:20px;height:490px;}
-.trim-vslider{writing-mode:vertical-lr;height:490px;width:20px;accent-color:var(--accent2);cursor:pointer;}
-.trim-hslider-wrap{max-width:490px;}
+.trim-vslider-wrap{display:flex;align-items:center;justify-content:center;width:20px;height:560px;}
+.trim-vslider{writing-mode:vertical-lr;height:560px;width:20px;accent-color:var(--accent2);cursor:pointer;}
+.trim-hslider-wrap{max-width:560px;}
 .trim-hslider{width:100%;accent-color:var(--accent2);cursor:pointer;}
 .trim-ctrl{display:flex;align-items:center;gap:6px;margin-top:5px;}
 .trim-ctrl label{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;width:24px;flex-shrink:0;}
@@ -305,7 +305,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
           <div id="uploadFileInfo" style="display:none;margin-top:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);padding:6px 8px;background:var(--panel2);border:1px solid var(--border);">
             <span id="uploadFileName" style="color:var(--accent2)"></span><br><span id="uploadDims"></span>
           </div>
-          <p style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1px;margin-top:10px;line-height:2;">
+          <p style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1px;margin-top:10px;line-height:2;font-weight:500;">
             &#128161; Square images work best for NANO / SMALL / MEDIUM.<br>
             For widescreen logos, choose LARGE or XL.<br>
             Transparent pixels are not counted as blocks.

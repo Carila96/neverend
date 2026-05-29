@@ -331,9 +331,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
             </div>
             <div class="trim-hslider-wrap"><input type="range" class="trim-hslider" id="trimHSlider" min="0" max="100" value="0" oninput="onTrimSlider()"></div>
             <p style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted2);margin-top:4px;letter-spacing:1px;" id="trimHint">Drag to pan image.</p>
-            <div style="text-align:right;margin-top:8px;padding-right:28px;">
-              <img src="/public/tower.png" style="height:80px;opacity:0.4;image-rendering:pixelated;filter:drop-shadow(0 0 8px rgba(74,184,255,0.5));">
-            </div>
+            <canvas id="charCanvas" width="200" height="160" style="display:block;margin-top:8px;margin-left:auto;image-rendering:pixelated;opacity:0.7;"></canvas>
           </div>
         </div>
       </div>
@@ -1847,6 +1845,42 @@ function hsvToRgb(h,s,v){const i=Math.floor(h*6),f=h*6-i;const p=v*(1-s),q=v*(1-
 function rgbToHsv(r,g,b){r/=255;g/=255;b/=255;const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min;let h=0,s=max===0?0:d/max,v=max;if(d!==0){if(max===r)h=(g-b)/d+(g<b?6:0);else if(max===g)h=(b-r)/d+2;else h=(r-g)/d+4;h/=6;}return{h,s,v};}
 function rgbToHex(r,g,b){return'#'+[r,g,b].map(function(v){return v.toString(16).padStart(2,'0');}).join('');}
 fetchPriceTier();
+(function drawSalesChar(){
+  const canvas=document.getElementById('charCanvas');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const x=80,y=60;
+  const charCol='rgba(220,235,210,0.92)';
+  ctx.save();
+  ctx.shadowColor=charCol;ctx.shadowBlur=14;
+  ctx.strokeStyle=charCol;ctx.fillStyle='rgba(0,0,0,0.72)';ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.moveTo(x-2,y+12);ctx.lineTo(x+30,y+12);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x+2,y+12);ctx.lineTo(x+4,y);ctx.lineTo(x+24,y);ctx.lineTo(x+26,y+12);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.strokeStyle='rgba(180,150,100,0.7)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(x+4,y+8);ctx.lineTo(x+24,y+8);ctx.stroke();
+  ctx.strokeStyle=charCol;ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.arc(x+14,y+18,7,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.fillStyle=charCol;
+  ctx.fillRect(x+16,y+16,3,3);
+  ctx.fillStyle='rgba(0,0,0,0.72)';
+  ctx.strokeStyle='rgba(200,100,80,0.6)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(x+14,y+24);ctx.quadraticCurveTo(x+22,y+28,x+20,y+32);ctx.stroke();
+  ctx.strokeStyle=charCol;ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.moveTo(x+6,y+25);ctx.lineTo(x+22,y+25);ctx.lineTo(x+22,y+40);ctx.lineTo(x+6,y+40);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.lineWidth=1.5;ctx.strokeRect(x+14,y+30,6,5);ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.moveTo(x+6,y+27);ctx.lineTo(x+2,y+37);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x+22,y+27);ctx.lineTo(x+26,y+37);ctx.stroke();
+  ctx.save();ctx.shadowColor='rgba(255,200,80,0.8)';ctx.shadowBlur=10;
+  ctx.strokeStyle='rgba(255,210,100,0.8)';ctx.lineWidth=1.5;
+  ctx.strokeRect(x+27,y+36,8,10);ctx.fillStyle='rgba(255,200,80,0.25)';ctx.fillRect(x+27,y+36,8,10);
+  ctx.restore();ctx.strokeStyle=charCol;ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.moveTo(x+9,y+40);ctx.lineTo(x+8,y+44);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x+19,y+40);ctx.lineTo(x+20,y+44);ctx.stroke();
+  ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(x+5,y+44);ctx.lineTo(x+13,y+44);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x+17,y+44);ctx.lineTo(x+25,y+44);ctx.stroke();
+  ctx.restore();
+})();
 </script>
 <div id="spLoginModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;">
   <div style="background:#0e0e1a;border:1px solid #262640;padding:40px;min-width:360px;max-width:420px;display:flex;flex-direction:column;gap:16px;text-align:center;">

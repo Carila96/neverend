@@ -18,6 +18,7 @@ const PRICE_TIERS = [
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  try {
 
   const { stage_id, anchor_x, anchor_y, width, height, zone_type, plan_type, admin_key, deleted_blocks } = req.body;
   if (!stage_id || anchor_x == null || anchor_y == null || !width || !height || !zone_type || !plan_type)
@@ -134,6 +135,7 @@ export default async function handler(req, res) {
   });
 
   if (sessionError) {
+    console.error('session insert error:', sessionError);
     await supabase.from('owned_blocks')
       .delete()
       .eq('stage_id', stage_id)
@@ -144,4 +146,8 @@ export default async function handler(req, res) {
   }
 
   return res.status(200).json({ session_key, expires_at, block_count, price_per_block, monthly_total });
+  } catch (e) {
+    console.error('reserve error:', e);
+    return res.status(500).json({ error: 'Internal server error', detail: e.message });
+  }
 }

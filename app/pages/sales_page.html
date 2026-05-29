@@ -74,12 +74,12 @@ nav a:hover{color:var(--accent2);}
 .trim-mode-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);padding:3px 8px;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;cursor:pointer;}
 .trim-mode-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(74,184,255,0.06);}
 .trim-canvas-row{display:flex;gap:4px;align-items:stretch;}
-.sq-canvas-wrap{position:relative;background:#000;border:1px solid var(--border);overflow:hidden;cursor:grab;width:480px;height:480px;}
+.sq-canvas-wrap{position:relative;background:#000;border:1px solid var(--border);overflow:hidden;cursor:grab;width:400px;height:400px;}
 .sq-canvas-wrap:active{cursor:grabbing;}
 #trimCanvas{display:block;width:100%;height:100%;}
-.trim-vslider-wrap{display:flex;align-items:center;justify-content:center;width:20px;height:480px;}
-.trim-vslider{writing-mode:vertical-lr;height:480px;width:20px;accent-color:var(--accent2);cursor:pointer;}
-.trim-hslider-wrap{max-width:480px;}
+.trim-vslider-wrap{display:flex;align-items:center;justify-content:center;width:20px;height:400px;}
+.trim-vslider{writing-mode:vertical-lr;height:400px;width:20px;accent-color:var(--accent2);cursor:pointer;}
+.trim-hslider-wrap{max-width:400px;}
 .trim-hslider{width:100%;accent-color:var(--accent2);cursor:pointer;}
 .trim-ctrl{display:flex;align-items:center;gap:6px;margin-top:5px;}
 .trim-ctrl label{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;width:24px;flex-shrink:0;}
@@ -297,7 +297,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
       <div style="display:flex;gap:32px;align-items:start;">
 
         <!-- 左カラム：flex:1で余白を全部使う -->
-        <div style="flex:1;display:flex;flex-direction:column;gap:12px;min-height:660px;">
+        <div style="flex:0 0 380px;display:flex;flex-direction:column;gap:12px;">
           <div class="upload-drop" id="uploadZone" onclick="document.getElementById('fileInput').click()">
             <div class="upload-icon">↑</div>
             <h3>DROP IMAGE</h3>
@@ -1584,7 +1584,13 @@ gridCanvas.addEventListener('mousemove',function(e){
   const c=Math.floor((e.clientX-rect.left)*sc/CELL);const r=Math.floor((e.clientY-rect.top)*sc/CELL);
   const tt=document.getElementById('tooltip');
   if(c>=0&&c<GRID_COLS&&r>=0&&r<GRID_ROWS){
-    if(!logoPlaced&&!monopolyMode){logoGridX=Math.max(0,Math.min(GRID_COLS-chosenW,c-Math.floor(chosenW/2)));logoGridY=Math.max(0,Math.min(GRID_ROWS-chosenH,r-Math.floor(chosenH/2)));drawGrid();}
+    const effW=pixelArtEdit?pixelArtEdit[0].length:chosenW;
+    const effH=pixelArtEdit?pixelArtEdit.length:chosenH;
+    if(!editMode&&!monopolyMode){
+      logoGridX=Math.max(0,Math.min(GRID_COLS-effW,c-Math.floor(effW/2)));
+      logoGridY=Math.max(0,Math.min(GRID_ROWS-effH,r-Math.floor(effH/2)));
+      drawGrid();
+    }
     const state=getBlockState(c,r);tt.style.display='block';tt.style.left=(e.clientX+14)+'px';tt.style.top=(e.clientY-10)+'px';
     document.getElementById('ttCoord').textContent='('+(c+1)+','+(r+1)+')';
     const stMap={available:'<span style="color:var(--green)">AVAILABLE</span>',claimed:'<span style="color:var(--accent)">CLAIMED</span>',reserved:'<span style="color:var(--gold)">RESERVED</span>'};
@@ -1628,19 +1634,28 @@ function applyGridEdit(e){
 gridCanvas.addEventListener('click',function(e){
   if(editMode||monopolyMode)return;
   const rect=gridCanvas.getBoundingClientRect();const sc=1280/rect.width;
-  const c=Math.floor((e.clientX-rect.left)*sc/CELL);const r=Math.floor((e.clientY-rect.top)*sc/CELL);
+  const c=Math.floor((e.clientX-rect.left)*sc/CELL);
+  const r=Math.floor((e.clientY-rect.top)*sc/CELL);
   if(c<0||c>=GRID_COLS||r<0||r>=GRID_ROWS)return;
-  const px=Math.max(0,Math.min(GRID_COLS-chosenW,c-Math.floor(chosenW/2)));
-  const py=Math.max(0,Math.min(GRID_ROWS-chosenH,r-Math.floor(chosenH/2)));
-  logoGridX=px;logoGridY=py;logoPlaced=true;selectedArea={x:px,y:py,w:chosenW,h:chosenH};
-  // deletedBlocksとdeleteHistoryはリセットしない（Edit内容を保持）
-  activeBlockCount=chosenW*chosenH;
-  const conflict=hasConflict(px,py,chosenW,chosenH);
+  // 透明マス削除後の実効サイズで配置範囲を計算
+  const effectiveW=pixelArtEdit?pixelArtEdit[0].length:chosenW;
+  const effectiveH=pixelArtEdit?pixelArtEdit.length:chosenH;
+  const px=Math.max(0,Math.min(GRID_COLS-effectiveW,c-Math.floor(effectiveW/2)));
+  const py=Math.max(0,Math.min(GRID_ROWS-effectiveH,r-Math.floor(effectiveH/2)));
+  logoGridX=px;logoGridY=py;
+  logoPlaced=true;
+  selectedArea={x:px,y:py,w:effectiveW,h:effectiveH};
+  // activeBlockCountは維持（Editで削除した分を保持）
+  if(!logoPlaced||activeBlockCount===0)activeBlockCount=effectiveW*effectiveH;
+  const conflict=hasConflict(px,py,effectiveW,effectiveH);
   updatePlaceInfo();
-  document.getElementById('confirmPlaceBtn').style.display='block';document.getElementById('confirmPlaceBtn').disabled=conflict;
+  document.getElementById('confirmPlaceBtn').style.display='block';
+  document.getElementById('confirmPlaceBtn').disabled=conflict;
   document.getElementById('editBlocksBtn').style.display='block';
   document.getElementById('resetPlaceBtn').style.display='block';
-  document.getElementById('gridHint').textContent=conflict?'Conflict detected. Use EDIT BLOCKS to delete conflicting blocks. If you just returned from checkout, reservations expire in 30 minutes. Please try a different position or try again later.':'Placed. Confirm or use EDIT BLOCKS to fine-tune.';
+  document.getElementById('gridHint').textContent=conflict?
+    'Conflict detected. Use EDIT BLOCKS to delete conflicting blocks.':
+    'Placed. Confirm or use EDIT BLOCKS to fine-tune.';
   drawGrid();
 });
 

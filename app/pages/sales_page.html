@@ -1586,10 +1586,9 @@ gridCanvas.addEventListener('mousemove',function(e){
   const r=Math.floor((e.clientY-rect.top)*sc/CELL);
   const tt=document.getElementById('tooltip');
   if(c>=0&&c<GRID_COLS&&r>=0&&r<GRID_ROWS){
-    const effW=pixelArtEdit&&pixelArtEdit[0]?pixelArtEdit[0].length:chosenW;
-    const effH=pixelArtEdit?pixelArtEdit.length:chosenH;
-    if(!monopolyMode){
-      // logoPlacedに関わらず常に追従
+    if(!monopolyMode&&!logoPlaced){
+      const effW=pixelArtEdit&&pixelArtEdit[0]?pixelArtEdit[0].length:chosenW;
+      const effH=pixelArtEdit?pixelArtEdit.length:chosenH;
       logoGridX=Math.max(0,Math.min(GRID_COLS-1,c-Math.floor(effW/2)));
       logoGridY=Math.max(0,Math.min(GRID_ROWS-1,r-Math.floor(effH/2)));
       drawGrid();
@@ -1643,13 +1642,65 @@ gridCanvas.addEventListener('click',function(e){
   const c=Math.floor((e.clientX-rect.left)*sc/CELL);
   const r=Math.floor((e.clientY-rect.top)*sc/CELL);
   if(c<0||c>=GRID_COLS||r<0||r>=GRID_ROWS)return;
+
+  // 配置済みの場合はクリックで持ち上げ（再配置モードへ）
+  if(logoPlaced){
+    logoPlaced=false;
+    selectedArea=null;
+    document.getElementById('confirmPlaceBtn').style.display='none';
+    document.getElementById('editBlocksBtn').style.display='none';
+    document.getElementById('resetPlaceBtn').style.display='none';
+    document.getElementById('placeInfo').style.display='none';
+    document.getElementById('gridHint').textContent='Move mouse to position logo. Click to place.';
+    drawGrid();
+    return;
+  }
+
+  // 未配置の場合は配置確定
   const effW=pixelArtEdit&&pixelArtEdit[0]?pixelArtEdit[0].length:chosenW;
   const effH=pixelArtEdit?pixelArtEdit.length:chosenH;
-  const px=Math.max(0,Math.min(GRID_COLS-1,c-Math.floor(effW/2)));
-  const py=Math.max(0,Math.min(GRID_ROWS-1,r-Math.floor(effH/2)));
+
+  // Activeなピクセルの実際の位置を計算してはみ出し禁止
+  let minActiveX=0,minActiveY=0,maxActiveX=effW-1,maxActiveY=effH-1;
+  if(pixelArtEdit){
+    minActiveX=effW;minActiveY=effH;maxActiveX=0;maxActiveY=0;
+    for(let yr=0;yr<pixelArtEdit.length;yr++){
+      for(let xc=0;xc<pixelArtEdit[yr].length;xc++){
+        if(pixelArtEdit[yr][xc]!==null){
+          minActiveX=Math.min(minActiveX,xc);
+          minActiveY=Math.min(minActiveY,yr);
+          maxActiveX=Math.max(maxActiveX,xc);
+          maxActiveY=Math.max(maxActiveY,yr);
+        }
+      }
+    }
+  }
+
+  // 配置中心をマウス位置に合わせつつ、Activeピクセルが画面内に収まるよう制限
+  let px=c-Math.floor(effW/2);
+  let py=r-Math.floor(effH/2);
+  px=Math.max(-minActiveX,Math.min(GRID_COLS-1-maxActiveX,px));
+  py=Math.max(-minActiveY,Math.min(GRID_ROWS-1-maxActiveY,py));
+
   logoGridX=px;logoGridY=py;
   logoPlaced=true;
   selectedArea={x:px,y:py,w:effW,h:effH};
+
+  // Activeブロック数を再計算（グリッド内に収まるActiveピクセルのみ）
+  let activeCount=0;
+  if(pixelArtEdit){
+    for(let yr=0;yr<pixelArtEdit.length;yr++){
+      for(let xc=0;xc<pixelArtEdit[yr].length;xc++){
+        if(pixelArtEdit[yr][xc]===null)continue;
+        const gx=px+xc,gy=py+yr;
+        if(gx>=0&&gx<GRID_COLS&&gy>=0&&gy<GRID_ROWS)activeCount++;
+      }
+    }
+  }else{
+    activeCount=effW*effH;
+  }
+  activeBlockCount=activeCount;
+
   const conflict=hasConflict(px,py,effW,effH);
   updatePlaceInfo();
   document.getElementById('confirmPlaceBtn').style.display='block';
@@ -1658,7 +1709,7 @@ gridCanvas.addEventListener('click',function(e){
   document.getElementById('resetPlaceBtn').style.display='block';
   document.getElementById('gridHint').textContent=conflict?
     'Conflict detected. Use EDIT BLOCKS to delete conflicting blocks.':
-    'Placed. Click again to reposition. Confirm or use EDIT BLOCKS to fine-tune.';
+    'Placed. Click to pick up and reposition.';
   drawGrid();
 });
 

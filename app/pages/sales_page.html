@@ -657,6 +657,23 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
 </footer>
 <script>
 (function(){var prev=localStorage.getItem('neverend_placement');if(prev){try{var p=JSON.parse(prev);if(p.session_key)fetch('/api/cancel-reservation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_key:p.session_key})}).catch(function(){});}catch(e){}localStorage.removeItem('neverend_placement');}})();
+// ページが表示された時（戻るボタン含む）にReservationをキャンセル
+window.addEventListener('pageshow', function(e){
+  const prev=localStorage.getItem('neverend_placement');
+  if(prev){
+    try{
+      const p=JSON.parse(prev);
+      if(p.session_key){
+        fetch('/api/cancel-reservation',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({session_key:p.session_key})
+        }).catch(function(){});
+      }
+    }catch(e){}
+    localStorage.removeItem('neverend_placement');
+  }
+});
 const STAGES_DATA=(function(){
   return (typeof STAGES_GEO!=='undefined'?STAGES_GEO:[]).map(function(s,i){
     return Object.assign({id:i+1,type:'standard'},s);

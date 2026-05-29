@@ -63,7 +63,12 @@ export default async function handler(req, res) {
   const total = totalClaimed || 0;
   const tier = PRICE_TIERS.find(t => total <= t.maxBlocks) || PRICE_TIERS[PRICE_TIERS.length - 1];
   const price_per_block = tier.pricePerBlock;
-  const monthly_total = parseFloat(Math.max(1, price_per_block * block_count).toFixed(2));
+  let discount = 0;
+  if(block_count >= 4609) discount = 0.35;
+  else if(block_count >= 1001) discount = 0.30;
+  else if(block_count >= 501) discount = 0.20;
+  else if(block_count >= 200) discount = 0.10;
+  const monthly_total = parseFloat(Math.max(1, price_per_block * block_count * (1 - discount)).toFixed(2));
   const expires_at = new Date(Date.now() + TTL_MINUTES * 60 * 1000).toISOString();
   const session_key = randomBytes(32).toString('hex');
 

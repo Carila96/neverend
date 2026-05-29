@@ -74,12 +74,13 @@ nav a:hover{color:var(--accent2);}
 .trim-mode-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);padding:3px 8px;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;cursor:pointer;}
 .trim-mode-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(74,184,255,0.06);}
 .trim-canvas-row{display:flex;gap:4px;align-items:stretch;}
-.sq-canvas-wrap{position:relative;background:#000;border:1px solid var(--border);overflow:hidden;cursor:grab;width:400px;height:400px;}
+.sq-canvas-wrap{position:relative;background:#000;border:1px solid var(--border);overflow:hidden;cursor:grab;width:100%;aspect-ratio:1/1;}
 .sq-canvas-wrap:active{cursor:grabbing;}
 #trimCanvas{display:block;width:100%;height:100%;}
-.trim-vslider-wrap{display:flex;align-items:center;justify-content:center;width:20px;height:400px;}
-.trim-vslider{writing-mode:vertical-lr;height:400px;width:20px;accent-color:var(--accent2);cursor:pointer;}
-.trim-hslider-wrap{max-width:400px;}
+.trim-vslider-wrap{display:flex;align-items:stretch;width:20px;}
+.trim-vslider{writing-mode:vertical-lr;width:20px;flex:1;accent-color:var(--accent2);cursor:pointer;}
+.trim-hslider-wrap{padding-right:24px;}
+.trim-hslider{width:100%;accent-color:var(--accent2);cursor:pointer;}
 .trim-hslider{width:100%;accent-color:var(--accent2);cursor:pointer;}
 .trim-ctrl{display:flex;align-items:center;gap:6px;margin-top:5px;}
 .trim-ctrl label{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;width:24px;flex-shrink:0;}
@@ -294,10 +295,10 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
   <div class="flow-panel" id="sec1">
     <div class="panel-hdr"><span class="panel-num">1</span><span class="panel-title">UPLOAD &amp; TRIM</span><span class="panel-check" id="sec1Done" style="display:none">&#10003;</span></div>
     <div class="panel-body" style="padding:24px;">
-      <div style="display:flex;gap:32px;align-items:start;">
+      <div style="display:flex;gap:24px;align-items:stretch;">
 
-        <!-- 左カラム：flex:1で余白を全部使う -->
-        <div style="flex:0 0 380px;display:flex;flex-direction:column;gap:12px;">
+        <!-- 左カラム -->
+        <div style="flex:1;display:flex;flex-direction:column;gap:12px;min-width:0;">
           <div class="upload-drop" id="uploadZone" onclick="document.getElementById('fileInput').click()">
             <div class="upload-icon">↑</div>
             <h3>DROP IMAGE</h3>
@@ -317,13 +318,13 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
             <div class="trim-ctrl"><label>ZOOM</label><input type="range" id="trimZoom" min="100" max="400" value="100" oninput="updateTrim()"><span class="trim-val" id="trimZoomVal">100%</span></div>
           </div>
           <button class="btn-blue" id="uploadContinueBtn" onclick="goToSection2()" disabled style="width:100%;padding:12px;font-size:12px;">CONTINUE TO SIZE →</button>
-          <div style="flex:1;display:flex;justify-content:center;align-items:center;">
+          <div style="flex:1;display:flex;justify-content:center;align-items:center;min-height:120px;">
             <canvas id="charCanvas" width="200" height="150" style="image-rendering:pixelated;opacity:0.7;display:block;"></canvas>
           </div>
         </div>
 
-        <!-- 右カラム：560px固定 -->
-        <div style="width:560px;flex-shrink:0;">
+        <!-- 右カラム：プレビュー -->
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;">
           <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">PREVIEW</div>
           <div class="trim-area-wrap">
             <div class="trim-mode-btns">
@@ -334,7 +335,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
               <div class="sq-canvas-wrap" id="trimWrap"><canvas id="trimCanvas" width="400" height="400"></canvas></div>
               <div class="trim-vslider-wrap"><input type="range" class="trim-vslider" id="trimVSlider" min="0" max="100" value="0" oninput="onTrimSlider()"></div>
             </div>
-            <div class="trim-hslider-wrap" style="max-width:560px;"><input type="range" class="trim-hslider" id="trimHSlider" min="0" max="100" value="0" oninput="onTrimSlider()"></div>
+            <div id="trimHSliderWrap"><input type="range" class="trim-hslider" id="trimHSlider" min="0" max="100" value="0" oninput="onTrimSlider()"></div>
             <p style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted2);margin-top:4px;letter-spacing:1px;" id="trimHint">Drag to pan image.</p>
           </div>
         </div>
@@ -1584,12 +1585,14 @@ gridCanvas.addEventListener('mousemove',function(e){
   const c=Math.floor((e.clientX-rect.left)*sc/CELL);const r=Math.floor((e.clientY-rect.top)*sc/CELL);
   const tt=document.getElementById('tooltip');
   if(c>=0&&c<GRID_COLS&&r>=0&&r<GRID_ROWS){
-    const effW=pixelArtEdit?pixelArtEdit[0].length:chosenW;
-    const effH=pixelArtEdit?pixelArtEdit.length:chosenH;
     if(!editMode&&!monopolyMode){
-      logoGridX=Math.max(0,Math.min(GRID_COLS-effW,c-Math.floor(effW/2)));
-      logoGridY=Math.max(0,Math.min(GRID_ROWS-effH,r-Math.floor(effH/2)));
-      drawGrid();
+      const effW2=pixelArtEdit&&pixelArtEdit[0]?pixelArtEdit[0].length:chosenW;
+      const effH2=pixelArtEdit?pixelArtEdit.length:chosenH;
+      if(!logoPlaced){
+        logoGridX=Math.max(0,Math.min(GRID_COLS-1,c-Math.floor(effW2/2)));
+        logoGridY=Math.max(0,Math.min(GRID_ROWS-1,r-Math.floor(effH2/2)));
+        drawGrid();
+      }
     }
     const state=getBlockState(c,r);tt.style.display='block';tt.style.left=(e.clientX+14)+'px';tt.style.top=(e.clientY-10)+'px';
     document.getElementById('ttCoord').textContent='('+(c+1)+','+(r+1)+')';
@@ -1637,17 +1640,14 @@ gridCanvas.addEventListener('click',function(e){
   const c=Math.floor((e.clientX-rect.left)*sc/CELL);
   const r=Math.floor((e.clientY-rect.top)*sc/CELL);
   if(c<0||c>=GRID_COLS||r<0||r>=GRID_ROWS)return;
-  // 透明マス削除後の実効サイズで配置範囲を計算
-  const effectiveW=pixelArtEdit?pixelArtEdit[0].length:chosenW;
-  const effectiveH=pixelArtEdit?pixelArtEdit.length:chosenH;
-  const px=Math.max(0,Math.min(GRID_COLS-effectiveW,c-Math.floor(effectiveW/2)));
-  const py=Math.max(0,Math.min(GRID_ROWS-effectiveH,r-Math.floor(effectiveH/2)));
+  const effW=pixelArtEdit&&pixelArtEdit[0]?pixelArtEdit[0].length:chosenW;
+  const effH=pixelArtEdit?pixelArtEdit.length:chosenH;
+  const px=Math.max(0,Math.min(GRID_COLS-1,c-Math.floor(effW/2)));
+  const py=Math.max(0,Math.min(GRID_ROWS-1,r-Math.floor(effH/2)));
   logoGridX=px;logoGridY=py;
   logoPlaced=true;
-  selectedArea={x:px,y:py,w:effectiveW,h:effectiveH};
-  // activeBlockCountは維持（Editで削除した分を保持）
-  if(!logoPlaced||activeBlockCount===0)activeBlockCount=effectiveW*effectiveH;
-  const conflict=hasConflict(px,py,effectiveW,effectiveH);
+  selectedArea={x:px,y:py,w:effW,h:effH};
+  const conflict=hasConflict(px,py,effW,effH);
   updatePlaceInfo();
   document.getElementById('confirmPlaceBtn').style.display='block';
   document.getElementById('confirmPlaceBtn').disabled=conflict;

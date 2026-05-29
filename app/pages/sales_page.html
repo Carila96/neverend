@@ -73,7 +73,7 @@ nav a:hover{color:var(--accent2);}
 .trim-mode-btns{display:flex;gap:4px;margin-bottom:2px;}
 .trim-mode-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);padding:3px 8px;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;cursor:pointer;}
 .trim-mode-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(74,184,255,0.06);}
-.trim-canvas-row{display:flex;gap:4px;align-items:stretch;max-width:85%;}
+.trim-canvas-row{display:flex;gap:4px;align-items:flex-end;}
 .sq-canvas-wrap{position:relative;background:#000;border:1px solid var(--border);overflow:hidden;cursor:grab;width:560px;height:560px;}
 .sq-canvas-wrap:active{cursor:grabbing;}
 #trimCanvas{display:block;width:100%;height:100%;}
@@ -328,10 +328,10 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
             <div class="trim-canvas-row">
               <div class="sq-canvas-wrap" id="trimWrap"><canvas id="trimCanvas" width="400" height="400"></canvas></div>
               <div class="trim-vslider-wrap"><input type="range" class="trim-vslider" id="trimVSlider" min="0" max="100" value="0" oninput="onTrimSlider()"></div>
+              <canvas id="charCanvas" width="120" height="200" style="display:block;image-rendering:pixelated;opacity:0.7;margin-left:16px;align-self:flex-end;"></canvas>
             </div>
             <div class="trim-hslider-wrap"><input type="range" class="trim-hslider" id="trimHSlider" min="0" max="100" value="0" oninput="onTrimSlider()"></div>
             <p style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted2);margin-top:4px;letter-spacing:1px;" id="trimHint">Drag to pan image.</p>
-            <canvas id="charCanvas" width="200" height="160" style="display:block;margin-top:8px;margin-left:auto;image-rendering:pixelated;opacity:0.7;"></canvas>
           </div>
         </div>
       </div>
@@ -1849,9 +1849,10 @@ fetchPriceTier();
   const canvas=document.getElementById('charCanvas');
   if(!canvas)return;
   const ctx=canvas.getContext('2d');
-  const x=80,y=60;
+  const x=30,y=80;
   const charCol='rgba(220,235,210,0.92)';
   ctx.save();
+  ctx.scale(2,2);
   ctx.shadowColor=charCol;ctx.shadowBlur=14;
   ctx.strokeStyle=charCol;ctx.fillStyle='rgba(0,0,0,0.72)';ctx.lineWidth=2.5;
   ctx.beginPath();ctx.moveTo(x-2,y+12);ctx.lineTo(x+30,y+12);ctx.stroke();

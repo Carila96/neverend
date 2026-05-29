@@ -70,7 +70,7 @@ export default async function handler(req, res) {
   else if(block_count >= 1001) discount = 0.30;
   else if(block_count >= 501) discount = 0.20;
   else if(block_count >= 200) discount = 0.10;
-  const monthly_total = parseFloat(Math.max(1, price_per_block * block_count * (1 - discount)).toFixed(2));
+  const monthly_total = Math.round(price_per_block * block_count * (1 - discount) * 10) / 10;
   const expires_at = new Date(Date.now() + TTL_MINUTES * 60 * 1000).toISOString();
   const session_key = randomBytes(32).toString('hex');
 

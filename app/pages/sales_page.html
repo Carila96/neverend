@@ -849,13 +849,15 @@ function updateProgressBar(){
 }
 function calculatePrice(blockCount){
   const ppb=currentPriceTier.currentTier?currentPriceTier.currentTier.pricePerBlock:0.40;
-  let base=blockCount*ppb;let discount=0;
+  let discount=0;
   if(blockCount>=4609)discount=0.35;
   else if(blockCount>=1001)discount=0.30;
   else if(blockCount>=501)discount=0.20;
   else if(blockCount>=200)discount=0.10;
-  const total=Math.max(1,base*(1-discount));
-  return{base,disc:discount,total,annual:total*10};
+  const monthly=Math.round(blockCount*ppb*(1-discount)*10)/10;
+  const annual=Math.round(blockCount*ppb*(1-discount)*10*10)/10;
+  const effective=Math.round(blockCount*ppb*(1-discount)*10/12*10)/10;
+  return{base:Math.round(blockCount*ppb*10)/10,disc:discount,total:monthly,annual:annual,effective:effective};
 }
 let GRID_COLS=128,GRID_ROWS=72,CELL=10;
 let monopolyMode=false,uploadedImage=null;
@@ -1766,12 +1768,12 @@ function updateSummary(){
   const annRow=document.getElementById('annualRow');
   const effRow=document.getElementById('effectiveRow');
   if(plan==='annual'){
-    document.getElementById('priceTotal').textContent='$'+Math.round(r.annual/12*10)/10+'/mo';
+    document.getElementById('priceTotal').textContent='$'+r.effective+'/mo';
     annRow.style.display='flex';
-    document.getElementById('priceAnnual').textContent='$'+Math.round(r.annual)+'/yr';
+    document.getElementById('priceAnnual').textContent='$'+r.annual+'/yr';
     if(effRow)effRow.style.display='none';
   }else{
-    document.getElementById('priceTotal').textContent='$'+Math.round(r.total);
+    document.getElementById('priceTotal').textContent='$'+r.total+'/mo';
     annRow.style.display='none';
     if(effRow)effRow.style.display='none';
   }

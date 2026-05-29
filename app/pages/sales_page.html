@@ -585,7 +585,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
           <div class="price-box">
             <div class="p-row"><span>BASE PRICE</span><span class="p-amt" id="priceBase">--</span></div>
             <div class="p-row"><span>VOLUME DISCOUNT</span><span class="p-disc" id="priceDisc">--</span></div>
-            <div class="p-row total"><span>MONTHLY TOTAL</span><span class="p-amt" id="priceTotal" style="font-size:32px;color:var(--green);">--</span></div>
+            <div class="p-row total"><span id="totalLabel">MONTHLY TOTAL</span><span class="p-amt" id="priceTotal" style="font-size:32px;color:var(--green);">--</span></div>
             <div class="p-row" id="annualRow" style="display:none;"><span>ANNUAL TOTAL</span><span class="p-amt" id="priceAnnual">--</span></div>
             <div class="p-row" id="effectiveRow" style="display:none;"><span>EFFECTIVE RATE</span><span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--green);letter-spacing:0.5px;" id="priceEffective">--</span></div>
           </div>
@@ -1737,16 +1737,15 @@ function updateSummary(){
   document.getElementById('sumPrice').textContent='$'+Math.round(r.total)+'/mo';
   document.getElementById('priceBase').textContent='$'+Math.round(r.base);
   document.getElementById('priceDisc').textContent=r.disc>0?'-'+(r.disc*100).toFixed(0)+'%':'--';
-  document.getElementById('priceTotal').textContent='$'+Math.round(r.total);
   const annRow=document.getElementById('annualRow');
   const effRow=document.getElementById('effectiveRow');
   if(plan==='annual'){
+    document.getElementById('priceTotal').textContent='$'+Math.round(r.annual/12*10)/10+'/mo';
     annRow.style.display='flex';
     document.getElementById('priceAnnual').textContent='$'+Math.round(r.annual)+'/yr';
-    const eff=Math.round(r.annual/12);
-    document.getElementById('priceEffective').textContent='$'+eff+'/mo (2 months free)';
-    if(effRow)effRow.style.display='flex';
+    if(effRow)effRow.style.display='none';
   }else{
+    document.getElementById('priceTotal').textContent='$'+Math.round(r.total);
     annRow.style.display='none';
     if(effRow)effRow.style.display='none';
   }
@@ -1780,7 +1779,29 @@ function renderSec6Preview(){
     }
   }
 }
-function setPlan(p,btn){plan=p;document.querySelectorAll('.plan-tab').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');updateSummary();}
+function setPlan(p,btn){
+  plan=p;
+  document.querySelectorAll('.plan-tab').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  const annualRow=document.getElementById('annualRow');
+  const effectiveRow=document.getElementById('effectiveRow');
+  const totalRow=document.getElementById('totalRow');
+  const totalLabel=document.getElementById('totalLabel');
+  const totalVal=document.getElementById('priceTotal');
+  const effectiveVal=document.getElementById('priceEffective');
+  if(p==='annual'){
+    // 年間：MONTHLY TOTALをEFFECTIVE RATEに置き換え
+    if(totalLabel)totalLabel.textContent='EFFECTIVE RATE';
+    if(annualRow)annualRow.style.display='flex';
+    if(effectiveRow)effectiveRow.style.display='none';
+  }else{
+    // 月払い：MONTHLY TOTALを表示
+    if(totalLabel)totalLabel.textContent='MONTHLY TOTAL';
+    if(annualRow)annualRow.style.display='none';
+    if(effectiveRow)effectiveRow.style.display='none';
+  }
+  updateSummary();
+}
 
 function showCheckoutError(msg){const el=document.getElementById('checkoutError');el.textContent=msg;el.style.display='block';}
 function clearCheckoutError(){document.getElementById('checkoutError').style.display='none';}

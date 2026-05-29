@@ -1582,21 +1582,24 @@ function drawGrid(){
 gridCanvas.addEventListener('mousemove',function(e){
   if(editMode)return;
   const rect=gridCanvas.getBoundingClientRect();const sc=1280/rect.width;
-  const c=Math.floor((e.clientX-rect.left)*sc/CELL);const r=Math.floor((e.clientY-rect.top)*sc/CELL);
+  const c=Math.floor((e.clientX-rect.left)*sc/CELL);
+  const r=Math.floor((e.clientY-rect.top)*sc/CELL);
   const tt=document.getElementById('tooltip');
   if(c>=0&&c<GRID_COLS&&r>=0&&r<GRID_ROWS){
-    if(!editMode&&!monopolyMode){
-      const effW2=pixelArtEdit&&pixelArtEdit[0]?pixelArtEdit[0].length:chosenW;
-      const effH2=pixelArtEdit?pixelArtEdit.length:chosenH;
-      if(!logoPlaced){
-        logoGridX=Math.max(0,Math.min(GRID_COLS-1,c-Math.floor(effW2/2)));
-        logoGridY=Math.max(0,Math.min(GRID_ROWS-1,r-Math.floor(effH2/2)));
-        drawGrid();
-      }
+    const effW=pixelArtEdit&&pixelArtEdit[0]?pixelArtEdit[0].length:chosenW;
+    const effH=pixelArtEdit?pixelArtEdit.length:chosenH;
+    if(!monopolyMode){
+      // logoPlacedに関わらず常に追従
+      logoGridX=Math.max(0,Math.min(GRID_COLS-1,c-Math.floor(effW/2)));
+      logoGridY=Math.max(0,Math.min(GRID_ROWS-1,r-Math.floor(effH/2)));
+      drawGrid();
     }
-    const state=getBlockState(c,r);tt.style.display='block';tt.style.left=(e.clientX+14)+'px';tt.style.top=(e.clientY-10)+'px';
+    const state=getBlockState(c,r);
+    tt.style.display='block';
+    tt.style.left=(e.clientX+14)+'px';
+    tt.style.top=(e.clientY-10)+'px';
     document.getElementById('ttCoord').textContent='('+(c+1)+','+(r+1)+')';
-    const stMap={available:'<span style="color:var(--green)">AVAILABLE</span>',claimed:'<span style="color:var(--accent)">CLAIMED</span>',reserved:'<span style="color:var(--gold)">RESERVED</span>'};
+    const stMap={available:'AVAILABLE',claimed:'CLAIMED',reserved:'RESERVED'};
     document.getElementById('ttStatus').innerHTML=stMap[state]||'';
   }else{tt.style.display='none';}
 });
@@ -1655,7 +1658,7 @@ gridCanvas.addEventListener('click',function(e){
   document.getElementById('resetPlaceBtn').style.display='block';
   document.getElementById('gridHint').textContent=conflict?
     'Conflict detected. Use EDIT BLOCKS to delete conflicting blocks.':
-    'Placed. Confirm or use EDIT BLOCKS to fine-tune.';
+    'Placed. Click again to reposition. Confirm or use EDIT BLOCKS to fine-tune.';
   drawGrid();
 });
 

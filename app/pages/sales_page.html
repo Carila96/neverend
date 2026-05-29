@@ -1628,7 +1628,7 @@ gridCanvas.addEventListener('click',function(e){
   document.getElementById('confirmPlaceBtn').style.display='block';document.getElementById('confirmPlaceBtn').disabled=conflict;
   document.getElementById('editBlocksBtn').style.display='block';
   document.getElementById('resetPlaceBtn').style.display='block';
-  document.getElementById('gridHint').textContent=conflict?'Conflict detected. Use EDIT BLOCKS to delete conflicting blocks.':'Placed. Confirm or use EDIT BLOCKS to fine-tune.';
+  document.getElementById('gridHint').textContent=conflict?'Conflict detected. Use EDIT BLOCKS to delete conflicting blocks. If you just returned from checkout, reservations expire in 30 minutes. Please try a different position or try again later.':'Placed. Confirm or use EDIT BLOCKS to fine-tune.';
   drawGrid();
 });
 

@@ -1866,7 +1866,7 @@ async function proceedToCheckout(){
   try{
     const resRes=await fetch(BASE+'/api/reserve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stage_id:currentStage,anchor_x:selectedArea.x,anchor_y:selectedArea.y,width:chosenW,height:chosenH,zone_type:s.type,plan_type:plan,deleted_blocks:deletedBlocks})});
     const resData=await resRes.json();
-    if(!resRes.ok||!resData.session_key){const msg=resData.message||resData.error||'';showCheckoutError(msg.toLowerCase().includes('overlap')||msg.toLowerCase().includes('conflict')?'This area is already taken.':'Reservation failed: '+msg);btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';return;}
+    if(!resRes.ok||!resData.session_key){const msg=resData.message||resData.error||'';showCheckoutError(msg.toLowerCase().includes('overlap')||msg.toLowerCase().includes('conflict')||msg.toLowerCase().includes('already taken')?'Reservation failed: This area is currently reserved. Reservations expire in 30 minutes. Please try a different position or try again later.':'Reservation failed: Failed to create reservation session. If you just returned from checkout, your previous reservation expires in 30 minutes. Please try again later.');btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';return;}
     const session_key=resData.session_key;btn.textContent='UPLOADING LOGO...';
     const logoUrl=buildLogoDataUrl();
     if(logoUrl){const parts=logoUrl.split(',');await fetch(BASE+'/api/stage-logo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_key,image_data:parts[1],image_type:parts[0].split(':')[1].split(';')[0]})}).catch(function(){});}

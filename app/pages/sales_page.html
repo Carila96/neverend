@@ -293,43 +293,36 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
   </div>
   <div class="flow-panel" id="sec1">
     <div class="panel-hdr"><span class="panel-num">1</span><span class="panel-title">UPLOAD &amp; TRIM</span><span class="panel-check" id="sec1Done" style="display:none">&#10003;</span></div>
-    <div class="panel-body" style="padding:24px 0;">
-      <div style="display:flex;align-items:flex-start;">
+    <div class="panel-body" style="padding:24px;">
+      <div style="display:flex;gap:32px;align-items:start;">
 
-        <!-- 余白A -->
-        <div style="flex:1;"></div>
-
-        <!-- 左カラム：説明文 -->
-        <div style="width:280px;flex-shrink:0;display:flex;flex-direction:column;">
+        <!-- 左カラム：flex:1で余白を全部使う -->
+        <div style="flex:1;display:flex;flex-direction:column;gap:12px;">
           <div class="upload-drop" id="uploadZone" onclick="document.getElementById('fileInput').click()">
             <div class="upload-icon">↑</div>
             <h3>DROP IMAGE</h3>
             <p>PNG JPG GIF • max 2MB<br><span style="color:var(--accent2)">PNG transparency preserved</span></p>
           </div>
           <input type="file" id="fileInput" accept="image/*">
-          <div id="uploadFileInfo" style="display:none;margin-top:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);padding:6px 8px;background:var(--panel2);border:1px solid var(--border);">
+          <div id="uploadFileInfo" style="display:none;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);padding:6px 8px;background:var(--panel2);border:1px solid var(--border);">
             <span id="uploadFileName" style="color:var(--accent2)"></span><br><span id="uploadDims"></span>
           </div>
-          <p style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1px;margin-top:10px;line-height:2;font-weight:500;">
+          <p style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1px;line-height:2;font-weight:500;">
             💡 Square images work best for NANO / SMALL / MEDIUM.<br>
             For widescreen logos, choose LARGE or XL.<br>
             Transparent pixels are not counted as blocks.
           </p>
-          <div style="margin-top:12px;">
+          <div>
             <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">TRIM</div>
             <div class="trim-ctrl"><label>ZOOM</label><input type="range" id="trimZoom" min="100" max="400" value="100" oninput="updateTrim()"><span class="trim-val" id="trimZoomVal">100%</span></div>
           </div>
-          <div style="margin-top:16px;">
-            <button class="btn-blue" id="uploadContinueBtn" onclick="goToSection2()" disabled style="width:100%;padding:12px;font-size:12px;">CONTINUE TO SIZE →</button>
+          <button class="btn-blue" id="uploadContinueBtn" onclick="goToSection2()" disabled style="width:100%;padding:12px;font-size:12px;">CONTINUE TO SIZE →</button>
+          <div style="display:flex;justify-content:center;padding:16px 0;">
+            <canvas id="charCanvas" width="160" height="120" style="image-rendering:pixelated;opacity:0.7;"></canvas>
           </div>
         </div>
 
-        <!-- 余白B（説明文とプレビューの間）＋キャラクター配置 -->
-        <div style="flex:1;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;align-self:stretch;">
-          <canvas id="charCanvas" width="160" height="120" style="image-rendering:pixelated;opacity:0.7;display:block;margin-top:auto;margin-bottom:auto;"></canvas>
-        </div>
-
-        <!-- 右カラム：プレビュー -->
+        <!-- 右カラム：560px固定 -->
         <div style="width:560px;flex-shrink:0;">
           <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">PREVIEW</div>
           <div class="trim-area-wrap">
@@ -345,9 +338,6 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
             <p style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted2);margin-top:4px;letter-spacing:1px;" id="trimHint">Drag to pan image.</p>
           </div>
         </div>
-
-        <!-- 余白C -->
-        <div style="flex:1;"></div>
 
       </div>
     </div>

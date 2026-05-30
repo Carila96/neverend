@@ -756,64 +756,43 @@ function updateAuthUI(session){
 
 async function loginWith(provider){
   if(!_sbClient)return;
-  try{
-    console.log('Attempting login with provider:', provider);
-    console.log('sbClient:', _sbClient);
-
-    // Twitterの場合はprovider名を確認
-    const providerName = provider === 'twitter' ? 'twitter' : provider;
-    console.log('Provider name:', providerName);
-
-    const{data,error}=await _sbClient.auth.signInWithOAuth({
-      provider:providerName,
-      options:{
-        redirectTo:'https://neverend.vercel.app',
-        skipBrowserRedirect:true
-      }
-    });
-    if(error){
-      console.error('OAuth error:',error);
-      alert('Login error: '+error.message);
-      return;
+  const{data,error}=await _sbClient.auth.signInWithOAuth({
+    provider:provider,
+    options:{
+      redirectTo:'https://neverend.vercel.app',
+      skipBrowserRedirect:true
     }
-    if(data&&data.url){
-      if(window.parent!==window){
-        window.parent.location.href=data.url;
-      }else{
-        window.location.href=data.url;
-      }
+  });
+  if(error){console.error('OAuth error:',error);return;}
+  if(data&&data.url){
+    if(window.parent!==window){
+      window.parent.location.href=data.url;
     }else{
-      alert('No URL returned from OAuth');
+      window.location.href=data.url;
     }
-  }catch(e){
-    console.error('Login exception:',e);
-    alert('Login failed: '+e.message);
   }
 }
 
 async function handleLogout(){
-  if(_sbClient){
-    // Supabaseのセッションを完全にクリア
-    await _sbClient.auth.signOut({scope:'global'});
+  try{
+    if(_sbClient){
+      await _sbClient.auth.signOut({scope:'global'});
+    }
+  }catch(e){console.warn('signOut error:',e);}
+  const keysToRemove=[];
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k&&(k.startsWith('sb-')||k.includes('supabase')||k.startsWith('neverend'))){
+      keysToRemove.push(k);
+    }
   }
-  // SupabaseのCookieとlocalStorageのセッションを手動でクリア
-  try{
-    Object.keys(localStorage).forEach(function(key){
-      if(key.startsWith('sb-')||key.includes('supabase')){
-        localStorage.removeItem(key);
-      }
-    });
-    Object.keys(sessionStorage).forEach(function(key){
-      if(key.startsWith('sb-')||key.includes('supabase')){
-        sessionStorage.removeItem(key);
-      }
-    });
-  }catch(e){}
-  // ログアウト時に名前をlocalStorageから削除
-  try{
-    localStorage.removeItem('neverend_playername');
-  }catch(e){}
-  window.location.href='/';
+  keysToRemove.forEach(function(k){localStorage.removeItem(k);});
+  sessionStorage.clear();
+  if(window.parent!==window){
+    window.parent.location.reload();
+  }else{
+    window.location.reload();
+  }
 }
 
 // PURCHASES (from Supabase subscription_contracts + owned_blocks)

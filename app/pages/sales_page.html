@@ -244,9 +244,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
     <a href="#sec1" class="nav-cta">CLAIM YOUR SPACE</a>
   </nav>
   <div id="spAuthArea" style="display:flex;align-items:center;gap:10px;">
-    <div id="spUserName" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent2);display:none;"></div>
     <button id="spLoginBtn" onclick="openSpLoginModal()" style="background:none;border:1px solid rgba(74,184,255,0.5);color:#4ab8ff;padding:7px 16px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">[ LOGIN ]</button>
-    <button id="spLogoutBtn" onclick="spLogout()" style="display:none;background:none;border:1px solid rgba(231,76,60,0.5);color:#e74c3c;padding:7px 14px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">LOGOUT</button>
   </div>
 </header>
 <section class="hero">
@@ -302,7 +300,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
           <div class="upload-drop" id="uploadZone" onclick="document.getElementById('fileInput').click()">
             <div class="upload-icon">↑</div>
             <h3>DROP IMAGE</h3>
-            <p>PNG JPG GIF • max 2MB<br><span style="color:var(--accent2)">PNG transparency preserved</span></p>
+            <p>PNG JPG GIF • max 5MB<br><span style="color:var(--accent2)">PNG transparency preserved</span></p>
           </div>
           <input type="file" id="fileInput" accept="image/*">
           <div id="uploadFileInfo" style="display:none;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted2);padding:6px 8px;background:var(--panel2);border:1px solid var(--border);">
@@ -989,7 +987,7 @@ uploadZone.addEventListener('drop',function(e){e.preventDefault();uploadZone.cla
 fileInput.addEventListener('change',function(){if(fileInput.files[0])loadImageFile(fileInput.files[0]);});
 
 function loadImageFile(file){
-  if(file.size>2*1024*1024){alert('Image must be under 2MB.');return;}
+  if(file.size>5*1024*1024){alert('Image must be under 5MB.');return;}
   const reader=new FileReader();
   reader.onload=function(ev){
     const img=new Image();

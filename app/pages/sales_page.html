@@ -1294,7 +1294,7 @@ function removeAllTransparent(){
   const rb=document.getElementById('redoBtn');
   if(ub)ub.disabled=false;
   if(rb)rb.disabled=true;
-  activeBlockCount=chosenW*chosenH-deletedBlocks.length;
+  activeBlockCount=countActivePlaced();
   drawGrid();
   updatePlaceInfo();
 }
@@ -1618,7 +1618,7 @@ function applyGridEdit(e){
   document.getElementById('undoBtn').disabled=!deleteHistory.length;
   if(_editRafId)cancelAnimationFrame(_editRafId);
   _editRafId=requestAnimationFrame(()=>{
-    activeBlockCount=chosenW*chosenH-deletedBlocks.length;
+    activeBlockCount=countActivePlaced();
     drawGrid();
     _editRafId=null;
     updatePlaceInfo();
@@ -1726,7 +1726,7 @@ function exitEditMode(){
       }
     });
   }
-  activeBlockCount=chosenW*chosenH-deletedBlocks.length;
+  activeBlockCount=countActivePlaced();
   deletedBlocks=[];
   _editDone=true;
   deleteHistory=[];

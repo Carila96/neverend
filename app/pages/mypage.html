@@ -807,7 +807,7 @@ async function loadPurchases(userId){
   try{
     const {data:contracts,error:ce}=await _sbClient
       .from('subscription_contracts')
-      .select('id,user_id,plan_type,zone_type,status,block_count,base_price_usd,monthly_total_usd,current_period_start,current_period_end,canceled_at,created_at,anchor_x,anchor_y,width,height,stripe_subscription_id,stripe_session_id')
+      .select('id,user_id,plan_type,zone_type,status,block_count,base_price_usd,monthly_total_usd,current_period_start,current_period_end,canceled_at,created_at,anchor_x,anchor_y,width,height,stage_id,stripe_subscription_id,stripe_session_id')
       .eq('user_id',userId)
       .order('created_at',{ascending:false})
       .limit(50);
@@ -829,7 +829,7 @@ async function loadPurchases(userId){
         <td>col ${(c.anchor_x||0)+1}, row ${(c.anchor_y||0)+1}</td>
         <td>${c.width||'?'}×${c.height||'?'}</td>
         <td style="color:var(--gold)">${(c.plan_type||'monthly').toUpperCase()}</td>
-        <td style="color:var(--accent2)">$${c.monthly_total||'?'}</td>
+        <td style="color:var(--accent2)">$${c.monthly_total_usd||'?'}</td>
         <td style="color:${sc}">${(c.status||'PENDING').toUpperCase()}</td>
         <td style="color:var(--muted)">${c.created_at?new Date(c.created_at).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}):'-'}</td>
         <td><button onclick="openEditModal('${c.id}',${c.stage_id},${c.anchor_x},${c.anchor_y},${c.width},${c.height})" style="background:none;border:1px solid rgba(74,184,255,0.4);color:#4ab8ff;padding:4px 10px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;">EDIT</button></td>

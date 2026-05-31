@@ -46,10 +46,15 @@ async function handleCheckoutCompleted(session) {
     .update({ status: 'claimed', claimed_at: new Date().toISOString(), expires_at: null })
     .eq('stage_id', parseInt(stage_id, 10))
     .eq('status', 'reserved')
-    .gte('x', ax).lt('x', ax + w)
-    .gte('y', ay).lt('y', ay + h);
+    .gte('x', ax)
+    .lt('x', ax + w)
+    .gte('y', ay)
+    .lt('y', ay + h);
 
-  if (claimError) throw new Error(`Failed to claim blocks: ${claimError.message}`);
+  if (claimError) {
+    console.error('claim error:', JSON.stringify(claimError));
+    throw new Error(`Failed to claim blocks: ${claimError.message}`);
+  }
 
   // Create subscription contract
   const contractPayload = {
@@ -66,7 +71,7 @@ async function handleCheckoutCompleted(session) {
     stripe_session_id: session.id,
     stripe_customer_id: session.customer ?? null,
     base_price_usd: 3.00,
-    monthly_total_usd: parseFloat((session.amount_total / 100).toFixed(2)),
+    monthly_total_usd: parseFloat((session.amount_total / 100 / (plan_type === 'annual' ? 10 : 1)).toFixed(2)),
     current_period_start: new Date().toISOString(),
   };
 

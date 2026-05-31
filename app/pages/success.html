@@ -63,60 +63,43 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 </div>
 
 <script>
-(function(){
-  var MAX_ATTEMPTS = 12; // 24 seconds
-  var attempt = 0;
-  var pollInterval = null;
+const params = new URLSearchParams(window.location.search);
+const sessionId = params.get('session_id');
+let attempts = 0;
+const maxAttempts = 20;
 
-  var params = new URLSearchParams(window.location.search);
-  var sessionId = params.get('session_id');
-
-  if (!sessionId) {
-    showError('No session ID found. If you completed payment, your placement will activate shortly.');
-    return;
-  }
-
-  function showLive(stageId) {
-    document.getElementById('stateProcessing').style.display = 'none';
-    document.getElementById('stateLive').style.display = 'block';
-    if (stageId) {
-      document.getElementById('viewPlacementLink').href = '/?stage=' + stageId;
+async function checkStatus() {
+  try {
+    const res = await fetch('/api/get-contract?session_id=' + sessionId);
+    const data = await res.json();
+    if (data && data.status === 'active') {
+      document.getElementById('stateProcessing').style.display = 'none';
+      document.getElementById('stateLive').style.display = 'block';
+      if (data.stage_id) {
+        document.getElementById('viewPlacementLink').href = '/?stage=' + data.stage_id;
+      }
+      return;
     }
+  } catch(e) {
+    console.error('check error:', e);
   }
-
-  function showError(msg) {
+  attempts++;
+  if (attempts < maxAttempts) {
+    setTimeout(checkStatus, 3000);
+  } else {
     document.getElementById('stateProcessing').style.display = 'none';
     document.getElementById('stateError').style.display = 'block';
-    if (msg) document.getElementById('errorSub').textContent = msg;
+    document.getElementById('errorSub').textContent = 'Your payment was received — placement will be active shortly. Please check My Page in a few minutes.';
   }
+}
 
-  function poll() {
-    attempt++;
-    fetch('/api/get-contract?session_id=' + encodeURIComponent(sessionId))
-      .then(function(r){ return r.json(); })
-      .then(function(d){
-        if (d && d.status === 'active') {
-          clearInterval(pollInterval);
-          showLive(d.stage_id);
-        } else if (attempt >= MAX_ATTEMPTS) {
-          clearInterval(pollInterval);
-          showError('Your payment was received. Placement setup is taking a moment — please check back shortly or contact support.');
-        }
-      })
-      .catch(function(){
-        if (attempt >= MAX_ATTEMPTS) {
-          clearInterval(pollInterval);
-          showError('Could not verify placement status. Your payment was received — placement will be active shortly.');
-        }
-      });
-  }
-
-  // Start polling after 1 second
-  setTimeout(function(){
-    poll();
-    pollInterval = setInterval(poll, 2000);
-  }, 1000);
-})();
+if (sessionId) {
+  checkStatus();
+} else {
+  document.getElementById('stateProcessing').style.display = 'none';
+  document.getElementById('stateError').style.display = 'block';
+  document.getElementById('errorSub').textContent = 'No session found.';
+}
 </script>
 </body>
 </html>

@@ -1600,10 +1600,25 @@ gridCanvas.addEventListener('mousemove',function(e){
   const tt=document.getElementById('tooltip');
   if(c>=0&&c<GRID_COLS&&r>=0&&r<GRID_ROWS){
     if(!monopolyMode&&!logoPlaced){
-      const effW=pixelArtEdit&&pixelArtEdit[0]?pixelArtEdit[0].length:chosenW;
-      const effH=pixelArtEdit?pixelArtEdit.length:chosenH;
-      logoGridX=Math.max(0,Math.min(GRID_COLS-1,c-Math.floor(effW/2)));
-      logoGridY=Math.max(0,Math.min(GRID_ROWS-1,r-Math.floor(effH/2)));
+      const effW2=(_editDone&&pixelArtEdit&&pixelArtEdit[0])?pixelArtEdit[0].length:chosenW;
+      const effH2=(_editDone&&pixelArtEdit)?pixelArtEdit.length:chosenH;
+      let minAX=0,minAY=0,maxAX=effW2-1,maxAY=effH2-1;
+      if(_editDone&&pixelArtEdit){
+        let found=false;
+        minAX=effW2;minAY=effH2;maxAX=-1;maxAY=-1;
+        for(let yr=0;yr<pixelArtEdit.length;yr++){
+          for(let xc=0;xc<pixelArtEdit[yr].length;xc++){
+            if(pixelArtEdit[yr][xc]!==null){
+              minAX=Math.min(minAX,xc);minAY=Math.min(minAY,yr);
+              maxAX=Math.max(maxAX,xc);maxAY=Math.max(maxAY,yr);
+              found=true;
+            }
+          }
+        }
+        if(!found){minAX=0;minAY=0;maxAX=effW2-1;maxAY=effH2-1;}
+      }
+      logoGridX=Math.max(-minAX,Math.min(GRID_COLS-1-maxAX,c-Math.floor(effW2/2)));
+      logoGridY=Math.max(-minAY,Math.min(GRID_ROWS-1-maxAY,r-Math.floor(effH2/2)));
       drawGrid();
     }
     const state=getBlockState(c,r);

@@ -845,16 +845,19 @@ function updateProgressBar(){
   }
 }
 function calculatePrice(blockCount){
-  const ppb=currentPriceTier.currentTier?currentPriceTier.currentTier.pricePerBlock:0.40;
+  const ppb=currentPriceTier&&currentPriceTier.currentTier?currentPriceTier.currentTier.pricePerBlock:0.40;
   let discount=0;
   if(blockCount>=4609)discount=0.35;
   else if(blockCount>=1001)discount=0.30;
   else if(blockCount>=501)discount=0.20;
   else if(blockCount>=200)discount=0.10;
-  const monthly=Math.floor(blockCount*ppb*(1-discount));
-  const annual=Math.floor(blockCount*ppb*(1-discount)*10);
-  const effective=Math.floor(blockCount*ppb*(1-discount)*10/12);
-  return{base:Math.floor(blockCount*ppb),disc:discount,total:monthly,annual:annual,effective:effective};
+  const base=Math.round(blockCount*ppb*10)/10;
+  const totalExact=blockCount*ppb*(1-discount);
+  const total=Math.floor(totalExact);
+  const totalDecimal=Math.round(totalExact*10)/10;
+  const annual=total*10;
+  const effective=Math.round(annual/12*10)/10;
+  return{base:base,disc:discount,total:total,totalDecimal:totalDecimal,annual:annual,effective:effective};
 }
 let GRID_COLS=128,GRID_ROWS=72,CELL=10;
 let monopolyMode=false,uploadedImage=null;
@@ -1894,7 +1897,8 @@ function updateSummary(){
   document.getElementById('sumPos').textContent=monopolyMode?'Full Stage':'col '+(selectedArea.x+1)+', row '+(selectedArea.y+1);
   document.getElementById('sumSize').textContent=monopolyMode?'Entire Stage':chosenW+'×'+chosenH+' blocks';
   document.getElementById('sumBlocks').textContent=monopolyMode?'Full stage':active+' active';
-  document.getElementById('sumPrice').textContent='$'+r.total+'/mo';
+  // EST. MONTHLY（ORDER SUMMARY）は小数点第1位まで
+  document.getElementById('sumPrice').textContent='$'+r.totalDecimal+'/mo';
   document.getElementById('priceBase').textContent='$'+r.base;
   document.getElementById('priceDisc').textContent=r.disc>0?'-'+(r.disc*100).toFixed(0)+'%':'--';
   const annRow=document.getElementById('annualRow');

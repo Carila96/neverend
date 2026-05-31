@@ -25,7 +25,13 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing required fields' });
   const deletedSet = new Set((Array.isArray(deleted_blocks) ? deleted_blocks : []).map(d => `${d.x},${d.y}`));
 
-  if (anchor_x < 0 || anchor_x + width > 128 || anchor_y < 0 || anchor_y + height > 72)
+  // 透明マスのはみ出しを許可：Activeピクセルがグリッド内に収まっていればOK
+  // anchor_xが負またはanchor_x+widthが128超でも、deleted_blocksで調整済みならOK
+  const clampedX = Math.max(0, anchor_x);
+  const clampedY = Math.max(0, anchor_y);
+  const clampedW = Math.min(anchor_x + width, 128) - clampedX;
+  const clampedH = Math.min(anchor_y + height, 72) - clampedY;
+  if (clampedW <= 0 || clampedH <= 0)
     return res.status(400).json({ error: "Placement out of grid bounds (128x72)" });
 
   const block_count = (active_blocks && active_blocks > 0)

@@ -1522,8 +1522,8 @@ function drawGrid(){
     else{gridCtx.fillStyle='rgba(255,255,255,0.02)';gridCtx.fillRect(px,py,CELL,CELL);gridCtx.strokeStyle='rgba(255,255,255,0.05)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);}
   }}
   if(logoPlaced&&selectedArea){
-    if(!editMode&&!_editDone){
-      // Edit前（配置直後）：selectedArea全体を枠で囲む
+    if(!_editDone){
+      // Edit未実施：selectedArea全体を枠で囲む
       gridCtx.strokeStyle='rgba(74,184,255,0.9)';
       gridCtx.lineWidth=2;
       gridCtx.strokeRect(
@@ -1531,7 +1531,7 @@ function drawGrid(){
         selectedArea.w*CELL,selectedArea.h*CELL
       );
     }else if(pixelArtEdit){
-      // Edit中またはDone後：deletedBlocksを除いた輪郭を描く
+      // Edit済み：deletedBlocksを除いた輪郭を描く（Edit中も同じ）
       gridCtx.strokeStyle='rgba(74,184,255,0.9)';
       gridCtx.lineWidth=1.5;
       for(let yr=0;yr<pixelArtEdit.length;yr++){

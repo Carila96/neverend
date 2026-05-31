@@ -1694,8 +1694,8 @@ gridCanvas.addEventListener('click',function(e){
     document.getElementById('confirmPlaceBtn').style.display='none';
     document.getElementById('editBlocksBtn').style.display='none';
     document.getElementById('resetPlaceBtn').style.display='none';
-    document.getElementById('placeInfo').style.display='none';
-    document.getElementById('gridHint').textContent='Move mouse to position logo. Click to place.';
+    // placeInfoは表示したまま
+    document.getElementById('gridHint').textContent='Move mouse to reposition. Click to place.';
     drawGrid();
     return;
   }
@@ -1786,11 +1786,11 @@ function exitEditMode(){
       }
     });
   }
-  activeBlockCount=countActivePlaced();
   deletedBlocks=[];
-  _editDone=true;
   deleteHistory=[];
   _redoStack=[];
+  _editDone=true;
+  activeBlockCount=countActivePlaced();
   document.getElementById('gridEditBar').style.display='none';
   document.getElementById('editBlocksBtn').style.display='block';
   document.getElementById('confirmPlaceBtn').style.display='block';

@@ -1295,8 +1295,8 @@ function removeAllTransparent(){
   if(ub)ub.disabled=false;
   if(rb)rb.disabled=true;
   activeBlockCount=countActivePlaced();
-  drawGrid();
   updatePlaceInfo();
+  drawGrid();
 }
 
 function goToSection3(){if(!pixelArtEdit)return;markDone(2);unlockSec(3);setProgress(3);initEditCanvas();buildPalette();updateEditStats();initMiniPicker();document.getElementById('editZoomSlider').value=2;updateEditZoom();document.getElementById('sec3').scrollIntoView({behavior:'smooth',block:'start'});}
@@ -1853,7 +1853,28 @@ function redoLastDelete(){
   if(rb)rb.disabled=!_redoStack.length;
   drawGrid();updatePlaceInfo();
 }
-function resetPlacement(){logoPlaced=false;selectedArea=null;editMode=false;deletedBlocks=[];deleteHistory=[];document.getElementById('placeInfo').style.display='none';document.getElementById('confirmPlaceBtn').style.display='none';document.getElementById('editBlocksBtn').style.display='none';document.getElementById('resetPlaceBtn').style.display='none';document.getElementById('gridEditBar').style.display='none';document.getElementById('gridHint').textContent='Move mouse to position logo. Click to place.';drawGrid();}
+function resetPlacement(){
+  logoPlaced=false;
+  selectedArea=null;
+  editMode=false;
+  deletedBlocks=[];
+  deleteHistory=[];
+  _redoStack=[];
+  _editDone=false;
+  activeBlockCount=chosenW*chosenH;
+  // pixelArtEditを元の状態に戻す
+  if(pixelArtOriginal){
+    pixelArtEdit=deepCopy(pixelArtOriginal);
+  }
+  document.getElementById('placeInfo').style.display='none';
+  document.getElementById('confirmPlaceBtn').style.display='none';
+  document.getElementById('editBlocksBtn').style.display='none';
+  document.getElementById('resetPlaceBtn').style.display='none';
+  document.getElementById('gridEditBar').style.display='none';
+  document.getElementById('gridHint').textContent='Move mouse to position logo. Click to place.';
+  updatePlaceInfo();
+  drawGrid();
+}
 function confirmPlacement(){if(!monopolyMode&&hasConflict(selectedArea.x,selectedArea.y,selectedArea.w,selectedArea.h))return;editMode=false;document.getElementById('gridEditBar').style.display='none';document.getElementById('confirmPlaceBtn').style.display='none';document.getElementById('editBlocksBtn').style.display='none';document.getElementById('gridHint').textContent='Placement confirmed.';markDone(5);unlockSec(6);setProgress(6);updateSummary();drawGrid();document.getElementById('sec6').scrollIntoView({behavior:'smooth',block:'start'});}
 
 function updateSummary(){

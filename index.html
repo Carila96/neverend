@@ -4415,13 +4415,11 @@ async function initSupabase(){
           .then(function(r){
             if(r.data){
               const d=r.data;
-              // 名前をlocalStorageに反映
               if(d.player_name){
                 localStorage.setItem('neverend_playername',d.player_name);
               }else{
                 _showNameInputModal();
               }
-              // 統計をlocalStorageとマージ（最大値を採用）
               try{
                 const saveStr=localStorage.getItem('neverend_save');
                 const save=saveStr?JSON.parse(saveStr):{};
@@ -4436,9 +4434,14 @@ async function initSupabase(){
                 save.totalPlayTime=Math.max(localTime,dbTime);
                 localStorage.setItem('neverend_save',JSON.stringify(save));
                 console.log('Profile synced: deaths='+save.totalDeaths+' best='+save.bestStage);
+                // ゲーム変数に直接反映（リロード不要）
+                if(typeof setStat==='function'){
+                  if(save.bestStage>0)setStat('bestStage',save.bestStage);
+                  if(save.totalDeaths>0)setStat('totalDeaths',save.totalDeaths);
+                  if(save.totalPlayTime>0)setStat('totalPlayTime',save.totalPlayTime);
+                }
               }catch(e){console.error('save sync error:',e);}
             }else{
-              // プロフィール未設定 → 名前入力モーダルを表示
               _showNameInputModal();
             }
           });

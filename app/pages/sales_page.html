@@ -851,10 +851,10 @@ function calculatePrice(blockCount){
   else if(blockCount>=1001)discount=0.30;
   else if(blockCount>=501)discount=0.20;
   else if(blockCount>=200)discount=0.10;
-  const monthly=Math.round(blockCount*ppb*(1-discount)*10)/10;
-  const annual=Math.round(blockCount*ppb*(1-discount)*10*10)/10;
-  const effective=Math.round(blockCount*ppb*(1-discount)*10/12*10)/10;
-  return{base:Math.round(blockCount*ppb*10)/10,disc:discount,total:monthly,annual:annual,effective:effective};
+  const monthly=Math.floor(blockCount*ppb*(1-discount));
+  const annual=Math.floor(blockCount*ppb*(1-discount)*10);
+  const effective=Math.floor(blockCount*ppb*(1-discount)*10/12);
+  return{base:Math.floor(blockCount*ppb),disc:discount,total:monthly,annual:annual,effective:effective};
 }
 let GRID_COLS=128,GRID_ROWS=72,CELL=10;
 let monopolyMode=false,uploadedImage=null;
@@ -1895,7 +1895,7 @@ function updateSummary(){
   document.getElementById('sumSize').textContent=monopolyMode?'Entire Stage':chosenW+'×'+chosenH+' blocks';
   document.getElementById('sumBlocks').textContent=monopolyMode?'Full stage':active+' active';
   document.getElementById('sumPrice').textContent='$'+r.total+'/mo';
-  document.getElementById('priceBase').textContent='$'+Math.round(r.base);
+  document.getElementById('priceBase').textContent='$'+r.base;
   document.getElementById('priceDisc').textContent=r.disc>0?'-'+(r.disc*100).toFixed(0)+'%':'--';
   const annRow=document.getElementById('annualRow');
   const effRow=document.getElementById('effectiveRow');

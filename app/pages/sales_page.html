@@ -1589,6 +1589,30 @@ function drawGrid(){
     }
     gridCtx.setLineDash([]);
   }
+  // Edit中もpixelArtEditの輪郭を青枠で表示
+  if(editMode&&selectedArea&&pixelArtEdit){
+    gridCtx.strokeStyle='rgba(74,184,255,0.9)';
+    gridCtx.lineWidth=1.5;
+    for(let yr=0;yr<pixelArtEdit.length;yr++){
+      for(let xc=0;xc<pixelArtEdit[yr].length;xc++){
+        if(pixelArtEdit[yr][xc]===null)continue;
+        if(deletedBlocks.some(function(d){return d.x===xc&&d.y===yr;}))continue;
+        const gc=selectedArea.x+xc;
+        const gr=selectedArea.y+yr;
+        const top=yr===0||pixelArtEdit[yr-1][xc]===null||deletedBlocks.some(function(d){return d.x===xc&&d.y===yr-1;});
+        const bottom=yr===pixelArtEdit.length-1||pixelArtEdit[yr+1][xc]===null||deletedBlocks.some(function(d){return d.x===xc&&d.y===yr+1;});
+        const left=xc===0||pixelArtEdit[yr][xc-1]===null||deletedBlocks.some(function(d){return d.x===xc-1&&d.y===yr;});
+        const right=xc===pixelArtEdit[yr].length-1||pixelArtEdit[yr][xc+1]===null||deletedBlocks.some(function(d){return d.x===xc+1&&d.y===yr;});
+        const px2=gc*CELL,py2=gr*CELL;
+        gridCtx.beginPath();
+        if(top){gridCtx.moveTo(px2,py2);gridCtx.lineTo(px2+CELL,py2);}
+        if(bottom){gridCtx.moveTo(px2,py2+CELL);gridCtx.lineTo(px2+CELL,py2+CELL);}
+        if(left){gridCtx.moveTo(px2,py2);gridCtx.lineTo(px2,py2+CELL);}
+        if(right){gridCtx.moveTo(px2+CELL,py2);gridCtx.lineTo(px2+CELL,py2+CELL);}
+        gridCtx.stroke();
+      }
+    }
+  }
   if(editMode){gridCtx.strokeStyle='rgba(245,200,66,0.4)';gridCtx.lineWidth=2;gridCtx.strokeRect(1,1,1278,718);}
 }
 

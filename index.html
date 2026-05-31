@@ -4423,12 +4423,20 @@ async function initSupabase(){
               }
               // 統計をlocalStorageとマージ（最大値を採用）
               try{
-                const save=JSON.parse(localStorage.getItem('neverend_save')||'{}');
-                if(d.best_stage>0)save.bestStage=Math.max(save.bestStage||0,d.best_stage);
-                if(d.total_deaths>0)save.totalDeaths=Math.max(save.totalDeaths||0,d.total_deaths);
-                if(d.total_play_time>0)save.totalPlayTime=Math.max(save.totalPlayTime||0,d.total_play_time);
+                const saveStr=localStorage.getItem('neverend_save');
+                const save=saveStr?JSON.parse(saveStr):{};
+                const dbBest=parseInt(d.best_stage)||0;
+                const dbDeaths=parseInt(d.total_deaths)||0;
+                const dbTime=parseInt(d.total_play_time)||0;
+                const localBest=parseInt(save.bestStage)||0;
+                const localDeaths=parseInt(save.totalDeaths)||0;
+                const localTime=parseInt(save.totalPlayTime)||0;
+                save.bestStage=Math.max(localBest,dbBest);
+                save.totalDeaths=Math.max(localDeaths,dbDeaths);
+                save.totalPlayTime=Math.max(localTime,dbTime);
                 localStorage.setItem('neverend_save',JSON.stringify(save));
-              }catch(e){}
+                console.log('Profile synced: deaths='+save.totalDeaths+' best='+save.bestStage);
+              }catch(e){console.error('save sync error:',e);}
             }else{
               // プロフィール未設定 → 名前入力モーダルを表示
               _showNameInputModal();

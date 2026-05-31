@@ -1564,12 +1564,29 @@ function drawGrid(){
       }
     }
   }else if(!logoPlaced&&chosenW){
-    const effW2=chosenW;
-    const effH2=chosenH;
-    const bx=lx*CELL,by=ly*CELL;
     gridCtx.strokeStyle=conflict?'rgba(231,76,60,0.9)':'rgba(0,200,255,0.8)';
-    gridCtx.lineWidth=2;gridCtx.setLineDash([6,3]);
-    gridCtx.strokeRect(bx,by,effW2*CELL,effH2*CELL);
+    gridCtx.lineWidth=2;
+    gridCtx.setLineDash([6,3]);
+    if(_editDone&&pixelArtEdit){
+      gridCtx.beginPath();
+      for(let yr=0;yr<pixelArtEdit.length;yr++){
+        for(let xc=0;xc<pixelArtEdit[yr].length;xc++){
+          if(pixelArtEdit[yr][xc]===null)continue;
+          const gpx=(lx+xc)*CELL,gpy=(ly+yr)*CELL;
+          const top=yr===0||pixelArtEdit[yr-1][xc]===null;
+          const bottom=yr===pixelArtEdit.length-1||pixelArtEdit[yr+1][xc]===null;
+          const left=xc===0||pixelArtEdit[yr][xc-1]===null;
+          const right=xc===pixelArtEdit[yr].length-1||pixelArtEdit[yr][xc+1]===null;
+          if(top){gridCtx.moveTo(gpx,gpy);gridCtx.lineTo(gpx+CELL,gpy);}
+          if(bottom){gridCtx.moveTo(gpx,gpy+CELL);gridCtx.lineTo(gpx+CELL,gpy+CELL);}
+          if(left){gridCtx.moveTo(gpx,gpy);gridCtx.lineTo(gpx,gpy+CELL);}
+          if(right){gridCtx.moveTo(gpx+CELL,gpy);gridCtx.lineTo(gpx+CELL,gpy+CELL);}
+        }
+      }
+      gridCtx.stroke();
+    }else{
+      gridCtx.strokeRect(lx*CELL,ly*CELL,chosenW*CELL,chosenH*CELL);
+    }
     gridCtx.setLineDash([]);
   }
   if(editMode){gridCtx.strokeStyle='rgba(245,200,66,0.4)';gridCtx.lineWidth=2;gridCtx.strokeRect(1,1,1278,718);}
@@ -1646,12 +1663,11 @@ gridCanvas.addEventListener('click',function(e){
   }
 
   // 未配置の場合は配置確定
-  const effW=pixelArtEdit&&pixelArtEdit[0]?pixelArtEdit[0].length:chosenW;
-  const effH=pixelArtEdit?pixelArtEdit.length:chosenH;
+  const effW=(_editDone&&pixelArtEdit&&pixelArtEdit[0])?pixelArtEdit[0].length:chosenW;
+  const effH=(_editDone&&pixelArtEdit)?pixelArtEdit.length:chosenH;
 
-  // Activeピクセルの境界を計算
   let minActiveX=0,minActiveY=0,maxActiveX=effW-1,maxActiveY=effH-1;
-  if(pixelArtEdit){
+  if(_editDone&&pixelArtEdit){
     let found=false;
     minActiveX=effW;minActiveY=effH;maxActiveX=-1;maxActiveY=-1;
     for(let yr=0;yr<pixelArtEdit.length;yr++){
@@ -1668,7 +1684,6 @@ gridCanvas.addEventListener('click',function(e){
     if(!found){minActiveX=0;minActiveY=0;maxActiveX=effW-1;maxActiveY=effH-1;}
   }
 
-  // Activeピクセルがグリッド内に収まる範囲でpx・pyを決定（透明マスははみ出し可）
   let px=c-Math.floor(effW/2);
   let py=r-Math.floor(effH/2);
   px=Math.max(-minActiveX,Math.min(GRID_COLS-1-maxActiveX,px));
@@ -1712,6 +1727,7 @@ function updatePlaceInfo(){
 }
 function countActivePlaced(){
   if(!pixelArtEdit)return 0;
+  if(!_editDone)return chosenW*chosenH;
   let count=0;
   for(let yr=0;yr<pixelArtEdit.length;yr++){
     for(let xc=0;xc<pixelArtEdit[yr].length;xc++){

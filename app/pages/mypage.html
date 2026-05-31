@@ -832,7 +832,7 @@ async function loadPurchases(userId){
         <td style="color:var(--accent2)">$${c.monthly_total_usd||'?'}</td>
         <td style="color:${sc}">${(c.status||'PENDING').toUpperCase()}</td>
         <td style="color:var(--muted)">${c.created_at?new Date(c.created_at).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}):'-'}</td>
-        <td><button onclick="openEditModal('${c.id}',${c.stage_id},${c.anchor_x},${c.anchor_y},${c.width},${c.height})" style="background:none;border:1px solid rgba(74,184,255,0.4);color:#4ab8ff;padding:4px 10px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;">EDIT</button></td>
+        <td><button onclick="openEditModal('${c.id}',${c.stage_id||1},${c.anchor_x||0},${c.anchor_y||0},${c.width||1},${c.height||1})" style="background:none;border:1px solid rgba(74,184,255,0.4);color:#4ab8ff;padding:4px 10px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;">EDIT</button></td>
       </tr>`;
     });
     html+='</tbody></table></div>';

@@ -870,6 +870,7 @@ let currentStage=1,gridStates={};
 let logoGridX=0,logoGridY=0,logoPlaced=false,selectedArea=null;
 let editMode=false,deletedBlocks=[],deleteHistory=[],plan='monthly',gridEditIsClick=false;
 let _redoStack=[];
+let _dragDeleteBuffer=[];
 let activeBlockCount=0;
 let _editDone=false;
 let _editRafId=null;
@@ -1152,7 +1153,21 @@ document.addEventListener('mousemove',function(e){
     if(_editCanvasWrap){_editCanvasWrap.scrollLeft=_panOrigScrollLeft-dx;_editCanvasWrap.scrollTop=_panOrigScrollTop-dy;}
   }
 });
-document.addEventListener('mouseup',function(){trimDrag=false;trimCropDrag=false;trimCropResize=false;trimResizeCorner=null;miniDragSV=false;miniDragHue=false;if(editDrag){editDrag=false;buildPalette();}gridEditDrag=false;_panDrag=false;if(editMode){updatePlaceInfo();drawGrid();}});
+document.addEventListener('mouseup',function(){
+  trimDrag=false;trimCropDrag=false;trimCropResize=false;trimResizeCorner=null;
+  miniDragSV=false;miniDragHue=false;
+  if(editDrag){editDrag=false;buildPalette();}
+  if(gridEditDrag&&_dragDeleteBuffer.length>0){
+    deleteHistory.push({bulk:true,items:_dragDeleteBuffer.map(function(d){return d;}),restore:false});
+    _dragDeleteBuffer=[];
+    const ub=document.getElementById('undoBtn');
+    if(ub)ub.disabled=false;
+  }
+  gridEditDrag=false;
+  gridEditIsClick=false;
+  _panDrag=false;
+  if(editMode){updatePlaceInfo();drawGrid();}
+});
 
 function getTrimmedDataUrl(){
   if(!uploadedImage)return null;
@@ -1657,10 +1672,11 @@ function applyGridEdit(e){
   if(alreadyDel){
     if(gridEditIsClick){
       deletedBlocks=deletedBlocks.filter(function(d){return!(d.x===lc&&d.y===lr);});
-      deleteHistory.push({x:lc,y:lr,restore:true});
+      _dragDeleteBuffer.push({x:lc,y:lr,restore:true});
     }
   }else{
-    deletedBlocks.push({x:lc,y:lr});deleteHistory.push({x:lc,y:lr,restore:false});
+    deletedBlocks.push({x:lc,y:lr});
+    _dragDeleteBuffer.push({x:lc,y:lr,restore:false});
   }
   document.getElementById('undoBtn').disabled=!deleteHistory.length;
   if(_editRafId)cancelAnimationFrame(_editRafId);

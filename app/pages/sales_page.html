@@ -979,7 +979,25 @@ function drawStageMap(){
 setStage(1);
 
 function getBlockState(c,r){return(gridStates[currentStage]&&gridStates[currentStage][c+','+r])||'available';}
-function fetchGridStates(stageId){fetch('/api/grid?stage_id='+stageId).then(function(r){return r.json();}).then(function(d){if(d&&d.blocks){const g={};d.blocks.forEach(function(b){g[b.x+','+b.y]=b.status;});gridStates[stageId]=g;if(currentStage===stageId)drawGrid();}}).catch(function(){});}
+function fetchGridStates(stageId){
+  gridStates[stageId]={};
+  fetch('/api/grid?stage_id='+stageId)
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d&&d.blocks){
+        const g={};
+        d.blocks.forEach(function(b){
+          // claimedとreservedの両方を登録
+          if(b.status==='claimed'||b.status==='reserved'){
+            g[b.x+','+b.y]=b.status;
+          }
+        });
+        gridStates[stageId]=g;
+        if(currentStage===stageId)drawGrid();
+      }
+    })
+    .catch(function(){});
+}
 
 const uploadZone=document.getElementById('uploadZone');
 const fileInput=document.getElementById('fileInput');
@@ -1453,6 +1471,8 @@ document.getElementById('miniHexInput').addEventListener('input',function(){cons
 function addCustomColor(){const rgb=hsvToRgb(miniH,miniS,miniV);if(!customColors.find(function(c){return c.r===rgb.r&&c.g===rgb.g&&c.b===rgb.b;})){customColors.push({r:rgb.r,g:rgb.g,b:rgb.b});}selectedPaletteKey=rgb.r+','+rgb.g+','+rgb.b;selectedPaletteColor={r:rgb.r,g:rgb.g,b:rgb.b};buildPalette();}
 
 function confirmStage(){
+  gridStates={};
+  fetchGridStates(currentStage);
   markDone(4);updateGC(currentStage);deletedBlocks=[];deleteHistory=[];
   unlockSec(5);setProgress(5);
   document.getElementById('gridStageName').textContent=STAGES_DATA[currentStage-1].name;

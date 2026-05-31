@@ -130,6 +130,10 @@ export default async function handler(req, res) {
     }
   }
 
+  if (blocks.length === 0) {
+    return res.status(400).json({ error: 'No valid blocks to reserve' });
+  }
+
   const { error: insertError } = await supabase.from('owned_blocks').insert(blocks);
   if (insertError) {
     console.error('owned_blocks insert error:', JSON.stringify(insertError));

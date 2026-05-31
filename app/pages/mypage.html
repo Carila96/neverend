@@ -797,7 +797,9 @@ async function handleLogout(){
 
 // PURCHASES (from Supabase subscription_contracts + owned_blocks)
 async function loadPurchases(userId){
-  if(!_sbClient||!userId)return;
+  const resolvedUserId=userId||(_sbClient&&(await _sbClient.auth.getUser()).data?.user?.id)||null;
+  if(!_sbClient||!resolvedUserId){console.error('loadPurchases: no user id');return;}
+  userId=resolvedUserId;
   const section=document.getElementById('purchaseSection');
   const listEl=document.getElementById('purchaseList');
   if(!section||!listEl)return;

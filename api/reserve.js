@@ -134,6 +134,7 @@ export default async function handler(req, res) {
 
   const { error: sessionError } = await supabase.from('reservation_sessions').insert({
     session_key,
+    user_id: req.body.user_id || null,
     stage_id,
     anchor_x,
     anchor_y,

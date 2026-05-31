@@ -53,13 +53,19 @@ async function handleCheckoutCompleted(session) {
 
   // Create subscription contract
   const contractPayload = {
+    user_id: reservation.user_id,
     plan_type,
     zone_type,
+    stage_id: reservation.stage_id,
+    anchor_x: reservation.anchor_x,
+    anchor_y: reservation.anchor_y,
+    width: reservation.width,
+    height: reservation.height,
     block_count: parseInt(block_count, 10),
     status: 'active',
     stripe_session_id: session.id,
     stripe_customer_id: session.customer ?? null,
-    base_price_usd: 3.00, // launch price; update when price ladder advances
+    base_price_usd: 3.00,
     monthly_total_usd: parseFloat((session.amount_total / 100).toFixed(2)),
     current_period_start: new Date().toISOString(),
   };

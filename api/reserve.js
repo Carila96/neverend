@@ -112,18 +112,23 @@ export default async function handler(req, res) {
 
   // Insert one row per block as reserved (skip deleted_blocks)
   const blocks = [];
-  for (let dy = 0; dy < height; dy++)
+  for (let dy = 0; dy < height; dy++) {
     for (let dx = 0; dx < width; dx++) {
       if (deletedSet.has(`${dx},${dy}`)) continue;
+      const bx = anchor_x + dx;
+      const by = anchor_y + dy;
+      // グリッド範囲外（負の値や128/72超）のブロックはスキップ
+      if (bx < 0 || bx >= 128 || by < 0 || by >= 72) continue;
       blocks.push({
         stage_id,
-        x: anchor_x + dx,
-        y: anchor_y + dy,
+        x: bx,
+        y: by,
         status: 'reserved',
         reserved_at: new Date().toISOString(),
         expires_at,
       });
     }
+  }
 
   const { error: insertError } = await supabase.from('owned_blocks').insert(blocks);
   if (insertError) {

@@ -126,9 +126,10 @@ export default async function handler(req, res) {
 
   const { error: insertError } = await supabase.from('owned_blocks').insert(blocks);
   if (insertError) {
+    console.error('owned_blocks insert error:', JSON.stringify(insertError));
     if (insertError.code === '23505')
       return res.status(409).json({ error: 'Placement conflict', message: 'These blocks were just claimed by another user.' });
-    return res.status(500).json({ error: 'Failed to reserve blocks' });
+    return res.status(500).json({ error: 'Failed to reserve blocks', detail: insertError.message });
   }
 
   const { error: sessionError } = await supabase.from('reservation_sessions').insert({

@@ -1522,15 +1522,7 @@ function drawGrid(){
     else{gridCtx.fillStyle='rgba(255,255,255,0.02)';gridCtx.fillRect(px,py,CELL,CELL);gridCtx.strokeStyle='rgba(255,255,255,0.05)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);}
   }}
   if(logoPlaced&&selectedArea){
-    if(editMode){
-      // Edit中：selectedArea全体を枠で囲む
-      gridCtx.strokeStyle='rgba(74,184,255,0.9)';
-      gridCtx.lineWidth=2;
-      gridCtx.strokeRect(
-        selectedArea.x*CELL,selectedArea.y*CELL,
-        selectedArea.w*CELL,selectedArea.h*CELL
-      );
-    }else if(!_editDone){
+    if(!editMode&&!_editDone){
       // Edit前（配置直後）：selectedArea全体を枠で囲む
       gridCtx.strokeStyle='rgba(74,184,255,0.9)';
       gridCtx.lineWidth=2;

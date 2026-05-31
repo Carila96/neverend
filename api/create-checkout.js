@@ -50,7 +50,7 @@ export default async function handler(req, res) {
   // Annual = 10 months upfront
   const monthly_total_raw = reservation.monthly_total;
   const amountCents = plan_type === 'annual'
-    ? Math.round(Math.round(monthly_total_raw * 10) * 10 * 10)
+    ? Math.round(monthly_total_raw * 10 * 100)
     : Math.round(monthly_total_raw * 100);
 
   const metadata = {

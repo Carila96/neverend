@@ -1894,7 +1894,7 @@ function updateSummary(){
   document.getElementById('sumPos').textContent=monopolyMode?'Full Stage':'col '+(selectedArea.x+1)+', row '+(selectedArea.y+1);
   document.getElementById('sumSize').textContent=monopolyMode?'Entire Stage':chosenW+'×'+chosenH+' blocks';
   document.getElementById('sumBlocks').textContent=monopolyMode?'Full stage':active+' active';
-  document.getElementById('sumPrice').textContent='$'+Math.round(r.total)+'/mo';
+  document.getElementById('sumPrice').textContent='$'+r.total+'/mo';
   document.getElementById('priceBase').textContent='$'+Math.round(r.base);
   document.getElementById('priceDisc').textContent=r.disc>0?'-'+(r.disc*100).toFixed(0)+'%':'--';
   const annRow=document.getElementById('annualRow');

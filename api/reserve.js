@@ -21,6 +21,7 @@ export default async function handler(req, res) {
   try {
 
   const { stage_id, anchor_x, anchor_y, width, height, zone_type, plan_type, admin_key, deleted_blocks, active_blocks } = req.body;
+  const user_id = req.body.user_id || null;
   if (!stage_id || anchor_x == null || anchor_y == null || !width || !height || !zone_type || !plan_type)
     return res.status(400).json({ error: 'Missing required fields' });
   const deletedSet = new Set((Array.isArray(deleted_blocks) ? deleted_blocks : []).map(d => `${d.x},${d.y}`));
@@ -134,7 +135,7 @@ export default async function handler(req, res) {
 
   const { error: sessionError } = await supabase.from('reservation_sessions').insert({
     session_key,
-    user_id: req.body.user_id || null,
+    user_id,
     stage_id,
     anchor_x,
     anchor_y,

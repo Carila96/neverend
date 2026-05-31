@@ -95,6 +95,7 @@ async function handleCheckoutCompleted(session) {
     .from('owned_blocks')
     .update({ contract_id: contract.id })
     .eq('stage_id', parseInt(stage_id, 10))
+    .eq('status', 'claimed')
     .gte('x', ax).lt('x', ax + w)
     .gte('y', ay).lt('y', ay + h);
 

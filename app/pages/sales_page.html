@@ -1590,7 +1590,7 @@ function drawGrid(){
     gridCtx.setLineDash([]);
   }
   // Edit中もpixelArtEditの輪郭を青枠で表示
-  if(editMode&&selectedArea&&pixelArtEdit){
+  if(editMode&&selectedArea&&pixelArtEdit&&_editDone){
     gridCtx.strokeStyle='rgba(74,184,255,0.9)';
     gridCtx.lineWidth=1.5;
     for(let yr=0;yr<pixelArtEdit.length;yr++){

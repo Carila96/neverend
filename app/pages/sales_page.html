@@ -1565,7 +1565,13 @@ function drawGrid(){
       gridCtx.lineWidth=0.5;
       gridCtx.strokeRect(px,py,CELL,CELL);
     }
-    else if(state==='claimed'){gridCtx.fillStyle=inLogo?'rgba(231,76,60,0.7)':'rgba(220,60,60,0.5)';gridCtx.fillRect(px,py,CELL,CELL);gridCtx.strokeStyle='rgba(255,255,255,0.04)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);}
+    else if(state==='claimed'){
+      gridCtx.fillStyle=inLogo?'rgba(231,76,60,0.9)':'rgba(220,60,60,0.8)';
+      gridCtx.fillRect(px,py,CELL,CELL);
+      gridCtx.strokeStyle='rgba(255,100,100,0.6)';
+      gridCtx.lineWidth=0.5;
+      gridCtx.strokeRect(px,py,CELL,CELL);
+    }
     else if(state==='reserved'){gridCtx.fillStyle=inLogo?'rgba(231,76,60,0.5)':'rgba(200,60,60,0.4)';gridCtx.fillRect(px,py,CELL,CELL);gridCtx.strokeStyle='rgba(200,130,0,0.3)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);}
     else if(inLogo){const lpx=getDisplayPixel(lc,lr);if(lpx){const alpha=logoPlaced?1:0.75;gridCtx.fillStyle='rgba('+lpx.r+','+lpx.g+','+lpx.b+','+alpha+')';gridCtx.fillRect(px,py,CELL,CELL);}else{gridCtx.fillStyle=(c+r)%2===0?'rgba(74,184,255,0.07)':'rgba(74,184,255,0.04)';gridCtx.fillRect(px,py,CELL,CELL);}gridCtx.strokeStyle=conflict?'rgba(231,76,60,0.3)':'rgba(74,184,255,0.12)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);}
     else{gridCtx.fillStyle='rgba(255,255,255,0.02)';gridCtx.fillRect(px,py,CELL,CELL);gridCtx.strokeStyle='rgba(255,255,255,0.05)';gridCtx.lineWidth=0.5;gridCtx.strokeRect(px,py,CELL,CELL);}

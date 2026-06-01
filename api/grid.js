@@ -69,7 +69,8 @@ export default async function handler(req, res) {
     .from('owned_blocks')
     .select('x, y, status, contract_id')
     .eq('stage_id', stage_id)
-    .in('status', ['claimed', 'reserved']);
+    .in('status', ['claimed', 'reserved'])
+    .limit(10000);
 
   if (error) {
     console.error('Grid fetch error:', error.message);

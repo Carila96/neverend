@@ -803,6 +803,9 @@ async function loadPurchases(userId){
   const section=document.getElementById('purchaseSection');
   const listEl=document.getElementById('purchaseList');
   if(!section||!listEl)return;
+  // placementContentも表示する
+  const placementContent=document.getElementById('placementContent');
+  if(placementContent)placementContent.style.display='block';
   section.style.display='block';
   try{
     const {data:contracts,error:ce}=await _sbClient

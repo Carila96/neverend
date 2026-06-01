@@ -65,7 +65,7 @@ export default async function handler(req, res) {
     await supabaseAnon.rpc('expire_stale_reservations');
   } catch (_) {}
 
-  const { data: blocks, error } = await supabaseAnon
+  const { data: blocks, error } = await supabaseService
     .from('owned_blocks')
     .select('x, y, status, contract_id')
     .eq('stage_id', stage_id)

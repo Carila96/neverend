@@ -883,7 +883,7 @@ function overlayPlacementImage(c){
     .eq('contract_id', c.id)
     .eq('stage_id', c.stage_id)
     .eq('is_active', true)
-    .single()
+    .maybeSingle()
     .then(({data, error})=>{
       if(error||!data||!data.image_url)return;
       const canvas = document.getElementById('gridCanvas');

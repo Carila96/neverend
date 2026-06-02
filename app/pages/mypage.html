@@ -866,9 +866,38 @@ function showContractGrid(index){
     .then(r=>r.json())
     .then(data=>{
       verifyAndRender(c, data);
+      // グリッド描画後にロゴ画像を重ねて描画
+      overlayPlacementImage(c);
     })
     .catch(()=>{
       renderGrid(c, null);
+      overlayPlacementImage(c);
+    });
+}
+
+function overlayPlacementImage(c){
+  if(!_sbClient)return;
+  _sbClient
+    .from('placements')
+    .select('image_url, anchor_x, anchor_y, width, height')
+    .eq('contract_id', c.id)
+    .eq('stage_id', c.stage_id)
+    .eq('is_active', true)
+    .single()
+    .then(({data, error})=>{
+      if(error||!data||!data.image_url)return;
+      const canvas = document.getElementById('gridCanvas');
+      const ctx = canvas.getContext('2d');
+      const CELL = Math.floor(1280 / 128); // sales_page.htmlと同じCELL値を使用
+      const img = new Image();
+      img.onload = function(){
+        const dx = (data.anchor_x || c.anchor_x || 0) * CELL;
+        const dy = (data.anchor_y || c.anchor_y || 0) * CELL;
+        const dw = (data.width || c.width || 1) * CELL;
+        const dh = (data.height || c.height || 1) * CELL;
+        ctx.drawImage(img, dx, dy, dw, dh);
+      };
+      img.src = data.image_url;
     });
 }
 function openLoginModal(){

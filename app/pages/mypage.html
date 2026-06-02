@@ -225,26 +225,6 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
           </div>
         </div>
 
-        <div class="panel-card">
-          <div class="panel-card-title">Your Logo</div>
-          <div class="image-preview">
-            <div class="img-box" id="logoPreviewBox">
-              <div class="img-placeholder" id="logoPreviewPlaceholder">No logo uploaded yet.</div>
-              <img id="logoPreviewImg" style="display:none" alt="Your logo">
-            </div>
-          </div>
-          <div class="actions">
-            <a href="/upload.html" class="btn-secondary" id="uploadLogoBtn">UPLOAD YOUR LOGO</a>
-          </div>
-        </div>
-
-        <div class="panel-card">
-          <div class="panel-card-title">Actions</div>
-          <div class="actions">
-            <a href="/app/pages/sales_page.html" class="btn-secondary">Back to Grid</a>
-            <button class="btn-danger" onclick="openCancelModal()">Cancel Subscription</button>
-          </div>
-        </div>
       </div>
 
       <!-- RIGHT: GRID -->
@@ -256,6 +236,11 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
             <div class="legend-item"><div class="legend-dot claimed"></div>CLAIMED</div>
             <div class="legend-item"><div class="legend-dot empty"></div>AVAILABLE</div>
           </div>
+        </div>
+        <div id="gridNav" style="display:none;align-items:center;gap:12px;padding:8px 12px;font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--muted);">
+          <button onclick="if(_currentContractIndex>0)showContractGrid(_currentContractIndex-1)" style="background:none;border:1px solid var(--muted2);color:var(--muted);padding:2px 10px;cursor:pointer;font-family:inherit;">◀</button>
+          <span id="gridNavLabel">1 / 1</span>
+          <button onclick="if(_currentContractIndex<_purchaseContracts.length-1)showContractGrid(_currentContractIndex+1)" style="background:none;border:1px solid var(--muted2);color:var(--muted);padding:2px 10px;cursor:pointer;font-family:inherit;">▶</button>
         </div>
         <canvas id="gridCanvas" width="1280" height="720"></canvas>
         <div class="grid-note" id="gridNote">Loading grid data...</div>
@@ -466,14 +451,8 @@ function loadPlacement(){
   }catch(_){return null;}
 }
 
-const placement=loadPlacement();
 buildAchievements(0);
-if(!placement||!placement.stage_id){
-  document.getElementById('emptyState').style.display='block';
-}else{
-  document.getElementById('placementContent').style.display='block';
-  init(placement);
-}
+// emptyState/placementContentの表示はloadPurchases()に委譲する
 
 async function init(p){
   document.getElementById('infoStage').textContent='STAGE '+p.stage_id;
@@ -796,6 +775,9 @@ async function handleLogout(){
 }
 
 // PURCHASES (from Supabase subscription_contracts + owned_blocks)
+let _purchaseContracts = [];
+let _currentContractIndex = 0;
+
 async function loadPurchases(userId){
   const resolvedUserId=userId||(_sbClient&&(await _sbClient.auth.getUser()).data?.user?.id)||null;
   if(!_sbClient||!resolvedUserId){console.error('loadPurchases: no user id');return;}
@@ -803,10 +785,6 @@ async function loadPurchases(userId){
   const section=document.getElementById('purchaseSection');
   const listEl=document.getElementById('purchaseList');
   if(!section||!listEl)return;
-  // placementContentも表示する
-  const placementContent=document.getElementById('placementContent');
-  if(placementContent)placementContent.style.display='block';
-  section.style.display='block';
   try{
     const {data:contracts,error:ce}=await _sbClient
       .from('subscription_contracts')
@@ -819,15 +797,25 @@ async function loadPurchases(userId){
       listEl.textContent='Could not load purchase data. ('+ce.message+')';
       buildAchievements(0);return;
     }
-    if(!contracts||contracts.length===0){listEl.textContent='No purchases found.';buildAchievements(0);return;}
+    if(!contracts||contracts.length===0){
+      document.getElementById('emptyState').style.display='block';
+      document.getElementById('placementContent').style.display='none';
+      listEl.textContent='No purchases found.';
+      buildAchievements(0);return;
+    }
+    // contractsあり：emptyStateを非表示、placementContentを表示
+    document.getElementById('emptyState').style.display='none';
+    document.getElementById('placementContent').style.display='block';
+    section.style.display='block';
+    _purchaseContracts = contracts;
     const totalBlocks=contracts.reduce((sum,c)=>sum+(c.width||0)*(c.height||0),0);
     buildAchievements(totalBlocks);
     let html='<div style="overflow-x:auto;"><table class="purchase-table"><thead><tr>';
     html+='<th>STAGE</th><th>POSITION</th><th>SIZE</th><th>PLAN</th><th>MONTHLY</th><th>STATUS</th><th>SINCE</th><th>EDIT</th>';
     html+='</tr></thead><tbody>';
     contracts.forEach(c=>{
-      const sc=c.status==='active'?'var(--green)':c.status==='cancelled'?'var(--accent)':'var(--muted2)';
-      html+=`<tr>
+      const sc=c.status==='active'?'var(--green)':c.status==='canceled'?'var(--accent)':'var(--muted2)';
+      html+=`<tr data-contract-id="${c.id}" onclick="showContractGrid(_purchaseContracts.findIndex(x=>x.id==='${c.id}'))" style="cursor:pointer;">
         <td style="color:var(--accent2)">STAGE ${c.stage_id}</td>
         <td>col ${(c.anchor_x||0)+1}, row ${(c.anchor_y||0)+1}</td>
         <td>${c.width||'?'}×${c.height||'?'}</td>
@@ -835,15 +823,53 @@ async function loadPurchases(userId){
         <td style="color:var(--accent2)">$${c.monthly_total_usd||'?'}</td>
         <td style="color:${sc}">${(c.status||'PENDING').toUpperCase()}</td>
         <td style="color:var(--muted)">${c.created_at?new Date(c.created_at).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}):'-'}</td>
-        <td><button onclick="openEditModal('${c.id}',${c.stage_id||1},${c.anchor_x||0},${c.anchor_y||0},${c.width||1},${c.height||1})" style="background:none;border:1px solid rgba(74,184,255,0.4);color:#4ab8ff;padding:4px 10px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;">EDIT</button></td>
+        <td><button onclick="event.stopPropagation();openEditModal('${c.id}',${c.stage_id||1},${c.anchor_x||0},${c.anchor_y||0},${c.width||1},${c.height||1})" style="background:none;border:1px solid rgba(74,184,255,0.4);color:#4ab8ff;padding:4px 10px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;">EDIT</button></td>
       </tr>`;
     });
     html+='</tbody></table></div>';
     listEl.innerHTML=html;
+    showContractGrid(0);
   }catch(err){
     listEl.textContent='Error loading purchases.';
     console.warn('loadPurchases error:',err);
   }
+}
+
+function showContractGrid(index){
+  const contracts = _purchaseContracts;
+  if(!contracts||!contracts.length)return;
+  _currentContractIndex = index;
+  const c = contracts[index];
+
+  document.getElementById('infoStage').textContent = 'STAGE ' + c.stage_id;
+  document.getElementById('infoPos').textContent = 'col ' + ((c.anchor_x||0)+1) + ', row ' + ((c.anchor_y||0)+1);
+  document.getElementById('infoSize').textContent = (c.width||'?') + ' x ' + (c.height||'?') + ' blocks';
+  document.getElementById('infoBlocks').textContent = ((c.width||0)*(c.height||0)) + ' total';
+  document.getElementById('infoPlan').textContent = (c.plan_type||'monthly').toUpperCase();
+  document.getElementById('infoStatus').textContent = (c.status||'PENDING').toUpperCase();
+  document.getElementById('infoZone').textContent = 'STANDARD';
+  document.getElementById('infoDate').textContent = c.created_at ? new Date(c.created_at).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}) : '--';
+  document.getElementById('gridStageName').textContent = 'STAGE ' + c.stage_id;
+
+  const navEl = document.getElementById('gridNav');
+  if(navEl){
+    navEl.style.display = contracts.length > 1 ? 'flex' : 'none';
+    document.getElementById('gridNavLabel').textContent = (index+1) + ' / ' + contracts.length;
+  }
+
+  document.querySelectorAll('#purchaseList tr[data-contract-id]').forEach(tr=>{
+    tr.style.background = tr.dataset.contractId === c.id ? 'rgba(74,184,255,0.08)' : '';
+  });
+
+  const BASE = window.location.origin;
+  fetch(BASE+'/api/grid?stage_id='+c.stage_id)
+    .then(r=>r.json())
+    .then(data=>{
+      verifyAndRender(c, data);
+    })
+    .catch(()=>{
+      renderGrid(c, null);
+    });
 }
 function openLoginModal(){
   const m=document.getElementById('snsLoginModal');

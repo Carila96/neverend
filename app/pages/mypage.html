@@ -1165,11 +1165,19 @@ async function confirmEdit(){
   document.getElementById('editModalMsg').textContent='Applying changes...';
   try{
     if(hasImageChange){
-      const res=await fetch('https://neverend.vercel.app/api/stage-logo',{
+      const res=await fetch('https://neverend.vercel.app/api/upload-logo',{
         method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({contract_id:_editContractId,image_data:_editNewImage,image_type:'image/png'})
+        body:JSON.stringify({
+          contract_id:_editContractId,
+          stage_id:_editStageId,
+          image_data:_editNewImage,
+          image_type:'image/png'
+        })
       });
-      if(!res.ok)throw new Error('Image update failed');
+      if(!res.ok){
+        const errData=await res.json().catch(()=>({}));
+        throw new Error('Image update failed: '+(errData.error||res.status));
+      }
     }
     if(hasPosChange){
       if(!_sbClient)throw new Error('Not logged in');

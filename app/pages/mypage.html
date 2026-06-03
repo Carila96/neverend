@@ -1338,7 +1338,12 @@ function buildEditPalette(){
 
     const pickerUI = document.createElement('div');
     pickerUI.id = 'editColorPickerUI';
-    pickerUI.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#13131f;border:1px solid rgba(74,184,255,0.4);padding:16px;z-index:9999;display:flex;flex-direction:column;gap:10px;min-width:220px;';
+    pickerUI.style.cssText = 'position:fixed;background:#13131f;border:1px solid rgba(74,184,255,0.4);padding:16px;z-index:9999;display:flex;flex-direction:column;gap:10px;min-width:220px;';
+
+    // addBtnの位置を基準に配置
+    const addBtnRect = addBtn.getBoundingClientRect();
+    pickerUI.style.top = addBtnRect.top + 'px';
+    pickerUI.style.left = (addBtnRect.right + 8) + 'px';
 
     const title = document.createElement('div');
     title.textContent = 'ADD COLOR TO PALETTE';

@@ -1180,14 +1180,20 @@ async function confirmEdit(){
       }
     }
     if(hasPosChange){
-      if(!_sbClient)throw new Error('Not logged in');
-      const{error}=await _sbClient.from('owned_blocks')
-        .update({x:_editNewX,y:_editNewY,anchor_x:_editNewX,anchor_y:_editNewY})
-        .eq('contract_id',_editContractId);
-      if(error)throw new Error('Position update failed: '+error.message);
-      await _sbClient.from('subscription_contracts')
-        .update({anchor_x:_editNewX,anchor_y:_editNewY})
-        .eq('id',_editContractId);
+      const posRes=await fetch('https://neverend.vercel.app/api/cancel-reservation',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          contract_id:_editContractId,
+          action:'update_position',
+          new_anchor_x:_editNewX,
+          new_anchor_y:_editNewY
+        })
+      });
+      if(!posRes.ok){
+        const errData=await posRes.json().catch(()=>({}));
+        throw new Error('Position update failed: '+(errData.error||posRes.status));
+      }
     }
     document.getElementById('editModalMsg').style.color='#4ade80';
     document.getElementById('editModalMsg').textContent='Changes saved successfully!';

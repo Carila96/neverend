@@ -1373,10 +1373,11 @@ function buildEditPalette(){
 
 function setEditColorTool(tool){
   _editColorTool = tool;
-  document.getElementById('editToolReplace').style.borderColor = tool==='replace'?'rgba(74,184,255,0.9)':'#262640';
-  document.getElementById('editToolReplace').style.color = tool==='replace'?'#4ab8ff':'#787f90';
-  document.getElementById('editToolTransparent').style.borderColor = tool==='transparent'?'rgba(231,76,60,0.9)':'#262640';
-  document.getElementById('editToolTransparent').style.color = tool==='transparent'?'#e74c3c':'#787f90';
+  const replaceBtn = document.getElementById('editToolReplace');
+  if(replaceBtn){
+    replaceBtn.style.borderColor = tool==='replace'?'rgba(74,184,255,0.9)':'#262640';
+    replaceBtn.style.color = tool==='replace'?'#4ab8ff':'#787f90';
+  }
 }
 
 let _editPixelRedo = [];

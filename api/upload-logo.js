@@ -18,7 +18,7 @@ export default async function handler(req, res) {
       .select('*')
       .eq('id', contract_id)
       .eq('status', 'active')
-      .single();
+      .maybeSingle();
 
     if (contractError || !contract) {
       return res.status(404).json({ error: 'Contract not found or not active' });
@@ -44,33 +44,62 @@ export default async function handler(req, res) {
     const width = maxX - minX + 1;
     const height = maxY - minY + 1;
 
-    // Store base64 image data directly (for simplicity)
-    // In production, this would go to Supabase Storage
-    const imageUrl = `data:${image_type || 'image/png'};base64,${image_data}`;
+    // Convert base64 to buffer
+    const imageBuffer = Buffer.from(image_data, 'base64');
+    const mimeType = image_type || 'image/png';
+    const ext = mimeType === 'image/png' ? 'png' : mimeType === 'image/jpeg' ? 'jpg' : 'png';
+    const fileName = `logos/${contract_id}_${stage_id}.${ext}`;
 
-    // Upsert placement record
-    const { data: placement, error: placementError } = await supabase
+    // Upload to Supabase Storage
+    const { error: uploadError } = await supabase.storage
+      .from('logos')
+      .upload(fileName, imageBuffer, {
+        contentType: mimeType,
+        upsert: true
+      });
+
+    if (uploadError) {
+      console.error('Storage upload error:', uploadError);
+      // Fallback to Data URI if storage fails
+      const imageUrl = `data:${mimeType};base64,${image_data}`;
+      const { error: placementError } = await supabase
+        .from('placements')
+        .upsert({
+          contract_id, stage_id,
+          anchor_x: minX, anchor_y: minY, width, height,
+          image_url: imageUrl,
+          zone_type: contract.zone_type,
+          is_active: true,
+          approved_at: new Date().toISOString()
+        }, { onConflict: 'contract_id,stage_id' });
+      if (placementError) return res.status(500).json({ error: 'Failed to save placement' });
+      return res.status(200).json({ ok: true, storage: false });
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('logos')
+      .getPublicUrl(fileName);
+
+    const imageUrl = urlData.publicUrl;
+
+    // Upsert placement record with Storage URL
+    const { error: placementError } = await supabase
       .from('placements')
       .upsert({
-        contract_id,
-        stage_id,
-        anchor_x: minX,
-        anchor_y: minY,
-        width,
-        height,
+        contract_id, stage_id,
+        anchor_x: minX, anchor_y: minY, width, height,
         image_url: imageUrl,
         zone_type: contract.zone_type,
         is_active: true,
         approved_at: new Date().toISOString()
-      }, { onConflict: 'contract_id,stage_id' })
-      .select()
-      .single();
+      }, { onConflict: 'contract_id,stage_id' });
 
     if (placementError) {
       return res.status(500).json({ error: 'Failed to create placement' });
     }
 
-    return res.status(200).json({ ok: true, placement_id: placement.id });
+    return res.status(200).json({ ok: true, storage: true, image_url: imageUrl });
 
   } catch (err) {
     return res.status(500).json({ error: err.message });

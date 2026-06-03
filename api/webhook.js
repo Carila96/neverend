@@ -107,6 +107,24 @@ async function handleCheckoutCompleted(session) {
     .single();
 
   if (logoStaging) {
+    const imageBuffer = Buffer.from(logoStaging.image_data, 'base64');
+    const mimeType = logoStaging.image_type || 'image/png';
+    const ext = mimeType === 'image/png' ? 'png' : 'jpg';
+    const fileName = `logos/${contract.id}_${stage_id}.${ext}`;
+
+    let imageUrl = `data:${mimeType};base64,${logoStaging.image_data}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('logos')
+      .upload(fileName, imageBuffer, { contentType: mimeType, upsert: true });
+
+    if (!uploadError) {
+      const { data: urlData } = supabase.storage.from('logos').getPublicUrl(fileName);
+      imageUrl = urlData.publicUrl;
+    } else {
+      console.warn('Storage upload failed, using Data URI fallback:', uploadError.message);
+    }
+
     await supabase.from('placements').upsert({
       contract_id: contract.id,
       stage_id: parseInt(stage_id, 10),
@@ -114,13 +132,12 @@ async function handleCheckoutCompleted(session) {
       anchor_y: ay,
       width: w,
       height: h,
-      image_url: `data:${logoStaging.image_type};base64,${logoStaging.image_data}`,
+      image_url: imageUrl,
       zone_type,
       is_active: true,
       approved_at: new Date().toISOString(),
     }, { onConflict: 'contract_id,stage_id' });
 
-    // Clean up staging row
     await supabase.from('logo_staging').delete().eq('session_key', session_key);
   }
 

@@ -1122,9 +1122,6 @@ async function loadEditGrid(stageId,ax,ay,w,h){
   }catch(e){console.warn('grid load error:',e);}
   // placementsのロゴ画像を重ねて描画
   const EDIT_CELL=10;
-  // placementsがない場合のベース保存（ロゴなし時）
-  saveEditGridBase();
-  updateEditGridHighlight();
   if(_sbClient){
     _sbClient
       .from('placements')
@@ -1132,28 +1129,36 @@ async function loadEditGrid(stageId,ax,ay,w,h){
       .eq('stage_id',stageId)
       .eq('is_active',true)
       .then(({data:placements,error:perr})=>{
-        if(perr){console.warn('placements fetch error:',perr);return;}
-        if(!placements||!placements.length){console.log('no active placements');return;}
+        if(perr){console.warn('placements fetch error:',perr);}
+        if(!placements||!placements.length){
+          saveEditGridBase();
+          updateEditGridHighlight();
+          return;
+        }
         console.log('placements found:',placements.length);
         let loaded=0;
+        const total=placements.length;
         placements.forEach(pl=>{
-          if(!pl.image_url){loaded++;return;}
+          if(!pl.image_url){
+            loaded++;
+            if(loaded===total){saveEditGridBase();updateEditGridHighlight();}
+            return;
+          }
           const img=new Image();
           img.onload=function(){
             console.log('drawing placement at',pl.anchor_x,pl.anchor_y,pl.width,pl.height);
             ctx.drawImage(img,pl.anchor_x*EDIT_CELL,pl.anchor_y*EDIT_CELL,pl.width*EDIT_CELL,pl.height*EDIT_CELL);
-            // 自分のブロックの上に青枠を再描画
             ctx.fillStyle='rgba(74,184,255,0.15)';
             ctx.fillRect(ax*EDIT_CELL,ay*EDIT_CELL,w*EDIT_CELL,h*EDIT_CELL);
             ctx.strokeStyle='rgba(74,184,255,0.9)';ctx.lineWidth=2;
             ctx.strokeRect(ax*EDIT_CELL,ay*EDIT_CELL,w*EDIT_CELL,h*EDIT_CELL);
             loaded++;
-            if(loaded===placements.length){saveEditGridBase();updateEditGridHighlight();}
+            if(loaded===total){saveEditGridBase();updateEditGridHighlight();}
           };
           img.onerror=function(){
             console.warn('image load error for placement',pl.contract_id);
             loaded++;
-            if(loaded===placements.length){saveEditGridBase();updateEditGridHighlight();}
+            if(loaded===total){saveEditGridBase();updateEditGridHighlight();}
           };
           img.src=pl.image_url;
         });
@@ -1185,7 +1190,10 @@ document.addEventListener('DOMContentLoaded',function(){
     const rect=canvas.getBoundingClientRect();
     const scaleX=1280/rect.width,scaleY=720/rect.height;
     const mx=(e.clientX-rect.left)*scaleX,my=(e.clientY-rect.top)*scaleY;
-    let nx=Math.floor(mx/CELL),ny=Math.floor(my/CELL);
+    const offsetX=Math.floor((_editW||1)/2);
+    const offsetY=Math.floor((_editH||1)/2);
+    let nx=Math.floor(mx/CELL)-offsetX;
+    let ny=Math.floor(my/CELL)-offsetY;
     nx=Math.max(0,Math.min(128-(_editW||1),nx));
     ny=Math.max(0,Math.min(72-(_editH||1),ny));
     return{nx,ny};
@@ -1207,9 +1215,14 @@ document.addEventListener('DOMContentLoaded',function(){
   }
 
   function drawHoverOverlay(nx,ny,conflict){
-    // updateEditGridHighlightを使わずに直接描画
     const canvas2=document.getElementById('editGridCanvas');
     const ctx2=canvas2.getContext('2d');
+    const offsetX=Math.floor((_editW||1)/2);
+    const offsetY=Math.floor((_editH||1)/2);
+    const drawX=nx-offsetX;
+    const drawY=ny-offsetY;
+    const clampX=Math.max(0,Math.min(128-(_editW||1),drawX));
+    const clampY=Math.max(0,Math.min(72-(_editH||1),drawY));
     if(conflict){
       ctx2.fillStyle='rgba(231,76,60,0.35)';
       ctx2.strokeStyle='rgba(231,76,60,0.9)';
@@ -1218,8 +1231,8 @@ document.addEventListener('DOMContentLoaded',function(){
       ctx2.strokeStyle='rgba(74,222,128,0.9)';
     }
     ctx2.lineWidth=2;
-    ctx2.fillRect(nx*CELL,ny*CELL,_editW*CELL,_editH*CELL);
-    ctx2.strokeRect(nx*CELL,ny*CELL,_editW*CELL,_editH*CELL);
+    ctx2.fillRect(clampX*CELL,clampY*CELL,(_editW||1)*CELL,(_editH||1)*CELL);
+    ctx2.strokeRect(clampX*CELL,clampY*CELL,(_editW||1)*CELL,(_editH||1)*CELL);
   }
 
   let _hoverNx=null,_hoverNy=null;

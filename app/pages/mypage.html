@@ -1098,26 +1098,36 @@ async function loadEditGrid(stageId,ax,ay,w,h){
     });
   }catch(e){console.warn('grid load error:',e);}
   // placementsのロゴ画像を重ねて描画
+  const EDIT_CELL=10;
   if(_sbClient){
     _sbClient
       .from('placements')
       .select('image_url,anchor_x,anchor_y,width,height,contract_id')
       .eq('stage_id',stageId)
       .eq('is_active',true)
-      .then(({data:placements})=>{
-        if(!placements||!placements.length)return;
+      .then(({data:placements,error:perr})=>{
+        if(perr){console.warn('placements fetch error:',perr);return;}
+        if(!placements||!placements.length){console.log('no active placements');return;}
+        console.log('placements found:',placements.length);
+        let loaded=0;
         placements.forEach(pl=>{
+          if(!pl.image_url){loaded++;return;}
           const img=new Image();
           img.onload=function(){
-            const dx=pl.anchor_x*CELL,dy=pl.anchor_y*CELL;
-            const dw=pl.width*CELL,dh=pl.height*CELL;
-            ctx.drawImage(img,dx,dy,dw,dh);
+            console.log('drawing placement at',pl.anchor_x,pl.anchor_y,pl.width,pl.height);
+            ctx.drawImage(img,pl.anchor_x*EDIT_CELL,pl.anchor_y*EDIT_CELL,pl.width*EDIT_CELL,pl.height*EDIT_CELL);
             // 自分のブロックの上に青枠を再描画
-            ctx.fillStyle='rgba(74,184,255,0.3)';
-            ctx.fillRect(ax*CELL,ay*CELL,w*CELL,h*CELL);
+            ctx.fillStyle='rgba(74,184,255,0.15)';
+            ctx.fillRect(ax*EDIT_CELL,ay*EDIT_CELL,w*EDIT_CELL,h*EDIT_CELL);
             ctx.strokeStyle='rgba(74,184,255,0.9)';ctx.lineWidth=2;
-            ctx.strokeRect(ax*CELL,ay*CELL,w*CELL,h*CELL);
-            updateEditGridHighlight();
+            ctx.strokeRect(ax*EDIT_CELL,ay*EDIT_CELL,w*EDIT_CELL,h*EDIT_CELL);
+            loaded++;
+            if(loaded===placements.length)updateEditGridHighlight();
+          };
+          img.onerror=function(){
+            console.warn('image load error for placement',pl.contract_id);
+            loaded++;
+            if(loaded===placements.length)updateEditGridHighlight();
           };
           img.src=pl.image_url;
         });

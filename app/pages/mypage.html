@@ -313,8 +313,8 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
           <div style="display:flex;gap:6px;margin-top:4px;">
             <button onclick="setEditColorTool('replace')" id="editToolReplace"
               style="font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 8px;background:rgba(74,184,255,0.1);border:1px solid rgba(74,184,255,0.4);color:#4ab8ff;cursor:pointer;">REPLACE</button>
-            <button onclick="setEditColorTool('transparent')" id="editToolTransparent"
-              style="font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 8px;background:none;border:1px solid #262640;color:#787f90;cursor:pointer;">TRANSPARENT</button>
+            <button onclick="redoEditPixel()" id="editToolRedo"
+              style="font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 8px;background:none;border:1px solid #262640;color:#787f90;cursor:pointer;">REDO</button>
             <button onclick="undoEditPixel()"
               style="font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 8px;background:none;border:1px solid #262640;color:#787f90;cursor:pointer;">UNDO</button>
           </div>
@@ -861,6 +861,9 @@ let _purchaseContracts = [];
 let _currentContractIndex = 0;
 
 async function loadPurchases(userId){
+  // editModalが開いている間は再ロードしない
+  const editModal = document.getElementById('editModal');
+  if(editModal && editModal.style.display === 'flex') return;
   const resolvedUserId=userId||(_sbClient&&(await _sbClient.auth.getUser()).data?.user?.id)||null;
   if(!_sbClient||!resolvedUserId){console.error('loadPurchases: no user id');return;}
   userId=resolvedUserId;
@@ -1376,10 +1379,23 @@ function setEditColorTool(tool){
   document.getElementById('editToolTransparent').style.color = tool==='transparent'?'#e74c3c':'#787f90';
 }
 
+let _editPixelRedo = [];
+
 function undoEditPixel(){
   if(!_editPixelUndo.length) return;
+  _editPixelRedo.push(_editPixelArt.map(row => row.map(p => p ? {...p} : null)));
   const prev = _editPixelUndo.pop();
   _editPixelArt = prev;
+  drawEditPixelCanvas();
+  buildEditPalette();
+  updateEditNewImage();
+}
+
+function redoEditPixel(){
+  if(!_editPixelRedo.length) return;
+  const next = _editPixelRedo.pop();
+  _editPixelUndo.push(_editPixelArt.map(row => row.map(p => p ? {...p} : null)));
+  _editPixelArt = next;
   drawEditPixelCanvas();
   buildEditPalette();
   updateEditNewImage();
@@ -1602,6 +1618,7 @@ document.addEventListener('DOMContentLoaded',function(){
       // Undo保存
       _editPixelUndo.push(_editPixelArt.map(row => row.map(p => p ? {...p} : null)));
       if(_editPixelUndo.length > 20) _editPixelUndo.shift();
+      _editPixelRedo = [];
       if(_editColorTool === 'transparent'){
         _editPixelArt[py][px] = null;
       } else if(_editColorTool === 'replace' && _editSelectedColor){

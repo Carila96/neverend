@@ -4454,6 +4454,8 @@ let supabaseClient=null;
 let _currentUser=null;
 let _loginMode='login';
 
+let _lastSessionId = undefined;
+
 async function initSupabase(){
   try{
     const _SURL='https://cokcftutqkwhfbmdnhgl.supabase.co';
@@ -4461,6 +4463,10 @@ async function initSupabase(){
     supabaseClient=window.supabase.createClient(_SURL,_SKEY);
     supabaseClient.auth.onAuthStateChange(function(_event,session){
       _currentUser=session?session.user:null;
+      // 同一セッションの重複発火を防止
+      const _sessionId = session ? session.access_token : null;
+      if(typeof _lastSessionId !== 'undefined' && _lastSessionId === _sessionId) return;
+      _lastSessionId = _sessionId;
       if(session){
         // DBからプロフィールを取得
         supabaseClient.from('player_profiles')

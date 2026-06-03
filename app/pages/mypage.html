@@ -372,7 +372,6 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
   <div class="footer-copy">&copy; 2025 Carila. All rights reserved.</div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/quantize@1.0.4/quantize.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const BASE='https://neverend.vercel.app';
@@ -1208,6 +1207,29 @@ function setupEditTrimEvents(){
 }
 
 function onEditConvert(){
+  // シンプルな色量子化（外部ライブラリ不要）
+  function simpleQuantize(pixels, maxColors){
+    const seen = {};
+    pixels.forEach(function(p){
+      const k = (Math.round(p[0]/16)*16)+','+(Math.round(p[1]/16)*16)+','+(Math.round(p[2]/16)*16);
+      if(!seen[k]) seen[k] = {r:Math.round(p[0]/16)*16, g:Math.round(p[1]/16)*16, b:Math.round(p[2]/16)*16, count:0};
+      seen[k].count++;
+    });
+    return Object.values(seen)
+      .sort(function(a,b){return b.count-a.count;})
+      .slice(0, maxColors)
+      .map(function(c){return [c.r, c.g, c.b];});
+  }
+
+  function nearestInPalette(palette, r, g, b){
+    let best = palette[0], bestD = Infinity;
+    palette.forEach(function(c){
+      const d = (c[0]-r)*(c[0]-r)+(c[1]-g)*(c[1]-g)+(c[2]-b)*(c[2]-b);
+      if(d < bestD){ bestD = d; best = c; }
+    });
+    return {r: best[0], g: best[1], b: best[2]};
+  }
+
   if(!_editTrimImage) return;
   const w = _editW, h = _editH;
   const img = _editTrimImage;
@@ -1229,22 +1251,7 @@ function onEditConvert(){
   for(let i = 0; i < pixels.length; i += 4){
     if(pixels[i+3] >= 30) pixelArr.push([pixels[i], pixels[i+1], pixels[i+2]]);
   }
-  // 16色パレットを生成してRGBを丸める
-  let palette = null;
-  if(pixelArr.length > 0 && typeof quantize !== 'undefined'){
-    const colorMap = quantize(pixelArr, 16);
-    if(colorMap) palette = colorMap.palette();
-  }
-
-  function nearestColor(r,g,b){
-    if(!palette) return {r,g,b};
-    let best = palette[0], bestD = Infinity;
-    palette.forEach(function(c){
-      const d = (c[0]-r)*(c[0]-r)+(c[1]-g)*(c[1]-g)+(c[2]-b)*(c[2]-b);
-      if(d < bestD){ bestD = d; best = c; }
-    });
-    return {r: best[0], g: best[1], b: best[2]};
-  }
+  const palette = simpleQuantize(pixelArr, 16);
 
   _editPixelArt = [];
   for(let y = 0; y < h; y++){
@@ -1253,7 +1260,7 @@ function onEditConvert(){
       const i = (y * w + x) * 4;
       if(pixels[i+3] < 30){ _editPixelArt[y][x] = null; continue; }
       const r = pixels[i], g = pixels[i+1], b = pixels[i+2];
-      _editPixelArt[y][x] = nearestColor(r,g,b);
+      _editPixelArt[y][x] = nearestInPalette(palette, r, g, b);
     }
   }
   _editPixelUndo = [];

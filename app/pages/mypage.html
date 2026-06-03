@@ -546,20 +546,41 @@ function renderGrid(p,gridData){
 function openCancelModal(){document.getElementById('cancelModal').classList.add('open');}
 function closeModal(){document.getElementById('cancelModal').classList.remove('open');}
 document.getElementById('cancelModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
-document.getElementById('confirmCancelBtn').addEventListener('click',async function(){
-  const btn=this;btn.textContent='Cancelling...';btn.disabled=true;
-  try{
-    const p=loadPlacement();
-    const res=await fetch(BASE+'/api/cancel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_key:p&&p.session_key})});
-    if(res.status===404){closeModal();showCancelFallback();return;}
-    const data=await res.json();
-    if(!res.ok)throw new Error(data.error||'Cancel failed');
-    localStorage.removeItem('neverend_placement');
+document.getElementById('confirmCancelBtn').addEventListener('click', async function(){
+  const btn = this;
+  btn.textContent = 'Cancelling...';
+  btn.disabled = true;
+  try {
+    const c = _purchaseContracts[_currentContractIndex];
+    if (!c) { closeModal(); return; }
+    const res = await fetch(BASE + '/api/cancel-reservation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contract_id: c.id })
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Cancel failed');
+    }
+    // _purchaseContractsから該当契約を除去
+    _purchaseContracts = _purchaseContracts.filter(x => x.id !== c.id);
     closeModal();
-    document.getElementById('placementContent').style.display='none';
-    document.getElementById('emptyState').style.display='block';
-  }catch(_){closeModal();showCancelFallback();}
-  finally{btn.textContent='Yes, Cancel';btn.disabled=false;}
+    if (_purchaseContracts.length === 0) {
+      document.getElementById('placementContent').style.display = 'none';
+      document.getElementById('emptyState').style.display = 'block';
+    } else {
+      _currentContractIndex = 0;
+      showContractGrid(0);
+      // テーブルを再描画
+      loadPurchases();
+    }
+  } catch(err) {
+    alert('Cancel failed: ' + err.message);
+    closeModal();
+  } finally {
+    btn.textContent = 'Yes, Cancel';
+    btn.disabled = false;
+  }
 });
 function showCancelFallback(){
   alert('To cancel your subscription, please email: clockcrokk0969@gmail.com\n\nInclude your session key:\n'+(loadPlacement()&&loadPlacement().session_key||'(not found)')+'\n\nWe will process your cancellation within 24 hours.');

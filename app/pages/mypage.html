@@ -1796,6 +1796,14 @@ async function confirmEdit(){
         throw new Error('Position update failed: '+(errData.error||posRes.status));
       }
     }
+    // _purchaseContractsのanchor_x/yをローカルで更新
+    if(hasPosChange){
+      const idx = _purchaseContracts.findIndex(x=>x.id===_editContractId);
+      if(idx>=0){
+        _purchaseContracts[idx].anchor_x = _editNewX;
+        _purchaseContracts[idx].anchor_y = _editNewY;
+      }
+    }
     document.getElementById('editModalMsg').style.color='#4ade80';
     document.getElementById('editModalMsg').textContent='Changes saved successfully!';
     setTimeout(()=>{closeEditModal();location.reload();},1500);

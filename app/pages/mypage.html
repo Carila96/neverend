@@ -313,6 +313,8 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
           <div style="display:flex;gap:6px;margin-top:4px;">
             <button onclick="setEditColorTool('replace')" id="editToolReplace"
               style="font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 8px;background:rgba(74,184,255,0.1);border:1px solid rgba(74,184,255,0.4);color:#4ab8ff;cursor:pointer;">REPLACE</button>
+            <button onclick="setEditColorTool('eyedropper')" id="editToolEyedropper"
+              style="font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 8px;background:none;border:1px solid #262640;color:#787f90;cursor:pointer;">🔍 PICK</button>
             <button onclick="redoEditPixel()" id="editToolRedo"
               style="font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 8px;background:none;border:1px solid #262640;color:#787f90;cursor:pointer;">REDO</button>
             <button onclick="undoEditPixel()"
@@ -1375,10 +1377,17 @@ function buildEditPalette(){
 function setEditColorTool(tool){
   _editColorTool = tool;
   const replaceBtn = document.getElementById('editToolReplace');
+  const eyeBtn = document.getElementById('editToolEyedropper');
   if(replaceBtn){
     replaceBtn.style.borderColor = tool==='replace'?'rgba(74,184,255,0.9)':'#262640';
     replaceBtn.style.color = tool==='replace'?'#4ab8ff':'#787f90';
   }
+  if(eyeBtn){
+    eyeBtn.style.borderColor = tool==='eyedropper'?'rgba(74,222,128,0.9)':'#262640';
+    eyeBtn.style.color = tool==='eyedropper'?'#4ade80':'#787f90';
+  }
+  const canvas = document.getElementById('editPreviewCanvas');
+  if(canvas) canvas.style.cursor = tool==='eyedropper'?'crosshair':'default';
 }
 
 let _editPixelRedo = [];
@@ -1613,17 +1622,53 @@ document.addEventListener('DOMContentLoaded',function(){
     prevCanvas.addEventListener('click', function(e){
       if(!_editPixelArt) return;
       const rect = prevCanvas.getBoundingClientRect();
+      const scaleX = prevCanvas.width / rect.width;
+      const scaleY = prevCanvas.height / rect.height;
       const zoom = Math.max(1, Math.min(8, Math.floor(300 / Math.max(_editW, _editH))));
-      const px = Math.floor((e.clientX - rect.left) / zoom);
-      const py = Math.floor((e.clientY - rect.top) / zoom);
+      const px = Math.floor((e.clientX - rect.left) * scaleX / zoom);
+      const py = Math.floor((e.clientY - rect.top) * scaleY / zoom);
       if(px < 0 || px >= _editW || py < 0 || py >= _editH) return;
-      // Undo保存
+
+      if(_editColorTool === 'eyedropper'){
+        const pixel = _editPixelArt[py][px];
+        if(pixel){
+          const k = pixel.r+','+pixel.g+','+pixel.b;
+          _editSelectedColorKey = k;
+          _editSelectedColor = {r:pixel.r, g:pixel.g, b:pixel.b};
+          // パレットにない色なら追加
+          if(!document.querySelector('#editPaletteChips div[data-color-key="'+k+'"]')){
+            const chips = document.getElementById('editPaletteChips');
+            const addBtn = chips ? chips.querySelector('div[title="Add custom color"]') : null;
+            const hex = '#'+pixel.r.toString(16).padStart(2,'0')+pixel.g.toString(16).padStart(2,'0')+pixel.b.toString(16).padStart(2,'0');
+            const customChip = document.createElement('div');
+            customChip.style.cssText = 'width:28px;height:28px;border-radius:3px;cursor:pointer;border:2px solid #4ab8ff;flex-shrink:0;';
+            customChip.style.background = hex;
+            customChip.dataset.colorKey = k;
+            customChip.title = hex;
+            const kr=pixel.r,kg=pixel.g,kb=pixel.b;
+            customChip.addEventListener('click', function(){
+              _editSelectedColorKey = k;
+              _editSelectedColor = {r:kr,g:kg,b:kb};
+              document.querySelectorAll('#editPaletteChips div[data-color-key]').forEach(c=>c.style.borderColor='transparent');
+              customChip.style.borderColor = '#4ab8ff';
+              setEditColorTool('replace');
+            });
+            if(addBtn) chips.insertBefore(customChip, addBtn);
+            else if(chips) chips.appendChild(customChip);
+          }
+          document.querySelectorAll('#editPaletteChips div[data-color-key]').forEach(c=>c.style.borderColor='transparent');
+          const picked = document.querySelector('#editPaletteChips div[data-color-key="'+k+'"]');
+          if(picked) picked.style.borderColor = '#4ab8ff';
+          setEditColorTool('replace');
+        }
+        return;
+      }
+
+      // replace処理
       _editPixelUndo.push(_editPixelArt.map(row => row.map(p => p ? {...p} : null)));
-      if(_editPixelUndo.length > 20) _editPixelUndo.shift();
       _editPixelRedo = [];
-      if(_editColorTool === 'transparent'){
-        _editPixelArt[py][px] = null;
-      } else if(_editColorTool === 'replace' && _editSelectedColor){
+      if(_editPixelUndo.length > 20) _editPixelUndo.shift();
+      if(_editColorTool === 'replace' && _editSelectedColor){
         _editPixelArt[py][px] = {..._editSelectedColor};
       }
       drawEditPixelCanvas();

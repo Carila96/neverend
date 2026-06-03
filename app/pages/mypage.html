@@ -1276,30 +1276,81 @@ function drawEditPixelCanvas(){
 
 function buildEditPalette(){
   if(!_editPixelArt) return;
+  // quantize済みの色のみ収集（完全一致でユニーク化）
   const seen = {};
   for(let y = 0; y < _editH; y++){
     for(let x = 0; x < _editW; x++){
       const px = _editPixelArt[y][x];
-      if(px){ const k = px.r+','+px.g+','+px.b; seen[k] = px; }
+      if(px){
+        const k = px.r+','+px.g+','+px.b;
+        if(!seen[k]) seen[k] = px;
+      }
     }
   }
   const chips = document.getElementById('editPaletteChips');
   chips.innerHTML = '';
+
+  // 既存色チップ
   Object.entries(seen).forEach(([k, px])=>{
     const chip = document.createElement('div');
-    chip.style.cssText = 'width:24px;height:24px;border-radius:3px;cursor:pointer;border:2px solid transparent;';
+    chip.style.cssText = 'width:28px;height:28px;border-radius:3px;cursor:pointer;border:2px solid transparent;flex-shrink:0;';
     chip.style.background = 'rgb('+px.r+','+px.g+','+px.b+')';
     chip.title = 'rgb('+px.r+','+px.g+','+px.b+')';
     chip.dataset.colorKey = k;
     chip.addEventListener('click', function(){
       _editSelectedColorKey = k;
-      _editSelectedColor = px;
-      document.querySelectorAll('#editPaletteChips div').forEach(c=>c.style.borderColor='transparent');
+      _editSelectedColor = {r:px.r, g:px.g, b:px.b};
+      document.querySelectorAll('#editPaletteChips div[data-color-key]').forEach(c=>c.style.borderColor='transparent');
       chip.style.borderColor = '#4ab8ff';
       setEditColorTool('replace');
     });
     chips.appendChild(chip);
   });
+
+  // カスタムカラー追加ボタン
+  const addBtn = document.createElement('div');
+  addBtn.style.cssText = 'width:28px;height:28px;border-radius:3px;cursor:pointer;border:2px dashed #4ab8ff;display:flex;align-items:center;justify-content:center;color:#4ab8ff;font-size:18px;flex-shrink:0;';
+  addBtn.textContent = '+';
+  addBtn.title = 'Add custom color';
+  addBtn.addEventListener('click', function(){
+    const input = document.createElement('input');
+    input.type = 'color';
+    input.value = '#ffffff';
+    input.style.position = 'absolute';
+    input.style.opacity = '0';
+    input.style.pointerEvents = 'none';
+    document.body.appendChild(input);
+    input.addEventListener('input', function(){
+      const hex = input.value;
+      const r = parseInt(hex.slice(1,3),16);
+      const g = parseInt(hex.slice(3,5),16);
+      const b = parseInt(hex.slice(5,7),16);
+      const k = r+','+g+','+b;
+      _editSelectedColorKey = k;
+      _editSelectedColor = {r,g,b};
+      document.querySelectorAll('#editPaletteChips div[data-color-key]').forEach(c=>c.style.borderColor='transparent');
+      // カスタム色チップを追加（まだなければ）
+      if(!document.querySelector('#editPaletteChips div[data-color-key="'+k+'"]')){
+        const customChip = document.createElement('div');
+        customChip.style.cssText = 'width:28px;height:28px;border-radius:3px;cursor:pointer;border:2px solid #4ab8ff;flex-shrink:0;';
+        customChip.style.background = hex;
+        customChip.dataset.colorKey = k;
+        customChip.title = hex;
+        customChip.addEventListener('click', function(){
+          _editSelectedColorKey = k;
+          _editSelectedColor = {r,g,b};
+          document.querySelectorAll('#editPaletteChips div[data-color-key]').forEach(c=>c.style.borderColor='transparent');
+          customChip.style.borderColor = '#4ab8ff';
+          setEditColorTool('replace');
+        });
+        chips.insertBefore(customChip, addBtn);
+      }
+      setEditColorTool('replace');
+    });
+    input.click();
+    setTimeout(()=>document.body.removeChild(input), 5000);
+  });
+  chips.appendChild(addBtn);
 }
 
 function setEditColorTool(tool){

@@ -1020,6 +1020,7 @@ let _editTab='image';
 let _editGridDrag=false,_editGridData=null;
 
 function openEditModal(contractId,stageId,ax,ay,w,h){
+  _editGridBaseCanvas = null;
   _editContractId=contractId;_editStageId=stageId;
   _editAnchorX=ax;_editAnchorY=ay;_editW=w;_editH=h;
   _editNewImage=null;_editNewX=ax;_editNewY=ay;
@@ -1069,6 +1070,28 @@ function onEditImageSelected(input){
     img.src=e.target.result;
   };
   reader.readAsDataURL(file);
+}
+
+// editGridのベース描画キャッシュ
+let _editGridBaseCanvas = null;
+
+function drawEditGridBase(){
+  const canvas = document.getElementById('editGridCanvas');
+  const ctx = canvas.getContext('2d');
+  if(_editGridBaseCanvas){
+    ctx.drawImage(_editGridBaseCanvas, 0, 0);
+  }
+}
+
+function saveEditGridBase(){
+  const src = document.getElementById('editGridCanvas');
+  if(!_editGridBaseCanvas){
+    _editGridBaseCanvas = document.createElement('canvas');
+    _editGridBaseCanvas.width = 1280;
+    _editGridBaseCanvas.height = 720;
+  }
+  const bctx = _editGridBaseCanvas.getContext('2d');
+  bctx.drawImage(src, 0, 0);
 }
 
 async function loadEditGrid(stageId,ax,ay,w,h){
@@ -1122,17 +1145,18 @@ async function loadEditGrid(stageId,ax,ay,w,h){
             ctx.strokeStyle='rgba(74,184,255,0.9)';ctx.lineWidth=2;
             ctx.strokeRect(ax*EDIT_CELL,ay*EDIT_CELL,w*EDIT_CELL,h*EDIT_CELL);
             loaded++;
-            if(loaded===placements.length)updateEditGridHighlight();
+            if(loaded===placements.length){saveEditGridBase();updateEditGridHighlight();}
           };
           img.onerror=function(){
             console.warn('image load error for placement',pl.contract_id);
             loaded++;
-            if(loaded===placements.length)updateEditGridHighlight();
+            if(loaded===placements.length){saveEditGridBase();updateEditGridHighlight();}
           };
           img.src=pl.image_url;
         });
       });
   }
+  saveEditGridBase();
   updateEditGridHighlight();
 }
 
@@ -1154,36 +1178,89 @@ function updateEditGridHighlight(){
 document.addEventListener('DOMContentLoaded',function(){
   const canvas=document.getElementById('editGridCanvas');
   if(!canvas)return;
-  canvas.addEventListener('click',function(e){
-    if(_editTab!=='position')return;
+  const CELL=10;
+
+  function getGridPos(e){
     const rect=canvas.getBoundingClientRect();
     const scaleX=1280/rect.width,scaleY=720/rect.height;
     const mx=(e.clientX-rect.left)*scaleX,my=(e.clientY-rect.top)*scaleY;
-    const CELL=10;
     let nx=Math.floor(mx/CELL),ny=Math.floor(my/CELL);
-    nx=Math.max(0,Math.min(128-_editW,nx));
-    ny=Math.max(0,Math.min(72-_editH,ny));
+    nx=Math.max(0,Math.min(128-(_editW||1),nx));
+    ny=Math.max(0,Math.min(72-(_editH||1),ny));
+    return{nx,ny};
+  }
+
+  function hasConflict(nx,ny){
     const blocks=(_editGridData&&_editGridData.blocks)||[];
-    let conflict=false;
     for(let dy=0;dy<_editH;dy++){
       for(let dx=0;dx<_editW;dx++){
         const bx=nx+dx,by=ny+dy;
         const isOwn=bx>=_editAnchorX&&bx<_editAnchorX+_editW&&by>=_editAnchorY&&by<_editAnchorY+_editH;
         if(!isOwn){
           const taken=blocks.find(b=>b.x===bx&&b.y===by&&b.status==='claimed');
-          if(taken){conflict=true;break;}
+          if(taken)return true;
         }
       }
-      if(conflict)break;
     }
+    return false;
+  }
+
+  function drawHoverOverlay(nx,ny,conflict){
+    // updateEditGridHighlightを使わずに直接描画
+    const canvas2=document.getElementById('editGridCanvas');
+    const ctx2=canvas2.getContext('2d');
     if(conflict){
+      ctx2.fillStyle='rgba(231,76,60,0.35)';
+      ctx2.strokeStyle='rgba(231,76,60,0.9)';
+    }else{
+      ctx2.fillStyle='rgba(74,222,128,0.25)';
+      ctx2.strokeStyle='rgba(74,222,128,0.9)';
+    }
+    ctx2.lineWidth=2;
+    ctx2.fillRect(nx*CELL,ny*CELL,_editW*CELL,_editH*CELL);
+    ctx2.strokeRect(nx*CELL,ny*CELL,_editW*CELL,_editH*CELL);
+  }
+
+  let _hoverNx=null,_hoverNy=null;
+
+  canvas.addEventListener('mousemove',function(e){
+    if(_editTab!=='position')return;
+    const{nx,ny}=getGridPos(e);
+    if(nx===_hoverNx&&ny===_hoverNy)return;
+    _hoverNx=nx;_hoverNy=ny;
+    // ベースグリッドを再描画してからhoverを重ねる
+    drawEditGridBase();
+    const conflict=hasConflict(nx,ny);
+    drawHoverOverlay(nx,ny,conflict);
+    const infoEl=document.getElementById('editPosInfo');
+    if(conflict){
+      infoEl.style.color='#e74c3c';
+      infoEl.textContent='This position is already taken.';
+    }else{
+      infoEl.style.color='var(--accent2)';
+      infoEl.textContent='New position: col '+(nx+1)+', row '+(ny+1)+' ('+_editW+'×'+_editH+')';
+    }
+  });
+
+  canvas.addEventListener('mouseleave',function(){
+    if(_editTab!=='position')return;
+    _hoverNx=null;_hoverNy=null;
+    drawEditGridBase();
+    updateEditGridHighlight();
+  });
+
+  canvas.addEventListener('click',function(e){
+    if(_editTab!=='position')return;
+    const{nx,ny}=getGridPos(e);
+    if(hasConflict(nx,ny)){
       document.getElementById('editPosInfo').style.color='#e74c3c';
       document.getElementById('editPosInfo').textContent='This position is already taken. Choose another.';
       return;
     }
     document.getElementById('editPosInfo').style.color='var(--accent2)';
     _editNewX=nx;_editNewY=ny;
-    loadEditGrid(_editStageId,_editAnchorX,_editAnchorY,_editW,_editH);
+    drawEditGridBase();
+    updateEditGridHighlight();
   });
 });
 

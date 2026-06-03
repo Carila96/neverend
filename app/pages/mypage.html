@@ -830,8 +830,9 @@ async function loadPurchases(userId){
   try{
     const {data:contracts,error:ce}=await _sbClient
       .from('subscription_contracts')
-      .select('id,user_id,plan_type,zone_type,status,block_count,base_price_usd,monthly_total_usd,current_period_start,current_period_end,canceled_at,created_at,anchor_x,anchor_y,width,height,stage_id,stripe_subscription_id,stripe_session_id')
+      .select('id,user_id,plan_type,zone_type,stage_id,anchor_x,anchor_y,width,height,status,monthly_total_usd,plan_type,created_at,stripe_subscription_id')
       .eq('user_id',userId)
+      .neq('status','canceled')
       .order('created_at',{ascending:false})
       .limit(50);
     if(ce){

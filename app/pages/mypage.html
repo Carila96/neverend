@@ -1021,6 +1021,10 @@ let _editGridDrag=false,_editGridData=null;
 
 function openEditModal(contractId,stageId,ax,ay,w,h){
   _editGridBaseCanvas = null;
+  // これはDOMContentLoadedの外なので直接変数にアクセスできないため、
+  // 代わりにcanvasのdatasetを使ってリセット信号を送る
+  const ec=document.getElementById('editGridCanvas');
+  if(ec)ec.dataset.posConfirmed='false';
   _editContractId=contractId;_editStageId=stageId;
   _editAnchorX=ax;_editAnchorY=ay;_editW=w;_editH=h;
   _editNewImage=null;_editNewX=ax;_editNewY=ay;
@@ -1229,9 +1233,13 @@ document.addEventListener('DOMContentLoaded',function(){
   }
 
   let _hoverNx=null,_hoverNy=null;
+  let _posConfirmed=false;
 
   canvas.addEventListener('mousemove',function(e){
     if(_editTab!=='position')return;
+    const ec2=document.getElementById('editGridCanvas');
+    if(ec2&&ec2.dataset.posConfirmed==='true')return;
+    if(_posConfirmed)return;
     const{nx,ny}=getGridPos(e);
     if(nx===_hoverNx&&ny===_hoverNy)return;
     _hoverNx=nx;_hoverNy=ny;
@@ -1267,6 +1275,9 @@ document.addEventListener('DOMContentLoaded',function(){
     }
     document.getElementById('editPosInfo').style.color='var(--accent2)';
     _editNewX=nx;_editNewY=ny;
+    _posConfirmed=true;
+    const ec3=document.getElementById('editGridCanvas');
+    if(ec3)ec3.dataset.posConfirmed='true';
     drawEditGridBase();
     // クリック確定位置を青枠で表示
     const ctx3=canvas.getContext('2d');

@@ -2778,11 +2778,11 @@ function loadStage(n){
   cameraY=0;
   stageNum=n;
   const _loadingStage=n;
+  stagePlacements = []; // ステージ切替時に即座にクリア
   fetch('/api/grid?stage_id='+n)
     .then(r=>r.json())
     .then(d=>{
       if(stageNum!==_loadingStage)return;
-      stagePlacements = []; // 新ステージデータ取得後にクリア
       const raw=d.placements||[];
       // Pre-cache image_data as Data URL (instant, no network)
       raw.forEach(p=>{

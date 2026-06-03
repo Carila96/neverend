@@ -1122,6 +1122,9 @@ async function loadEditGrid(stageId,ax,ay,w,h){
   }catch(e){console.warn('grid load error:',e);}
   // placementsのロゴ画像を重ねて描画
   const EDIT_CELL=10;
+  // placementsがない場合のベース保存（ロゴなし時）
+  saveEditGridBase();
+  updateEditGridHighlight();
   if(_sbClient){
     _sbClient
       .from('placements')
@@ -1156,8 +1159,6 @@ async function loadEditGrid(stageId,ax,ay,w,h){
         });
       });
   }
-  saveEditGridBase();
-  updateEditGridHighlight();
 }
 
 function updateEditGridHighlight(){

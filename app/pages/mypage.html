@@ -1268,7 +1268,15 @@ document.addEventListener('DOMContentLoaded',function(){
     document.getElementById('editPosInfo').style.color='var(--accent2)';
     _editNewX=nx;_editNewY=ny;
     drawEditGridBase();
-    updateEditGridHighlight();
+    // クリック確定位置を青枠で表示
+    const ctx3=canvas.getContext('2d');
+    ctx3.fillStyle='rgba(74,184,255,0.25)';
+    ctx3.fillRect(nx*CELL,ny*CELL,(_editW||1)*CELL,(_editH||1)*CELL);
+    ctx3.strokeStyle='rgba(74,184,255,0.9)';ctx3.lineWidth=2;
+    ctx3.strokeRect(nx*CELL,ny*CELL,(_editW||1)*CELL,(_editH||1)*CELL);
+    const infoEl=document.getElementById('editPosInfo');
+    infoEl.style.color='var(--accent2)';
+    infoEl.textContent='New position: col '+(nx+1)+', row '+(ny+1)+' ('+_editW+'×'+_editH+')';
   });
 });
 

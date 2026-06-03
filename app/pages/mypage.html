@@ -1268,18 +1268,28 @@ document.addEventListener('DOMContentLoaded',function(){
   canvas.addEventListener('click',function(e){
     if(_editTab!=='position')return;
     const{nx,ny}=getGridPos(e);
+    const ec3=document.getElementById('editGridCanvas');
+    const isConfirmed=ec3&&ec3.dataset.posConfirmed==='true';
+
+    if(isConfirmed){
+      // 持ち上げモード：追従を再開
+      if(ec3)ec3.dataset.posConfirmed='false';
+      _posConfirmed=false;
+      _hoverNx=null;_hoverNy=null;
+      return;
+    }
+
+    // 置くモード：conflict確認
     if(hasConflict(nx,ny)){
       document.getElementById('editPosInfo').style.color='#e74c3c';
       document.getElementById('editPosInfo').textContent='This position is already taken. Choose another.';
       return;
     }
-    document.getElementById('editPosInfo').style.color='var(--accent2)';
+    // 配置確定
     _editNewX=nx;_editNewY=ny;
     _posConfirmed=true;
-    const ec3=document.getElementById('editGridCanvas');
     if(ec3)ec3.dataset.posConfirmed='true';
     drawEditGridBase();
-    // クリック確定位置を青枠で表示
     const ctx3=canvas.getContext('2d');
     ctx3.fillStyle='rgba(74,184,255,0.25)';
     ctx3.fillRect(nx*CELL,ny*CELL,(_editW||1)*CELL,(_editH||1)*CELL);
@@ -1287,7 +1297,7 @@ document.addEventListener('DOMContentLoaded',function(){
     ctx3.strokeRect(nx*CELL,ny*CELL,(_editW||1)*CELL,(_editH||1)*CELL);
     const infoEl=document.getElementById('editPosInfo');
     infoEl.style.color='var(--accent2)';
-    infoEl.textContent='New position: col '+(nx+1)+', row '+(ny+1)+' ('+_editW+'×'+_editH+')';
+    infoEl.textContent='Placed: col '+(nx+1)+', row '+(ny+1)+' — Click to pick up again';
   });
 });
 

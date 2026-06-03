@@ -2778,6 +2778,7 @@ function loadStage(n){
   cameraY=0;
   stageNum=n;
   const _loadingStage=n;
+  stagePlacements = []; // 前ステージのロゴをクリア
   fetch('/api/grid?stage_id='+n)
     .then(r=>r.json())
     .then(d=>{

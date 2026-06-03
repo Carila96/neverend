@@ -1519,20 +1519,14 @@ function hasConflict(x,y,w,h){
   for(let dr=0;dr<h;dr++){
     for(let dc=0;dc<w;dc++){
       const bx=x+dc,by=y+dr;
-      // pixelArtEditのnullピクセルはスキップ
-      if(pixelArtEdit){
-        const lc=bx-(x);
-        const lr=by-(y);
-        if(lc>=0&&lr>=0&&lr<pixelArtEdit.length&&lc<pixelArtEdit[lr].length){
-          if(pixelArtEdit[lr][lc]===null)continue;
-        }
-      }
-      // deletedBlocksもスキップ
+      // deletedBlocksに登録済みのブロックのみスキップ
       if(selectedArea){
         const lc=bx-selectedArea.x;
         const lr=by-selectedArea.y;
         if(deletedBlocks.some(function(d){return d.x===lc&&d.y===lr;}))continue;
       }
+      // pixelArtEditのnullピクセルはdeletedBlocksに登録済みの場合のみスキップ
+      // （未削除の透明ピクセルはclaimedマスと衝突チェックを行う）
       const st=getBlockState(bx,by);
       if(st==='claimed'||st==='reserved')return true;
     }

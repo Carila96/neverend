@@ -1333,22 +1333,41 @@ function buildEditPalette(){
   addBtn.textContent = '+';
   addBtn.title = 'Add custom color';
   addBtn.addEventListener('click', function(){
-    // 既存のカラーピッカーUIがあれば削除
     const existing = document.getElementById('editColorPickerUI');
     if(existing){ existing.remove(); return; }
 
     const pickerUI = document.createElement('div');
     pickerUI.id = 'editColorPickerUI';
-    pickerUI.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;';
+    pickerUI.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#13131f;border:1px solid rgba(74,184,255,0.4);padding:16px;z-index:9999;display:flex;flex-direction:column;gap:10px;min-width:220px;';
+
+    const title = document.createElement('div');
+    title.textContent = 'ADD COLOR TO PALETTE';
+    title.style.cssText = 'font-family:"Share Tech Mono",monospace;font-size:11px;color:#4ab8ff;letter-spacing:1px;';
+
+    const colorRow = document.createElement('div');
+    colorRow.style.cssText = 'display:flex;align-items:center;gap:10px;';
 
     const colorInput = document.createElement('input');
     colorInput.type = 'color';
     colorInput.value = '#ff0000';
-    colorInput.style.cssText = 'width:40px;height:32px;border:none;padding:0;cursor:pointer;background:none;';
+    colorInput.style.cssText = 'width:48px;height:48px;border:none;padding:0;cursor:pointer;background:none;flex-shrink:0;';
+
+    const hexLabel = document.createElement('div');
+    hexLabel.style.cssText = 'font-family:"Share Tech Mono",monospace;font-size:12px;color:#e0e4f0;';
+    hexLabel.textContent = '#ff0000';
+    colorInput.addEventListener('input', function(){
+      hexLabel.textContent = colorInput.value;
+    });
+
+    colorRow.appendChild(colorInput);
+    colorRow.appendChild(hexLabel);
+
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:8px;';
 
     const addColorBtn = document.createElement('button');
     addColorBtn.textContent = 'ADD TO PALETTE';
-    addColorBtn.style.cssText = 'font-family:"Share Tech Mono",monospace;font-size:10px;padding:4px 10px;background:rgba(74,184,255,0.1);border:1px solid rgba(74,184,255,0.4);color:#4ab8ff;cursor:pointer;';
+    addColorBtn.style.cssText = 'font-family:"Share Tech Mono",monospace;font-size:10px;padding:6px 12px;background:rgba(74,184,255,0.1);border:1px solid rgba(74,184,255,0.4);color:#4ab8ff;cursor:pointer;flex:1;';
     addColorBtn.addEventListener('click', function(){
       const hex = colorInput.value;
       const r = parseInt(hex.slice(1,3),16);
@@ -1382,15 +1401,16 @@ function buildEditPalette(){
 
     const cancelBtn = document.createElement('button');
     cancelBtn.textContent = 'CANCEL';
-    cancelBtn.style.cssText = 'font-family:"Share Tech Mono",monospace;font-size:10px;padding:4px 10px;background:none;border:1px solid #262640;color:#787f90;cursor:pointer;';
+    cancelBtn.style.cssText = 'font-family:"Share Tech Mono",monospace;font-size:10px;padding:6px 12px;background:none;border:1px solid #262640;color:#787f90;cursor:pointer;';
     cancelBtn.addEventListener('click', function(){ pickerUI.remove(); });
 
-    pickerUI.appendChild(colorInput);
-    pickerUI.appendChild(addColorBtn);
-    pickerUI.appendChild(cancelBtn);
+    btnRow.appendChild(addColorBtn);
+    btnRow.appendChild(cancelBtn);
 
-    const paletteArea = document.getElementById('editPaletteArea');
-    if(paletteArea) paletteArea.appendChild(pickerUI);
+    pickerUI.appendChild(title);
+    pickerUI.appendChild(colorRow);
+    pickerUI.appendChild(btnRow);
+    document.body.appendChild(pickerUI);
   });
   chips.appendChild(addBtn);
 }

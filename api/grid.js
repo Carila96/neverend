@@ -77,13 +77,14 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Failed to fetch grid state' });
   }
 
-  const { data: placements } = await supabaseAnon
+  const { data: placements, error: placementError } = await supabaseService
     .from('placements')
-    .select('anchor_x, anchor_y, width, height, image_url, image_data, zone_type, is_active')
+    .select('contract_id, anchor_x, anchor_y, width, height, image_url, zone_type, is_active')
     .eq('stage_id', stage_id)
     .eq('is_active', true);
+  if(placementError) console.error('Placements fetch error:', placementError.message);
 
-  res.setHeader('Cache-Control', 's-maxage=5, stale-while-revalidate=10');
+  res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=60');
 
   return res.status(200).json({
     stage_id,

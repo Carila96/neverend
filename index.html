@@ -2773,7 +2773,7 @@ function loadStage(n){
 let sessionStartTime=Date.now(),sessionDeaths=0,sessionMaxStage=1;
 let stagePlacements=[],_placementImgCache={};
 function resetRun(){
-  timeLeft=easyMode?60:hardMode?25:30;score=0;
+  timeLeft=easyMode?30:hardMode?25:30;score=0;
   loadStage(1);damnEffect=null;damnTimer=0;floatMsgs=[];
   sessionStartTime=Date.now();sessionDeaths=0;sessionMaxStage=1;_sessionUsedEasyMode=false;
   incStat('gamesStarted');
@@ -3937,7 +3937,7 @@ function update(dt){
     if(keys[' ']&&!prevKeys[' ']){
       _retryStreak++;if(_retryStreak>getStat('maxRetryStreak'))setStat('maxRetryStreak',_retryStreak);
       if(adminMode){loadStage(stageNum);timeLeft=hardMode?25:30;damnEffect=null;damnTimer=0;floatMsgs=[];}
-      else if(easyMode){loadStage(easyModeSavedStage);timeLeft=60;damnEffect=null;damnTimer=0;floatMsgs=[];}
+      else if(easyMode){loadStage(easyModeSavedStage);timeLeft=30;damnEffect=null;damnTimer=0;floatMsgs=[];}
       else resetRun();
       state='play';startBGM(getBGMTrack(stageNum));
     }
@@ -4071,7 +4071,7 @@ function checkTitlesOnClear(nextStage){
   if(nextStage===5&&(Date.now()-sessionStartTime)<180000)setStat('speedDemon',1);
   if(easyMode&&nextStage===101)incStat('babyClear');
   // Update bestStage to include cleared stages
-  if(nextStage>curBest)setStat('bestStage',nextStage);
+  if(!easyMode&&nextStage>curBest)setStat('bestStage',nextStage);
   if(supabaseClient&&_currentUser){
     supabaseClient.from('player_profiles').upsert({
       id:_currentUser.id,
@@ -4157,7 +4157,7 @@ function triggerDeath(){
       }).then(function(r){if(r&&r.error)console.warn('profile fetch error:',r.error);});
   }
   const best=getStat('bestStage',1);
-  if(lastDeathStage>best)setStat('bestStage',lastDeathStage);
+  if(!easyMode&&lastDeathStage>best)setStat('bestStage',lastDeathStage);
   incStat('totalStagesReached',lastDeathStage);
   // Longest survival per stage attempt
   const _survivalSecs=(Date.now()-_attemptStartMs)/1000;

@@ -1215,14 +1215,7 @@ document.addEventListener('DOMContentLoaded',function(){
   }
 
   function drawHoverOverlay(nx,ny,conflict){
-    const canvas2=document.getElementById('editGridCanvas');
-    const ctx2=canvas2.getContext('2d');
-    const offsetX=Math.floor((_editW||1)/2);
-    const offsetY=Math.floor((_editH||1)/2);
-    const drawX=nx-offsetX;
-    const drawY=ny-offsetY;
-    const clampX=Math.max(0,Math.min(128-(_editW||1),drawX));
-    const clampY=Math.max(0,Math.min(72-(_editH||1),drawY));
+    const ctx2=canvas.getContext('2d');
     if(conflict){
       ctx2.fillStyle='rgba(231,76,60,0.35)';
       ctx2.strokeStyle='rgba(231,76,60,0.9)';
@@ -1231,8 +1224,8 @@ document.addEventListener('DOMContentLoaded',function(){
       ctx2.strokeStyle='rgba(74,222,128,0.9)';
     }
     ctx2.lineWidth=2;
-    ctx2.fillRect(clampX*CELL,clampY*CELL,(_editW||1)*CELL,(_editH||1)*CELL);
-    ctx2.strokeRect(clampX*CELL,clampY*CELL,(_editW||1)*CELL,(_editH||1)*CELL);
+    ctx2.fillRect(nx*CELL,ny*CELL,(_editW||1)*CELL,(_editH||1)*CELL);
+    ctx2.strokeRect(nx*CELL,ny*CELL,(_editW||1)*CELL,(_editH||1)*CELL);
   }
 
   let _hoverNx=null,_hoverNy=null;
@@ -1244,6 +1237,7 @@ document.addEventListener('DOMContentLoaded',function(){
     _hoverNx=nx;_hoverNy=ny;
     // ベースグリッドを再描画してからhoverを重ねる
     drawEditGridBase();
+    if(!_editGridBaseCanvas)return;
     const conflict=hasConflict(nx,ny);
     drawHoverOverlay(nx,ny,conflict);
     const infoEl=document.getElementById('editPosInfo');

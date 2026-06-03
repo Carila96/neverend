@@ -44,10 +44,10 @@ export default async function handler(req, res) {
         return res.status(409).json({ error: 'Position is already taken' });
       }
 
-      // 古いブロックをrelease
+      // 古いブロックを削除（releaseではなくdelete）
       await supabase
         .from('owned_blocks')
-        .update({ status: 'released' })
+        .delete()
         .eq('contract_id', contract_id);
 
       // 新しいブロックをclaimed状態でinsert
@@ -64,7 +64,11 @@ export default async function handler(req, res) {
           });
         }
       }
-      await supabase.from('owned_blocks').insert(newBlocks);
+      const { error: insertError } = await supabase.from('owned_blocks').insert(newBlocks);
+      if(insertError){
+        console.error('owned_blocks insert error:', insertError);
+        return res.status(500).json({ error: 'Failed to update block positions: ' + insertError.message });
+      }
 
       // subscription_contractsのanchor_x/anchor_yを更新
       await supabase

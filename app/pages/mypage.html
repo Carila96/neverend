@@ -1097,6 +1097,32 @@ async function loadEditGrid(stageId,ax,ay,w,h){
       }
     });
   }catch(e){console.warn('grid load error:',e);}
+  // placementsのロゴ画像を重ねて描画
+  if(_sbClient){
+    _sbClient
+      .from('placements')
+      .select('image_url,anchor_x,anchor_y,width,height,contract_id')
+      .eq('stage_id',stageId)
+      .eq('is_active',true)
+      .then(({data:placements})=>{
+        if(!placements||!placements.length)return;
+        placements.forEach(pl=>{
+          const img=new Image();
+          img.onload=function(){
+            const dx=pl.anchor_x*CELL,dy=pl.anchor_y*CELL;
+            const dw=pl.width*CELL,dh=pl.height*CELL;
+            ctx.drawImage(img,dx,dy,dw,dh);
+            // 自分のブロックの上に青枠を再描画
+            ctx.fillStyle='rgba(74,184,255,0.3)';
+            ctx.fillRect(ax*CELL,ay*CELL,w*CELL,h*CELL);
+            ctx.strokeStyle='rgba(74,184,255,0.9)';ctx.lineWidth=2;
+            ctx.strokeRect(ax*CELL,ay*CELL,w*CELL,h*CELL);
+            updateEditGridHighlight();
+          };
+          img.src=pl.image_url;
+        });
+      });
+  }
   updateEditGridHighlight();
 }
 

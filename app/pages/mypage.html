@@ -143,9 +143,14 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
 <div class="modal-overlay" id="cancelModal">
   <div class="modal">
     <div class="modal-title">Cancel Subscription</div>
-    <div class="modal-text">Are you sure you want to cancel your placement?<br><br>
-      <strong>Your blocks will be released</strong> at the end of the current billing period. Once cancelled, your placement URL and position cannot be guaranteed to remain available.<br><br>
-      This action cannot be undone.</div>
+    <div id="cancelModalBody">
+      <div id="cancelModalInfo" style="font-family:'Share Tech Mono',monospace;font-size:12px;color:#4ab8ff;margin-bottom:12px;padding:8px;border:1px solid rgba(74,184,255,0.3);"></div>
+      <div class="modal-text">Are you sure you want to cancel this placement?<br><br>
+        <strong>Your blocks will be immediately released</strong> and your logo will be removed from the grid.<br><br>
+        Once cancelled, this space may be purchased by another user — and pricing may have changed since your original purchase.<br><br>
+        This action cannot be undone.
+      </div>
+    </div>
     <div class="modal-actions">
       <button class="btn-danger" id="confirmCancelBtn">Yes, Cancel</button>
       <button class="btn-secondary" onclick="closeModal()">Keep Placement</button>
@@ -543,7 +548,20 @@ function renderGrid(p,gridData){
 }
 
 // CANCEL MODAL
-function openCancelModal(){document.getElementById('cancelModal').classList.add('open');}
+function openCancelModal(){
+  const c = _purchaseContracts[_currentContractIndex];
+  if(c){
+    const infoEl = document.getElementById('cancelModalInfo');
+    if(infoEl){
+      infoEl.innerHTML =
+        'STAGE: ' + c.stage_id + '<br>' +
+        'POSITION: col ' + ((c.anchor_x||0)+1) + ', row ' + ((c.anchor_y||0)+1) + '<br>' +
+        'SIZE: ' + (c.width||'?') + ' × ' + (c.height||'?') + ' blocks<br>' +
+        'MONTHLY: $' + (c.monthly_total_usd||'?');
+    }
+  }
+  document.getElementById('cancelModal').classList.add('open');
+}
 function closeModal(){document.getElementById('cancelModal').classList.remove('open');}
 document.getElementById('cancelModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
 document.getElementById('confirmCancelBtn').addEventListener('click', async function(){
@@ -565,14 +583,17 @@ document.getElementById('confirmCancelBtn').addEventListener('click', async func
     // _purchaseContractsから該当契約を除去
     _purchaseContracts = _purchaseContracts.filter(x => x.id !== c.id);
     closeModal();
-    if (_purchaseContracts.length === 0) {
-      document.getElementById('placementContent').style.display = 'none';
-      document.getElementById('emptyState').style.display = 'block';
-    } else {
-      _currentContractIndex = 0;
-      showContractGrid(0);
-      // テーブルを再描画
-      loadPurchases();
+    // Supabaseから最新データを取得して全体を再描画
+    if(_sbClient){
+      _sbClient.auth.getSession().then(function(r){
+        const session = r.data && r.data.session ? r.data.session : null;
+        if(session){
+          loadPurchases(session.user.id);
+        } else {
+          document.getElementById('placementContent').style.display = 'none';
+          document.getElementById('emptyState').style.display = 'block';
+        }
+      });
     }
   } catch(err) {
     alert('Cancel failed: ' + err.message);

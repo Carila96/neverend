@@ -1229,10 +1229,23 @@ function onEditConvert(){
   for(let i = 0; i < pixels.length; i += 4){
     if(pixels[i+3] >= 30) pixelArr.push([pixels[i], pixels[i+1], pixels[i+2]]);
   }
-  let colorMap = null;
+  // 16色パレットを生成してRGBを丸める
+  let palette = null;
   if(pixelArr.length > 0 && typeof quantize !== 'undefined'){
-    colorMap = quantize(pixelArr, 16);
+    const colorMap = quantize(pixelArr, 16);
+    if(colorMap) palette = colorMap.palette();
   }
+
+  function nearestColor(r,g,b){
+    if(!palette) return {r,g,b};
+    let best = palette[0], bestD = Infinity;
+    palette.forEach(function(c){
+      const d = (c[0]-r)*(c[0]-r)+(c[1]-g)*(c[1]-g)+(c[2]-b)*(c[2]-b);
+      if(d < bestD){ bestD = d; best = c; }
+    });
+    return {r: best[0], g: best[1], b: best[2]};
+  }
+
   _editPixelArt = [];
   for(let y = 0; y < h; y++){
     _editPixelArt[y] = [];
@@ -1240,12 +1253,7 @@ function onEditConvert(){
       const i = (y * w + x) * 4;
       if(pixels[i+3] < 30){ _editPixelArt[y][x] = null; continue; }
       const r = pixels[i], g = pixels[i+1], b = pixels[i+2];
-      if(colorMap){
-        const mapped = colorMap.map([r,g,b]);
-        _editPixelArt[y][x] = {r: mapped[0], g: mapped[1], b: mapped[2]};
-      } else {
-        _editPixelArt[y][x] = {r, g, b};
-      }
+      _editPixelArt[y][x] = nearestColor(r,g,b);
     }
   }
   _editPixelUndo = [];
@@ -1593,6 +1601,7 @@ document.addEventListener('DOMContentLoaded',function(){
         _editPixelArt[py][px] = {..._editSelectedColor};
       }
       drawEditPixelCanvas();
+      buildEditPalette();
       updateEditNewImage();
     });
   }

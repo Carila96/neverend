@@ -273,12 +273,52 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
     </div>
 
     <!-- 画像変更パネル -->
-    <div id="editPanelImage" style="display:flex;flex-direction:column;gap:16px;">
-      <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#787f90;letter-spacing:1px;">Upload a new image for your placement. Current image will be replaced immediately.</div>
-      <input type="file" id="editImageInput" accept="image/png,image/jpeg,image/gif" style="font-family:'Share Tech Mono',monospace;font-size:12px;color:#e0e4f0;" onchange="onEditImageSelected(this)">
-      <div id="editImagePreview" style="display:none;flex-direction:column;gap:12px;">
-        <canvas id="editPreviewCanvas" style="max-width:100%;border:1px solid #262640;image-rendering:pixelated;"></canvas>
-        <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:#787f90;" id="editImageStats"></div>
+    <div id="editPanelImage" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#787f90;letter-spacing:1px;">
+        Upload a new image. Use zoom and drag to crop, then convert to pixel art.
+      </div>
+      <input type="file" id="editImageInput" accept="image/png,image/jpeg,image/gif"
+        style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#787f90;background:none;border:1px solid #262640;padding:6px;"
+        onchange="onEditImageSelected(this)">
+      <div id="editImagePreview" style="display:none;flex-direction:column;gap:10px;">
+        <!-- トリミングキャンバス -->
+        <div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;">
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <canvas id="editTrimCanvas" width="300" height="300"
+              style="border:1px solid #262640;cursor:grab;display:block;"></canvas>
+            <div style="display:flex;gap:6px;align-items:center;font-family:'Share Tech Mono',monospace;font-size:10px;color:#787f90;">
+              <span>ZOOM</span>
+              <input type="range" id="editTrimZoom" min="1" max="5" step="0.1" value="1"
+                style="flex:1;" oninput="onEditTrimZoom(this.value)">
+              <span id="editTrimZoomVal">1.0x</span>
+            </div>
+            <button onclick="onEditConvert()"
+              style="background:rgba(74,184,255,0.1);border:1px solid rgba(74,184,255,0.4);color:#4ab8ff;padding:6px 12px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;">
+              CONVERT TO PIXEL ART
+            </button>
+          </div>
+          <!-- ピクセルアートプレビュー -->
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <canvas id="editPreviewCanvas"
+              style="border:1px solid #262640;image-rendering:pixelated;display:block;max-width:300px;max-height:300px;"></canvas>
+            <div id="editImageStats" style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#787f90;"></div>
+          </div>
+        </div>
+        <!-- カラーパレット -->
+        <div id="editPaletteArea" style="display:none;flex-direction:column;gap:6px;">
+          <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#787f90;letter-spacing:1px;">
+            CLICK COLOR TO SELECT — THEN CLICK PIXEL TO REPLACE
+          </div>
+          <div id="editPaletteChips" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
+          <div style="display:flex;gap:6px;margin-top:4px;">
+            <button onclick="setEditColorTool('replace')" id="editToolReplace"
+              style="font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 8px;background:rgba(74,184,255,0.1);border:1px solid rgba(74,184,255,0.4);color:#4ab8ff;cursor:pointer;">REPLACE</button>
+            <button onclick="setEditColorTool('transparent')" id="editToolTransparent"
+              style="font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 8px;background:none;border:1px solid #262640;color:#787f90;cursor:pointer;">TRANSPARENT</button>
+            <button onclick="undoEditPixel()"
+              style="font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 8px;background:none;border:1px solid #262640;color:#787f90;cursor:pointer;">UNDO</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -332,6 +372,7 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
   <div class="footer-copy">&copy; 2025 Carila. All rights reserved.</div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quantize/1.0.2/quantize.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const BASE='https://neverend.vercel.app';
@@ -1057,23 +1098,240 @@ function setEditTab(tab){
   }
 }
 
+// CHANGE IMAGE 編集機能用変数
+let _editTrimImage = null;
+let _editTrimZoom = 1;
+let _editTrimOffX = 0;
+let _editTrimOffY = 0;
+let _editTrimDrag = false;
+let _editTrimDragSX = 0;
+let _editTrimDragSY = 0;
+let _editTrimDragOX = 0;
+let _editTrimDragOY = 0;
+let _editPixelArt = null;
+let _editPixelUndo = [];
+let _editColorTool = 'replace';
+let _editSelectedColor = null;
+let _editSelectedColorKey = null;
+
 function onEditImageSelected(input){
-  const file=input.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=function(e){
-    const img=new Image();
-    img.onload=function(){
-      const canvas=document.getElementById('editPreviewCanvas');
-      canvas.width=_editW;canvas.height=_editH;
-      const ctx=canvas.getContext('2d');
-      ctx.drawImage(img,0,0,_editW,_editH);
-      _editNewImage=canvas.toDataURL('image/png').split(',')[1];
-      document.getElementById('editImagePreview').style.display='flex';
-      document.getElementById('editImageStats').textContent='New image: '+_editW+'×'+_editH+' blocks';
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const img = new Image();
+    img.onload = function(){
+      _editTrimImage = img;
+      _editTrimZoom = 1;
+      _editTrimOffX = 0;
+      _editTrimOffY = 0;
+      document.getElementById('editTrimZoom').value = 1;
+      document.getElementById('editTrimZoomVal').textContent = '1.0x';
+      document.getElementById('editImagePreview').style.display = 'flex';
+      document.getElementById('editPaletteArea').style.display = 'none';
+      document.getElementById('editImageStats').textContent = '';
+      _editPixelArt = null;
+      _editNewImage = null;
+      drawEditTrimCanvas();
+      setupEditTrimEvents();
     };
-    img.src=e.target.result;
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
+}
+
+function drawEditTrimCanvas(){
+  const canvas = document.getElementById('editTrimCanvas');
+  if(!canvas || !_editTrimImage) return;
+  const ctx = canvas.getContext('2d');
+  const S = 300;
+  ctx.clearRect(0,0,S,S);
+  ctx.fillStyle = '#0a0a12';
+  ctx.fillRect(0,0,S,S);
+  const img = _editTrimImage;
+  const iw = img.naturalWidth, ih = img.naturalHeight;
+  const scale = _editTrimZoom;
+  const sw = iw / scale, sh = ih / scale;
+  const sx = Math.max(0, Math.min(iw - sw, _editTrimOffX * (iw - sw) / 100));
+  const sy = Math.max(0, Math.min(ih - sh, _editTrimOffY * (ih - sh) / 100));
+  const srcW = Math.min(sw, iw), srcH = Math.min(sh, ih);
+  const aspect = srcW / srcH;
+  let dw, dh, dx, dy;
+  if(aspect >= 1){ dw = S; dh = S / aspect; dx = 0; dy = (S - dh) / 2; }
+  else { dh = S; dw = S * aspect; dx = (S - dw) / 2; dy = 0; }
+  ctx.drawImage(img, sx, sy, srcW, srcH, dx, dy, dw, dh);
+  // グリッド線
+  ctx.strokeStyle = 'rgba(74,184,255,0.3)';
+  ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(S/3,0); ctx.lineTo(S/3,S); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(2*S/3,0); ctx.lineTo(2*S/3,S); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0,S/3); ctx.lineTo(S,S/3); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0,2*S/3); ctx.lineTo(S,2*S/3); ctx.stroke();
+}
+
+function onEditTrimZoom(val){
+  _editTrimZoom = parseFloat(val);
+  document.getElementById('editTrimZoomVal').textContent = parseFloat(val).toFixed(1) + 'x';
+  drawEditTrimCanvas();
+}
+
+function setupEditTrimEvents(){
+  const canvas = document.getElementById('editTrimCanvas');
+  if(!canvas || canvas.dataset.trimEventsSet) return;
+  canvas.dataset.trimEventsSet = 'true';
+  canvas.addEventListener('mousedown', function(e){
+    _editTrimDrag = true;
+    _editTrimDragSX = e.clientX;
+    _editTrimDragSY = e.clientY;
+    _editTrimDragOX = _editTrimOffX;
+    _editTrimDragOY = _editTrimOffY;
+    canvas.style.cursor = 'grabbing';
+  });
+  window.addEventListener('mousemove', function(e){
+    if(!_editTrimDrag) return;
+    const dx = (e.clientX - _editTrimDragSX) / 3;
+    const dy = (e.clientY - _editTrimDragSY) / 3;
+    _editTrimOffX = Math.max(0, Math.min(100, _editTrimDragOX - dx));
+    _editTrimOffY = Math.max(0, Math.min(100, _editTrimDragOY - dy));
+    drawEditTrimCanvas();
+  });
+  window.addEventListener('mouseup', function(){
+    if(_editTrimDrag){ _editTrimDrag = false; canvas.style.cursor = 'grab'; }
+  });
+  canvas.addEventListener('wheel', function(e){
+    e.preventDefault();
+    _editTrimZoom = Math.max(1, Math.min(5, _editTrimZoom + (e.deltaY < 0 ? 0.1 : -0.1)));
+    document.getElementById('editTrimZoom').value = _editTrimZoom;
+    document.getElementById('editTrimZoomVal').textContent = _editTrimZoom.toFixed(1) + 'x';
+    drawEditTrimCanvas();
+  }, {passive: false});
+}
+
+function onEditConvert(){
+  if(!_editTrimImage) return;
+  const w = _editW, h = _editH;
+  const img = _editTrimImage;
+  const iw = img.naturalWidth, ih = img.naturalHeight;
+  const scale = _editTrimZoom;
+  const sw = iw / scale, sh = ih / scale;
+  const sx = Math.max(0, Math.min(iw - sw, _editTrimOffX * (iw - sw) / 100));
+  const sy = Math.max(0, Math.min(ih - sh, _editTrimOffY * (ih - sh) / 100));
+  const srcW = Math.min(sw, iw), srcH = Math.min(sh, ih);
+  const off = document.createElement('canvas');
+  off.width = w; off.height = h;
+  const octx = off.getContext('2d');
+  octx.imageSmoothingEnabled = true;
+  octx.imageSmoothingQuality = 'high';
+  octx.drawImage(img, sx, sy, srcW, srcH, 0, 0, w, h);
+  const imageData = octx.getImageData(0, 0, w, h);
+  const pixels = imageData.data;
+  const pixelArr = [];
+  for(let i = 0; i < pixels.length; i += 4){
+    if(pixels[i+3] >= 30) pixelArr.push([pixels[i], pixels[i+1], pixels[i+2]]);
+  }
+  let colorMap = null;
+  if(pixelArr.length > 0 && typeof quantize !== 'undefined'){
+    colorMap = quantize(pixelArr, 16);
+  }
+  _editPixelArt = [];
+  for(let y = 0; y < h; y++){
+    _editPixelArt[y] = [];
+    for(let x = 0; x < w; x++){
+      const i = (y * w + x) * 4;
+      if(pixels[i+3] < 30){ _editPixelArt[y][x] = null; continue; }
+      const r = pixels[i], g = pixels[i+1], b = pixels[i+2];
+      if(colorMap){
+        const mapped = colorMap.map([r,g,b]);
+        _editPixelArt[y][x] = {r: mapped[0], g: mapped[1], b: mapped[2]};
+      } else {
+        _editPixelArt[y][x] = {r, g, b};
+      }
+    }
+  }
+  _editPixelUndo = [];
+  drawEditPixelCanvas();
+  buildEditPalette();
+  document.getElementById('editPaletteArea').style.display = 'flex';
+  document.getElementById('editImageStats').textContent = w + '×' + h + ' blocks · 16 colors';
+  updateEditNewImage();
+}
+
+function drawEditPixelCanvas(){
+  if(!_editPixelArt) return;
+  const w = _editW, h = _editH;
+  const zoom = Math.max(1, Math.min(8, Math.floor(300 / Math.max(w, h))));
+  const canvas = document.getElementById('editPreviewCanvas');
+  canvas.width = w * zoom;
+  canvas.height = h * zoom;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for(let y = 0; y < h; y++){
+    for(let x = 0; x < w; x++){
+      const px = _editPixelArt[y][x];
+      ctx.fillStyle = px ? 'rgb('+px.r+','+px.g+','+px.b+')' : ((x+y)%2===0?'#1c1c28':'#242436');
+      ctx.fillRect(x*zoom, y*zoom, zoom, zoom);
+    }
+  }
+}
+
+function buildEditPalette(){
+  if(!_editPixelArt) return;
+  const seen = {};
+  for(let y = 0; y < _editH; y++){
+    for(let x = 0; x < _editW; x++){
+      const px = _editPixelArt[y][x];
+      if(px){ const k = px.r+','+px.g+','+px.b; seen[k] = px; }
+    }
+  }
+  const chips = document.getElementById('editPaletteChips');
+  chips.innerHTML = '';
+  Object.entries(seen).forEach(([k, px])=>{
+    const chip = document.createElement('div');
+    chip.style.cssText = 'width:24px;height:24px;border-radius:3px;cursor:pointer;border:2px solid transparent;';
+    chip.style.background = 'rgb('+px.r+','+px.g+','+px.b+')';
+    chip.title = 'rgb('+px.r+','+px.g+','+px.b+')';
+    chip.dataset.colorKey = k;
+    chip.addEventListener('click', function(){
+      _editSelectedColorKey = k;
+      _editSelectedColor = px;
+      document.querySelectorAll('#editPaletteChips div').forEach(c=>c.style.borderColor='transparent');
+      chip.style.borderColor = '#4ab8ff';
+      setEditColorTool('replace');
+    });
+    chips.appendChild(chip);
+  });
+}
+
+function setEditColorTool(tool){
+  _editColorTool = tool;
+  document.getElementById('editToolReplace').style.borderColor = tool==='replace'?'rgba(74,184,255,0.9)':'#262640';
+  document.getElementById('editToolReplace').style.color = tool==='replace'?'#4ab8ff':'#787f90';
+  document.getElementById('editToolTransparent').style.borderColor = tool==='transparent'?'rgba(231,76,60,0.9)':'#262640';
+  document.getElementById('editToolTransparent').style.color = tool==='transparent'?'#e74c3c':'#787f90';
+}
+
+function undoEditPixel(){
+  if(!_editPixelUndo.length) return;
+  const prev = _editPixelUndo.pop();
+  _editPixelArt = prev;
+  drawEditPixelCanvas();
+  buildEditPalette();
+  updateEditNewImage();
+}
+
+function updateEditNewImage(){
+  if(!_editPixelArt) return;
+  const w = _editW, h = _editH;
+  const off = document.createElement('canvas');
+  off.width = w; off.height = h;
+  const ctx = off.getContext('2d');
+  for(let y = 0; y < h; y++){
+    for(let x = 0; x < w; x++){
+      const px = _editPixelArt[y][x];
+      if(px){ ctx.fillStyle='rgb('+px.r+','+px.g+','+px.b+')'; ctx.fillRect(x,y,1,1); }
+    }
+  }
+  _editNewImage = off.toDataURL('image/png').split(',')[1];
 }
 
 // editGridのベース描画キャッシュ
@@ -1264,6 +1522,29 @@ document.addEventListener('DOMContentLoaded',function(){
     drawEditGridBase();
     updateEditGridHighlight();
   });
+
+  // editPreviewCanvas クリックで色編集
+  const prevCanvas = document.getElementById('editPreviewCanvas');
+  if(prevCanvas){
+    prevCanvas.addEventListener('click', function(e){
+      if(!_editPixelArt) return;
+      const rect = prevCanvas.getBoundingClientRect();
+      const zoom = Math.max(1, Math.min(8, Math.floor(300 / Math.max(_editW, _editH))));
+      const px = Math.floor((e.clientX - rect.left) / zoom);
+      const py = Math.floor((e.clientY - rect.top) / zoom);
+      if(px < 0 || px >= _editW || py < 0 || py >= _editH) return;
+      // Undo保存
+      _editPixelUndo.push(_editPixelArt.map(row => row.map(p => p ? {...p} : null)));
+      if(_editPixelUndo.length > 20) _editPixelUndo.shift();
+      if(_editColorTool === 'transparent'){
+        _editPixelArt[py][px] = null;
+      } else if(_editColorTool === 'replace' && _editSelectedColor){
+        _editPixelArt[py][px] = {..._editSelectedColor};
+      }
+      drawEditPixelCanvas();
+      updateEditNewImage();
+    });
+  }
 
   canvas.addEventListener('click',function(e){
     if(_editTab!=='position')return;

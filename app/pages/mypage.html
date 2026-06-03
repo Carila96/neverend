@@ -950,7 +950,7 @@ function showContractGrid(index){
   });
 
   const BASE = window.location.origin;
-  fetch(BASE+'/api/grid?stage_id='+c.stage_id)
+  fetch(BASE+'/api/grid?stage_id='+c.stage_id+'&t='+Date.now())
     .then(r=>r.json())
     .then(data=>{
       verifyAndRender(c, data);

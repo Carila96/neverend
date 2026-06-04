@@ -3931,7 +3931,7 @@ function update(dt){
         setTimeout(function(){resetRun();state='title';},5000);
       } else if(next<=STAGES.length){
         loadStage(next);
-        if(next+1<=STAGES.length)prefetchNextStagePlacements(next+1);
+        // if(next+1<=STAGES.length)prefetchNextStagePlacements(next+1);
         floatMsgs.push({txt:'FLOOR '+next+'!',x:W/2,y:H/2,life:2,color:'rgba(255,220,50,1)'});
         if(testMode&&next===5&&!_stage5ToastShown){_stage5ToastShown=true;floatMsgs.push({txt:'Playing well! Your progress is being recorded for credits.',x:W/2,y:H/2+64,life:5,color:'rgba(100,255,180,0.95)'});}
         if(easyMode)floatMsgs.push({txt:'Cleared Baby Mode? Cool. Nobody cares.',x:W/2,y:H/2+48,life:3,color:'rgba(255,180,255,0.8)'});
@@ -4454,7 +4454,7 @@ function shareDeathCount(){
   window.open(twitterUrl,'_blank','width=600,height=400');
 }
 }
-prefetchAllPlacements();
+// prefetchAllPlacements();
 requestAnimationFrame(loop);
 
 // ── COOKIE CONSENT ──

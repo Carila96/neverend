@@ -61,9 +61,9 @@ export default async function handler(req, res) {
   if (!stage_id || stage_id < 1) return res.status(400).json({ error: 'Missing or invalid stage_id' });
 
   // Expire stale reservations before returning grid state (non-fatal)
-  try {
-    await supabaseAnon.rpc('expire_stale_reservations');
-  } catch (_) {}
+  // try {
+  //   await supabaseAnon.rpc('expire_stale_reservations');
+  // } catch (_) {}
 
   const { data: blocks, error } = await supabaseService
     .from('owned_blocks')

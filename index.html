@@ -2794,20 +2794,14 @@ function loadStage(n){
           p._cacheKey=p.image_data;
         }
       });
-      const needsFetch=raw.filter(p=>!p.image_data&&p.image_url&&!_placementImgCache[p.image_url]);
-      let pending=needsFetch.length;
-      if(pending===0){stagePlacements=raw;return;}
-      needsFetch.forEach(p=>{
-        if(_placementImgCache[p.image_url]){
-          pending--;
-          if(pending<=0)stagePlacements=raw;
-          return;
-        }
+      // image_urlがある場合はバックグラウンドでキャッシュ（待たずにstagePlacementsをセット）
+      stagePlacements = raw;
+      raw.forEach(p=>{
+        if(!p.image_url) return;
+        if(_placementImgCache[p.image_url]) return;
         const img=new Image();
-        img.onload=img.onerror=()=>{
-          pending--;
-          if(pending<=0&&stageNum===_loadingStage)stagePlacements=raw;
-        };
+        img.onload=()=>{ _placementImgCache[p.image_url]=img; };
+        img.onerror=()=>{ console.warn('Logo load failed:', p.image_url); };
         img.src=p.image_url;
         _placementImgCache[p.image_url]=img;
       });

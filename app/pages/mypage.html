@@ -984,6 +984,7 @@ function overlayPlacementImage(c){
         const dy = (data.anchor_y || c.anchor_y || 0) * CELL;
         const dw = (data.width || c.width || 1) * CELL;
         const dh = (data.height || c.height || 1) * CELL;
+        ctx.imageSmoothingEnabled = false;
         ctx.drawImage(img, dx, dy, dw, dh);
       };
       img.src = data.image_url;

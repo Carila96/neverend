@@ -48,7 +48,7 @@ export default async function handler(req, res) {
     const imageBuffer = Buffer.from(image_data, 'base64');
     const mimeType = image_type || 'image/png';
     const ext = mimeType === 'image/png' ? 'png' : mimeType === 'image/jpeg' ? 'jpg' : 'png';
-    const fileName = `logos/${contract_id}_${stage_id}.${ext}`;
+    const fileName = `${contract_id}_${stage_id}.${ext}`;
 
     // Upload to Supabase Storage
     const { error: uploadError } = await supabase.storage

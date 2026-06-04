@@ -25,7 +25,7 @@ async function migrateLogs() {
       const base64Data = match[2];
       const imageBuffer = Buffer.from(base64Data, 'base64');
       const ext = mimeType === 'image/png' ? 'png' : 'jpg';
-      const fileName = `logos/${p.contract_id}_${p.stage_id}.${ext}`;
+      const fileName = `${p.contract_id}_${p.stage_id}.${ext}`;
 
       const { error: uploadError } = await supabase.storage
         .from('logos')

@@ -110,7 +110,7 @@ async function handleCheckoutCompleted(session) {
     const imageBuffer = Buffer.from(logoStaging.image_data, 'base64');
     const mimeType = logoStaging.image_type || 'image/png';
     const ext = mimeType === 'image/png' ? 'png' : 'jpg';
-    const fileName = `logos/${contract.id}_${stage_id}.${ext}`;
+    const fileName = `${contract.id}_${stage_id}.${ext}`;
 
     let imageUrl = `data:${mimeType};base64,${logoStaging.image_data}`;
 

@@ -2995,10 +2995,12 @@ function drawSpike(s,col){
 }
 
 function drawTrapSpike(t){
-  if(!t.visible||t.y>H+50)return;
+  if(!t.visible)return;
+  const screenY=t.y-cameraY;
+  if(screenY>H+50||screenY<-50)return;
   if(t.warn&&(!t.triggered||t.timer>0)){
     if(Math.floor(animT*6)%2===0)drawSpike(t,'rgba(255,200,50,0.9)');
-  } else {drawSpike(t);}
+  }else{drawSpike(t);}
 }
 
 function drawMovingPlatform(p){

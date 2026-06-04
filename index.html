@@ -2811,6 +2811,22 @@ function loadStage(n){
 
 let sessionStartTime=Date.now(),sessionDeaths=0,sessionMaxStage=1;
 let stagePlacements=[],_placementImgCache={};
+
+function prefetchNextStagePlacements(nextStageId){
+  fetch('/api/grid?stage_id='+nextStageId)
+    .then(r=>r.json())
+    .then(d=>{
+      const raw=d.placements||[];
+      raw.forEach(p=>{
+        if(!p.image_url||_placementImgCache[p.image_url])return;
+        const img=new Image();
+        img.onload=()=>{_placementImgCache[p.image_url]=img;};
+        img.src=p.image_url;
+        _placementImgCache[p.image_url]=img;
+      });
+    }).catch(()=>{});
+}
+
 function resetRun(){
   timeLeft=easyMode?30:hardMode?25:30;score=0;
   loadStage(1);damnEffect=null;damnTimer=0;floatMsgs=[];
@@ -3892,7 +3908,9 @@ function update(dt){
         stopBGM();
         setTimeout(function(){resetRun();state='title';},5000);
       } else if(next<=STAGES.length){
-        loadStage(next);floatMsgs.push({txt:'FLOOR '+next+'!',x:W/2,y:H/2,life:2,color:'rgba(255,220,50,1)'});
+        loadStage(next);
+        if(next+1<=STAGES.length)prefetchNextStagePlacements(next+1);
+        floatMsgs.push({txt:'FLOOR '+next+'!',x:W/2,y:H/2,life:2,color:'rgba(255,220,50,1)'});
         if(testMode&&next===5&&!_stage5ToastShown){_stage5ToastShown=true;floatMsgs.push({txt:'Playing well! Your progress is being recorded for credits.',x:W/2,y:H/2+64,life:5,color:'rgba(100,255,180,0.95)'});}
         if(easyMode)floatMsgs.push({txt:'Cleared Baby Mode? Cool. Nobody cares.',x:W/2,y:H/2+48,life:3,color:'rgba(255,180,255,0.8)'});
         const nt=getBGMTrack(next);if(nt!==bgmTrack)startBGM(nt);

@@ -1286,14 +1286,14 @@ const STAGES=[
    {x:312,y:928,w:32,h:32},
  ],
  traps:[
-   {x:680,y:2592,w:32,h:32,tx:620,warn:false,triggerY:2700},
-   {x:780,y:2336,w:32,h:32,tx:720,warn:false,triggerY:2400},
-   {x:348,y:2208,w:32,h:32,tx:288,warn:false,triggerY:2300},
-   {x:748,y:2080,w:32,h:32,tx:688,warn:false,triggerY:2150},
-   {x:348,y:1952,w:32,h:32,tx:288,warn:false,triggerY:2020},
-   {x:680,y:1824,w:32,h:32,tx:620,warn:false,triggerY:1900},
-   {x:272,y:1440,w:32,h:32,tx:212,warn:false,triggerY:1500},
-   {x:480,y:1312,w:32,h:32,tx:420,warn:false,triggerY:1380},
+   {x:680,y:2592,w:32,h:32,tx:620,warn:false,triggerYUp:2700},
+   {x:780,y:2336,w:32,h:32,tx:720,warn:false,triggerYUp:2400},
+   {x:348,y:2208,w:32,h:32,tx:288,warn:false,triggerYUp:2300},
+   {x:748,y:2080,w:32,h:32,tx:688,warn:false,triggerYUp:2150},
+   {x:348,y:1952,w:32,h:32,tx:288,warn:false,triggerYUp:2020},
+   {x:680,y:1824,w:32,h:32,tx:620,warn:false,triggerYUp:1900},
+   {x:272,y:1440,w:32,h:32,tx:212,warn:false,triggerYUp:1500},
+   {x:480,y:1312,w:32,h:32,tx:420,warn:false,triggerYUp:1380},
  ],
  fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
  hg:[
@@ -3721,7 +3721,7 @@ function update(dt){
       const inYRange=player.y+player.h>t.y-160&&player.y<t.y+t.h+160;
       const xOk=t.tx==null||player.x>t.tx;
       const xLeftOk=t.triggerXLeft==null||player.x<t.triggerXLeft;
-      const yTriggerOk=t.triggerY==null||player.y>t.triggerY;
+      const yTriggerOk=t.triggerY==null||(t.triggerYUp!=null?player.y<t.triggerY:player.y>t.triggerY);
       const yUpTriggerOk=t.triggerYUp==null||player.y<t.triggerYUp;
       if(!t.triggered&&xOk&&xLeftOk&&inYRange&&yTriggerOk&&yUpTriggerOk){t.triggered=true;t.visible=true;t.timer=t.warn?0.5:0;}
       if(t.triggered&&t.timer>0)t.timer-=dt;

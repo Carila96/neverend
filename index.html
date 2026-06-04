@@ -2827,6 +2827,28 @@ function prefetchNextStagePlacements(nextStageId){
     }).catch(()=>{});
 }
 
+function prefetchAllPlacements(){
+  const totalStages = STAGES ? STAGES.length : 20;
+  for(let i = 1; i <= totalStages; i++){
+    (function(stageId){
+      setTimeout(function(){
+        fetch('/api/grid?stage_id='+stageId)
+          .then(r=>r.json())
+          .then(d=>{
+            const raw=d.placements||[];
+            raw.forEach(p=>{
+              if(!p.image_url||_placementImgCache[p.image_url])return;
+              const img=new Image();
+              img.onload=()=>{_placementImgCache[p.image_url]=img;};
+              img.src=p.image_url;
+              _placementImgCache[p.image_url]=img;
+            });
+          }).catch(()=>{});
+      }, i * 500); // 各ステージを500ms間隔でリクエスト（サーバー負荷分散）
+    })(i);
+  }
+}
+
 function resetRun(){
   timeLeft=easyMode?30:hardMode?25:30;score=0;
   loadStage(1);damnEffect=null;damnTimer=0;floatMsgs=[];
@@ -4432,6 +4454,7 @@ function shareDeathCount(){
   window.open(twitterUrl,'_blank','width=600,height=400');
 }
 }
+prefetchAllPlacements();
 requestAnimationFrame(loop);
 
 // ── COOKIE CONSENT ──

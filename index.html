@@ -553,6 +553,14 @@ let _worldStatsCache=null;
 function _prefetchWorldStats(){fetch('/api/world-stats').then(r=>r.json()).then(d=>{_worldStatsCache=d;}).catch(()=>{});}
 _prefetchWorldStats();
 setInterval(()=>{if(state==='title')_prefetchWorldStats();},120000);
+// Vercel関数をウォームアップする（コールドスタート対策）
+function _warmupGridApi(){
+  fetch('/api/grid?stage_id=10').catch(()=>{});
+}
+_warmupGridApi();
+setInterval(function(){
+  if(state==='title'||state==='dead')_warmupGridApi();
+}, 30000); // 30秒ごとにwarmup
 // Track session count & night owl on load
 (function(){incStat('totalSessions');const h=new Date().getHours();if(h>=0&&h<5)setStat('nightOwl',1);})();
 

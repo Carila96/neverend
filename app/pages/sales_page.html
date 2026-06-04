@@ -586,6 +586,16 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
             <div class="p-row" id="annualRow" style="display:none;"><span>ANNUAL TOTAL</span><span class="p-amt" id="priceAnnual">--</span></div>
             <div class="p-row" id="effectiveRow" style="display:none;"><span>EFFECTIVE RATE</span><span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--green);letter-spacing:0.5px;" id="priceEffective">--</span></div>
           </div>
+          <div style="margin-bottom:10px;">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);margin-bottom:6px;">COUPON CODE (OPTIONAL)</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input id="couponInput" type="text" placeholder="ENTER CODE"
+                style="flex:1;background:#0a0a12;border:1px solid #262640;color:#e0e4f0;font-family:'Share Tech Mono',monospace;font-size:12px;padding:8px 10px;outline:none;letter-spacing:2px;text-transform:uppercase;" />
+              <button onclick="applyCoupon()"
+                style="background:none;border:1px solid rgba(74,184,255,0.4);color:#4ab8ff;font-family:'Share Tech Mono',monospace;font-size:11px;padding:8px 12px;cursor:pointer;letter-spacing:1px;">APPLY</button>
+            </div>
+            <div id="couponMsg" style="font-family:'Share Tech Mono',monospace;font-size:10px;margin-top:4px;min-height:14px;"></div>
+          </div>
           <div class="checkout-err" id="checkoutError"></div>
           <div id="adminPlaceBar" style="display:none;margin-bottom:8px;padding:10px 14px;background:#1a0a00;border:1px solid #ff6600;border-radius:4px;">
             <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#ff6600;letter-spacing:2px;margin-bottom:8px;">⚡ ADMIN FREE PLACEMENT</div>
@@ -2031,6 +2041,37 @@ async function adminFreePlacement(){
     if(bar){bar.style.borderColor='#00ff88';bar.innerHTML='<div style="font-family:\'Share Tech Mono\',monospace;font-size:12px;color:#00ff88;letter-spacing:2px;">✓ PLACED FREE — blocks claimed</div>';}
   }catch(err){showCheckoutError('Connection error.');placeBtn.disabled=false;placeBtn.textContent='PLACE FREE';}
 }
+let _appliedCoupon = null;
+
+function applyCoupon(){
+  const code = (document.getElementById('couponInput').value||'').trim().toUpperCase();
+  const msgEl = document.getElementById('couponMsg');
+  if(!code){ msgEl.style.color='#e74c3c'; msgEl.textContent='Please enter a coupon code.'; return; }
+  msgEl.style.color='var(--muted)';
+  msgEl.textContent='Checking...';
+  fetch('https://neverend.vercel.app/api/validate-coupon', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({code})
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    if(data.valid){
+      _appliedCoupon = data.coupon_id;
+      msgEl.style.color='#4ade80';
+      msgEl.textContent='✓ ' + data.description + ' applied!';
+    } else {
+      _appliedCoupon = null;
+      msgEl.style.color='#e74c3c';
+      msgEl.textContent='Invalid or expired coupon code.';
+    }
+  })
+  .catch(()=>{
+    msgEl.style.color='#e74c3c';
+    msgEl.textContent='Could not verify coupon. Please try again.';
+  });
+}
+
 async function proceedToCheckout(){
   clearCheckoutError();
   // ログインチェック
@@ -2049,7 +2090,7 @@ async function proceedToCheckout(){
     const logoUrl=buildLogoDataUrl();
     if(logoUrl){const parts=logoUrl.split(',');await fetch(BASE+'/api/stage-logo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_key,image_data:parts[1],image_type:parts[0].split(':')[1].split(';')[0]})}).catch(function(){});}
     btn.textContent='CREATING CHECKOUT...';
-    const coRes=await fetch(BASE+'/api/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_key,plan_type:plan})});
+    const coRes=await fetch(BASE+'/api/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_key,plan_type:plan,coupon_id:_appliedCoupon})});
     const coData=await coRes.json();
     if(!coRes.ok||(!coData.url&&!coData.subscription_url&&!coData.payment_url)){showCheckoutError('Payment setup failed.');btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';return;}
     localStorage.setItem('neverend_placement',JSON.stringify({session_key}));

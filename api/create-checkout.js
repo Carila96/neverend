@@ -10,7 +10,7 @@ const BASE_URL = 'https://neverend.vercel.app';
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { session_key, admin_key } = req.body;
+  const { session_key, admin_key, coupon_id } = req.body;
   if (!session_key) return res.status(400).json({ error: 'Missing session_key' });
 
   const { data: reservation, error } = await supabase
@@ -101,6 +101,23 @@ export default async function handler(req, res) {
         success_url: `${BASE_URL}/app/pages/success.html?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url:  `${BASE_URL}/app/pages/cancel.html`,
       };
+    }
+
+    // クーポンコード検証と適用
+    if (coupon_id) {
+      try {
+        const coupon = await stripe.coupons.retrieve(coupon_id);
+        if (coupon && coupon.valid) {
+          if (plan_type === 'monthly') {
+            sessionParams.discounts = [{ coupon: coupon_id }];
+          } else {
+            sessionParams.discounts = [{ coupon: coupon_id }];
+          }
+        }
+      } catch (couponErr) {
+        console.warn('Coupon not found or invalid:', coupon_id, couponErr.message);
+        // クーポンが無効でもチェックアウトは続行
+      }
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);

@@ -30,7 +30,8 @@
       "Bash(python -c ' *)",
       "Bash(where python *)",
       "Bash(where python3 *)",
-      "Bash(Get-ChildItem \"C:\\\\neverEND\\\\public\\\\\" 2>&1 *)"
+      "Bash(Get-ChildItem \"C:\\\\neverEND\\\\public\\\\\" 2>&1 *)",
+      "Bash(python3 *)"
     ]
   }
 }

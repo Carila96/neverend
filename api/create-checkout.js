@@ -86,17 +86,19 @@ export default async function handler(req, res) {
         cancel_url:  `${BASE_URL}/app/pages/cancel.html`,
       };
     } else {
-      // Annual = one-time payment (10 months upfront)
+      // Annual = subscription with yearly interval (10 months upfront price)
       sessionParams = {
-        mode: 'payment',
+        mode: 'subscription',
         line_items: [{
           price_data: {
             currency: 'usd',
-            product_data: { name: 'neverEND Grid Placement (Annual — 10 months)' },
+            product_data: { name: 'neverEND Grid Placement (Annual)' },
             unit_amount: amountCents,
+            recurring: { interval: 'year' },
           },
           quantity: 1,
         }],
+        subscription_data: { metadata },
         metadata,
         success_url: `${BASE_URL}/app/pages/success.html?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url:  `${BASE_URL}/app/pages/cancel.html`,

@@ -277,7 +277,7 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
       <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#787f90;letter-spacing:1px;">
         Upload a new image. Use zoom and drag to crop, then convert to pixel art.
       </div>
-      <input type="file" id="editImageInput" accept="image/png,image/jpeg,image/gif"
+      <input type="file" id="editImageInput" accept="image/png,image/jpeg"
         style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#787f90;background:none;border:1px solid #262640;padding:6px;"
         onchange="onEditImageSelected(this)">
       <div id="editImagePreview" style="display:none;flex-direction:column;gap:10px;">
@@ -1774,7 +1774,7 @@ async function confirmEdit(){
           contract_id:_editContractId,
           stage_id:_editStageId,
           image_data:_editNewImage,
-          image_type:'image/png'
+          image_type: _editTrimImage && _editTrimImage.src && _editTrimImage.src.startsWith('data:image/jpeg') ? 'image/jpeg' : 'image/png'
         })
       });
       if(!res.ok){

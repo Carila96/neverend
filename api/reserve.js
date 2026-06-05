@@ -88,6 +88,34 @@ export default async function handler(req, res) {
     .eq('status', 'reserved')
     .lt('expires_at', new Date().toISOString());
 
+  // 同一ユーザーの古いreservedブロックを自動キャンセル（ブラウザを閉じた場合も対応）
+  if (user_id) {
+    const { data: oldSessions } = await supabase
+      .from('reservation_sessions')
+      .select('session_key, stage_id, anchor_x, anchor_y, width, height')
+      .eq('user_id', user_id)
+      .eq('status', 'pending');
+
+    if (oldSessions && oldSessions.length > 0) {
+      for (const oldSession of oldSessions) {
+        await supabase
+          .from('owned_blocks')
+          .delete()
+          .eq('stage_id', oldSession.stage_id)
+          .eq('status', 'reserved')
+          .gte('x', oldSession.anchor_x)
+          .lte('x', oldSession.anchor_x + oldSession.width - 1)
+          .gte('y', oldSession.anchor_y)
+          .lte('y', oldSession.anchor_y + oldSession.height - 1);
+
+        await supabase
+          .from('reservation_sessions')
+          .update({ status: 'expired' })
+          .eq('session_key', oldSession.session_key);
+      }
+    }
+  }
+
   // Check for conflicts — exclude expired reserved blocks
   const { data: rawConflicts } = await supabase
     .from('owned_blocks')

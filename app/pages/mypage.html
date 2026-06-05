@@ -1803,9 +1803,10 @@ async function confirmEdit(){
   document.getElementById('editModalMsg').textContent='Applying changes...';
   try{
     if(hasImageChange){
-      const res=await fetch('https://neverend.vercel.app/api/upload-logo',{
+      const res=await fetch('https://neverend.vercel.app/api/logo',{
         method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
+          action:'update',
           contract_id:_editContractId,
           stage_id:_editStageId,
           image_data:_editNewImage,

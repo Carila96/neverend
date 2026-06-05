@@ -10,6 +10,7 @@ export default async function handler(req, res) {
       .select('total_deaths')
       .single();
     if (error || !data) return res.status(200).json({ total_deaths: 0 });
+    res.setHeader('Cache-Control', 's-maxage=5, stale-while-revalidate=10');
     return res.status(200).json({ total_deaths: data.total_deaths });
   }
 
@@ -33,7 +34,7 @@ export default async function handler(req, res) {
     const best_stage      = worldRes.data?.best_stage      || 0;
     const total_play_time = worldRes.data?.total_play_time || 0;
     const pilots = (pilotsRes.data || []).map(r => r.player_name).filter(Boolean);
-    res.setHeader('Cache-Control', 's-maxage=10, stale-while-revalidate=30');
+    res.setHeader('Cache-Control', 's-maxage=5, stale-while-revalidate=10');
     return res.status(200).json({ total_deaths, best_stage, total_play_time, pilots });
   }
 

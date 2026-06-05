@@ -5,14 +5,29 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { contract_id, stage_id, image_data, image_type } = req.body;
+  const { action, session_key, contract_id, stage_id, image_data, image_type } = req.body;
 
-  if (!contract_id || !stage_id || !image_data) {
-    return res.status(400).json({ error: 'Missing required fields' });
+  // POST /api/logo?action=stage ← 旧 /api/stage-logo
+  // チェックアウト前にロゴをlogo_stagingテーブルに一時保存
+  if (action === 'stage') {
+    if (!session_key || !image_data) return res.status(400).json({ error: 'Missing fields' });
+    const { error } = await supabase
+      .from('logo_staging')
+      .upsert(
+        { session_key, image_data, image_type: image_type || 'image/png', created_at: new Date().toISOString() },
+        { onConflict: 'session_key' }
+      );
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json({ ok: true });
   }
 
-  try {
-    // Verify contract exists and is active
+  // POST /api/logo?action=update ← 旧 /api/upload-logo
+  // マイページからの既存契約のロゴ差し替え
+  if (action === 'update') {
+    if (!contract_id || !stage_id || !image_data) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
     const { data: contract, error: contractError } = await supabase
       .from('subscription_contracts')
       .select('*')
@@ -24,7 +39,6 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'Contract not found or not active' });
     }
 
-    // Get owned blocks for this contract
     const { data: blocks } = await supabase
       .from('owned_blocks')
       .select('*')
@@ -36,7 +50,6 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'No claimed blocks found for this contract and stage' });
     }
 
-    // Calculate placement bounds from blocks
     const minX = Math.min(...blocks.map(b => b.x));
     const minY = Math.min(...blocks.map(b => b.y));
     const maxX = Math.max(...blocks.map(b => b.x));
@@ -44,46 +57,24 @@ export default async function handler(req, res) {
     const width = maxX - minX + 1;
     const height = maxY - minY + 1;
 
-    // Convert base64 to buffer
     const imageBuffer = Buffer.from(image_data, 'base64');
     const mimeType = image_type || 'image/png';
-    const ext = mimeType === 'image/png' ? 'png' : mimeType === 'image/jpeg' ? 'jpg' : 'png';
+    const ext = mimeType === 'image/jpeg' ? 'jpg' : 'png';
     const fileName = `${contract_id}_${stage_id}.${ext}`;
 
-    // Upload to Supabase Storage
     const { error: uploadError } = await supabase.storage
       .from('logos')
-      .upload(fileName, imageBuffer, {
-        contentType: mimeType,
-        upsert: true
-      });
+      .upload(fileName, imageBuffer, { contentType: mimeType, upsert: true });
 
+    let imageUrl;
     if (uploadError) {
       console.error('Storage upload error:', uploadError);
-      // Fallback to Data URI if storage fails
-      const imageUrl = `data:${mimeType};base64,${image_data}`;
-      const { error: placementError } = await supabase
-        .from('placements')
-        .upsert({
-          contract_id, stage_id,
-          anchor_x: minX, anchor_y: minY, width, height,
-          image_url: imageUrl,
-          zone_type: contract.zone_type,
-          is_active: true,
-          approved_at: new Date().toISOString()
-        }, { onConflict: 'contract_id,stage_id' });
-      if (placementError) return res.status(500).json({ error: 'Failed to save placement' });
-      return res.status(200).json({ ok: true, storage: false });
+      imageUrl = `data:${mimeType};base64,${image_data}`;
+    } else {
+      const { data: urlData } = supabase.storage.from('logos').getPublicUrl(fileName);
+      imageUrl = urlData.publicUrl;
     }
 
-    // Get public URL
-    const { data: urlData } = supabase.storage
-      .from('logos')
-      .getPublicUrl(fileName);
-
-    const imageUrl = urlData.publicUrl;
-
-    // Upsert placement record with Storage URL
     const { error: placementError } = await supabase
       .from('placements')
       .upsert({
@@ -99,9 +90,8 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Failed to create placement' });
     }
 
-    return res.status(200).json({ ok: true, storage: true, image_url: imageUrl });
-
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
+    return res.status(200).json({ ok: true, storage: !uploadError, image_url: imageUrl });
   }
+
+  return res.status(400).json({ error: 'Missing or invalid action' });
 }

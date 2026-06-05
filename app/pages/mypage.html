@@ -139,6 +139,26 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
 </head>
 <body>
 
+<!-- TERMS AGREEMENT MODAL -->
+<div class="modal-overlay" id="termsModal" style="display:none;align-items:center;justify-content:center;">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-title">Terms of Service</div>
+    <div class="modal-text" style="max-height:200px;overflow-y:auto;font-size:11px;line-height:1.8;margin-bottom:16px;">
+      By using neverEND, you agree to our <a href="/app/pages/terms.html" target="_blank" style="color:#4ab8ff;">Terms of Service</a> and <a href="/app/pages/privacy.html" target="_blank" style="color:#4ab8ff;">Privacy Policy</a>.<br><br>
+      Key points:<br>
+      · Grid purchases are subscriptions that auto-renew monthly or annually<br>
+      · Cancellation releases your grid space immediately<br>
+      · Logo changes may take up to 5 minutes to appear in-game<br>
+      · Prohibited content will be removed without refund<br>
+      · The operator is not liable for time loss or service interruption
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="agreeToTerms()">I AGREE</button>
+      <button class="btn-secondary" onclick="window.location.href='/'">DECLINE</button>
+    </div>
+  </div>
+</div>
+
 <!-- CANCEL MODAL -->
 <div class="modal-overlay" id="cancelModal">
   <div class="modal">
@@ -484,6 +504,21 @@ var blockCountGlobal=0,reservedAtGlobal=null,titlesPage=0;
     });
   }
 })();
+
+// 利用規約同意チェック
+function checkTermsAgreement(){
+  const agreed = localStorage.getItem('neverend_terms_agreed');
+  if(!agreed){
+    document.getElementById('termsModal').style.display = 'flex';
+  }
+}
+function agreeToTerms(){
+  localStorage.setItem('neverend_terms_agreed', '1');
+  document.getElementById('termsModal').style.display = 'none';
+}
+document.addEventListener('DOMContentLoaded', function(){
+  checkTermsAgreement();
+});
 
 function getSessionKey(){
   return new URLSearchParams(window.location.search).get('session_key')||null;

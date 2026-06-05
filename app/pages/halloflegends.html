@@ -206,7 +206,7 @@ function buildRankingHTML(data){
   const sb=window.supabase.createClient(_SB_URL,_SB_KEY);
   try{
     const [ws,rankRes]=await Promise.all([
-      fetch('https://neverend.vercel.app/api/world-stats').then(r=>r.json()).catch(()=>({})),
+      fetch('https://neverend.vercel.app/api/stats?type=world').then(r=>r.json()).catch(()=>({})),
       sb.from('test_players')
         .select('name,stage_reached,death_count,play_time')
         .order('stage_reached',{ascending:false})

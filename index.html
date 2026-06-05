@@ -546,11 +546,11 @@ let player,platforms,spikes,hourglasses,goal;
 let trapSpikes=[],fallingBlocks=[],movingPlatforms=[];
 let damnEffect=null,damnTimer=0,floatMsgs=[],animT=0,last=0;
 let worldDeaths=null;
-function _fetchWorldDeaths(){fetch('/api/death').then(r=>r.json()).then(d=>{if(d.total_deaths!=null)worldDeaths=d.total_deaths;}).catch(()=>{});}
+function _fetchWorldDeaths(){fetch('/api/stats?type=death').then(r=>r.json()).then(d=>{if(d.total_deaths!=null)worldDeaths=d.total_deaths;}).catch(()=>{});}
 _fetchWorldDeaths();
 setInterval(()=>{if(state==='title')_fetchWorldDeaths();},60000);
 let _worldStatsCache=null;
-function _prefetchWorldStats(){fetch('/api/world-stats').then(r=>r.json()).then(d=>{_worldStatsCache=d;}).catch(()=>{});}
+function _prefetchWorldStats(){fetch('/api/stats?type=world').then(r=>r.json()).then(d=>{_worldStatsCache=d;}).catch(()=>{});}
 _prefetchWorldStats();
 setInterval(()=>{if(state==='title')_prefetchWorldStats();},120000);
 // Vercel関数をウォームアップする（コールドスタート対策）
@@ -4230,7 +4230,7 @@ function triggerDeath(){
   deathTimer=0;
   lastDeathMsg=getDeathMsg(lastDeathCause);
   // Refresh world deaths on each death
-  fetch('/api/world-stats').then(r=>r.json()).then(d=>{worldDeaths=d.total_deaths;}).catch(()=>{});
+  fetch('/api/stats?type=world').then(r=>r.json()).then(d=>{worldDeaths=d.total_deaths;}).catch(()=>{});
   if(adminMode)return; // admin: death effect only, no stats
 
   // Stats
@@ -4238,7 +4238,7 @@ function triggerDeath(){
   incStat('deaths_stage_'+lastDeathStage);
   if(lastDeathStage===1)incStat('stage1Deaths');
   if(hardMode)incStat('hardModeDeaths');
-  fetch('/api/death',{method:'POST'}).then(r=>{
+  fetch('/api/stats?type=death',{method:'POST'}).then(r=>{
     if(!r.ok)console.warn('death API failed:',r.status);
   }).catch(e=>console.warn('death API error:',e));
   if(supabaseClient&&_currentUser){

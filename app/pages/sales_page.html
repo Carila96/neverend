@@ -1483,7 +1483,7 @@ function addCustomColor(){const rgb=hsvToRgb(miniH,miniS,miniV);if(!customColors
 function confirmStage(){
   gridStates={};
   fetchGridStates(currentStage);
-  markDone(4);updateGC(currentStage);deletedBlocks=[];deleteHistory=[];
+  markDone(4);updateGC(currentStage);
   unlockSec(5);setProgress(5);
   document.getElementById('gridStageName').textContent=STAGES_DATA[currentStage-1].name;
   document.getElementById('gridBlockInfo').textContent=GRID_COLS+'�~'+GRID_ROWS+' | '+CELL+'�~'+CELL+'px';

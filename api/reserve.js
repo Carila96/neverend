@@ -25,8 +25,6 @@ export default async function handler(req, res) {
   if (!stage_id || anchor_x == null || anchor_y == null || !width || !height || !zone_type || !plan_type)
     return res.status(400).json({ error: 'Missing required fields' });
   const deletedSet = new Set((Array.isArray(deleted_blocks) ? deleted_blocks : []).map(d => `${d.x},${d.y}`));
-  console.log('deleted_blocks received:', JSON.stringify(deleted_blocks?.slice(0,5)));
-  console.log('deletedSet size:', deletedSet.size);
 
   // 透明マスのはみ出しを許可：Activeピクセルがグリッド内に収まっていればOK
   // anchor_xが負またはanchor_x+widthが128超でも、deleted_blocksで調整済みならOK

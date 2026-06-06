@@ -84,7 +84,7 @@ export default async function handler(req, res) {
     .eq('is_active', true);
   if(placementError) console.error('Placements fetch error:', placementError.message);
 
-  res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
+  res.setHeader('Cache-Control', 's-maxage=0, stale-while-revalidate=0');
 
   return res.status(200).json({
     stage_id,

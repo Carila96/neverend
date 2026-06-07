@@ -31,7 +31,10 @@
       "Bash(where python *)",
       "Bash(where python3 *)",
       "Bash(Get-ChildItem \"C:\\\\neverEND\\\\public\\\\\" 2>&1 *)",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "PowerShell(Get-Content *)",
+      "PowerShell(Set-Content *)",
+      "PowerShell(Resolve-Path *)"
     ]
   }
 }

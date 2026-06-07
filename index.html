@@ -17,14 +17,14 @@
 <meta name="keywords" content="neverEND, DAMN, DAMNRUN, hardcore platformer, browser game, free game, tower climbing game, die and retry, impossible game, hard platformer, rage game, rage platformer, impossible platformer, skill game, free browser game, online platformer, neverend game, Carila, 30 seconds, tower game, クソゲー, 激ムズゲーム, 難しいゲーム, ブラウザゲーム, アクションゲーム, 無料ゲーム, 死にゲー">
 <meta property="og:title" content="neverEND — 30 Seconds to Live. Forever.">
 <meta property="og:description" content="A brutal browser platformer. 30 seconds. Die. Reset. Repeat. Can you reach the top of the tower?">
-<meta property="og:url" content="https://neverend.vercel.app">
+<meta property="og:url" content="https://damnrun.com">
 <meta property="og:type" content="website">
-<meta property="og:image" content="https://neverend.vercel.app/public/og-image.png">
+<meta property="og:image" content="https://damnrun.com/public/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="neverEND — 30 Seconds to Live. Forever.">
 <meta name="twitter:description" content="A brutal browser platformer. 30 seconds. Die. Reset. Repeat.">
-<meta name="twitter:image" content="https://neverend.vercel.app/public/og-image.png">
-<link rel="canonical" href="https://neverend.vercel.app">
+<meta name="twitter:image" content="https://damnrun.com/public/og-image.png">
+<link rel="canonical" href="https://damnrun.com">
 <link rel="preload" href="/public/tower.png" as="image">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
@@ -3669,7 +3669,7 @@ function drawTitle(){
   ctx.fillText('← →  MOVE    SPACE  JUMP    F / ESC  PAUSE',W/2,H-36);ctx.restore();
   if(adminMode)neonText('[ ADMIN MODE ON ]',W/2,H-16,'rgba(255,220,50,0.5)',10,4,'center');
   ctx.save();ctx.fillStyle='rgba(120,120,150,0.6)';ctx.font='11px "Courier New"';ctx.textAlign='center';
-  ctx.fillText('By playing you agree to our Terms of Service  |  neverend.vercel.app/terms',W/2,H-6);
+  ctx.fillText('By playing you agree to our Terms of Service  |  damnrun.com/terms',W/2,H-6);
   ctx.restore();
   // タイトルに累計情報をさりげなく
   const td=getStat('totalDeaths');
@@ -4509,7 +4509,7 @@ function shareDeathCount(){
   const deaths=getStat('totalDeaths');
   const best=getStat('bestStage',1);
   const text=`I've died ${deaths} times in neverEND and my best is Floor ${best}. Can you beat that? #DamnRun #neverEND`;
-  const url='https://neverend.vercel.app';
+  const url='https://damnrun.com';
   const twitterUrl=`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
   window.open(twitterUrl,'_blank','width=600,height=400');
 }
@@ -4786,7 +4786,7 @@ function shareDeathCount(){
   const deaths=getStat('totalDeaths');
   const best=getStat('bestStage',1);
   const text=`I've died ${deaths} times in neverEND and my best is Floor ${best}. Can you beat that? #DamnRun #neverEND`;
-  const url='https://neverend.vercel.app';
+  const url='https://damnrun.com';
   const twitterUrl=`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
   window.open(twitterUrl,'_blank','width=600,height=400');
 }

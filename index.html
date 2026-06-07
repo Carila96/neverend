@@ -2805,9 +2805,9 @@ function loadStage(n){
   cameraY=0;
   _goalReached=false;
   state='play';
+  if(n !== stageNum) stagePlacements = []; // 別ステージの時だけクリア
   stageNum=n;
   const _loadingStage=n;
-  stagePlacements = []; // ステージ切替時に即座にクリア
   fetch('/api/grid?stage_id='+n)
     .then(r=>r.json())
     .then(d=>{

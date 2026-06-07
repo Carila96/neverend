@@ -2804,6 +2804,7 @@ function loadStage(n){
   player={x:s.spawn.x,y:s.spawn.y,vx:0,vy:0,w:28,h:44,onGround:false,facing:1,walkT:0,prevX:0,prevY:0};
   cameraY=0;
   _goalReached=false;
+  state='play';
   stageNum=n;
   const _loadingStage=n;
   stagePlacements = []; // ステージ切替時に即座にクリア

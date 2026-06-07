@@ -2060,7 +2060,6 @@ async function proceedToCheckout(){
     const session_key=resData.session_key;btn.textContent='UPLOADING LOGO...';
     const logoUrl=buildLogoDataUrl();
     if(logoUrl){const parts=logoUrl.split(',');await fetch(BASE+'/api/logo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'stage',session_key,image_data:parts[1],image_type:parts[0].split(':')[1].split(';')[0]})}).catch(function(){});}
-    console.log('couponInput value:', document.getElementById('couponInput').value);
     _appliedCoupon = (document.getElementById('couponInput').value||'').trim().toUpperCase() || null;
     btn.textContent='CREATING CHECKOUT...';
     const coRes=await fetch(BASE+'/api/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_key,plan_type:plan,coupon_id:_appliedCoupon})});

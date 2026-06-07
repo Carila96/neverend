@@ -3968,7 +3968,7 @@ function update(dt){
       }
       // ゴール中心へのアニメーション後にステージ切替
       const goalCenterX=goal.x+goal.w/2-player.w/2;
-      const goalCenterY=goal.y+goal.h/2-player.h/2;
+      const goalCenterY=goal.y+goal.h-player.h;
       const _goalNext=next;
       const _goalStart=performance.now();
       const _goalDuration=500; // 0.5秒

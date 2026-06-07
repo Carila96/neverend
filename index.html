@@ -2803,6 +2803,7 @@ function loadStage(n){
   }
   player={x:s.spawn.x,y:s.spawn.y,vx:0,vy:0,w:28,h:44,onGround:false,facing:1,walkT:0,prevX:0,prevY:0};
   cameraY=0;
+  _goalReached=false;
   stageNum=n;
   const _loadingStage=n;
   stagePlacements = []; // ステージ切替時に即座にクリア
@@ -2838,6 +2839,7 @@ function loadStage(n){
 }
 
 let sessionStartTime=Date.now(),sessionDeaths=0,sessionMaxStage=1;
+let _goalReached=false;
 let stagePlacements=[],_placementImgCache={};
 
 function prefetchNextStagePlacements(nextStageId){
@@ -3951,24 +3953,50 @@ function update(dt){
       if(!darknessState.active&&darknessState.timer>=darknessState.interval){darknessState.active=true;darknessState.timer=0;}
       else if(darknessState.active&&darknessState.timer>=darknessState.duration){darknessState.active=false;darknessState.timer=0;}
     }
-    if(state==='play'&&overlap(player,goal)){if(!adminMode){incStat('points',50);incStat('totalClears');}if(easyMode)easyModeSavedStage=stageNum+1;
+    if(state==='play'&&overlap(player,goal)&&!_goalReached){
+      _goalReached=true;
+      state='goal';
+      if(!adminMode){incStat('points',50);incStat('totalClears');}
+      if(easyMode)easyModeSavedStage=stageNum+1;
       const next=stageNum+1;
       checkTitlesOnClear(next);
       timeLeft=Math.min(MAX_TIME,timeLeft+3);score+=500+Math.floor(timeLeft*10);sfxGoal();
-      if(testMode&&stageNum>=20){
-        floatMsgs.push({txt:'TEST PLAY ENDS HERE — Full game coming soon!',x:W/2,y:H/2,life:5,color:'rgba(255,220,50,1)'});
-        stopBGM();
-        setTimeout(function(){resetRun();state='title';},5000);
-      } else if(next<=STAGES.length){
-        loadStage(next);
-        // if(next+1<=STAGES.length)prefetchNextStagePlacements(next+1);
-        floatMsgs.push({txt:'FLOOR '+next+'!',x:W/2,y:H/2,life:2,color:'rgba(255,220,50,1)'});
-        if(testMode&&next===5&&!_stage5ToastShown){_stage5ToastShown=true;floatMsgs.push({txt:'Playing well! Your progress is being recorded for credits.',x:W/2,y:H/2+64,life:5,color:'rgba(100,255,180,0.95)'});}
-        if(easyMode)floatMsgs.push({txt:'Cleared Baby Mode? Cool. Nobody cares.',x:W/2,y:H/2+48,life:3,color:'rgba(255,180,255,0.8)'});
-        const nt=getBGMTrack(next);if(nt!==bgmTrack)startBGM(nt);
-      } else {
-        floatMsgs.push({txt:'ALL CLEAR!!',x:W/2,y:H/2,life:3,color:'rgba(255,220,50,1)'});
+      // バックグラウンドで次ステージデータを先読み開始
+      if(next<=STAGES.length){
+        prefetchNextStagePlacements(next);
       }
+      // ゴール中心へのアニメーション後にステージ切替
+      const goalCenterX=goal.x+goal.w/2-player.w/2;
+      const goalCenterY=goal.y+goal.h/2-player.h/2;
+      const _goalNext=next;
+      const _goalStart=performance.now();
+      const _goalDuration=500; // 0.5秒
+      const _goalStartX=player.x;
+      const _goalStartY=player.y;
+      function _goalAnim(now){
+        const t=Math.min((now-_goalStart)/_goalDuration,1);
+        player.x=_goalStartX+(goalCenterX-_goalStartX)*t;
+        player.y=_goalStartY+(goalCenterY-_goalStartY)*t;
+        if(t<1){requestAnimationFrame(_goalAnim);}
+        else{
+          // アニメーション完了→ステージ切替
+          if(testMode&&stageNum>=20){
+            floatMsgs.push({txt:'TEST PLAY ENDS HERE — Full game coming soon!',x:W/2,y:H/2,life:5,color:'rgba(255,220,50,1)'});
+            stopBGM();
+            setTimeout(function(){resetRun();state='title';},5000);
+          } else if(_goalNext<=STAGES.length){
+            loadStage(_goalNext);
+            floatMsgs.push({txt:'FLOOR '+_goalNext+'!',x:W/2,y:H/2,life:2,color:'rgba(255,220,50,1)'});
+            if(testMode&&_goalNext===5&&!_stage5ToastShown){_stage5ToastShown=true;floatMsgs.push({txt:'Playing well! Your progress is being recorded for credits.',x:W/2,y:H/2+64,life:5,color:'rgba(100,255,180,0.95)'});}
+            if(easyMode)floatMsgs.push({txt:'Cleared Baby Mode? Cool. Nobody cares.',x:W/2,y:H/2+48,life:3,color:'rgba(255,180,255,0.8)'});
+            const nt=getBGMTrack(_goalNext);if(nt!==bgmTrack)startBGM(nt);
+          } else {
+            floatMsgs.push({txt:'ALL CLEAR!!',x:W/2,y:H/2,life:3,color:'rgba(255,220,50,1)'});
+            state='play';
+          }
+        }
+      }
+      requestAnimationFrame(_goalAnim);
     }
     updateBGMTempo();
     const pauseKey=(keys['Escape']&&!prevKeys['Escape'])||(keys['f']&&!prevKeys['f'])||(keys['F']&&!prevKeys['F']);

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Claim Your Space ? neverEND Background Grid</title>
+<title>Claim Your Space — neverEND Background Grid</title>
 <meta name="description" content="Place your logo in the neverEND game background. Thousands of players will see your brand while they rage-quit. Prices rise as the grid fills.">
 <meta property="og:title" content="Claim Your Space in neverEND">
 <meta property="og:description" content="Nobody finishes this game. But everybody sees your logo.">
@@ -237,7 +237,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
 <header>
   <div class="logo">never<span>END</span></div>
   <nav>
-    <a href="/">�� BACK TO GAME</a>
+    <a href="/">← BACK TO GAME</a>
     <a href="#">How It Works</a>
     <a href="#pricing">Pricing</a>
     <a href="/app/pages/terms.html#content-policy">Content Policy</a>
@@ -271,7 +271,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
     <div id="tierProgressBar" style="background:linear-gradient(90deg,#4ab8ff,#4ade80);height:100%;width:0%;transition:width 0.5s;"></div>
   </div>
   <div style="margin-top:4px;font-family:'Share Tech Mono',monospace;font-size:13px;color:#6e7585;letter-spacing:1px;">
-    <span id="tierBlocksClaimed">0</span> blocks claimed ?
+    <span id="tierBlocksClaimed">0</span> blocks claimed —
     <span id="tierBlocksRemaining">20,001</span> blocks until next price increase
   </div>
 </div>
@@ -298,16 +298,16 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
         <!-- ���J���� -->
         <div style="flex:1;display:flex;flex-direction:column;gap:12px;min-width:0;">
           <div class="upload-drop" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-            <div class="upload-icon">��</div>
+            <div class="upload-icon">↑</div>
             <h3>DROP IMAGE</h3>
-            <p>PNG JPG GIF ? max 5MB<br><span style="color:var(--accent2)">PNG transparency preserved</span></p>
+            <p>PNG JPG GIF — max 5MB<br><span style="color:var(--accent2)">PNG transparency preserved</span></p>
           </div>
           <input type="file" id="fileInput" accept="image/*">
           <div id="uploadFileInfo" style="display:none;font-family:'Share Tech Mono',monospace;font-size:14px;color:var(--muted2);padding:6px 8px;background:var(--panel2);border:1px solid var(--border);">
             <span id="uploadFileName" style="color:var(--accent2)"></span><br><span id="uploadDims"></span>
           </div>
           <p style="font-family:'Share Tech Mono',monospace;font-size:16px;color:var(--muted);letter-spacing:1px;line-height:2;font-weight:500;">
-            ?? Square images work best for NANO / SMALL / MEDIUM.<br>
+            💡 Square images work best for NANO / SMALL / MEDIUM.<br>
             For widescreen logos, choose LARGE or XL.<br>
             Transparent pixels are not counted as blocks.
           </p>
@@ -315,7 +315,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
             <div style="font-family:'Share Tech Mono',monospace;font-size:15px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">TRIM</div>
             <div class="trim-ctrl"><label>ZOOM</label><input type="range" id="trimZoom" min="100" max="400" value="100" oninput="updateTrim()"><span class="trim-val" id="trimZoomVal">100%</span></div>
           </div>
-          <button class="btn-blue" id="uploadContinueBtn" onclick="goToSection2()" disabled style="width:100%;padding:12px;font-size:16px;">CONTINUE TO SIZE ��</button>
+          <button class="btn-blue" id="uploadContinueBtn" onclick="goToSection2()" disabled style="width:100%;padding:12px;font-size:16px;">CONTINUE TO SIZE →</button>
           <div style="flex:1;display:flex;justify-content:center;align-items:center;min-height:120px;">
             <canvas id="charCanvas" width="200" height="150" style="image-rendering:pixelated;opacity:0.7;display:block;"></canvas>
           </div>
@@ -326,8 +326,8 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
           <div style="font-family:'Share Tech Mono',monospace;font-size:15px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">PREVIEW</div>
           <div class="trim-area-wrap">
             <div class="trim-mode-btns">
-              <button class="trim-mode-btn active" id="trimModeMove" onclick="setTrimMode('move')">?? MOVE IMAGE</button>
-              <button class="trim-mode-btn" id="trimModeCrop" onclick="setTrimMode('crop')">? ADJUST FRAME</button>
+              <button class="trim-mode-btn active" id="trimModeMove" onclick="setTrimMode('move')">📷 MOVE IMAGE</button>
+              <button class="trim-mode-btn" id="trimModeCrop" onclick="setTrimMode('crop')">✂ ADJUST FRAME</button>
             </div>
             <div class="trim-canvas-row">
               <div class="sq-canvas-wrap" id="trimWrap"><canvas id="trimCanvas" width="400" height="400"></canvas></div>
@@ -594,7 +594,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
           </div>
           <div class="checkout-err" id="checkoutError"></div>
           <div id="adminPlaceBar" style="display:none;margin-bottom:8px;padding:10px 14px;background:#1a0a00;border:1px solid #ff6600;border-radius:4px;">
-            <div style="font-family:'Share Tech Mono',monospace;font-size:15px;color:#ff6600;letter-spacing:2px;margin-bottom:8px;">? ADMIN FREE PLACEMENT</div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:15px;color:#ff6600;letter-spacing:2px;margin-bottom:8px;">⚡ ADMIN FREE PLACEMENT</div>
             <div style="display:flex;gap:8px;align-items:center;">
               <input id="adminKeyInput" type="password" placeholder="admin key" style="flex:1;background:#0a0a0a;border:1px solid #ff6600;color:#ff6600;font-family:'Share Tech Mono',monospace;font-size:16px;padding:6px 8px;border-radius:3px;outline:none;" />
               <button onclick="adminFreePlacement()" style="background:#ff6600;color:#000;font-family:'Share Tech Mono',monospace;font-size:15px;font-weight:bold;padding:6px 12px;border:none;border-radius:3px;cursor:pointer;letter-spacing:1px;">PLACE FREE</button>
@@ -618,7 +618,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
 </div>
 <section class="pricing-section" id="pricing">
   <div class="sec-title">PRICING</div>
-  <div class="sec-sub">Transparent pricing. Your price is locked at purchase ? never auto-increases.</div>
+  <div class="sec-sub">Transparent pricing. Your price is locked at purchase — never auto-increases.</div>
   <div class="pricing-grid">
     <div class="price-tier"><div class="tier-lbl">Launch Price</div><div class="tier-price"><sup>$</sup>3k<sub>/stage/mo</sub></div><div class="tier-note">128&times;72 = 9,216 blocks. ~$0.33/block. From $1/mo minimum.</div></div>
     <div class="price-tier"><div class="tier-lbl">After $1k sales</div><div class="tier-price"><sup>$</sup>5k<sub>/stage/mo</sub></div><div class="tier-note">~$0.54/block. Only triggers if reached within 12 months.</div></div>
@@ -632,9 +632,9 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
     <div class="p-rung"><div class="pr-p">$0.70</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--muted)">20k blocks</div></div>
     <div class="p-rung"><div class="pr-p">$1.10</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--muted)">50k blocks</div></div>
     <div class="p-rung"><div class="pr-p">$1.60</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--muted)">90k blocks</div></div>
-    <div class="p-rung"><div class="pr-p">$2.40</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--gold)">140k ? Lifetime unlock</div></div>
+    <div class="p-rung"><div class="pr-p">$2.40</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--gold)">140k — Lifetime unlock</div></div>
     <div class="p-rung"><div class="pr-p">$3.10</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--muted)">300k blocks</div></div>
-    <div class="p-rung mono"><div class="pr-p">$4.00</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--accent)">800k ? CAP</div></div>
+    <div class="p-rung mono"><div class="pr-p">$4.00</div><div class="pr-l">/block/mo</div><div class="pr-t" style="color:var(--accent)">800k — CAP</div></div>
   </div>
   <div class="vol-title" style="margin-bottom:4px;">VOLUME DISCOUNTS</div>
   <div class="sec-sub" style="margin-bottom:14px;">Applied automatically at checkout.</div>
@@ -647,9 +647,9 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
   <div class="vol-title" style="margin-bottom:4px;margin-top:32px;">FULL STAGE PRICING</div>
   <div class="sec-sub" style="margin-bottom:14px;">One stage = 9,216 blocks. Price rises as the world fills.</div>
   <div class="vol-table">
-    <div class="vol-row"><span class="v-blocks">Launch</span><span style="color:var(--green)">$1,000/mo ? $10,000/yr</span></div>
+    <div class="vol-row"><span class="v-blocks">Launch</span><span style="color:var(--green)">$1,000/mo — $10,000/yr</span></div>
     <div class="vol-row"><span class="v-blocks">Growth</span><span style="color:var(--accent2)">$2,000 &rarr; $3,500 &rarr; $5,000/mo</span></div>
-    <div class="vol-row"><span class="v-blocks">Premium</span><span style="color:var(--gold)">$7,500/mo ? Lifetime purchase unlocks ($180,000)</span></div>
+    <div class="vol-row"><span class="v-blocks">Premium</span><span style="color:var(--gold)">$7,500/mo — Lifetime purchase unlocks ($180,000)</span></div>
     <div class="vol-row"><span class="v-blocks">Cap</span><span style="color:var(--accent)">$10,000 &rarr; $12,500/mo</span></div>
   </div>
 </section>
@@ -917,7 +917,7 @@ function calcPrice(n,p){return calculatePrice(n);}
 function setBrushSize(s,btn){brushSize=s;document.querySelectorAll('#brush1,#brush3,#brush5').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');}
 
 const stageSelEl=document.getElementById('stageSelect');
-STAGES_DATA.forEach(function(s){const o=document.createElement('option');o.value=s.id;o.textContent=s.name+' ? '+s.sub;stageSelEl.appendChild(o);});
+STAGES_DATA.forEach(function(s){const o=document.createElement('option');o.value=s.id;o.textContent=s.name+' — '+s.sub;stageSelEl.appendChild(o);});
 
 function setStage(id){
   currentStage=id;stageSelEl.value=id;updateGC(id);
@@ -926,9 +926,9 @@ function setStage(id){
   const s=STAGES_DATA[id-1];
   const badge=document.getElementById('stageBadge');
   badge.className='stage-badge';badge.textContent='STANDARD';
-  document.getElementById('stageInfoText').textContent=s.name+' ? '+s.sub;
+  document.getElementById('stageInfoText').textContent=s.name+' — '+s.sub;
   const ct=currentPriceTier.currentTier;
-  document.getElementById('stagePriceInfo').textContent=GRID_COLS+'�~'+GRID_ROWS+' = '+(GRID_COLS*GRID_ROWS).toLocaleString()+' blocks | $'+(ct?ct.pricePerBlock.toFixed(2):'0.40')+'/block | Full: $'+(ct?ct.monthlyFull.toLocaleString():'1,000')+'/mo';
+  document.getElementById('stagePriceInfo').textContent=GRID_COLS+'×'+GRID_ROWS+' = '+(GRID_COLS*GRID_ROWS).toLocaleString()+' blocks | $'+(ct?ct.pricePerBlock.toFixed(2):'0.40')+'/block | Full: $'+(ct?ct.monthlyFull.toLocaleString():'1,000')+'/mo';
   updatePresetPrices();drawStageMap();
 }
 function changeStage(d){const n=currentStage+d;if(n>=1&&n<=STAGES_DATA.length)setStage(n);}
@@ -1028,7 +1028,7 @@ function loadImageFile(file){
       if(_hs)_hs.value=0;if(_vs)_vs.value=0;
       setTrimMode('move');
       document.getElementById('uploadFileName').textContent=file.name;
-      document.getElementById('uploadDims').textContent=img.naturalWidth+'�~'+img.naturalHeight+' px';
+      document.getElementById('uploadDims').textContent=img.naturalWidth+'×'+img.naturalHeight+' px';
       document.getElementById('uploadFileInfo').style.display='block';
       document.getElementById('uploadContinueBtn').disabled=false;
       drawTrimCanvas();
@@ -1357,7 +1357,7 @@ function initEditCanvas(){
   editZoomLevel=1;document.getElementById('editZoomSlider').value=1;document.getElementById('editZoomVal').textContent='1�~';
   applyEditZoom();
 }
-function updateEditZoom(){editZoomLevel=parseFloat(document.getElementById('editZoomSlider').value);document.getElementById('editZoomVal').textContent=editZoomLevel+'�~';applyEditZoom();}
+function updateEditZoom(){editZoomLevel=parseFloat(document.getElementById('editZoomSlider').value);document.getElementById('editZoomVal').textContent=editZoomLevel+'×';applyEditZoom();}
 function applyEditZoom(){const z=Math.round(baseEditZoom*editZoomLevel);editCanvas.width=chosenW*z;editCanvas.height=chosenH*z;const ew=document.getElementById('editCanvasWrap');if(ew)ew.style.overflow=editZoomLevel>1?'auto':'hidden';drawEditCanvas(z);buildPalette();}
 function drawEditCanvas(z){
   if(!pixelArtEdit)return;
@@ -1407,7 +1407,7 @@ function buildPalette(){
     grp.appendChild(lbl);grp.appendChild(chips);container.appendChild(grp);
   });
 }
-function updateEditStats(){if(!pixelArtEdit)return;const active=countActive(pixelArtEdit);const r=calcPrice(active,plan);document.getElementById('editStats').textContent='Active: '+active+' / '+(chosenW*chosenH)+' blocks ? Est. $'+Math.round(r.total)+'/mo';}
+function updateEditStats(){if(!pixelArtEdit)return;const active=countActive(pixelArtEdit);const r=calcPrice(active,plan);document.getElementById('editStats').textContent='Active: '+active+' / '+(chosenW*chosenH)+' blocks — Est. $'+Math.round(r.total)+'/mo';}
 function setColorTool(t){
   colorTool=t;
   document.getElementById('toolPan')&&document.getElementById('toolPan').classList.remove('active');
@@ -1486,14 +1486,14 @@ function confirmStage(){
   markDone(4);updateGC(currentStage);
   unlockSec(5);setProgress(5);
   document.getElementById('gridStageName').textContent=STAGES_DATA[currentStage-1].name;
-  document.getElementById('gridBlockInfo').textContent=GRID_COLS+'�~'+GRID_ROWS+' | '+CELL+'�~'+CELL+'px';
+  document.getElementById('gridBlockInfo').textContent=GRID_COLS+'×'+GRID_ROWS+' | '+CELL+'×'+CELL+'px';
   gridZoom=1;document.getElementById('gridZoomSlider').value=1;document.getElementById('gridZoomVal').textContent='1�~';
   if(monopolyMode){
     chosenW=GRID_COLS;chosenH=GRID_ROWS;logoGridX=0;logoGridY=0;logoPlaced=true;
     selectedArea={x:0,y:0,w:GRID_COLS,h:GRID_ROWS};
     document.getElementById('placeInfo').style.display='block';
     document.getElementById('placePos').textContent='Full stage';
-    document.getElementById('placeSize').textContent=GRID_COLS+'�~'+GRID_ROWS;
+    document.getElementById('placeSize').textContent=GRID_COLS+'×'+GRID_ROWS;
     document.getElementById('placeActiveBlocks').textContent=(GRID_COLS*GRID_ROWS).toLocaleString()+' blocks';
     document.getElementById('placePrice').textContent='$'+(currentPriceTier.currentTier?currentPriceTier.currentTier.monthlyFull.toLocaleString():'1,000')+'/mo';
     document.getElementById('placeStatus').innerHTML='<span style="color:var(--green)">FULL STAGE MONOPOLY</span>';
@@ -1515,7 +1515,7 @@ function confirmStage(){
 const gridCanvas=document.getElementById('gridCanvas');
 const gridCtx=gridCanvas.getContext('2d');
 
-function updateGridZoom(){gridZoom=parseFloat(document.getElementById('gridZoomSlider').value);document.getElementById('gridZoomVal').textContent=gridZoom+'�~';applyGridZoom();drawGrid();}
+function updateGridZoom(){gridZoom=parseFloat(document.getElementById('gridZoomSlider').value);document.getElementById('gridZoomVal').textContent=gridZoom+'×';applyGridZoom();drawGrid();}
 function applyGridZoom(){const wrap=document.getElementById('gridCanvasWrap');const baseW=wrap.parentElement.clientWidth||800;const w=Math.round(baseW*gridZoom);gridCanvas.style.width=w+'px';gridCanvas.style.height=Math.round(w*720/1280)+'px';wrap.style.overflow=gridZoom>1?'auto':'hidden';wrap.style.maxHeight=gridZoom>1?'480px':'none';}
 function initGrid(){applyGridZoom();drawGrid();}
 function isDeleted(c,r){
@@ -1807,11 +1807,11 @@ function updatePlaceInfo(){
   }
   document.getElementById('placeInfo').style.display='block';
   document.getElementById('placePos').textContent=monopolyMode?'Full stage':'col '+(selectedArea.x+1)+', row '+(selectedArea.y+1);
-  document.getElementById('placeSize').textContent=selectedArea.w+'�~'+selectedArea.h;
+  document.getElementById('placeSize').textContent=selectedArea.w+'×'+selectedArea.h;
   document.getElementById('placeActiveBlocks').textContent=active+' active';
   document.getElementById('placePrice').textContent='$'+Math.round(r.total)+'/mo';
   const conflict=!monopolyMode&&hasConflict(selectedArea.x,selectedArea.y,selectedArea.w,selectedArea.h);
-  document.getElementById('placeStatus').innerHTML=conflict?'<span style="color:var(--accent)">CONFLICT ? delete red blocks to resolve</span>':'<span style="color:var(--green)">AVAILABLE</span>';
+  document.getElementById('placeStatus').innerHTML=conflict?'<span style="color:var(--accent)">CONFLICT — delete red blocks to resolve</span>':'<span style="color:var(--green)">AVAILABLE</span>';
   document.getElementById('confirmPlaceBtn').disabled=conflict;
 }
 function countActivePlaced(){
@@ -1936,7 +1936,7 @@ function updateSummary(){
   else{active=activeBlockCount;r=calcPrice(active,plan);}
   document.getElementById('sumStage').textContent=s.name+(monopolyMode?' (MONOPOLY)':'');
   document.getElementById('sumPos').textContent=monopolyMode?'Full Stage':'col '+(selectedArea.x+1)+', row '+(selectedArea.y+1);
-  document.getElementById('sumSize').textContent=monopolyMode?'Entire Stage':chosenW+'�~'+chosenH+' blocks';
+  document.getElementById('sumSize').textContent=monopolyMode?'Entire Stage':chosenW+'×'+chosenH+' blocks';
   document.getElementById('sumBlocks').textContent=monopolyMode?'Full stage':active+' active';
   // EST. MONTHLY�iORDER SUMMARY�j�͏����_��1�ʂ܂�
   document.getElementById('sumPrice').textContent='$'+r.totalDecimal+'/mo';
@@ -2030,7 +2030,7 @@ async function adminFreePlacement(){
     if(!resRes.ok){const msg=resData.message||resData.error||'Admin placement failed';showCheckoutError(msg);placeBtn.disabled=false;placeBtn.textContent='PLACE FREE';return;}
     if(resData.admin){
       const bar=document.getElementById('adminPlaceBar');
-      if(bar){bar.style.borderColor='#00ff88';bar.innerHTML='<div style="font-family:\'Share Tech Mono\',monospace;font-size:16px;color:#00ff88;letter-spacing:2px;">? PLACED FREE ? '+resData.block_count+' blocks claimed</div>';}
+      if(bar){bar.style.borderColor='#00ff88';bar.innerHTML='<div style="font-family:\'Share Tech Mono\',monospace;font-size:16px;color:#00ff88;letter-spacing:2px;">✓ PLACED FREE — '+resData.block_count+' blocks claimed</div>';}
       return;
     }
     const session_key=resData.session_key;
@@ -2038,7 +2038,7 @@ async function adminFreePlacement(){
     const coData=await coRes.json();
     if(!coRes.ok){showCheckoutError(coData.error||'Checkout failed');placeBtn.disabled=false;placeBtn.textContent='PLACE FREE';return;}
     const bar=document.getElementById('adminPlaceBar');
-    if(bar){bar.style.borderColor='#00ff88';bar.innerHTML='<div style="font-family:\'Share Tech Mono\',monospace;font-size:16px;color:#00ff88;letter-spacing:2px;">? PLACED FREE ? blocks claimed</div>';}
+    if(bar){bar.style.borderColor='#00ff88';bar.innerHTML='<div style="font-family:\'Share Tech Mono\',monospace;font-size:16px;color:#00ff88;letter-spacing:2px;">✓ PLACED FREE — blocks claimed</div>';}
   }catch(err){showCheckoutError('Connection error.');placeBtn.disabled=false;placeBtn.textContent='PLACE FREE';}
 }
 let _appliedCoupon = null;

@@ -1863,26 +1863,26 @@ async function confirmEdit(){
   </div>
 </div>
 <div id="nameChangeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;">
-  <div style="background:#0e0e1a;border:1px solid #262640;padding:40px;min-width:360px;max-width:440px;display:flex;flex-direction:column;gap:16px;">
+  <div style="background:#0e0e1a;border:1px solid #262640;padding:40px;min-width:400px;max-width:500px;display:flex;flex-direction:column;gap:16px;">
     <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;letter-spacing:3px;">CHANGE NAME</div>
     <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#e74c3c;line-height:1.8;border:1px solid rgba(231,76,60,0.3);padding:12px;background:rgba(231,76,60,0.05);">
       ⚠ Once you change your name, your previous name may be taken by another player and cannot be recovered.
     </div>
     <input id="nameChangeInput" type="text" maxlength="20" placeholder="YOUR NAME"
       style="background:#050510;border:1px solid var(--border);color:var(--text);
-      font-family:'Share Tech Mono',monospace;font-size:14px;letter-spacing:2px;
-      padding:10px 14px;outline:none;width:100%;box-sizing:border-box;"
+      font-family:'Share Tech Mono',monospace;font-size:16px;letter-spacing:2px;
+      padding:12px 16px;outline:none;width:100%;box-sizing:border-box;"
       onfocus="this.style.borderColor='#4ab8ff'"
       onblur="this.style.borderColor='var(--border)'"/>
     <div id="nameChangeMsg" style="font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:1px;min-height:16px;"></div>
     <div style="display:flex;gap:10px;">
       <button onclick="savePlayerName()" id="nameChangeSaveBtn"
         style="flex:1;background:none;border:1px solid rgba(74,184,255,0.5);color:#4ab8ff;
-        padding:11px;font-family:'Share Tech Mono',monospace;font-size:12px;
+        padding:14px;font-family:'Share Tech Mono',monospace;font-size:14px;
         letter-spacing:2px;cursor:pointer;text-transform:uppercase;">SAVE</button>
       <button onclick="closeNameChangeModal()"
         style="flex:1;background:none;border:1px solid var(--border);color:var(--muted2);
-        padding:11px;font-family:'Share Tech Mono',monospace;font-size:12px;
+        padding:14px;font-family:'Share Tech Mono',monospace;font-size:14px;
         letter-spacing:2px;cursor:pointer;text-transform:uppercase;">CANCEL</button>
     </div>
   </div>

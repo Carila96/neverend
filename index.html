@@ -1748,27 +1748,52 @@ const STAGES=[
 ,
 
 // STAGE 38 — SINKING CHAIN
-{name:'STAGE 38',sub:'Hop. Do not wait.',
+{name:'FLOOR 38',sub:'The gap grows.',
  plats:[
-   {x:0,y:640,w:128,h:80},
-   {x:1152,y:640,w:128,h:80},
-   {x:0,y:0,w:1280,h:96},
-   {x:128,y:512,w:176,h:16,sinking:true},
-   {x:368,y:512,w:176,h:16,sinking:true},
-   {x:608,y:512,w:176,h:16,sinking:true},
-   {x:848,y:512,w:176,h:16,sinking:true},
-   {x:1088,y:512,w:64,h:16,sinking:true},
+   // スタート足場（左中央）
+   {x:32,y:352,w:16,h:16},
+   // 段階的に間隔が広がっていく足場群
+   {x:96,y:320,w:16,h:16},
+   {x:176,y:368,w:16,h:16},
+   {x:272,y:304,w:16,h:16},
+   {x:384,y:352,w:16,h:16},
+   {x:512,y:288,w:16,h:16},
+   {x:656,y:336,w:16,h:16},
+   {x:816,y:272,w:16,h:16},
+   {x:992,y:320,w:16,h:16},
+   // ゴール前足場
+   {x:1184,y:352,w:16,h:16},
+   // ゴール台
+   {x:1200,y:288,w:64,h:16},
+   // 左右壁
+   {x:0,y:0,w:16,h:720},
+   {x:1264,y:0,w:16,h:720},
+   // 床（トゲ用の床なし・落下即死）
  ],
  spikes:[
-   {x:128,y:608,w:240,h:32},{x:368,y:608,w:240,h:32},
-   {x:608,y:608,w:240,h:32},{x:848,y:608,w:240,h:32},
+   {x:120,y:688,w:32,h:32},
+   {x:220,y:688,w:32,h:32},
+   {x:320,y:688,w:32,h:32},
+   {x:420,y:688,w:32,h:32},
+   {x:520,y:688,w:32,h:32},
+   {x:620,y:688,w:32,h:32},
+   {x:720,y:688,w:32,h:32},
+   {x:820,y:688,w:32,h:32},
+   {x:920,y:688,w:32,h:32},
+   {x:1020,y:688,w:32,h:32},
+   {x:1120,y:688,w:32,h:32},
  ],
- traps:[],fall:[],ceiling:[],move:[],mimics:[],
- chasers:[],pendulums:[],lava:[],fallingSpikes:[],
- hg:[{x:624,y:480,w:16,h:32}],
- focusZones:[],darkness:{enabled:false},
- goal:{x:1168,y:544,w:80,h:96},
- spawn:{x:32,y:592}}
+ traps:[
+   {x:400,y:320,w:32,h:32,tx:340,warn:true},
+   {x:800,y:256,w:32,h:32,tx:740,warn:true},
+ ],
+ hg:[
+   {x:400,y:320,w:16,h:32},
+   {x:800,y:240,w:16,h:32},
+ ],
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],orbits:[],focusZones:[],darkness:{enabled:false},
+ goal:{x:1200,y:192,w:64,h:96},
+ spawn:{x:32,y:304}}
 
 ,
 

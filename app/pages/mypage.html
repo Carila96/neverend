@@ -404,7 +404,7 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
       <div style="font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:#787f90;margin-bottom:6px;">URL (WEBSITE / YOUTUBE / SNS)</div>
       <input id="partnerUrlInput" type="url" maxlength="200" placeholder="https://"
         style="width:100%;box-sizing:border-box;background:#050510;border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:13px;padding:10px 12px;outline:none;"
-        onfocus="this.style.borderColor='#4ab8ff'" onblur="this.style.borderColor='var(--border)'"/>
+        onfocus="this.style.borderColor='#4ab8ff'" onblur="this.style.borderColor='var(--border)';if(this.value&&!this.value.startsWith('http'))this.value='https://'+this.value;"/>
     </div>
     <button onclick="savePartnerInfo()"
       style="align-self:flex-start;background:none;border:1px solid rgba(74,184,255,0.5);color:#4ab8ff;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;padding:10px 20px;cursor:pointer;">

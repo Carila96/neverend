@@ -128,6 +128,16 @@ footer{
   font-size:10px;letter-spacing:2px;color:var(--muted);
   border-top:1px solid var(--border);margin-top:40px;
 }
+
+.stage-group{margin-bottom:16px;}
+.stage-group-title{font-size:11px;color:#ffe033;letter-spacing:3px;margin-bottom:8px;cursor:pointer;user-select:none;}
+.stage-group-title:hover{color:#fff;}
+.stage-partners{display:none;padding-left:12px;}
+.stage-partners.open{display:block;}
+.partner-row{display:flex;align-items:center;gap:12px;padding:6px 0;border-bottom:1px solid #111;}
+.partner-name{font-size:13px;color:#b0b0c8;letter-spacing:1px;}
+.partner-link{font-size:11px;color:#4ab8ff;text-decoration:none;letter-spacing:1px;}
+.partner-link:hover{color:#fff;}
 </style>
 </head>
 <body>
@@ -166,6 +176,13 @@ footer{
     <div class="pilots-desc">These players shaped neverEND from the very beginning.</div>
     <div class="pilots-grid" id="pilotsGrid"></div>
   </div>
+
+    <!-- Founding Partners -->
+    <div class="section" id="partnersSection" style="display:none;">
+      <div class="section-title">// FOUNDING PARTNERS</div>
+      <div class="partners-desc" style="font-size:13px;color:#555;margin-bottom:16px;letter-spacing:1px;">Companies and creators who are part of the neverEND world.</div>
+      <div id="partnersContainer"></div>
+    </div>
 </div>
 
 <footer>&copy; 2025 Carila · neverEND · Hall of Legends</footer>
@@ -225,6 +242,50 @@ function buildRankingHTML(data){
     }
     if(rankRes.error)throw rankRes.error;
     container.innerHTML=buildRankingHTML(rankRes.data);
+
+    // Founding Partners取得
+    const partnersRes = await sb.from('subscription_contracts')
+      .select('stage_id, display_name, display_url, status')
+      .eq('status', 'active')
+      .not('display_name', 'is', null)
+      .order('stage_id', { ascending: true });
+
+    const partners = partnersRes.data || [];
+
+    if(partners.length > 0){
+      // ステージ別にグループ化
+      const grouped = {};
+      partners.forEach(p => {
+        if(!grouped[p.stage_id]) grouped[p.stage_id] = [];
+        grouped[p.stage_id].push(p);
+      });
+
+      let html = '';
+      Object.keys(grouped).sort((a,b)=>a-b).forEach(stageId => {
+        const list = grouped[stageId];
+        html += `<div class="stage-group">
+          <div class="stage-group-title" onclick="togglePartners(this)">▶ FLOOR ${stageId} (${list.length})</div>
+          <div class="stage-partners">
+            ${list.map(p => `<div class="partner-row">
+              <span class="partner-name">${p.display_name.replace(/</g,'&lt;')}</span>
+              ${p.display_url ? `<a class="partner-link" href="${p.display_url}" target="_blank" rel="noopener">→ VISIT</a>` : ''}
+            </div>`).join('')}
+          </div>
+        </div>`;
+      });
+
+      document.getElementById('partnersContainer').innerHTML = html;
+      document.getElementById('partnersSection').style.display = 'block';
+    }
+
+    // 折りたたみトグル関数
+    window.togglePartners = function(el){
+      const content = el.nextElementSibling;
+      content.classList.toggle('open');
+      el.textContent = el.textContent.startsWith('▶')
+        ? el.textContent.replace('▶','▼')
+        : el.textContent.replace('▼','▶');
+    };
   }catch(err){
     container.innerHTML='<div class="error-msg">Could not load data.<br>'+(err&&err.message||'Network error')+'</div>';
   }

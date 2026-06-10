@@ -387,6 +387,33 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
   </div>
 </div>
 
+<div class="section" id="partnerInfoSection" style="margin-top:32px;padding:24px;background:#0d0d1a;border:1px solid #1a1a2e;">
+  <div style="font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:3px;color:#ffe033;margin-bottom:16px;">// FOUNDING PARTNER INFO (OPTIONAL)</div>
+  <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#555;margin-bottom:16px;line-height:1.8;">
+    Display your name or company in the Hall of Legends.<br>
+    Visible only if you have an active placement.
+  </div>
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:#787f90;margin-bottom:6px;">DISPLAY NAME</div>
+      <input id="partnerNameInput" type="text" maxlength="50" placeholder="Company / Channel / Name"
+        style="width:100%;box-sizing:border-box;background:#050510;border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:13px;padding:10px 12px;outline:none;"
+        onfocus="this.style.borderColor='#4ab8ff'" onblur="this.style.borderColor='var(--border)'"/>
+    </div>
+    <div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:#787f90;margin-bottom:6px;">URL (WEBSITE / YOUTUBE / SNS)</div>
+      <input id="partnerUrlInput" type="url" maxlength="200" placeholder="https://"
+        style="width:100%;box-sizing:border-box;background:#050510;border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:13px;padding:10px 12px;outline:none;"
+        onfocus="this.style.borderColor='#4ab8ff'" onblur="this.style.borderColor='var(--border)'"/>
+    </div>
+    <button onclick="savePartnerInfo()"
+      style="align-self:flex-start;background:none;border:1px solid rgba(74,184,255,0.5);color:#4ab8ff;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;padding:10px 20px;cursor:pointer;">
+      SAVE INFO
+    </button>
+    <div id="partnerInfoMsg" style="font-family:'Share Tech Mono',monospace;font-size:11px;min-height:16px;"></div>
+  </div>
+</div>
+
 <footer>
   <div class="footer-logo">never<span>END</span></div>
   <div class="footer-links">
@@ -934,6 +961,12 @@ async function loadPurchases(userId){
     document.getElementById('placementContent').style.display='block';
     section.style.display='block';
     _purchaseContracts = contracts;
+    // パートナー情報を既存値で埋める
+    if(_purchaseContracts && _purchaseContracts.length > 0){
+      const c = _purchaseContracts[0];
+      if(c.display_name) document.getElementById('partnerNameInput').value = c.display_name;
+      if(c.display_url) document.getElementById('partnerUrlInput').value = c.display_url;
+    }
     const totalBlocks=contracts.reduce((sum,c)=>sum+(c.width||0)*(c.height||0),0);
     buildAchievements(totalBlocks);
     let html='<div style="overflow-x:auto;"><table class="purchase-table"><thead><tr>';
@@ -1088,6 +1121,27 @@ async function savePlayerName(){
     msg.style.color='var(--accent)';msg.textContent='Error saving name. Try again.';
   }
   btn.textContent='SAVE';btn.disabled=false;
+}
+
+async function savePartnerInfo(){
+  const name = document.getElementById('partnerNameInput').value.trim();
+  const url = document.getElementById('partnerUrlInput').value.trim();
+  const msg = document.getElementById('partnerInfoMsg');
+
+  if(!_sbClient) return;
+  const { data: { user } } = await _sbClient.auth.getUser();
+  if(!user){ msg.style.color='#e74c3c'; msg.textContent='Please login first.'; return; }
+
+  msg.style.color='#787f90'; msg.textContent='Saving...';
+
+  const { error } = await _sbClient
+    .from('subscription_contracts')
+    .update({ display_name: name||null, display_url: url||null })
+    .eq('user_id', user.id)
+    .eq('status', 'active');
+
+  if(error){ msg.style.color='#e74c3c'; msg.textContent='Error: '+error.message; return; }
+  msg.style.color='#4ade80'; msg.textContent='Saved! Visible in Hall of Legends.';
 }
 
 document.addEventListener('DOMContentLoaded',()=>{

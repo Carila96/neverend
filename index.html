@@ -153,24 +153,34 @@ body{
 .lm-toggle a{color:#4ab8ff;cursor:pointer;text-decoration:underline;margin-left:4px;}
 .lm-msg{font-size:10px;min-height:16px;text-align:center;letter-spacing:1px;}
 
-/* SHARE BUTTON on dead screen */
-#shareBtn{
+/* X (Twitter) SHARE BUTTON on dead screen */
+#xShareBtn{
   display:none;
-  margin-top:8px;
-  padding:8px 24px;
-  background:transparent;
-  border:1px solid #4ab8ff;
-  color:#4ab8ff;
+  position:fixed;
+  left:50%;
+  bottom:15%;
+  transform:translateX(-50%);
+  z-index:500;
+  align-items:center;
+  gap:8px;
+  padding:10px 28px;
+  background:#000;
+  color:#fff;
+  border:1px solid #fff;
+  border-radius:6px;
   font-family:'Courier New',monospace;
-  font-size:13px;
+  font-size:15px;
+  font-weight:bold;
   letter-spacing:2px;
   cursor:pointer;
+  user-select:none;
 }
-#shareBtn:hover{background:rgba(74,184,255,0.1);}
+#xShareBtn:hover{background:#1a1a1a;}
 </style>
 </head>
 <body>
 <canvas id="c" width="1280" height="720"></canvas>
+<div id="xShareBtn" onclick="shareDeathX()">𝕏 Share</div>
 <div id="mypageOverlay" style="display:none;position:fixed;inset:0;z-index:1000;background:#000;">
   <iframe id="mypageFrame" src="/app/pages/mypage.html" style="width:100%;height:100%;border:none;"></iframe>
 </div>
@@ -4257,7 +4267,7 @@ function update(dt){
       state='play';startBGM(getBGMTrack(stageNum));
     }
     if(keys['t']&&!prevKeys['t']){_retryStreak=0;resetRun();stopBGM();state='title';}
-    if(keys['s']&&!prevKeys['s'])shareDeathCount();
+    if(keys['s']&&!prevKeys['s'])shareDeathX();
   }
   Object.keys(keys).forEach(k=>{if(keys[k])prevKeys[k]=true;else delete prevKeys[k];});
   // Vertical camera follow for scrollY stages
@@ -4651,6 +4661,7 @@ function loop(ts){
   }
   if(shakeTimer>0){ctx.restore();shakeTimer=Math.max(0,shakeTimer-dt);}
   floatMsgs=floatMsgs.filter(m=>(m.life-=dt)>0);
+  {const _xb=document.getElementById('xShareBtn');if(_xb)_xb.style.display=(state==='dead')?'inline-flex':'none';}
   update(dt);
   requestAnimationFrame(loop);
 
@@ -4679,16 +4690,6 @@ function declineCookies(){
   if(b)b.style.display='none';
 }
 initCookieBanner();
-
-// ── SNS SHARE ──
-function shareDeathCount(){
-  const deaths=getStat('totalDeaths');
-  const best=getStat('bestStage',1);
-  const text=`I've died ${deaths} times in neverEND and my best is Floor ${best}. Can you beat that? #DamnRun #neverEND`;
-  const url='https://damnrun.com';
-  const twitterUrl=`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
-  window.open(twitterUrl,'_blank','width=600,height=400');
-}
 }
 // prefetchAllPlacements();
 requestAnimationFrame(loop);
@@ -4957,13 +4958,12 @@ function _setLmMsg(txt,color){
   el.textContent=txt;el.style.color=color||'';
 }
 
-// ── SNS SHARE ──
-function shareDeathCount(){
-  const deaths=getStat('totalDeaths');
-  const best=getStat('bestStage',1);
-  const text=`I've died ${deaths} times in neverEND and my best is Floor ${best}. Can you beat that? #DamnRun #neverEND`;
-  const url='https://damnrun.com';
-  const twitterUrl=`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+// ── X SHARE (dead screen button) ──
+function shareDeathX(){
+  const currentStage=lastDeathStage;
+  const deathCount=getStat('totalDeaths');
+  const text=`Died on FLOOR ${currentStage} 💀 Death #${deathCount}\nHow far can you go?\n#neverEND https://damnrun.com`;
+  const twitterUrl=`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
   window.open(twitterUrl,'_blank','width=600,height=400');
 }
 </script>

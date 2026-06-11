@@ -4425,6 +4425,7 @@ function update(dt){
     if(keys[' ']&&!prevKeys[' ']){
       _retryStreak++;if(_retryStreak>getStat('maxRetryStreak'))setStat('maxRetryStreak',_retryStreak);
       if(adminMode){loadStage(stageNum);timeLeft=hardMode?25:30;damnEffect=null;damnTimer=0;floatMsgs=[];}
+      else if(testMode){loadStage(stageNum);timeLeft=MAX_TIME;damnEffect=null;damnTimer=0;floatMsgs=[];}
       else if(easyMode){loadStage(easyModeSavedStage);timeLeft=30;damnEffect=null;damnTimer=0;floatMsgs=[];}
       else resetRun();
       state='play';startBGM(getBGMTrack(stageNum));

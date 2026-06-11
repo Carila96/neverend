@@ -3897,7 +3897,7 @@ function update(dt){
     else player.vx*=(STAGES[stageNum-1]?.friction??0.75);
     if((keys[' ']||keys['ArrowUp']||keys['w']||keys['W'])&&player.onGround){player.vy=-18.2;jumpHeld = true;player.onGround=false;sfxJump();}
     player.vy+=0.9;
-    if(!jumpHeld && player.vy < 0) player.vy += 1.5;
+    if(!jumpHeld && player.vy < 0) player.vy += 1.2;
     if(player.vy>20)player.vy=20;
     // Update moving platforms and store delta for player carry
     for(const p of movingPlatforms){

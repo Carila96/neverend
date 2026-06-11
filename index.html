@@ -4263,7 +4263,7 @@ function update(dt){
         player.x+player.w>btn.x&&player.x<btn.x+btn.w&&
         player.y+player.h>=btn.y-2&&player.y+player.h<=btn.y+8;
       if(onBtn&&!btn._wasPressed){
-        btn._wasPressed=true;
+        btn._wasPressed=true;btn.pressed=!btn.pressed;
         for(const cur of currents){
           if(cur.buttonIds&&cur.buttonIds.includes(btn.id)){cur.active=!cur.active;}
         }

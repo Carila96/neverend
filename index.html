@@ -597,7 +597,7 @@ document.addEventListener('keydown',e=>{
 document.addEventListener('keyup',e=>{keys[e.key]=false;prevKeys[e.key]=false;
   if(e.key===' '||e.key==='ArrowUp'||e.key==='w'||e.key==='W'){
     jumpHeld = false;
-    if(player && player.vy < 0) player.vy *= 0.5;
+    if(player && player.vy < 0) player.vy *= 0.3;
   }
 });
 

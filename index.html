@@ -5541,8 +5541,8 @@ function loop(ts){
       ctx.shadowColor=col;ctx.shadowBlur=10;
       ctx.strokeStyle=col;ctx.lineWidth=2;ctx.strokeRect(btn.x,btn.y,btn.w,btn.h);
       ctx.fillStyle=col;ctx.fillRect(btn.x+4,btn.y+4,btn.w-8,6);
-      ctx.fillStyle=col;ctx.font='bold 9px "Courier New"';ctx.textAlign='center';
-      ctx.fillText(btn.id,btn.x+btn.w/2,btn.y+btn.h-4);
+      ctx.fillStyle='rgba(255,255,255,0.95)';ctx.font='bold 9px "Courier New"';ctx.textAlign='center';
+      ctx.fillText(btn.id.replace(/[^0-9]/g,''),btn.x+btn.w/2,btn.y+btn.h/2+4);
       ctx.restore();
     }
     // 電流描画（青白ネオン稲妻）

@@ -4683,9 +4683,24 @@ function update(dt){
     // Update moving platforms and store delta for player carry
     for(const p of movingPlatforms){
       const px=p.x,py=p.y;
-      p.phase+=dt;
-      if(p.vx!==0)p.x=p.sx+Math.sin(p.phase*Math.abs(p.vx)*0.07)*p.rx;
-      if(p.vy!==0)p.y=p.sy+Math.sin(p.phase*Math.abs(p.vy)*0.07)*p.ry;
+      if(p.waypoints&&p.waypoints.length>=2){
+        // waypointsモード：指定経路を巡回
+        if(p._wpTime===undefined){p._wpTime=0;p._wpIdx=0;}
+        p._wpTime+=dt;
+        const wps=p.waypoints;
+        const idx=p._wpIdx%wps.length;
+        const next=(p._wpIdx+1)%wps.length;
+        const seg=wps[next].t||2.0;
+        const prog=Math.min(p._wpTime/seg,1.0);
+        p.x=wps[idx].x+(wps[next].x-wps[idx].x)*prog;
+        p.y=wps[idx].y+(wps[next].y-wps[idx].y)*prog;
+        if(p._wpTime>=seg){p._wpTime=0;p._wpIdx=(p._wpIdx+1)%wps.length;}
+      }else{
+        // 従来のサイン波モード
+        p.phase+=dt;
+        if(p.vx!==0)p.x=p.sx+Math.sin(p.phase*Math.abs(p.vx)*0.07)*p.rx;
+        if(p.vy!==0)p.y=p.sy+Math.sin(p.phase*Math.abs(p.vy)*0.07)*p.ry;
+      }
       p.dx=p.x-px;
       p.dy=p.y-py;
     }
@@ -5302,6 +5317,27 @@ function loop(ts){
     ctx.save();ctx.translate(0,-Math.round(cameraY));
     for(const b of fallingBlocks){if(!b.gone)drawPlatform(b,b.triggered&&!b.falling&&b.shakeT>0);}
     for(const p of platforms){if(p.phantom)drawPhantomPlatform(p);else if(p.sinking)drawSinkingPlatform(p);else drawPlatform(p);}
+    // waypoints軌跡表示
+    for(const p of movingPlatforms){
+      if(!p.showPath||!p.waypoints)continue;
+      ctx.save();
+      ctx.strokeStyle='rgba(100,200,255,0.35)';
+      ctx.lineWidth=2;
+      ctx.setLineDash([8,6]);
+      ctx.beginPath();
+      const wps=p.waypoints;
+      ctx.moveTo(wps[0].x+p.w/2,wps[0].y+p.h/2);
+      for(let i=1;i<wps.length;i++)ctx.lineTo(wps[i].x+p.w/2,wps[i].y+p.h/2);
+      ctx.lineTo(wps[0].x+p.w/2,wps[0].y+p.h/2);
+      ctx.stroke();
+      // 各経由点に小さな丸
+      ctx.setLineDash([]);
+      ctx.fillStyle='rgba(100,200,255,0.6)';
+      for(const wp of wps){
+        ctx.beginPath();ctx.arc(wp.x+p.w/2,wp.y+p.h/2,5,0,Math.PI*2);ctx.fill();
+      }
+      ctx.restore();
+    }
     for(const p of movingPlatforms){if(p.phantom)drawPhantomPlatform(p);else if(p.sinking)drawSinkingPlatform(p);else drawMovingPlatform(p);}
     for(const s of spikes)drawSpike(s);
     for(const t of trapSpikes)drawTrapSpike(t);

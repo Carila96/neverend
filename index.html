@@ -4084,16 +4084,35 @@ function drawFallingSpikeExt(f){
 function drawChaser(c){
   if(!c.active)return;
   ctx.save();
-  ctx.translate(c.x+c.w/2,c.y+c.h/2);
-  ctx.rotate(animT*3);
-  ctx.shadowColor='rgba(255,0,0,0.9)';ctx.shadowBlur=18;
-  ctx.fillStyle='rgba(20,0,0,0.9)';
-  ctx.fillRect(-c.w/2,-c.h/2,c.w,c.h);
-  ctx.strokeStyle='rgba(255,40,40,0.95)';ctx.lineWidth=3;
-  ctx.strokeRect(-c.w/2,-c.h/2,c.w,c.h);
-  ctx.strokeStyle='rgba(255,80,80,0.45)';ctx.lineWidth=1.5;
-  ctx.beginPath();ctx.moveTo(-c.w/2,0);ctx.lineTo(c.w/2,0);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(0,-c.h/2);ctx.lineTo(0,c.h/2);ctx.stroke();
+  if(c.wall){
+    // 壁モード：回転なし・無機質な壁の見た目
+    ctx.shadowColor='rgba(255,60,60,0.6)';ctx.shadowBlur=12;
+    ctx.fillStyle='rgba(40,10,10,0.95)';
+    ctx.fillRect(c.x,c.y,c.w,c.h);
+    ctx.strokeStyle='rgba(255,60,60,0.8)';ctx.lineWidth=3;
+    ctx.strokeRect(c.x,c.y,c.w,c.h);
+    // 警告ストライプ
+    ctx.strokeStyle='rgba(255,80,80,0.25)';ctx.lineWidth=1;
+    const stripeW=32;
+    for(let sx=c.x;sx<c.x+c.w;sx+=stripeW){
+      ctx.beginPath();
+      ctx.moveTo(sx,c.y);
+      ctx.lineTo(sx,c.y+c.h);
+      ctx.stroke();
+    }
+  }else{
+    // 通常チェイサー：回転する赤いブロック
+    ctx.translate(c.x+c.w/2,c.y+c.h/2);
+    ctx.rotate(animT*3);
+    ctx.shadowColor='rgba(255,0,0,0.9)';ctx.shadowBlur=18;
+    ctx.fillStyle='rgba(20,0,0,0.9)';
+    ctx.fillRect(-c.w/2,-c.h/2,c.w,c.h);
+    ctx.strokeStyle='rgba(255,40,40,0.95)';ctx.lineWidth=3;
+    ctx.strokeRect(-c.w/2,-c.h/2,c.w,c.h);
+    ctx.strokeStyle='rgba(255,80,80,0.45)';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(-c.w/2,0);ctx.lineTo(c.w/2,0);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(0,-c.h/2);ctx.lineTo(0,c.h/2);ctx.stroke();
+  }
   ctx.restore();
 }
 
@@ -4841,7 +4860,10 @@ function update(dt){
         const yUpOk=c.triggerYUp==null||player.y<c.triggerYUp;
         if(xOk&&xLeftOk&&yOk&&yUpOk)c.active=true;
       }
-      if(c.active){c.x+=c.speed*dt;}
+      if(c.active){
+        if(c.speed)c.x+=c.speed*dt;
+        if(c.speedY)c.y+=c.speedY*dt;
+      }
       if(c.active&&overlap(player,c)){lastDeathCause='crush';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
     }
     // Pendulums — angle stored on object each frame so draw and collision always match

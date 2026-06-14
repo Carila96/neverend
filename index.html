@@ -4929,14 +4929,14 @@ function update(dt){
         cr.y+=cr.speed*cr._dir*dt;
         if(cr.y>=cr.max){cr.y=cr.max;cr._dir=-1;}
         if(cr.y<=cr.min){cr.y=cr.min;cr._dir=1;}
-        // 天井crushers：crusher下面とプレイヤー上面の距離
+        // 天井crushers：crusher下面がプレイヤー上面に重なったら死
         const gap=player.y-(cr.y+cr.h);
-        if(gap<player.h&&gap>=0&&player.x+player.w>cr.x&&player.x<cr.x+cr.w){
+        if(gap<=4&&gap>=-player.h&&player.x+player.w>cr.x+4&&player.x<cr.x+cr.w-4){
           lastDeathCause='crush';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;
         }
-        // 床crushers：プレイヤー下面とcrusher上面の距離
+        // 床crushers：crusher上面がプレイヤー下面に重なったら死
         const gapFloor=cr.y-(player.y+player.h);
-        if(gapFloor<player.h&&gapFloor>=0&&player.x+player.w>cr.x&&player.x<cr.x+cr.w){
+        if(gapFloor<=4&&gapFloor>=-player.h&&player.x+player.w>cr.x+4&&player.x<cr.x+cr.w-4){
           lastDeathCause='crush';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;
         }
       }else{

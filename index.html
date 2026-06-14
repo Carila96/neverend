@@ -3746,6 +3746,7 @@ function loadStage(n){
   buttons=(s.buttons||[]).map(o=>({...o,pressed:false}));
   currents=(s.currents||[]).map(o=>({...o,active:o.startActive||false}));
   memos=(s.memos||[]).map(o=>({...o,collected:false}));
+  crushers=(s.crushers||[]).map(o=>({...o,_dir:o.startDir||1}));
   const dk=s.darkness||{};
   darknessState={enabled:dk.enabled||false,timer:0,active:dk.type==='radius',interval:dk.interval||2,duration:dk.duration||0.5,type:dk.type||'flash',radius:dk.radius||160};
   // Init phantom platform state
@@ -3849,6 +3850,7 @@ let mimics=[],ceilingTraps=[];
 let lavas=[],fallingSpikesExt=[],chasers=[],pendulums=[],orbits=[];
 let slidingSpikes=[],growingSpikes=[],buttons=[],currents=[];
 let memos=[];
+let crushers=[];
 let darknessState={enabled:false,timer:0,active:false,interval:2,duration:0.5};
 
 function resolvePlayer(){
@@ -4084,35 +4086,16 @@ function drawFallingSpikeExt(f){
 function drawChaser(c){
   if(!c.active)return;
   ctx.save();
-  if(c.wall){
-    // 壁モード：回転なし・無機質な壁の見た目
-    ctx.shadowColor='rgba(255,60,60,0.6)';ctx.shadowBlur=12;
-    ctx.fillStyle='rgba(40,10,10,0.95)';
-    ctx.fillRect(c.x,c.y,c.w,c.h);
-    ctx.strokeStyle='rgba(255,60,60,0.8)';ctx.lineWidth=3;
-    ctx.strokeRect(c.x,c.y,c.w,c.h);
-    // 警告ストライプ
-    ctx.strokeStyle='rgba(255,80,80,0.25)';ctx.lineWidth=1;
-    const stripeW=32;
-    for(let sx=c.x;sx<c.x+c.w;sx+=stripeW){
-      ctx.beginPath();
-      ctx.moveTo(sx,c.y);
-      ctx.lineTo(sx,c.y+c.h);
-      ctx.stroke();
-    }
-  }else{
-    // 通常チェイサー：回転する赤いブロック
-    ctx.translate(c.x+c.w/2,c.y+c.h/2);
-    ctx.rotate(animT*3);
-    ctx.shadowColor='rgba(255,0,0,0.9)';ctx.shadowBlur=18;
-    ctx.fillStyle='rgba(20,0,0,0.9)';
-    ctx.fillRect(-c.w/2,-c.h/2,c.w,c.h);
-    ctx.strokeStyle='rgba(255,40,40,0.95)';ctx.lineWidth=3;
-    ctx.strokeRect(-c.w/2,-c.h/2,c.w,c.h);
-    ctx.strokeStyle='rgba(255,80,80,0.45)';ctx.lineWidth=1.5;
-    ctx.beginPath();ctx.moveTo(-c.w/2,0);ctx.lineTo(c.w/2,0);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(0,-c.h/2);ctx.lineTo(0,c.h/2);ctx.stroke();
-  }
+  ctx.translate(c.x+c.w/2,c.y+c.h/2);
+  ctx.rotate(animT*3);
+  ctx.shadowColor='rgba(255,0,0,0.9)';ctx.shadowBlur=18;
+  ctx.fillStyle='rgba(20,0,0,0.9)';
+  ctx.fillRect(-c.w/2,-c.h/2,c.w,c.h);
+  ctx.strokeStyle='rgba(255,40,40,0.95)';ctx.lineWidth=3;
+  ctx.strokeRect(-c.w/2,-c.h/2,c.w,c.h);
+  ctx.strokeStyle='rgba(255,80,80,0.45)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(-c.w/2,0);ctx.lineTo(c.w/2,0);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(0,-c.h/2);ctx.lineTo(0,c.h/2);ctx.stroke();
   ctx.restore();
 }
 
@@ -4941,6 +4924,39 @@ function update(dt){
         }
       }
     }
+    // crushers更新・挟まれ判定
+    for(const cr of crushers){
+      const prev=cr.axis==='y'?cr.y:cr.x;
+      if(cr.axis==='y'){
+        cr.y+=cr.speed*cr._dir*dt;
+        if(cr.y>=cr.max){cr.y=cr.max;cr._dir=-1;}
+        if(cr.y<=cr.min){cr.y=cr.min;cr._dir=1;}
+        // 天井crushers：crusher下面とプレイヤー上面の距離
+        const gap=player.y-(cr.y+cr.h);
+        if(gap<player.h&&gap>=0&&player.x+player.w>cr.x&&player.x<cr.x+cr.w){
+          lastDeathCause='crush';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;
+        }
+        // 床crushers：プレイヤー下面とcrusher上面の距離
+        const gapFloor=cr.y-(player.y+player.h);
+        if(gapFloor<player.h&&gapFloor>=0&&player.x+player.w>cr.x&&player.x<cr.x+cr.w){
+          lastDeathCause='crush';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;
+        }
+      }else{
+        cr.x+=cr.speed*cr._dir*dt;
+        if(cr.x>=cr.max){cr.x=cr.max;cr._dir=-1;}
+        if(cr.x<=cr.min){cr.x=cr.min;cr._dir=1;}
+        // 右壁crushers
+        const gapR=player.x-(cr.x+cr.w);
+        if(gapR<player.w&&gapR>=0&&player.y+player.h>cr.y&&player.y<cr.y+cr.h){
+          lastDeathCause='crush';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;
+        }
+        // 左壁crushers
+        const gapL=cr.x-(player.x+player.w);
+        if(gapL<player.w&&gapL>=0&&player.y+player.h>cr.y&&player.y<cr.y+cr.h){
+          lastDeathCause='crush';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;
+        }
+      }
+    }
     // memo判定
     for(const m of memos){
       if(m.collected)continue;
@@ -5505,6 +5521,27 @@ function loop(ts){
         ctx.moveTo(s.x,s.y+s.h);ctx.lineTo(s.x+s.w/2,s.y+s.h-gs);ctx.lineTo(s.x+s.w,s.y+s.h);
       }
       ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.restore();
+    }
+    // crushers描画
+    for(const cr of crushers){
+      ctx.save();
+      ctx.shadowColor='rgba(255,60,60,0.5)';ctx.shadowBlur=10;
+      ctx.fillStyle='rgba(35,8,8,0.96)';
+      ctx.fillRect(cr.x,cr.y,cr.w,cr.h);
+      ctx.strokeStyle='rgba(255,60,60,0.85)';ctx.lineWidth=3;
+      ctx.strokeRect(cr.x,cr.y,cr.w,cr.h);
+      // 警告ストライプ
+      ctx.strokeStyle='rgba(255,80,80,0.2)';ctx.lineWidth=1;
+      if(cr.axis==='y'){
+        for(let sx=cr.x;sx<cr.x+cr.w;sx+=32){
+          ctx.beginPath();ctx.moveTo(sx,cr.y);ctx.lineTo(sx,cr.y+cr.h);ctx.stroke();
+        }
+      }else{
+        for(let sy=cr.y;sy<cr.y+cr.h;sy+=32){
+          ctx.beginPath();ctx.moveTo(cr.x,sy);ctx.lineTo(cr.x+cr.w,sy);ctx.stroke();
+        }
+      }
       ctx.restore();
     }
     // ボタン描画

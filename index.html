@@ -4850,8 +4850,19 @@ function update(dt){
         if(s.currentSize<=0)s.growing=true;
       }
       const gs=s.currentSize;
-      if(gs>4&&overlap(player,{x:s.x+3,y:s.y+(s.h-gs),w:s.w-6,h:gs-3})){
-        lastDeathCause='spike';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;
+      if(gs>4){
+        if(s.axis==='x'){
+          // 横向き：左壁から右、またはright:trueで右壁から左
+          const hx=s.right?(s.x+s.w-gs):s.x;
+          if(overlap(player,{x:hx,y:s.y+3,w:gs-3,h:s.h-6})){
+            lastDeathCause='spike';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;
+          }
+        }else{
+          // 縦向き（デフォルト）：床から上
+          if(overlap(player,{x:s.x+3,y:s.y+(s.h-gs),w:s.w-6,h:gs-3})){
+            lastDeathCause='spike';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;
+          }
+        }
       }
     }
     // ボタン判定（踏むとON/OFF）
@@ -5316,7 +5327,18 @@ function loop(ts){
       ctx.save();ctx.shadowColor=col;ctx.shadowBlur=12;
       ctx.strokeStyle=col;ctx.lineWidth=1.8;ctx.fillStyle='rgba(0,0,0,0.5)';
       ctx.beginPath();
-      ctx.moveTo(s.x,s.y+s.h);ctx.lineTo(s.x+s.w/2,s.y+s.h-gs);ctx.lineTo(s.x+s.w,s.y+s.h);
+      if(s.axis==='x'){
+        if(s.right){
+          // 右壁から左へ伸びる
+          ctx.moveTo(s.x+s.w,s.y);ctx.lineTo(s.x+s.w-gs,s.y+s.h/2);ctx.lineTo(s.x+s.w,s.y+s.h);
+        }else{
+          // 左壁から右へ伸びる
+          ctx.moveTo(s.x,s.y);ctx.lineTo(s.x+gs,s.y+s.h/2);ctx.lineTo(s.x,s.y+s.h);
+        }
+      }else{
+        // 縦向き（デフォルト）：床から上
+        ctx.moveTo(s.x,s.y+s.h);ctx.lineTo(s.x+s.w/2,s.y+s.h-gs);ctx.lineTo(s.x+s.w,s.y+s.h);
+      }
       ctx.closePath();ctx.fill();ctx.stroke();
       ctx.restore();
     }

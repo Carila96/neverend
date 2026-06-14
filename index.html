@@ -4720,6 +4720,13 @@ function update(dt){
     // Update moving platforms and store delta for player carry
     for(const p of movingPlatforms){
       const px=p.x,py=p.y;
+      if(p.orbit){
+        // 円運動モード
+        if(p._orbitAngle===undefined)p._orbitAngle=p.angle||0;
+        p._orbitAngle+=( p.speed||1.0)*dt;
+        p.x=p.centerX+Math.cos(p._orbitAngle)*p.radius-p.w/2;
+        p.y=p.centerY+Math.sin(p._orbitAngle)*p.radius-p.h/2;
+      }else
       if(p.waypoints&&p.waypoints.length>=2){
         // 初期化
         if(p._wpTime===undefined){

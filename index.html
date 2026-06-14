@@ -490,6 +490,7 @@ function updateBGMTempo(){
 
 // ======== HIDDEN COMMANDS ========
 let adminMode=false,hardMode=false,retroMode=false,easyMode=false,inputBuf=[];
+let memoOpen=false,memoContent=[],memoAnim=0;
 let jumpHeld = false;
 const retroOffCanvas=document.createElement('canvas');
 retroOffCanvas.width=80;retroOffCanvas.height=45;
@@ -3779,6 +3780,7 @@ function loadStage(n){
   growingSpikes=(s.growingSpikes||[]).map(o=>({...o,currentSize:0,growing:true}));
   buttons=(s.buttons||[]).map(o=>({...o,pressed:false}));
   currents=(s.currents||[]).map(o=>({...o,active:o.startActive||false}));
+  memos=(s.memos||[]).map(o=>({...o,collected:false}));
   const dk=s.darkness||{};
   darknessState={enabled:dk.enabled||false,timer:0,active:dk.type==='radius',interval:dk.interval||2,duration:dk.duration||0.5,type:dk.type||'flash',radius:dk.radius||160};
   // Init phantom platform state
@@ -3881,6 +3883,7 @@ let playerPlatform=null;
 let mimics=[],ceilingTraps=[];
 let lavas=[],fallingSpikesExt=[],chasers=[],pendulums=[],orbits=[];
 let slidingSpikes=[],growingSpikes=[],buttons=[],currents=[];
+let memos=[];
 let darknessState={enabled:false,timer:0,active:false,interval:2,duration:0.5};
 
 function resolvePlayer(){
@@ -4951,6 +4954,18 @@ function update(dt){
         }
       }
     }
+    // memo判定
+    for(const m of memos){
+      if(m.collected)continue;
+      if(overlap(player,{x:m.x,y:m.y,w:m.w||32,h:m.h||32})){
+        m.collected=true;
+        memoOpen=true;
+        memoContent=m.lines||['...'];
+        memoAnim=0;
+        state='memo';
+        return;
+      }
+    }
     // ボタン判定（踏むとON/OFF）
     for(const btn of buttons){
       const onBtn=player.onGround&&
@@ -5140,6 +5155,14 @@ function update(dt){
     }
     if(keys['t']&&!prevKeys['t']){_retryStreak=0;resetRun();stopBGM();state='title';}
     if(keys['s']&&!prevKeys['s'])shareDeathX();
+  }else if(state==='memo'){
+    memoAnim=Math.min(1,memoAnim+0.05);
+    // 任意キーで閉じる（前フレームと比較して新たに押されたキーがあれば閉じる）
+    const anyKey=Object.keys(keys).some(k=>keys[k]&&!prevKeys[k]);
+    if(anyKey){
+      memoOpen=false;
+      state='play';
+    }
   }
   Object.keys(keys).forEach(k=>{if(keys[k])prevKeys[k]=true;else delete prevKeys[k];});
   // Vertical camera follow for scrollY stages
@@ -5382,6 +5405,42 @@ function triggerDeath(){
   }).catch(()=>{});
 }
 
+function drawMemo(){
+  const a=memoAnim;
+  // 背景オーバーレイ
+  ctx.save();
+  ctx.fillStyle=`rgba(0,0,0,${0.75*a})`;
+  ctx.fillRect(0,0,W,H);
+  // 手記ウィンドウ
+  const mw=560,mh=320;
+  const mx=(W-mw)/2,my=(H-mh)/2;
+  ctx.shadowColor='rgba(200,200,180,0.4)';
+  ctx.shadowBlur=32;
+  ctx.fillStyle=`rgba(30,24,18,${0.97*a})`;
+  ctx.strokeStyle=`rgba(200,180,140,${0.8*a})`;
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.roundRect(mx,my,mw,mh,8);
+  ctx.fill();ctx.stroke();
+  ctx.shadowBlur=0;
+  // タイトル
+  ctx.fillStyle=`rgba(200,180,140,${a})`;
+  ctx.font=`bold 14px "Courier New"`;
+  ctx.textAlign='center';
+  ctx.fillText('— '+( memoContent[0]||'' )+' —',W/2,my+48);
+  // 本文
+  ctx.font=`12px "Courier New"`;
+  ctx.fillStyle=`rgba(220,210,190,${a})`;
+  for(let i=1;i<memoContent.length;i++){
+    ctx.fillText(memoContent[i],W/2,my+90+(i-1)*28);
+  }
+  // 閉じる案内
+  ctx.fillStyle=`rgba(150,140,120,${a*0.7})`;
+  ctx.font=`10px "Courier New"`;
+  ctx.fillText('[ press any key ]',W/2,my+mh-24);
+  ctx.restore();
+}
+
 function loop(ts){
   let dt=Math.min((ts-last)/1000,0.05);
   last=ts;animT=ts/1000;
@@ -5524,6 +5583,7 @@ function loop(ts){
     drawUI();
     drawDarkness();
     if(state==='pause')drawPause();
+    if(state==='memo')drawMemo();
     if(state==='dying'){
       // ゲーム画面はそのまま描画済み、DAMNだけ表示
       const damnFontSize=Math.round(48*damnScale);

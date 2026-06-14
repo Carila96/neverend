@@ -4959,9 +4959,21 @@ function update(dt){
       if(onBtn&&!btn._wasPressed){
         btn._wasPressed=true;btn.pressed=!btn.pressed;
         for(const cur of currents){
-          if(cur.buttonIds&&cur.buttonIds.includes(btn.id)){cur.active=!cur.active;}
+          if(!cur.buttonIds)continue;
+          if(cur.requireAll){
+            // ANDモード：全ボタンがpressedのときのみアクティブ
+            // トグルではなく毎フレーム状態を再評価（後段で処理）
+          }else{
+            if(cur.buttonIds.includes(btn.id)){cur.active=!cur.active;}
+          }
         }
       }else if(!onBtn){btn._wasPressed=false;}
+    }
+    // requireAll電流の状態を毎フレーム再評価
+    for(const cur of currents){
+      if(!cur.requireAll||!cur.buttonIds)continue;
+      const allPressed=cur.buttonIds.every(id=>buttons.find(b=>b.id===id&&b.pressed));
+      cur.active=cur.startActive?!allPressed:allPressed;
     }
     // 電流の当たり判定
     for(const cur of currents){

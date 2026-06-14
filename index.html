@@ -4945,12 +4945,12 @@ function update(dt){
         if(cr.x<=cr.min){cr.x=cr.min;cr._dir=1;}
         // 右壁crushers
         const gapR=player.x-(cr.x+cr.w);
-        if(gapR<player.w&&gapR>=0&&player.y+player.h>cr.y&&player.y<cr.y+cr.h){
+        if(gapR<=4&&gapR>=-player.w&&player.y+player.h>cr.y+4&&player.y<cr.y+cr.h-4){
           lastDeathCause='crush';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;
         }
         // 左壁crushers
         const gapL=cr.x-(player.x+player.w);
-        if(gapL<player.w&&gapL>=0&&player.y+player.h>cr.y&&player.y<cr.y+cr.h){
+        if(gapL<=4&&gapL>=-player.w&&player.y+player.h>cr.y+4&&player.y<cr.y+cr.h-4){
           lastDeathCause='crush';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;
         }
       }

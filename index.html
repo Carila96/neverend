@@ -4857,8 +4857,8 @@ function update(dt){
     // ボタン判定（踏むとON/OFF）
     for(const btn of buttons){
       const onBtn=player.onGround&&
-        player.x+player.w>btn.x&&player.x<btn.x+btn.w&&
-        player.y+player.h>=btn.y-2&&player.y+player.h<=btn.y+8;
+        player.x+player.w>btn.x+4&&player.x<btn.x+btn.w-4&&
+        player.y+player.h>=btn.y-8&&player.y+player.h<=btn.y+btn.h+8;
       if(onBtn&&!btn._wasPressed){
         btn._wasPressed=true;btn.pressed=!btn.pressed;
         for(const cur of currents){

@@ -2378,8 +2378,8 @@ const STAGES=[
 // STAGE 48 — THE RIDE
 {name:'STAGE 48',sub:'Stay on. Do not get hit.',
  plats:[
-   {x:0,y:64,w:160,h:16},
-   {x:1120,y:448,w:160,h:272},
+   {x:0,y:192,w:160,h:16},
+   {x:1120,y:576,w:160,h:144},
  ],
  spikes:[
    {x:160,y:688,w:32,h:32},{x:224,y:688,w:32,h:32},{x:288,y:688,w:32,h:32},
@@ -2389,40 +2389,42 @@ const STAGES=[
    {x:928,y:688,w:32,h:32},{x:992,y:688,w:32,h:32},{x:1056,y:688,w:32,h:32},
  ],
  move:[{
-   x:48,y:64,w:192,h:16,
+   x:48,y:192,w:192,h:16,
    waypoints:[
-     {x:48,y:64,t:3.0},
-     {x:880,y:64,t:3.0},
-     {x:880,y:240,t:1.5},
-     {x:48,y:240,t:3.0},
-     {x:48,y:416,t:1.5},
-     {x:880,y:416,t:3.0},
-     {x:880,y:448,t:0.5},
+     {x:48,y:192,t:3.0},
+     {x:880,y:192,t:3.0},
+     {x:880,y:368,t:1.5},
+     {x:48,y:368,t:3.0},
+     {x:48,y:544,t:1.5},
+     {x:880,y:544,t:3.0},
+     {x:880,y:576,t:0.5},
    ],
+   triggerOnBoard:true,
+   stopAtEnd:true,
    showPath:true,
-   vx:0,vy:0,rx:0,ry:0,sx:48,sy:64,phase:0
+   vx:0,vy:0,rx:0,ry:0,sx:48,sy:192,phase:0
  }],
  traps:[
-   {x:500,y:32,w:32,h:32,tx:436,warn:true},
-   {x:700,y:32,w:32,h:32,tx:636,warn:true},
-   {x:200,y:208,w:32,h:32,tx:136,warn:true},
-   {x:700,y:208,w:32,h:32,tx:636,warn:true},
-   {x:300,y:384,w:32,h:32,tx:236,warn:true},
-   {x:600,y:384,w:32,h:32,tx:536,warn:true},
+   {x:500,y:160,w:32,h:32,tx:436,warn:true},
+   {x:700,y:160,w:32,h:32,tx:636,warn:true},
+   {x:200,y:336,w:32,h:32,tx:136,warn:true},
+   {x:700,y:336,w:32,h:32,tx:636,warn:true},
+   {x:300,y:512,w:32,h:32,tx:236,warn:true},
+   {x:600,y:512,w:32,h:32,tx:536,warn:true},
  ],
  fallingSpikes:[
    {x:350,y:0,w:32,h:48,triggerX:290,speed:320,triggered:false,startY:0,currentY:0},
    {x:750,y:0,w:32,h:48,triggerX:690,speed:340,triggered:false,startY:0,currentY:0},
  ],
  hg:[
-   {x:500,y:32,w:16,h:32},
-   {x:500,y:208,w:16,h:32},
+   {x:500,y:160,w:16,h:32},
+   {x:500,y:336,w:16,h:32},
  ],
  fall:[],mimics:[],ceiling:[],lava:[],pendulums:[],chasers:[],orbits:[],
  slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  focusZones:[],darkness:{enabled:false},
- goal:{x:1120,y:336,w:160,h:112},
- spawn:{x:48,y:32}},
+ goal:{x:1120,y:464,w:160,h:112},
+ spawn:{x:48,y:160}},
   
 // STAGE 49 — EVERYTHING AT ONCE
 {name:'STAGE 49',sub:'No breaks. No mercy.',

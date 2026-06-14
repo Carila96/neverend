@@ -4684,7 +4684,7 @@ function update(dt){
     if(keys['ArrowLeft']||keys['a']||keys['A']){player.vx=-5.5;player.facing=-1;}
     else if(keys['ArrowRight']||keys['d']||keys['D']){player.vx=5.5;player.facing=1;}
     else if(player.onGround){player.vx*=(STAGES[stageNum-1]?.friction??0.75);}
-    else{player.vx*=0.95;}
+    else{player.vx*=0.96;}
     if((keys[' ']||keys['ArrowUp']||keys['w']||keys['W'])&&player.onGround){player.vy=-18.2;jumpHeld = true;player.onGround=false;sfxJump();}
     player.vy += player.vy < 0 ? (Math.abs(player.vy) < 2 ? 0.7 : 0.85) : (player.vy < 12 ? 0.65 : 1.2);
     if(!jumpHeld && player.vy < 0) player.vy += 1.2;

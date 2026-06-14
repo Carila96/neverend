@@ -4690,17 +4690,51 @@ function update(dt){
     for(const p of movingPlatforms){
       const px=p.x,py=p.y;
       if(p.waypoints&&p.waypoints.length>=2){
-        // waypointsモード：指定経路を巡回
-        if(p._wpTime===undefined){p._wpTime=0;p._wpIdx=0;}
-        p._wpTime+=dt;
-        const wps=p.waypoints;
-        const idx=p._wpIdx%wps.length;
-        const next=(p._wpIdx+1)%wps.length;
-        const seg=wps[next].t||2.0;
-        const prog=Math.min(p._wpTime/seg,1.0);
-        p.x=wps[idx].x+(wps[next].x-wps[idx].x)*prog;
-        p.y=wps[idx].y+(wps[next].y-wps[idx].y)*prog;
-        if(p._wpTime>=seg){p._wpTime=0;p._wpIdx=(p._wpIdx+1)%wps.length;}
+        // 初期化
+        if(p._wpTime===undefined){
+          p._wpTime=0;p._wpIdx=0;p._wpDir=1;p._started=false;p._stopped=false;
+          p.x=p.waypoints[0].x;p.y=p.waypoints[0].y;
+        }
+        // triggerOnBoard: プレイヤーが乗ったら動き出す
+        if(p.triggerOnBoard&&!p._started){
+          const onP=player.onGround&&
+            player.x+player.w>p.x&&player.x<p.x+p.w&&
+            Math.abs((player.y+player.h)-p.y)<6;
+          if(onP)p._started=true;
+        }else if(!p.triggerOnBoard){
+          p._started=true;
+        }
+        if(p._started&&!p._stopped){
+          p._wpTime+=dt;
+          const wps=p.waypoints;
+          const idx=p._wpIdx;
+          const nextIdx=p._wpDir===1
+            ?(idx+1)%wps.length
+            :(idx-1+wps.length)%wps.length;
+          const seg=wps[nextIdx].t||2.0;
+          const prog=Math.min(p._wpTime/seg,1.0);
+          p.x=wps[idx].x+(wps[nextIdx].x-wps[idx].x)*prog;
+          p.y=wps[idx].y+(wps[nextIdx].y-wps[idx].y)*prog;
+          if(p._wpTime>=seg){
+            p._wpTime=0;
+            p._wpIdx=nextIdx;
+            // 終点に到達
+            if(p._wpDir===1&&p._wpIdx===wps.length-1){
+              if(p.stopAtEnd){
+                p._stopped=true;
+              }else if(p.pingpong){
+                p._wpDir=-1;
+              }else{
+                p._wpIdx=0; // ループ
+              }
+            }else if(p._wpDir===-1&&p._wpIdx===0){
+              p._wpDir=1; // 折り返し完了→また前進
+            }
+          }
+        }else if(!p._started){
+          // 未起動時は最初のwaypointに固定
+          p.x=p.waypoints[0].x;p.y=p.waypoints[0].y;
+        }
       }else{
         // 従来のサイン波モード
         p.phase+=dt;

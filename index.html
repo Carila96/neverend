@@ -5527,24 +5527,7 @@ function loop(ts){
     }
     // crushers描画
     for(const cr of crushers){
-      ctx.save();
-      ctx.shadowColor='rgba(255,60,60,0.5)';ctx.shadowBlur=10;
-      ctx.fillStyle='rgba(35,8,8,0.96)';
-      ctx.fillRect(cr.x,cr.y,cr.w,cr.h);
-      ctx.strokeStyle='rgba(255,60,60,0.85)';ctx.lineWidth=3;
-      ctx.strokeRect(cr.x,cr.y,cr.w,cr.h);
-      // 警告ストライプ
-      ctx.strokeStyle='rgba(255,80,80,0.2)';ctx.lineWidth=1;
-      if(cr.axis==='y'){
-        for(let sx=cr.x;sx<cr.x+cr.w;sx+=32){
-          ctx.beginPath();ctx.moveTo(sx,cr.y);ctx.lineTo(sx,cr.y+cr.h);ctx.stroke();
-        }
-      }else{
-        for(let sy=cr.y;sy<cr.y+cr.h;sy+=32){
-          ctx.beginPath();ctx.moveTo(cr.x,sy);ctx.lineTo(cr.x+cr.w,sy);ctx.stroke();
-        }
-      }
-      ctx.restore();
+      drawPlatform({x:cr.x,y:cr.y,w:cr.w,h:cr.h});
     }
     // ボタン描画
     for(const btn of buttons){

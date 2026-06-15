@@ -2226,11 +2226,11 @@ const STAGES=[
    {x:96,y:240,w:1040,h:16},
  ],
  spikes:[
-   {x:128,y:480,w:32,h:32},
+   {x:128,y:480,w:32,h:16},
    {x:520,y:416,w:32,h:32},
    {x:816,y:352,w:32,h:32},
    {x:944,y:208,w:32,h:32},{x:360,y:208,w:32,h:32},
-   {x:256,y:608,w:32,h:32},{x:768,y:608,w:32,h:32},{x:1024,y:608,w:32,h:32},
+   {x:256,y:608,w:32,h:16},{x:768,y:608,w:32,h:16},{x:1024,y:608,w:32,h:16},
  ],
  growingSpikes:[
    {x:192,y:352,w:32,h:32,maxSize:128,growSpeed:80,shrinkSpeed:40},
@@ -2241,7 +2241,6 @@ const STAGES=[
    {x:800,y:208,w:32,h:32,axis:'x',minX:392,maxX:912,speed:3.0},
  ],
  traps:[
-   {x:464,y:416,w:32,h:32,tx:400,warn:false},
    {x:1008,y:208,w:32,h:32,tx:944,warn:false},
  ],
  pendulums:[{pivotX:1208,pivotY:96,length:256,speed:1.8,maxAngle:0.5,angle:0}],
@@ -2403,11 +2402,11 @@ const STAGES=[
    x:144,y:192,w:128,h:16,
    waypoints:[
      {x:144,y:192,t:6.0},
-     {x:880,y:192,t:3.0},
-     {x:880,y:368,t:4.5},
-     {x:48,y:368,t:3.0},
-     {x:48,y:544,t:4.5},
-     {x:880,y:544,t:7.0},
+     {x:880,y:192,t:6.0},
+     {x:880,y:368,t:2.5},
+     {x:48,y:368,t:6.0},
+     {x:48,y:544,t:2.5},
+     {x:880,y:544,t:6.0},
    ],
    triggerOnBoard:true,
    stopAtEnd:true,
@@ -2537,19 +2536,19 @@ const STAGES=[
    {centerX:640,centerY:360,radius:352,speed:0.6,angle:Math.PI*1.2,size:12,color:'rgba(0,0,255,0.9)'},
    {centerX:640,centerY:360,radius:352,speed:0.6,angle:Math.PI*1.6,size:12,color:'rgba(0,0,255,0.9)'},
    // 層4 緑 radius:152 4個
-   {centerX:640,centerY:360,radius:288,speed:-0.4,angle:Math.PI*0.25,size:12,color:'rgba(0,200,0,0.9)'},
-   {centerX:640,centerY:360,radius:288,speed:-0.4,angle:Math.PI*0.75,size:12,color:'rgba(0,200,0,0.9)'},
-   {centerX:640,centerY:360,radius:288,speed:-0.4,angle:Math.PI*1.25,size:12,color:'rgba(0,200,0,0.9)'},
-   {centerX:640,centerY:360,radius:288,speed:-0.4,angle:Math.PI*1.75,size:12,color:'rgba(0,200,0,0.9)'},
+   {centerX:640,centerY:360,radius:288,speed:-0.5,angle:Math.PI*0.25,size:12,color:'rgba(0,200,0,0.9)'},
+   {centerX:640,centerY:360,radius:288,speed:-0.5,angle:Math.PI*0.75,size:12,color:'rgba(0,200,0,0.9)'},
+   {centerX:640,centerY:360,radius:288,speed:-0.5,angle:Math.PI*1.25,size:12,color:'rgba(0,200,0,0.9)'},
+   {centerX:640,centerY:360,radius:288,speed:-0.5,angle:Math.PI*1.75,size:12,color:'rgba(0,200,0,0.9)'},
    // 層5 黄 radius:112 3個
-   {centerX:640,centerY:360,radius:224,speed:0.2,angle:0,size:12,color:'rgba(255,220,0,0.9)'},
-   {centerX:640,centerY:360,radius:224,speed:0.2,angle:Math.PI*0.667,size:12,color:'rgba(255,220,0,0.9)'},
-   {centerX:640,centerY:360,radius:224,speed:0.2,angle:Math.PI*1.333,size:12,color:'rgba(255,220,0,0.9)'},
+   {centerX:640,centerY:360,radius:224,speed:0.5,angle:0,size:12,color:'rgba(255,220,0,0.9)'},
+   {centerX:640,centerY:360,radius:224,speed:0.5,angle:Math.PI*0.667,size:12,color:'rgba(255,220,0,0.9)'},
+   {centerX:640,centerY:360,radius:224,speed:0.5,angle:Math.PI*1.333,size:12,color:'rgba(255,220,0,0.9)'},
    // 層6 橙 radius:72 2個
-   {centerX:640,centerY:360,radius:160,speed:-0.1,angle:0,size:12,color:'rgba(255,140,0,0.9)'},
-   {centerX:640,centerY:360,radius:160,speed:-0.1,angle:Math.PI,size:12,color:'rgba(255,140,0,0.9)'},
+   {centerX:640,centerY:360,radius:160,speed:-0.5,angle:0,size:12,color:'rgba(255,140,0,0.9)'},
+   {centerX:640,centerY:360,radius:160,speed:-0.5,angle:Math.PI,size:12,color:'rgba(255,140,0,0.9)'},
    // 層7 赤 radius:36 1個
-   {centerX:640,centerY:360,radius:96,speed:0.05,angle:0,size:12,color:'rgba(255,30,30,0.9)'},
+   {centerX:640,centerY:360,radius:96,speed:0.5,angle:0,size:12,color:'rgba(255,30,30,0.9)'},
  ],
  memos:[{
    x:624,y:328,w:32,h:32,
@@ -2581,13 +2580,13 @@ const STAGES=[
  plats:[
    {x:0,y:640,w:160,h:80},
    {x:192,y:576,w:32,h:32},
-   {x:352,y:512,w:32,h:32},
-   {x:192,y:416,w:32,h:32},
-   {x:480,y:464,w:32,h:32},
-   {x:608,y:384,w:32,h:32},
-   {x:352,y:320,w:32,h:32},
+   {x:880,y:432,w:32,h:32},
+   {x:352,y:480,w:32,h:32},
+   {x:272,y:320,w:32,h:32},
+   {x:480,y:400,w:32,h:32},
+   {x:720,y:464,w:32,h:32},
+   {x:1024,y:384,w:32,h:32},
    {x:640,y:256,w:32,h:32},
-   {x:480,y:192,w:32,h:32},
    {x:800,y:224,w:32,h:32},
    {x:960,y:160,w:32,h:32},
    {x:1152,y:96,w:128,h:624},
@@ -2595,25 +2594,21 @@ const STAGES=[
  spikes:[],
  orbits:[
    {centerX:208,centerY:592,radius:48,speed:2.0,angle:0,size:12,color:'rgba(255,255,255,0.9)'},
-   {centerX:368,centerY:528,radius:48,speed:2.0,angle:Math.PI*0.5,size:12,color:'rgba(255,255,255,0.9)'},
-   {centerX:208,centerY:432,radius:48,speed:2.0,angle:Math.PI,size:12,color:'rgba(255,255,255,0.9)'},
-   {centerX:496,centerY:480,radius:48,speed:2.0,angle:Math.PI*0.5,size:12,color:'rgba(255,255,255,0.9)'},
-   {centerX:624,centerY:400,radius:48,speed:2.0,angle:0,size:12,color:'rgba(255,255,255,0.9)'},
-   {centerX:368,centerY:336,radius:48,speed:2.0,angle:Math.PI,size:12,color:'rgba(255,255,255,0.9)'},
+   {centerX:368,centerY:496,radius:48,speed:2.0,angle:Math.PI*0.5,size:12,color:'rgba(255,255,255,0.9)'},
+   {centerX:896,centerY:448,radius:48,speed:2.0,angle:Math.PI,size:12,color:'rgba(255,255,255,0.9)'},
+   {centerX:496,centerY:416,radius:48,speed:2.0,angle:Math.PI*0.5,size:12,color:'rgba(255,255,255,0.9)'},
+   {centerX:1040,centerY:400,radius:48,speed:2.0,angle:0,size:12,color:'rgba(255,255,255,0.9)'},
+   {centerX:288,centerY:336,radius:48,speed:2.0,angle:Math.PI,size:12,color:'rgba(255,255,255,0.9)'},
    {centerX:656,centerY:272,radius:48,speed:2.0,angle:Math.PI*0.5,size:12,color:'rgba(255,255,255,0.9)'},
    {centerX:496,centerY:208,radius:48,speed:2.0,angle:0,size:12,color:'rgba(255,255,255,0.9)'},
    {centerX:816,centerY:240,radius:48,speed:2.0,angle:Math.PI,size:12,color:'rgba(255,255,255,0.9)'},
    {centerX:976,centerY:176,radius:48,speed:2.0,angle:Math.PI*0.5,size:12,color:'rgba(255,255,255,0.9)'},
  ],
- traps:[
-   {x:224,y:544,w:32,h:32,tx:160,warn:false},
-   {x:512,y:432,w:32,h:32,tx:448,warn:false},
-   {x:672,y:224,w:32,h:32,tx:608,warn:false},
- ],
+ traps:[],
  hg:[
-   {x:368,y:480,w:16,h:32},
-   {x:656,y:352,w:16,h:32},
-   {x:816,y:192,w:16,h:32},
+   {x:360,y:448,w:16,h:32},
+   {x:648,y:224,w:16,h:32},
+   {x:968,y:128,w:16,h:32},
  ],
  move:[],fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
  chasers:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
@@ -2631,60 +2626,49 @@ const STAGES=[
    {x:0,y:688,w:1280,h:32},
 
    // 上部横長足場
-   {x:32,y:160,w:1216,h:16},
+   {x:160,y:160,w:960,h:16},
    // 下部横長足場
-   {x:32,y:528,w:1216,h:16},
+   {x:304,y:560,w:816,h:16},
 
    // 左縦長足場
-   {x:192,y:160,w:16,h:368},
+   {x:160,y:160,w:16,h:512},
+   {x:32,y:432,w:48,h:16},
+   {x:112,y:560,w:48,h:16},
+   {x:32,y:176,w:48,h:16},
+   {x:112,y:304,w:48,h:16},
    // 右縦長足場
-   {x:1072,y:160,w:16,h:368},
+   {x:1104,y:160,w:16,h:400},
+   {x:1120,y:560,w:48,h:16},
+   {x:1200,y:432,w:48,h:16},
+   {x:1120,y:304,w:48,h:16},
+   {x:1200,y:176,w:48,h:16},
 
    // 中央足場（orbits周回対象）
-   {x:576,y:320,w:128,h:16},
-
-   // 床から突き出る小足場
-   {x:160,y:624,w:48,h:64},
-   {x:480,y:624,w:48,h:64},
-   {x:752,y:624,w:48,h:64},
-   {x:1040,y:624,w:48,h:64},
-
-   // 天井から突き出る小足場
-   {x:160,y:32,w:48,h:64},
-   {x:480,y:32,w:48,h:64},
-   {x:752,y:32,w:48,h:64},
-   {x:1040,y:32,w:48,h:64},
+   {x:576,y:352,w:128,h:16},
 
    // ゴール足場
-   {x:544,y:464,w:192,h:16},
+   {x:976,y:272,w:128,h:16},
  ],
  spikes:[
    // 上部足場のトゲ（下向き位置）
-   {x:320,y:176,w:32,h:32},{x:512,y:176,w:32,h:32},
-   {x:704,y:176,w:32,h:32},{x:896,y:176,w:32,h:32},
+   {x:320,y:128,w:32,h:32},{x:512,y:128,w:32,h:32},
+   {x:704,y:128,w:32,h:32},{x:896,y:128,w:32,h:32},
    // 下部足場のトゲ（上向き）
-   {x:320,y:496,w:32,h:32},{x:512,y:496,w:32,h:32},
-   {x:704,y:496,w:32,h:32},{x:896,y:496,w:32,h:32},
-   // 左縦足場トゲ
-   {x:208,y:256,w:32,h:32},{x:208,y:384,w:32,h:32},
+   {x:320,y:656,w:32,h:32},{x:512,y:656,w:32,h:32},
+   {x:704,y:656,w:32,h:32},{x:896,y:656,w:32,h:32},
+   
    // 右縦足場トゲ
-   {x:1040,y:256,w:32,h:32},{x:1040,y:384,w:32,h:32},
+   {x:1120,y:656,w:80,h:32},
+   {x:400,y:528,w:672,h:32}
  ],
  orbits:[
-   {centerX:640,centerY:328,radius:112,speed:2.0,angle:0,size:14,color:'rgba(255,80,80,0.9)'},
-   {centerX:640,centerY:328,radius:112,speed:2.0,angle:Math.PI,size:14,color:'rgba(255,140,60,0.9)'},
-   {centerX:640,centerY:328,radius:64,speed:-3.0,angle:Math.PI*0.5,size:12,color:'rgba(200,80,255,0.9)'},
+   {centerX:640,centerY:360,radius:112,speed:2.0,angle:0,size:14,color:'rgba(255,80,80,0.9)'},
+   {centerX:640,centerY:360,radius:112,speed:2.0,angle:Math.PI,size:14,color:'rgba(255,140,60,0.9)'}
  ],
- slidingSpikes:[
-   {x:1248,y:192,w:32,h:32,axis:'x',minX:1184,maxX:1248,speed:4.0},
-   {x:1248,y:320,w:32,h:32,axis:'x',minX:1184,maxX:1248,speed:5.0},
-   {x:1248,y:448,w:32,h:32,axis:'x',minX:1184,maxX:1248,speed:3.5},
- ],
+ slidingSpikes:[],
  traps:[
-   {x:224,y:128,w:32,h:32,tx:160,warn:false},
-   {x:608,y:128,w:32,h:32,tx:544,warn:false},
-   {x:224,y:560,w:32,h:32,tx:160,warn:false},
-   {x:608,y:560,w:32,h:32,tx:544,warn:false},
+   {x:1168,y:144,w:32,h:32,tx:1104,triggerY:128,warn:false},
+   {x:1168,y:400,w:32,h:32,tx:1104,triggerY:320,warn:false},
  ],
  hg:[
    {x:384,y:320,w:16,h:32},
@@ -2693,7 +2677,7 @@ const STAGES=[
  fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
  chasers:[],growingSpikes:[],buttons:[],currents:[],crushers:[],
  memos:[],focusZones:[],darkness:{enabled:false},
- goal:{x:544,y:400,w:192,h:64},
+ goal:{x:1024,y:176,w:80,h:96},
  spawn:{x:48,y:656}},
 
 // STAGE 53 — THE SHAFT
@@ -2763,64 +2747,54 @@ const STAGES=[
 {name:'STAGE 54',sub:'Press the button. Then reach it.',
  plats:[
    // 外枠（深皿型）
-   {x:0,y:0,w:1280,h:96},        // 天井
+   {x:0,y:0,w:1280,h:48},        // 天井
    {x:0,y:0,w:32,h:720},         // 左壁
    {x:1248,y:0,w:32,h:720},      // 右壁
    {x:0,y:688,w:1280,h:32},      // 底床
    // スタート足場（左上）
-   {x:32,y:160,w:192,h:16},
+   {x:32,y:192,w:192,h:528},
    // 上段3つの足場（横幅64、スタートと同じ高さ）
-   {x:320,y:160,w:64,h:16},
-   {x:608,y:160,w:64,h:16},
-   {x:896,y:160,w:64,h:16},
+   {x:320,y:192,w:64,h:16},
+   {x:608,y:192,w:64,h:16},
+   {x:896,y:192,w:64,h:16},
    // 中段3つ
-   {x:320,y:352,w:64,h:16},
-   {x:608,y:352,w:64,h:16},
-   {x:896,y:352,w:64,h:16},
+   {x:320,y:384,w:64,h:16},
+   {x:608,y:384,w:64,h:16},
+   {x:896,y:384,w:64,h:16},
    // 下段3つ
-   {x:320,y:544,w:64,h:16},
-   {x:608,y:544,w:64,h:16},
-   {x:896,y:544,w:64,h:16},
+   {x:320,y:576,w:64,h:16},
+   {x:608,y:576,w:64,h:16},
+   {x:896,y:576,w:64,h:16},
    // ゴール足場（右上）
-   {x:1056,y:96,w:192,h:16},
+   {x:1056,y:192,w:192,h:528},
  ],
- spikes:[
-   // 深皿の底トゲ
-   {x:32,y:656,w:32,h:32},{x:64,y:656,w:32,h:32},{x:96,y:656,w:32,h:32},
-   {x:128,y:656,w:32,h:32},{x:160,y:656,w:32,h:32},{x:192,y:656,w:32,h:32},
-   {x:224,y:656,w:32,h:32},{x:256,y:656,w:32,h:32},{x:288,y:656,w:32,h:32},
-   {x:320,y:656,w:32,h:32},{x:352,y:656,w:32,h:32},{x:384,y:656,w:32,h:32},
-   {x:416,y:656,w:32,h:32},{x:448,y:656,w:32,h:32},{x:480,y:656,w:32,h:32},
-   {x:512,y:656,w:32,h:32},{x:544,y:656,w:32,h:32},{x:576,y:656,w:32,h:32},
-   {x:608,y:656,w:32,h:32},{x:640,y:656,w:32,h:32},{x:672,y:656,w:32,h:32},
-   {x:704,y:656,w:32,h:32},{x:736,y:656,w:32,h:32},{x:768,y:656,w:32,h:32},
-   {x:800,y:656,w:32,h:32},{x:832,y:656,w:32,h:32},{x:864,y:656,w:32,h:32},
-   {x:896,y:656,w:32,h:32},{x:928,y:656,w:32,h:32},{x:960,y:656,w:32,h:32},
-   {x:992,y:656,w:32,h:32},{x:1024,y:656,w:32,h:32},{x:1056,y:656,w:32,h:32},
-   {x:1088,y:656,w:32,h:32},{x:1120,y:656,w:32,h:32},{x:1152,y:656,w:32,h:32},
-   {x:1184,y:656,w:32,h:32},{x:1216,y:656,w:32,h:32},
-   // 上段足場のトゲ（足場の下）
-   {x:320,y:176,w:32,h:32},{x:352,y:176,w:32,h:32},
-   {x:608,y:176,w:32,h:32},{x:640,y:176,w:32,h:32},
-   {x:896,y:176,w:32,h:32},{x:928,y:176,w:32,h:32},
-   // 中段足場のトゲ
-   {x:320,y:368,w:32,h:32},{x:352,y:368,w:32,h:32},
-   {x:608,y:368,w:32,h:32},{x:640,y:368,w:32,h:32},
-   {x:896,y:368,w:32,h:32},{x:928,y:368,w:32,h:32},
-   // 下段足場のトゲ
-   {x:320,y:560,w:32,h:32},{x:352,y:560,w:32,h:32},
-   {x:608,y:560,w:32,h:32},{x:640,y:560,w:32,h:32},
-   {x:896,y:560,w:32,h:32},{x:928,y:560,w:32,h:32},
- ],
+ spikes:[],
  buttons:[
-   {x:960,y:528,w:32,h:16,id:'btn1'},
+   {x:992,y:496,w:32,h:16,id:'btn1'},
  ],
  currents:[
-   {x1:1056,y1:96,x2:1056,y2:160,buttonIds:['btn1'],startActive:true},
+   {x1:1056,y1:48,x2:1056,y2:192,buttonIds:['btn1'],startActive:true},
  ],
  traps:[
-   {x:224,y:128,w:32,h:32,tx:160,warn:false},
- ],
+   {x:224,y:656,w:32,h:32,tx:224,triggerY:576,warn:false},
+   {x:256,y:656,w:32,h:32,tx:224,triggerY:576,warn:false},
+   {x:288,y:656,w:32,h:32,tx:224,triggerY:576,warn:false},
+   {x:320,y:656,w:32,h:32,tx:224,triggerY:576,warn:false},
+   {x:352,y:656,w:32,h:32,tx:224,triggerY:576,warn:false},
+   {x:384,y:656,w:32,h:32,tx:360,triggerY:576,warn:false},
+   {x:416,y:656,w:32,h:32,tx:360,triggerY:576,warn:false},
+   {x:448,y:656,w:32,h:32,tx:360,triggerY:576,warn:false},
+   {x:480,y:656,w:32,h:32,tx:360,triggerY:576,warn:false},
+   {x:512,y:656,w:32,h:32,tx:360,triggerY:576,warn:false},
+   {x:544,y:656,w:32,h:32,tx:360,triggerY:576,warn:false},
+   {x:576,y:656,w:32,h:32,tx:360,triggerY:576,warn:false},
+
+   {x:608,y:656,w:32,h:32,tx:360,triggerY:576,warn:false},
+   {x:640,y:656,w:32,h:32,tx:360,triggerY:576,warn:false},
+   {x:672,y:656,w:32,h:32,tx:670,triggerY:576,warn:false},
+   {x:704,y:656,w:32,h:32,tx:680,triggerY:576,warn:false},
+   {x:736,y:656,w:32,h:32,tx:680,triggerY:576,warn:false},
+   {x:768,y:656,w:32,h:32,tx:680,triggerY:576,warn:false},
  hg:[
    {x:624,y:128,w:16,h:32},
    {x:912,y:320,w:16,h:32},
@@ -4891,7 +4865,7 @@ function update(dt){
     timeLeft-=dt;
     if(timeLeft<=0){lastDeathCause='time';lastDeathStage=stageNum;lastTimeLeft=0;triggerDeath();return;}
     if(keys['ArrowLeft']||keys['a']||keys['A']){player.vx=-4.8;player.facing=-1;}
-    else if(keys['ArrowRight']||keys['d']||keys['D']){player.vx=4.8;player.facing=1;}
+    else if(keys['ArrowRight']||keys['d']||keys['D']){player.vx=4.2;player.facing=1;}
     else if(player.onGround){player.vx*=(STAGES[stageNum-1]?.friction??0.75);}
     else{player.vx*=0.91;}
     if((keys[' ']||keys['ArrowUp']||keys['w']||keys['W'])&&player.onGround){player.vy=-18.2;jumpHeld = true;player.onGround=false;sfxJump();}

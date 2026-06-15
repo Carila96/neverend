@@ -3946,7 +3946,12 @@ function loadStage(n){
     if(p.sinking){p._origY=p.y;p._sinkVy=0;}
   }
   player={x:s.spawn.x,y:s.spawn.y,vx:0,vy:0,w:28,h:44,onGround:false,facing:1,walkT:0,prevX:0,prevY:0};
-  cameraY=0;
+  if(s.scrollY){
+    const initTarget=s.spawn.y+22-H/2;
+    cameraY=Math.max(0,initTarget);
+  }else{
+    cameraY=0;
+  }
   _goalReached=false;
   state='play';
   if(n !== stageNum) stagePlacements = []; // 別ステージの時だけクリア

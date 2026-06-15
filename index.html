@@ -4951,8 +4951,10 @@ function update(dt){
     }
     resolvePlayer();
     for(const t of trapSpikes){
-      // Only trigger if player is within Y range of the trap (prevents cross-level firing)
-      const inYRange=player.y+player.h>t.y-160&&player.y<t.y+t.h+160;
+      const isScrollY=STAGES[stageNum-1]?.scrollY;
+      const inYRange=isScrollY
+        ?(t.y>=cameraY-64&&t.y<=cameraY+H+64)
+        :(player.y+player.h>t.y-160&&player.y<t.y+t.h+160);
       const xOk=t.tx==null||player.x>t.tx;
       const xLeftOk=t.triggerXLeft==null||player.x<t.triggerXLeft;
       const yTriggerOk=t.triggerY==null||(t.triggerYUp!=null?player.y<t.triggerY:player.y>t.triggerY);

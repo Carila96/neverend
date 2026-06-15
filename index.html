@@ -4955,6 +4955,10 @@ function update(dt){
       const inYRange=isScrollY
         ?(t.y>=cameraY-64&&t.y<=cameraY+H+64)
         :(player.y+player.h>t.y-160&&player.y<t.y+t.h+160);
+      // scrollYステージでは画面外に出たらtrapをリセット
+      if(isScrollY&&t.triggered&&!inYRange){
+        t.triggered=false;t.visible=false;t.timer=t.warn?0.5:0;
+      }
       const xOk=t.tx==null||player.x>t.tx;
       const xLeftOk=t.triggerXLeft==null||player.x<t.triggerXLeft;
       const yTriggerOk=t.triggerY==null||(t.triggerYUp!=null?player.y<t.triggerY:player.y>t.triggerY);

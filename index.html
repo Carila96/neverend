@@ -2635,38 +2635,80 @@ const STAGES=[
  goal:{x:1152,y:0,w:128,h:96},
  spawn:{x:48,y:608}},
 
-// STAGE 52 — THE WRONG REWARD
-{name:'STAGE 52',sub:'That hourglass will kill you.',
+// STAGE 52 — THE ARENA
+{name:'STAGE 52',sub:'Circle it. Then land.',
  plats:[
-   {x:0,y:192,w:1280,h:80},
-   {x:0,y:640,w:192,h:80},
-   {x:0,y:192,w:96,h:352},
-   {x:192,y:592,w:128,h:128},
-   
-   {x:0,y:640,w:192,h:80},
-   {x:0,y:640,w:192,h:80},
+   // 外枠
+   {x:0,y:0,w:1280,h:32},
+   {x:0,y:0,w:32,h:720},
+   {x:1248,y:0,w:32,h:720},
+   {x:0,y:688,w:1280,h:32},
+
+   // 上部横長足場
+   {x:32,y:160,w:1216,h:16},
+   // 下部横長足場
+   {x:32,y:528,w:1216,h:16},
+
+   // 左縦長足場
+   {x:192,y:160,w:16,h:368},
+   // 右縦長足場
+   {x:1072,y:160,w:16,h:368},
+
+   // 中央足場（orbits周回対象）
+   {x:576,y:320,w:128,h:16},
+
+   // 床から突き出る小足場
+   {x:160,y:624,w:48,h:64},
+   {x:480,y:624,w:48,h:64},
+   {x:752,y:624,w:48,h:64},
+   {x:1040,y:624,w:48,h:64},
+
+   // 天井から突き出る小足場
+   {x:160,y:32,w:48,h:64},
+   {x:480,y:32,w:48,h:64},
+   {x:752,y:32,w:48,h:64},
+   {x:1040,y:32,w:48,h:64},
+
+   // ゴール足場
+   {x:544,y:464,w:192,h:16},
  ],
  spikes:[
-   {x:160,y:480,w:32,h:32},{x:480,y:416,w:32,h:32},{x:800,y:352,w:32,h:32},
+   // 上部足場のトゲ（下向き位置）
+   {x:320,y:176,w:32,h:32},{x:512,y:176,w:32,h:32},
+   {x:704,y:176,w:32,h:32},{x:896,y:176,w:32,h:32},
+   // 下部足場のトゲ（上向き）
+   {x:320,y:496,w:32,h:32},{x:512,y:496,w:32,h:32},
+   {x:704,y:496,w:32,h:32},{x:896,y:496,w:32,h:32},
+   // 左縦足場トゲ
+   {x:208,y:256,w:32,h:32},{x:208,y:384,w:32,h:32},
+   // 右縦足場トゲ
+   {x:1040,y:256,w:32,h:32},{x:1040,y:384,w:32,h:32},
  ],
- hg:[
-   {x:240,y:480,w:16,h:32},
-   {x:560,y:416,w:16,h:32},
-   {x:848,y:352,w:16,h:32},
-   {x:528,y:240,w:16,h:32},
+ orbits:[
+   {centerX:640,centerY:328,radius:112,speed:2.0,angle:0,size:14,color:'rgba(255,80,80,0.9)'},
+   {centerX:640,centerY:328,radius:112,speed:2.0,angle:Math.PI,size:14,color:'rgba(255,140,60,0.9)'},
+   {centerX:640,centerY:328,radius:64,speed:-3.0,angle:Math.PI*0.5,size:12,color:'rgba(200,80,255,0.9)'},
+ ],
+ slidingSpikes:[
+   {x:1248,y:192,w:32,h:32,axis:'x',minX:1184,maxX:1248,speed:4.0},
+   {x:1248,y:320,w:32,h:32,axis:'x',minX:1184,maxX:1248,speed:5.0},
+   {x:1248,y:448,w:32,h:32,axis:'x',minX:1184,maxX:1248,speed:3.5},
  ],
  traps:[
-   {x:192,y:480,w:32,h:32,tx:128,warn:false},
+   {x:224,y:128,w:32,h:32,tx:160,warn:false},
+   {x:608,y:128,w:32,h:32,tx:544,warn:false},
+   {x:224,y:560,w:32,h:32,tx:160,warn:false},
+   {x:608,y:560,w:32,h:32,tx:544,warn:false},
  ],
- fall:[
+ hg:[
+   {x:384,y:320,w:16,h:32},
+   {x:864,y:320,w:16,h:32},
  ],
- chasers:[],
- move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],orbits:[],
- slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
- hg:[{x:240,y:480,w:16,h:32},{x:560,y:416,w:16,h:32},{x:848,y:352,w:16,h:32},{x:528,y:240,w:16,h:32}],
- focusZones:[],darkness:{enabled:false},
- goal:{x:1056,y:96,w:224,h:96},
- spawn:{x:48,y:592}},
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
+ chasers:[],growingSpikes:[],buttons:[],currents:[],crushers:[],
+ memos:[],focusZones:[],darkness:{enabled:false},
+ goal:{x:544,y:400,w:192,h:64},
+ spawn:{x:48,y:656}},
 
 // STAGE 53 — THE SHAFT
 {name:'STAGE 53',sub:'Up. Fast. Something follows.',
@@ -3817,6 +3859,82 @@ const STAGES=[
 
 ];
 
+  // STAGE 78 — THE SPIRAL
+{name:'STAGE 78',sub:'Keep turning. Do not stop.',
+ plats:[
+   // 外枠
+   {x:0,y:0,w:1280,h:32},
+   {x:0,y:0,w:32,h:720},
+   {x:1248,y:0,w:32,h:720},
+   {x:0,y:688,w:1280,h:32},
+
+   // 外周ループ（時計回り）
+   // 下段床
+   {x:32,y:624,w:960,h:16},
+   // 右壁足場
+   {x:960,y:208,w:16,h:416},
+   // 上段天井
+   {x:192,y:208,w:784,h:16},
+   // 左壁足場
+   {x:192,y:208,w:16,h:288},
+
+   // 中周ループ
+   // 下段
+   {x:320,y:496,w:512,h:16},
+   // 右壁
+   {x:832,y:336,w:16,h:160},
+   // 上段
+   {x:320,y:336,w:512,h:16},
+   // 左壁
+   {x:320,y:336,w:16,h:160},
+
+   // 内側への入口足場
+   {x:448,y:432,w:256,h:16},
+   {x:576,y:432,w:16,h:96},
+
+   // ゴール足場（中央）
+   {x:448,y:432,w:128,h:16},
+ ],
+ spikes:[
+   // 下段床のトゲ（一部）
+   {x:160,y:592,w:32,h:32},{x:320,y:592,w:32,h:32},
+   {x:480,y:592,w:32,h:32},{x:640,y:592,w:32,h:32},
+   {x:800,y:592,w:32,h:32},
+   // 右壁足場トゲ
+   {x:928,y:400,w:32,h:32},{x:928,y:528,w:32,h:32},
+   // 上段トゲ
+   {x:320,y:224,w:32,h:32},{x:512,y:224,w:32,h:32},
+   {x:704,y:224,w:32,h:32},{x:864,y:224,w:32,h:32},
+   // 中周トゲ
+   {x:448,y:464,w:32,h:32},{x:640,y:464,w:32,h:32},
+   {x:704,y:352,w:32,h:32},{x:576,y:352,w:32,h:32},
+ ],
+ fall:[
+   {x:704,y:624,w:128,h:16,spikesOn:false},
+   {x:448,y:496,w:128,h:16,spikesOn:false},
+ ],
+ crushers:[
+   {x:320,y:0,w:128,h:32,axis:'y',min:0,max:176,speed:64,startDir:1},
+   {x:640,y:0,w:128,h:32,axis:'y',min:0,max:176,speed:72,startDir:1},
+ ],
+ pendulums:[
+   {pivotX:576,pivotY:336,length:128,speed:1.8,maxAngle:0.85,angle:0},
+ ],
+ traps:[
+   {x:96,y:592,w:32,h:32,tx:64,warn:false},
+   {x:832,y:272,w:32,h:32,tx:768,warn:true},
+   {x:384,y:368,w:32,h:32,tx:320,warn:false},
+ ],
+ hg:[
+   {x:640,y:592,w:16,h:32},
+   {x:704,y:304,w:16,h:32},
+   {x:480,y:464,w:16,h:32},
+ ],
+ move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],
+ chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
+ memos:[],focusZones:[],darkness:{enabled:false},
+ goal:{x:448,y:368,w:128,h:64},
+ spawn:{x:48,y:656}},
 
 
 

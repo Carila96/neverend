@@ -3040,11 +3040,6 @@ const STAGES=[
    {x:608,y:656,w:32,h:32},{x:640,y:656,w:32,h:32},
    {x:736,y:656,w:32,h:32},{x:768,y:656,w:32,h:32},
 
-   // 通路天井のトゲ（下向き）
-   {x:96,y:560,w:32,h:32},{x:224,y:560,w:32,h:32},
-   {x:352,y:560,w:32,h:32},{x:480,y:560,w:32,h:32},
-   {x:608,y:560,w:32,h:32},{x:736,y:560,w:32,h:32},
-
    // 縦空洞左側足場のトゲ
    {x:832,y:528,w:32,h:32},
    {x:832,y:400,w:32,h:32},
@@ -3067,7 +3062,11 @@ const STAGES=[
    {x:896,y:400,w:16,h:32},
    {x:1136,y:272,w:16,h:32},
  ],
- fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[
+   {x:352,y:560,w:32,h:32,triggerX:280,speed:320,triggered:false},
+   {x:544,y:560,w:32,h:32,triggerX:470,speed:320,triggered:false},
+   {x:736,y:560,w:32,h:32,triggerX:660,speed:320,triggered:false},
+ ],lava:[],pendulums:[],
  chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  crushers:[],memos:[],focusZones:[],darkness:{enabled:false},
  goal:{x:560,y:0,w:160,h:96},

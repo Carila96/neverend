@@ -3593,26 +3593,67 @@ const STAGES=[
  goal:{x:1008,y:64,w:256,h:96},
  spawn:{x:48,y:592}},
 
-// STAGE 72 — THE PHANTOM ORBIT
-{name:'STAGE 72',sub:'Step and disappear.',
+// STAGE 72 — GRID PUZZLE
+{name:'STAGE 72',sub:'Think before you press.',
  plats:[
-   {x:0,y:640,w:192,h:80},
-   {x:256,y:544,w:160,h:16,phantom:true},
-   {x:496,y:448,w:160,h:16,phantom:true},
-   {x:736,y:352,w:160,h:16,phantom:true},
-   {x:960,y:240,w:320,h:400},
+   // 外枠
+   {x:0,y:0,w:1280,h:32},
+   {x:0,y:0,w:32,h:720},
+   {x:1248,y:0,w:32,h:720},
+   {x:0,y:688,w:1280,h:32},
+   // 横足場（各行の床）
+   {x:32,y:208,w:1216,h:16},
+   {x:32,y:384,w:1216,h:16},
+   {x:32,y:560,w:1216,h:16},
+   // 縦足場（左壁・右壁の内側）
+   {x:32,y:32,w:16,h:656},
+   {x:1232,y:32,w:16,h:656},
  ],
- spikes:[{x:192,y:608,w:32,h:32},{x:720,y:320,w:32,h:32}],
- orbits:[
-   {centerX:384,centerY:496,radius:80,speed:2.5,angle:0,size:13,color:'rgba(255,100,100,0.9)'},
-   {centerX:624,centerY:400,radius:80,speed:-2.3,angle:1.5,size:13,color:'rgba(100,200,255,0.9)'},
-   {centerX:848,centerY:304,radius:80,speed:2.0,angle:3.0,size:13,color:'rgba(255,200,50,0.9)'},
+ spikes:[
+   // 各足場上のトゲ（一部）
+   {x:256,y:176,w:32,h:32},
+   {x:512,y:176,w:32,h:32},
+   {x:768,y:352,w:32,h:32},
+   {x:256,y:528,w:32,h:32},
+   {x:768,y:528,w:32,h:32},
+   {x:1024,y:528,w:32,h:32},
  ],
- traps:[{x:496,y:416,w:32,h:32,tx:432,warn:false}],
- fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
- hg:[{x:288,y:512,w:16,h:32},{x:768,y:320,w:16,h:32}],
- goal:{x:976,y:144,w:256,h:96},
- spawn:{x:48,y:592}},
+ buttons:[
+   {x:64,y:544,w:32,h:16,id:'b1'},   // 左エリア中段床
+   {x:256,y:368,w:32,h:16,id:'b2'},  // 左エリア上段床
+   {x:768,y:672,w:32,h:16,id:'b3'},  // 右エリア下段床
+ ],
+ currents:[
+   // 縦電流（列の区切り）
+   // B1でOFF→左から右エリアへ通れる
+   {x1:512,y1:32,x2:512,y2:208,buttonIds:['b1'],startActive:true},
+   {x1:512,y1:208,x2:512,y2:384,buttonIds:['b1'],startActive:true},
+   // B2でOFF→上エリアへ通れる
+   {x1:512,y1:384,x2:512,y2:560,buttonIds:['b2'],startActive:false},
+   // B3でOFF→ゴール前が通れる
+   {x1:1024,y1:32,x2:1024,y2:208,buttonIds:['b3'],startActive:true},
+   {x1:1024,y1:208,x2:1024,y2:384,buttonIds:['b3'],startActive:true},
+   // 横電流（B1を押すと出現→戻れなくなる）
+   {x1:32,y1:384,x2:512,y2:384,buttonIds:['b1'],startActive:false},
+   // B2でOFF→右上エリアへ
+   {x1:512,y1:208,x2:1024,y2:208,buttonIds:['b2'],startActive:true},
+ ],
+ traps:[
+   {x:96,y:176,w:32,h:32,tx:64,warn:false},
+   {x:576,y:352,w:32,h:32,tx:512,warn:true},
+   {x:832,y:176,w:32,h:32,tx:768,warn:false},
+ ],
+ hg:[
+   {x:320,y:352,w:16,h:32},
+   {x:832,y:528,w:16,h:32},
+   {x:1088,y:352,w:16,h:32},
+ ],
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
+ chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],crushers:[],
+ memos:[],focusZones:[],darkness:{enabled:false},
+ goal:{x:1056,y:32,w:176,h:176},
+ spawn:{x:48,y:656}},
+
 
 // STAGE 73 — EVERYTHING ORBITS
 {name:'STAGE 73',sub:'The whole stage spins.',

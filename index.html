@@ -5240,9 +5240,16 @@ function update(dt){
     }
     // requireAll電流の状態を毎フレーム再評価
     for(const cur of currents){
-      if(!cur.requireAll||!cur.buttonIds)continue;
-      const allPressed=cur.buttonIds.every(id=>buttons.find(b=>b.id===id&&b.pressed));
-      cur.active=cur.startActive?!allPressed:allPressed;
+      if(cur.requireAll){
+        if(!cur.buttonIds)continue;
+        const allPressed=cur.buttonIds.every(id=>buttons.find(b=>b.id===id&&b.pressed));
+        cur.active=cur.startActive?!allPressed:allPressed;
+      }else if(cur.activeWhen){
+        // 複合条件モード：allOn全部押、allOff全部未押のときアクティブ
+        const onOk=!cur.activeWhen.allOn||cur.activeWhen.allOn.every(id=>buttons.find(b=>b.id===id&&b.pressed));
+        const offOk=!cur.activeWhen.allOff||cur.activeWhen.allOff.every(id=>buttons.find(b=>b.id===id&&!b.pressed));
+        cur.active=onOk&&offOk;
+      }
     }
     // 電流の当たり判定
     for(const cur of currents){

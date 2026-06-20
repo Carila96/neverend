@@ -2704,27 +2704,27 @@ crushers:[
    {x:0,y:0,w:1280,h:48},        // 天井
    {x:0,y:0,w:32,h:720},         // 左壁
    {x:1248,y:0,w:32,h:720},      // 右壁
-   {x:0,y:688,w:1280,h:32},      // 底床
+   {x:0,y:576,w:1280,h:32},      // 底床
    // スタート足場（左上）
    {x:32,y:192,w:192,h:496},
    // 上段3つの足場（横幅64、スタートと同じ高さ）
    {x:320,y:192,w:64,h:16},
-   {x:608,y:192,w:64,h:16},
-   {x:896,y:192,w:64,h:16},
+   {x:480,y:192,w:64,h:16},
+   {x:640,y:192,w:64,h:16},
    // 中段3つ
-   {x:320,y:384,w:64,h:16},
-   {x:608,y:384,w:64,h:16},
-   {x:896,y:384,w:64,h:16},
+   {x:320,y:320,w:64,h:16},
+   {x:480,y:320,w:64,h:16},
+   {x:640,y:320,w:64,h:16},
    // 下段3つ
-   {x:320,y:576,w:64,h:16},
-   {x:608,y:576,w:64,h:16},
-   {x:896,y:576,w:64,h:16},
+   {x:320,y:448,w:64,h:16},
+   {x:480,y:448,w:64,h:16},
+   {x:640,y:448,w:64,h:16},
    // ゴール足場（右上）
-   {x:1056,y:192,w:192,h:496},
+   {x:784,y:192,w:464,h:496},
  ],
  spikes:[],
  buttons:[
-   {x:928,y:576,w:32,h:16,id:'btn1'},
+   {x:672,y:560,w:32,h:16,id:'btn1'},
  ],
  currents:[
    {x1:1056,y1:48,x2:1056,y2:192,buttonIds:['btn1'],startActive:true},
@@ -2733,51 +2733,51 @@ crushers:[
    // 上段3つ（y:192→trap y:160）
    {x:320,y:160,w:32,h:32,triggerRadius:48,warn:false},
    {x:352,y:160,w:32,h:32,triggerRadius:48,warn:false},
-   {x:608,y:160,w:32,h:32,triggerRadius:48,warn:false},
-   {x:640,y:160,w:32,h:32,triggerRadius:48,warn:false},
-   {x:928,y:160,w:32,h:32,triggerRadius:48,warn:false},
+   {x:480,y:160,w:32,h:32,triggerRadius:48,warn:false},
+   {x:512,y:160,w:32,h:32,triggerRadius:48,warn:false},
+   {x:672,y:160,w:32,h:32,triggerRadius:48,warn:false},
    // 中段3つ（y:384→trap y:352）
-   {x:320,y:352,w:32,h:32,triggerRadius:48,warn:false},
-   {x:352,y:352,w:32,h:32,triggerRadius:48,warn:false},
-   {x:896,y:352,w:32,h:32,triggerRadius:48,warn:false},
+   {x:320,y:288,w:32,h:32,triggerRadius:48,warn:false},
+   {x:352,y:288,w:32,h:32,triggerRadius:48,warn:false},
+   {x:640,y:288,w:32,h:32,triggerRadius:48,warn:false},
    // 下段3つ（y:576→trap y:544）
-   {x:608,y:544,w:32,h:32,triggerRadius:48,warn:false},
-   {x:896,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:480,y:416,w:32,h:32,triggerRadius:48,warn:false},
+   {x:640,y:416,w:32,h:32,triggerRadius:48,warn:false},
    // 既存の底床トラップ群はそのまま維持
-   {x:224,y:656,w:32,h:32,tx:224,triggerY:576,warn:false},
-   {x:256,y:656,w:32,h:32,tx:224,triggerY:576,warn:false},
-   {x:288,y:656,w:32,h:32,tx:224,triggerY:576,warn:false},
-   {x:320,y:656,w:32,h:32,tx:224,triggerY:576,warn:false},
-   {x:352,y:656,w:32,h:32,tx:224,triggerY:576,warn:false},
-   {x:384,y:656,w:32,h:32,tx:360,triggerY:576,warn:false},
-   {x:416,y:656,w:32,h:32,tx:360,triggerY:576,warn:false},
-   {x:448,y:656,w:32,h:32,tx:360,triggerY:576,warn:false},
-   {x:480,y:656,w:32,h:32,tx:360,triggerY:576,warn:false},
-   {x:512,y:656,w:32,h:32,tx:360,triggerY:576,warn:false},
-   {x:544,y:656,w:32,h:32,tx:360,triggerY:576,warn:false},
-   {x:576,y:656,w:32,h:32,tx:360,triggerY:576,warn:false},
-   {x:608,y:656,w:32,h:32,tx:360,triggerY:576,warn:false},
-   {x:640,y:656,w:32,h:32,tx:360,triggerY:576,warn:false},
-   {x:736,y:656,w:32,h:32,tx:680,triggerY:576,warn:false},
-   {x:768,y:656,w:32,h:32,tx:680,triggerY:576,warn:false},
-   {x:800,y:656,w:32,h:32,tx:680,triggerY:576,warn:false},
-   {x:832,y:656,w:32,h:32,tx:680,triggerY:576,warn:false},
-   {x:864,y:656,w:32,h:32,tx:680,triggerY:576,warn:false},
-   {x:896,y:656,w:32,h:32,tx:890,triggerY:576,warn:false},
-   {x:928,y:656,w:32,h:32,tx:890,triggerY:576,warn:false},
-   {x:960,y:656,w:32,h:32,tx:890,triggerY:576,warn:false},
-   {x:992,y:656,w:32,h:32,tx:890,triggerY:576,warn:false},
-   {x:1024,y:656,w:32,h:32,tx:890,triggerY:576,warn:false},
+   {x:224,y:544,w:32,h:32,tx:224,triggerY:576,warn:false},
+   {x:256,y:544,w:32,h:32,tx:224,triggerY:576,warn:false},
+   {x:288,y:544,w:32,h:32,tx:224,triggerY:576,warn:false},
+   {x:320,y:544,w:32,h:32,tx:224,triggerY:576,warn:false},
+   {x:352,y:544,w:32,h:32,tx:224,triggerY:576,warn:false},
+   {x:384,y:544,w:32,h:32,tx:360,triggerY:576,warn:false},
+   {x:416,y:544,w:32,h:32,tx:360,triggerY:576,warn:false},
+   {x:448,y:544,w:32,h:32,tx:360,triggerY:576,warn:false},
+   {x:480,y:544,w:32,h:32,tx:360,triggerY:576,warn:false},
+   {x:512,y:544,w:32,h:32,tx:360,triggerY:576,warn:false},
+   {x:544,y:544,w:32,h:32,tx:360,triggerY:576,warn:false},
+   {x:576,y:544,w:32,h:32,tx:360,triggerY:576,warn:false},
+   {x:608,y:544,w:32,h:32,tx:360,triggerY:576,warn:false},
+   {x:640,y:544,w:32,h:32,tx:360,triggerY:576,warn:false},
+   {x:736,y:544,w:32,h:32,tx:680,triggerY:576,warn:false},
+   {x:768,y:544,w:32,h:32,tx:680,triggerY:576,warn:false},
+   {x:800,y:544,w:32,h:32,tx:680,triggerY:576,warn:false},
+   {x:832,y:544,w:32,h:32,tx:680,triggerY:576,warn:false},
+   {x:864,y:544,w:32,h:32,tx:680,triggerY:576,warn:false},
+   {x:896,y:544,w:32,h:32,tx:890,triggerY:576,warn:false},
+   {x:928,y:544,w:32,h:32,tx:890,triggerY:576,warn:false},
+   {x:960,y:544,w:32,h:32,tx:890,triggerY:576,warn:false},
+   {x:992,y:544,w:32,h:32,tx:890,triggerY:576,warn:false},
+   {x:1024,y:544,w:32,h:32,tx:890,triggerY:576,warn:false},
  ],
  hg:[
-   {x:616,y:352,w:16,h:32},
-   {x:680,y:656,w:16,h:32},
-   {x:904,y:160,w:16,h:32},
+   {x:488,y:288,w:16,h:32},
+   {x:536,y:544,w:16,h:32},
+   {x:648,y:160,w:16,h:32},
  ],
  fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
  chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],crushers:[],
  memos:[],focusZones:[],darkness:{enabled:false},
- goal:{x:1168,y:0,w:80,h:96},
+ goal:{x:1168,y:400,w:80,h:96},
  spawn:{x:48,y:128}},
 
 // STAGE 55 — THE WALL
@@ -2787,32 +2787,32 @@ crushers:[
    {x:0,y:0,w:1280,h:32},
    {x:0,y:32,w:32,h:608},
    {x:1248,y:32,w:32,h:608},
-   {x:320,y:512,w:128,h:16},
-   {x:576,y:432,w:128,h:16},
-   {x:832,y:352,w:128,h:16},
-   {x:1056,y:272,w:160,h:16},
+   {x:600,y:272,w:160,h:16},
  ],
  spikes:[
-   {x:320,y:608,w:32,h:32},{x:128,y:608,w:32,h:32},{x:224,y:608,w:32,h:32},
-   {x:352,y:480,w:32,h:32},{x:608,y:400,w:32,h:32},{x:864,y:320,w:32,h:32},
+   {x:128,y:608,w:32,h:32},{x:176,y:608,w:32,h:32},{x:224,y:608,w:32,h:32},
+   {x:272,y:608,w:32,h:32},{x:320,y:608,w:32,h:32},{x:368,y:608,w:32,h:32},
+   {x:416,y:608,w:32,h:32},{x:464,y:608,w:32,h:32},{x:512,y:608,w:32,h:32},
+   {x:560,y:608,w:32,h:32},{x:608,y:608,w:32,h:32},{x:656,y:608,w:32,h:32},
+   {x:704,y:608,w:32,h:32},{x:752,y:608,w:32,h:32},{x:800,y:608,w:32,h:32},
+   {x:848,y:608,w:32,h:32},{x:896,y:608,w:32,h:32},{x:944,y:608,w:32,h:32},
+   {x:992,y:608,w:32,h:32}
  ],
  crushers:[
-   {x:32,y:32,w:1216,h:48,axis:'y',min:32,max:560,speed:64,startDir:1},
+   {x:32,y:32,w:1216,h:688,axis:'y',min:32,max:688,speed:48,startDir:1},
  ],
  traps:[
-   {x:352,y:480,w:32,h:32,tx:288,warn:false},
-   {x:608,y:400,w:32,h:32,tx:544,warn:false},
-   {x:864,y:320,w:32,h:32,tx:800,warn:false},
+   {x:736,y:608,w:32,h:32,tx:288,warn:false},
  ],
  hg:[
-   {x:448,y:480,w:16,h:32},
-   {x:704,y:400,w:16,h:32},
-   {x:960,y:320,w:16,h:32},
+   {x:168,y:608,w:16,h:32},
+   {x:696,y:608,w:16,h:32},
+   {x:792,y:608,w:16,h:32},
  ],
  fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
  chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  memos:[],focusZones:[],darkness:{enabled:false},
- goal:{x:1056,y:176,w:160,h:96},
+ goal:{x:1168,y:544,w:80,h:96},
  spawn:{x:48,y:592}},
 
 // STAGE 56 — ROOMS
@@ -2955,21 +2955,21 @@ crushers:[
    // 外枠
    {x:0,y:0,w:32,h:720},
    {x:1248,y:0,w:32,h:720},
-   {x:0,y:688,w:1280,h:32},
+   {x:1056,y:688,w:224,h:32},
 
    // 通路内の足場とトゲの間の足場（幅狭）
-   {x:32,y:688,w:64,h:32},
+   {x:32,y:656,w:64,h:64},
    {x:160,y:688,w:64,h:32},
-   {x:288,y:688,w:64,h:32},
+   {x:288,y:656,w:64,h:64},
    {x:416,y:688,w:64,h:32},
-   {x:544,y:688,w:64,h:32},
+   {x:544,y:656,w:64,h:64},
    {x:672,y:688,w:64,h:32},
 
    // 縦長空洞の両サイド足場（左側）
-   {x:928,y:560,w:96,h:16},
-   {x:928,y:432,w:96,h:16},
-   {x:928,y:304,w:96,h:16},
-   {x:928,y:176,w:96,h:16},
+   {x:960,y:560,w:96,h:16},
+   {x:960,y:432,w:96,h:16},
+   {x:960,y:304,w:96,h:16},
+   {x:960,y:176,w:96,h:16},
 
    // 縦長空洞の両サイド足場（右側）
    {x:1152,y:496,w:96,h:16},
@@ -2978,7 +2978,7 @@ crushers:[
    {x:1152,y:112,w:96,h:16},
 
    // ゴール足場（上中央）
-   {x:32,y:96,w:896,h:464},
+   {x:32,y:96,w:928,h:464},
    {x:32,y:0,w:560,h:96},
  ],
  spikes:[
@@ -2988,29 +2988,26 @@ crushers:[
    {x:352,y:688,w:32,h:32},{x:384,y:688,w:32,h:32},
    {x:480,y:688,w:32,h:32},{x:512,y:688,w:32,h:32},
    {x:608,y:688,w:32,h:32},{x:640,y:688,w:32,h:32},
-
-   // 縦空洞左側足場のトゲ
-   {x:832,y:528,w:32,h:32},
-   {x:832,y:400,w:32,h:32},
-   {x:832,y:272,w:32,h:32},
-   {x:832,y:144,w:32,h:32},
-
-   // 縦空洞右側足場のトゲ
-   {x:1152,y:464,w:32,h:32},
-   {x:1152,y:336,w:32,h:32},
-   {x:1152,y:208,w:32,h:32},
-   {x:1152,y:80,w:32,h:32},
  ],
- traps:[],
+ traps:[
+   // 縦空洞左側足場のトゲ
+   {x:1024,y:144,w:32,h:32,triggerRadius:48,warn:false},
+   // 縦空洞右側足場のトゲ
+   {x:1152,y:464,w:32,h:32,triggerRadius:48,warn:false},
+   {x:1152,y:336,w:32,h:32,triggerRadius:48,warn:false},
+   {x:1184,y:80,w:32,h:32,triggerRadius:48,warn:false},
+   {x:1216,y:80,w:32,h:32,triggerRadius:48,warn:false},
+ ],
  hg:[
    {x:320,y:656,w:16,h:32},
-   {x:896,y:400,w:16,h:32},
-   {x:1136,y:272,w:16,h:32},
+   {x:960,y:400,w:16,h:32},
+   {x:960,y:144,w:16,h:32},
+   {x:1200,y:224,w:16,h:32},
  ],
  fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
  chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  crushers:[],memos:[],focusZones:[],darkness:{enabled:false},
- goal:{x:560,y:0,w:160,h:96},
+ goal:{x:560,y:0,w:80,h:96},
  spawn:{x:48,y:656}},
 
 // STAGE 60 — THE CEILING

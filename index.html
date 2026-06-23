@@ -5215,11 +5215,14 @@ function update(dt){
         cr.y+=cr.speed*cr._dir*dt;
         if(cr.y>=cr.max){cr.y=cr.max;cr._dir=-1;}
         if(cr.y<=cr.min){cr.y=cr.min;cr._dir=1;}
-        // 天井crushers：プレイヤーが押し潰される（頭上ヒットでは死なない）
-        const gap=player.y-(cr.y+cr.h);
-        if(gap<=0&&player.x+player.w>cr.x+4&&player.x<cr.x+cr.w-4){
-          // crusherがプレイヤーの上面より下に来た（めり込んだ）場合のみ死亡
-          lastDeathCause='crush';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;
+        // 天井crushers：crusherと床（プレイヤーの足元）の隙間が体高未満で死亡
+        // floorYはプレイヤーの現在の足元位置（ジャンプ中の頭ではなく接地基準で判定）
+        if(player.onGround){
+          const floorY=player.y+player.h;
+          const gapToFloor=floorY-(cr.y+cr.h);
+          if(gapToFloor<player.h&&gapToFloor>=0&&player.x+player.w>cr.x+4&&player.x<cr.x+cr.w-4){
+            lastDeathCause='crush';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;
+          }
         }
         // 床crushers：crusher上面がプレイヤー下面に重なったら死
         const gapFloor=cr.y-(player.y+player.h);

@@ -5872,6 +5872,24 @@ function loop(ts){
       ctx.textAlign='center';
       ctx.fillText(tp.id,tcx,tcy-24);
     }
+    // memos描画（未取得のみ）
+    for(const m of memos){
+      if(m.collected)continue;
+      const mcx=m.x+(m.w||32)/2;
+      const mcy=m.y+(m.h||32)/2;
+      ctx.save();
+      ctx.translate(mcx,mcy);
+      const bob=Math.sin(animT*2)*4;
+      ctx.translate(0,bob);
+      ctx.shadowColor='rgba(200,180,140,0.8)';ctx.shadowBlur=12;
+      ctx.fillStyle='rgba(40,32,24,0.95)';
+      ctx.fillRect(-12,-10,24,20);
+      ctx.strokeStyle='rgba(200,180,140,0.9)';ctx.lineWidth=2;
+      ctx.strokeRect(-12,-10,24,20);
+      ctx.strokeStyle='rgba(200,180,140,0.6)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(0,-10);ctx.lineTo(0,10);ctx.stroke();
+      ctx.restore();
+    }
     // ボタン描画
     for(const btn of buttons){
       const col=btn.pressed?'rgba(255,220,50,0.9)':'rgba(150,150,180,0.7)';

@@ -4122,7 +4122,7 @@ function resolvePlayer(){
     player.y+=playerPlatform.dy||0;
   }
 
-  const allPlats=[...platforms,...fallingBlocks.filter(b=>!b.falling&&!b.gone),...movingPlatforms]
+  const allPlats=[...platforms,...fallingBlocks.filter(b=>!b.falling&&!b.gone),...movingPlatforms,...crushers]
     .filter(p=>!(p.phantom&&p._phantomTouched&&p._vanishTimer<=0));
 
   // X movement + horizontal collision

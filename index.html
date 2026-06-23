@@ -3133,24 +3133,52 @@ crushers:[
  spawn:{x:48,y:656}},
 
 // STAGE 63 — KEEP MOVING
-{name:'STAGE 63',sub:'Stop and it reaches you.',
+{name:'STAGE 63',sub:'Ride it up. Then run.',
  plats:[
-   {x:576,y:128,w:128,h:16},
-   {x:592,y:688,w:128,h:16},
-   {x:800,y:280,w:32,h:32}
+   {x:0,y:96,w:96,h:16},
+   {x:528,y:160,w:32,h:32},
+   {x:960,y:160,w:320,h:560},
  ],
- spikes:[],
- chasers:[],
- traps:[
-   {x:800,y:248,w:32,h:32,tx:770,warn:false},
- ],
- move:[],
- hg:[{x:600,y:656,w:16,h:32}],
- fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],orbits:[],
- slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
- focusZones:[],darkness:{enabled:false},
- goal:{x:640,y:592,w:80,h:96},
- spawn:{x:584,y:96}},
+ buttons:[],
+ currents:[],
+ orbits:[],
+ move:[{
+   x:280,y:640,w:32,h:32,
+   waypoints:[
+     {x:280,y:640,t:3.0},
+     {x:280,y:160,t:4.0},
+   ],
+   pingpong:true,
+   triggerOnBoard:true,
+   vx:0,vy:0,rx:0,ry:0,sx:280,sy:640,phase:0
+ },
+ {x:760,y:640,w:32,h:32,
+   waypoints:[
+     {x:760,y:640,t:3.0},
+     {x:760,y:160,t:4.0},
+   ],
+   pingpong:true,
+   triggerOnBoard:true,
+   vx:0,vy:0,rx:0,ry:0,sx:760,sy:640,phase:0
+ },
+ {x:930,y:640,w:32,h:32,
+   waypoints:[
+     {x:930,y:640,t:3.0},
+     {x:930,y:160,t:4.0},
+   ],
+   pingpong:true,
+   triggerOnBoard:true,
+   vx:0,vy:0,rx:0,ry:0,sx:930,sy:640,phase:0
+ }],
+ spikes:[{x:930,y:480,w:32,h:32}],
+ growingSpikes:[],
+ traps:[],
+ fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
+ chasers:[],slidingSpikes:[],crushers:[],
+ memos:[],focusZones:[],darkness:{enabled:false},
+ hg:[],
+ goal:{x:1200,y:64,w:80,h:96},
+ spawn:{x:48,y:64}},
 
 // STAGE 64 — TOWER II
 {name:'STAGE 64',sub:'Higher. The orbits multiply.',

@@ -3967,7 +3967,6 @@ function loadStage(n){
   memos=(s.memos||[]).map(o=>({...o,collected:false}));
   crushers=(s.crushers||[]).map(o=>({...o,_dir:o.startDir||1}));
   teleporters=(s.teleporters||[]).map(o=>({...o}));
-  teleportCooldown=0;
   const dk=s.darkness||{};
   darknessState={enabled:dk.enabled||false,timer:0,active:dk.type==='radius',interval:dk.interval||2,duration:dk.duration||0.5,type:dk.type||'flash',radius:dk.radius||160};
   // Init phantom platform state
@@ -4078,7 +4077,6 @@ let slidingSpikes=[],growingSpikes=[],buttons=[],currents=[];
 let memos=[];
 let crushers=[];
 let teleporters=[];
-let teleportCooldown=0;
 let darknessState={enabled:false,timer:0,active:false,interval:2,duration:0.5};
 
 function resolvePlayer(){

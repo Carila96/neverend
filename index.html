@@ -2906,49 +2906,25 @@ crushers:[
  goal:{x:736,y:80,w:80,h:96},
  spawn:{x:48,y:144}},
 
-// STAGE 57 — ONE MORE
-{name:'STAGE 57',sub:'One more. Just one more.',
+// STAGE 57 — CAROUSEL
+{name:'STAGE 57',sub:'Ride the circle.',
  plats:[
    {x:0,y:640,w:192,h:80},
-   {x:240,y:576,w:128,h:16},
-   {x:432,y:512,w:128,h:16},
-   {x:624,y:448,w:128,h:16},
-   {x:816,y:384,w:128,h:16},
-   {x:1008,y:320,w:272,h:400},
+   {x:1088,y:96,w:192,h:96},
  ],
- spikes:[
-   {x:240,y:544,w:32,h:32},{x:432,y:480,w:32,h:32},
-   {x:624,y:416,w:32,h:32},{x:816,y:352,w:32,h:32},
- ],
- hg:[
-   {x:272,y:544,w:16,h:32},
-   {x:464,y:480,w:16,h:32},
-   {x:656,y:416,w:16,h:32},
-   {x:848,y:352,w:16,h:32},
-   {x:1040,y:288,w:16,h:32},
- ],
- traps:[
-   {x:304,y:544,w:32,h:32,tx:240,warn:false},
-   {x:496,y:480,w:32,h:32,tx:432,warn:false},
-   {x:688,y:416,w:32,h:32,tx:624,warn:false},
-   {x:880,y:352,w:32,h:32,tx:816,warn:false},
-   {x:1040,y:608,w:32,h:32,tx:992,warn:false},
-   {x:1072,y:608,w:32,h:32,tx:992,warn:false},
-   {x:1104,y:608,w:32,h:32,tx:992,warn:false},
-   {x:1136,y:608,w:32,h:32,tx:992,warn:false},
-   {x:1168,y:608,w:32,h:32,tx:992,warn:false},
-   {x:1200,y:608,w:32,h:32,tx:992,warn:false},
- ],
- orbits:[
-   {centerX:400,centerY:400,radius:80,speed:2.5,angle:0,size:14,color:'rgba(255,80,80,0.9)'},
-   {centerX:400,centerY:400,radius:80,speed:2.5,angle:Math.PI,size:14,color:'rgba(255,80,80,0.9)'},
-   {centerX:700,centerY:320,radius:80,speed:-3.0,angle:0,size:14,color:'rgba(255,140,60,0.9)'},
-   {centerX:700,centerY:320,radius:80,speed:-3.0,angle:Math.PI,size:14,color:'rgba(255,140,60,0.9)'},
- ],
- fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],
- slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
- focusZones:[],darkness:{enabled:false},
- goal:{x:1024,y:208,w:256,h:112},
+ move:[{
+   x:496,y:344,w:96,h:16,
+   orbit:true,
+   centerX:640,centerY:360,
+   radius:240,
+   speed:1.2,
+   angle:Math.PI,
+   vx:0,vy:0,rx:0,ry:0,sx:496,sy:344,phase:0
+ }],
+ spikes:[],traps:[],fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
+ chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
+ crushers:[],teleporters:[],memos:[],hg:[],focusZones:[],darkness:{enabled:false},
+ goal:{x:1136,y:0,w:96,h:96},
  spawn:{x:48,y:592}},
 
 // STAGE 58 — THE CROSSING

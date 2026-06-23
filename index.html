@@ -3966,6 +3966,8 @@ function loadStage(n){
   currents=(s.currents||[]).map(o=>({...o,active:o.startActive||false}));
   memos=(s.memos||[]).map(o=>({...o,collected:false}));
   crushers=(s.crushers||[]).map(o=>({...o,_dir:o.startDir||1}));
+  teleporters=(s.teleporters||[]).map(o=>({...o}));
+  teleportCooldown=0;
   const dk=s.darkness||{};
   darknessState={enabled:dk.enabled||false,timer:0,active:dk.type==='radius',interval:dk.interval||2,duration:dk.duration||0.5,type:dk.type||'flash',radius:dk.radius||160};
   // Init phantom platform state
@@ -4075,6 +4077,8 @@ let lavas=[],fallingSpikesExt=[],chasers=[],pendulums=[],orbits=[];
 let slidingSpikes=[],growingSpikes=[],buttons=[],currents=[];
 let memos=[];
 let crushers=[];
+let teleporters=[];
+let teleportCooldown=0;
 let darknessState={enabled:false,timer:0,active:false,interval:2,duration:0.5};
 
 function resolvePlayer(){
@@ -5207,6 +5211,22 @@ function update(dt){
         }
       }
     }
+    // teleporters判定
+    if(teleportCooldown>0){teleportCooldown-=dt;}
+    else{
+      for(const tp of teleporters){
+        if(overlap(player,{x:tp.x,y:tp.y,w:tp.w||32,h:tp.h||32})){
+          const target=teleporters.find(t=>t.id===tp.linkTo);
+          if(target){
+            player.x=target.x+(target.w||32)/2-player.w/2;
+            player.y=target.y+(target.h||32)/2-player.h/2;
+            teleportCooldown=0.3;
+            sfxJump();
+          }
+          break;
+        }
+      }
+    }
     // memo判定
     for(const m of memos){
       if(m.collected)continue;
@@ -5783,6 +5803,29 @@ function loop(ts){
     // crushers描画
     for(const cr of crushers){
       drawPlatform({x:cr.x,y:cr.y,w:cr.w,h:cr.h});
+    }
+    // teleporters描画
+    for(const tp of teleporters){
+      const tcx=tp.x+(tp.w||32)/2;
+      const tcy=tp.y+(tp.h||32)/2;
+      ctx.save();
+      ctx.translate(tcx,tcy);
+      ctx.rotate(animT*2);
+      ctx.shadowColor='rgba(140,80,255,0.9)';ctx.shadowBlur=16;
+      ctx.strokeStyle='rgba(180,120,255,0.95)';ctx.lineWidth=3;
+      ctx.beginPath();
+      ctx.arc(0,0,16,0,Math.PI*1.5);
+      ctx.stroke();
+      ctx.strokeStyle='rgba(140,80,255,0.5)';ctx.lineWidth=1.5;
+      ctx.beginPath();
+      ctx.arc(0,0,10,0,Math.PI*2);
+      ctx.stroke();
+      ctx.restore();
+      // ラベル
+      ctx.fillStyle='rgba(220,180,255,0.9)';
+      ctx.font='bold 9px "Courier New"';
+      ctx.textAlign='center';
+      ctx.fillText(tp.id,tcx,tcy-24);
     }
     // ボタン描画
     for(const btn of buttons){

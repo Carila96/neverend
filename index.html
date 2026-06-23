@@ -3927,6 +3927,37 @@ crushers:[
  memos:[],focusZones:[],darkness:{enabled:false},
  goal:{x:448,y:368,w:128,h:64},
  spawn:{x:48,y:656}},
+
+  // STAGE 80 — THE WARP
+{name:'STAGE 80',sub:'Step in. Step out.',
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:0,y:0,w:1280,h:96},
+   {x:0,y:96,w:32,h:544},
+   {x:1248,y:96,w:32,h:544},
+   {x:192,y:560,w:160,h:16},
+   {x:1024,y:160,w:160,h:16},
+ ],
+ spikes:[
+   {x:480,y:608,w:32,h:32},{x:640,y:608,w:32,h:32},{x:800,y:608,w:32,h:32},
+   {x:480,y:128,w:32,h:32},{x:640,y:128,w:32,h:32},{x:800,y:128,w:32,h:32},
+ ],
+ teleporters:[
+   {x:272,y:528,w:32,h:32,id:'tpA',linkTo:'tpB'},
+   {x:1104,y:128,w:32,h:32,id:'tpB',linkTo:'tpA'},
+ ],
+ traps:[
+   {x:240,y:528,w:32,h:32,tx:176,warn:false},
+   {x:1136,y:128,w:32,h:32,tx:1072,warn:true},
+ ],
+ hg:[
+   {x:640,y:608,w:16,h:32},
+ ],
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
+ chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
+ crushers:[],memos:[],focusZones:[],darkness:{enabled:false},
+ goal:{x:1104,y:64,w:144,h:96},
+ spawn:{x:48,y:592}},
 ];
 
 

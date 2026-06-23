@@ -3138,7 +3138,7 @@ crushers:[
  orbits:[],
  move:[],
  traps:[
-   {x:1008,y:160,w:32,h:32,tx:920,warn:false}
+   {x:1096,y:160,w:32,h:32,tx:920,warn:false}
  ],
  hg:[{x:640,y:160,w:16,h:32},{x:320,y:160,w:16,h:32}],
  fall:[
@@ -3147,9 +3147,9 @@ crushers:[
  slidingSpikes:[
    {x:288,y:160,w:32,h:32,axis:'x',minX:288,maxX:416,speed:3.5},
  ],growingSpikes:[
-   {x:160,y:540,w:32,h:32,axis:'x',right:true,maxSize:128,growSpeed:30,shrinkSpeed:30},
+   {x:128,y:540,w:32,h:32,axis:'x',right:true,maxSize:128,growSpeed:30,shrinkSpeed:30},
    {x:16,y:450,w:32,h:32,axis:'x',right:false,maxSize:128,growSpeed:30,shrinkSpeed:30},
-   {x:160,y:350,w:32,h:32,axis:'x',right:true,maxSize:128,growSpeed:30,shrinkSpeed:30},
+   {x:128,y:350,w:32,h:32,axis:'x',right:true,maxSize:128,growSpeed:30,shrinkSpeed:30},
    {x:16,y:250,w:32,h:32,axis:'x',right:false,maxSize:128,growSpeed:30,shrinkSpeed:30},
    {x:992,y:160,w:32,h:32,maxSize:96,growSpeed:30,shrinkSpeed:20},
  ],buttons:[],currents:[],
@@ -3338,56 +3338,59 @@ crushers:[
  spawn:{x:48,y:32}},
 
 // STAGE 67 — THE GUARDIAN
-{name:'STAGE 67',sub:'Ride the loop. Mind the spikes.',
+{name:'STAGE 67',sub:'Fall right. Then ride.',
  plats:[
    {x:0,y:96,w:1280,h:16},
    {x:0,y:688,w:1280,h:16},
 
-   {x:32,y:96,w:16,h:592},
-   {x:208,y:96,w:16,h:496},
-   {x:208,y:592,w:160,h:16},
+   // スタート直下の壁（上から下まで）
+   {x:32,y:96,w:80,h:592},
 
-   {x:464,y:288,w:16,h:304},
-   {x:464,y:592,w:160,h:16},
+   // 2本目の壁（上部のみ）
+   {x:208,y:96,w:80,h:496},
 
-   {x:768,y:96,w:16,h:496},
-   {x:944,y:288,w:16,h:304},
-   {x:944,y:592,w:160,h:16},
+   // 3本目の壁（上部）
+   {x:368,y:96,w:80,h:304},
+   // 3本目の壁（下部）
+   {x:368,y:400,w:80,h:288},
 
-   {x:1248,y:96,w:32,h:592},
+   // 4本目の壁（上部のみ）
+   {x:592,y:96,w:80,h:496},
 
-   {x:80,y:592,w:128,h:16},
+   // 5本目の壁（ゴール下、上から下まで）
+   {x:1056,y:96,w:80,h:592},
+
+   // 下段の短い足場
+   {x:144,y:592,w:64,h:96},
  ],
  move:[{
-   x:560,y:144,w:160,h:16,
+   x:480,y:144,w:96,h:16,
    waypoints:[
-     {x:560,y:144,t:1.0},
-     {x:768,y:144,t:1.5},
-     {x:768,y:528,t:2.0},
-     {x:560,y:528,t:1.5},
-     {x:560,y:144,t:2.0},
+     {x:480,y:144,t:1.5},
+     {x:480,y:592,t:2.0},
+     {x:752,y:592,t:1.5},
+     {x:752,y:144,t:2.0},
    ],
-   stopAtEnd:false,
-   pingpong:false,
+   stopAtEnd:true,
    triggerOnBoard:true,
    showPath:true,
-   vx:0,vy:0,rx:0,ry:0,sx:560,sy:144,phase:0
+   vx:0,vy:0,rx:0,ry:0,sx:480,sy:144,phase:0
  }],
  growingSpikes:[
-   {x:1248,y:280,w:32,h:32,axis:'x',right:true,maxSize:128,growSpeed:35,shrinkSpeed:25},
-   {x:1248,y:480,w:32,h:32,axis:'x',right:true,maxSize:128,growSpeed:30,shrinkSpeed:20},
+   {x:912,y:300,w:32,h:32,axis:'x',right:true,maxSize:96,growSpeed:35,shrinkSpeed:25},
+   {x:912,y:480,w:32,h:32,axis:'x',right:true,maxSize:96,growSpeed:30,shrinkSpeed:20},
  ],
  spikes:[],
  traps:[],
  hg:[
-   {x:768,y:112,w:16,h:32},
-   {x:760,y:512,w:16,h:32},
-   {x:560,y:480,w:16,h:32},
+   {x:480,y:368,w:16,h:32},
+   {x:600,y:592,w:16,h:32},
+   {x:752,y:368,w:16,h:32},
  ],
  fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
  chasers:[],orbits:[],slidingSpikes:[],buttons:[],currents:[],
  crushers:[],teleporters:[],memos:[],focusZones:[],darkness:{enabled:false},
- goal:{x:1152,y:0,w:128,h:96},
+ goal:{x:1136,y:0,w:144,h:96},
  spawn:{x:48,y:32}},
 
 // STAGE 68 — SHORT ROUTE

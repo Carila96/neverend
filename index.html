@@ -5487,6 +5487,8 @@ function update(dt){
     if(anyKey){
       memoOpen=false;
       state='play';
+      // 閉じる際に使用したキー入力を消費し、ジャンプ等の誤爆を防ぐ
+      for(const k in keys){keys[k]=false;}
     }
   }
   Object.keys(keys).forEach(k=>{if(keys[k])prevKeys[k]=true;else delete prevKeys[k];});

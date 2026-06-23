@@ -5211,20 +5211,21 @@ function update(dt){
         }
       }
     }
-    // teleporters判定
-    if(teleportCooldown>0){teleportCooldown-=dt;}
-    else{
-      for(const tp of teleporters){
-        if(overlap(player,{x:tp.x,y:tp.y,w:tp.w||32,h:tp.h||32})){
-          const target=teleporters.find(t=>t.id===tp.linkTo);
-          if(target){
-            player.x=target.x+(target.w||32)/2-player.w/2;
-            player.y=target.y+(target.h||32)/2-player.h/2;
-            teleportCooldown=0.3;
-            sfxJump();
-          }
-          break;
+    // teleporters判定（踏んだ瞬間のみ発動）
+    for(const tp of teleporters){
+      const onTp=overlap(player,{x:tp.x,y:tp.y,w:tp.w||32,h:tp.h||32});
+      if(onTp&&!tp._wasOn){
+        tp._wasOn=true;
+        const target=teleporters.find(t=>t.id===tp.linkTo);
+        if(target){
+          player.x=target.x+(target.w||32)/2-player.w/2;
+          player.y=target.y+(target.h||32)/2-player.h/2;
+          target._wasOn=true;
+          sfxJump();
         }
+        break;
+      }else if(!onTp){
+        tp._wasOn=false;
       }
     }
     // memo判定

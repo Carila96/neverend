@@ -2326,6 +2326,17 @@ const STAGES=[
  hg:[
    {x:384,y:2528,w:16,h:32},{x:608,y:2016,w:16,h:32},
    {x:416,y:864,w:16,h:32},{x:512,y:96,w:16,h:32},
+   // 下から1つおきに追加
+   {x:160,y:2656,w:16,h:32},  // y:2688の足場
+   {x:672,y:2400,w:16,h:32},  // y:2432の足場
+   {x:160,y:2144,w:16,h:32},  // y:2176の足場
+   {x:928,y:1888,w:16,h:32},  // y:1920の足場
+   {x:160,y:1632,w:16,h:32},  // y:1664の足場
+   {x:1024,y:1376,w:16,h:32}, // y:1408の足場
+   {x:816,y:992,w:16,h:32},   // y:1024の足場
+   {x:176,y:736,w:16,h:32},   // y:768の足場
+   {x:960,y:480,w:16,h:32},   // y:512の足場
+   {x:256,y:224,w:16,h:32},   // y:256の足場
  ],
  focusZones:[],darkness:{enabled:false},
  goal:{x:512,y:32,w:256,h:96},
@@ -2696,7 +2707,7 @@ crushers:[
  fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
  chasers:[],slidingSpikes:[],growingSpikes:[],crushers:[],
  memos:[],focusZones:[],darkness:{enabled:false},
- hg:[],
+ hg:[{x:1056,y:128,w:16,h:32}],
  goal:{x:1200,y:64,w:80,h:96},
  spawn:{x:48,y:64}},
   
@@ -2747,30 +2758,30 @@ crushers:[
    {x:480,y:416,w:32,h:32,triggerRadius:48,warn:false},
    {x:640,y:416,w:32,h:32,triggerRadius:48,warn:false},
    // 既存の底床トラップ群はそのまま維持
-   {x:224,y:544,w:32,h:32,tx:224,triggerY:576,warn:false},
-   {x:256,y:544,w:32,h:32,tx:224,triggerY:576,warn:false},
-   {x:288,y:544,w:32,h:32,tx:224,triggerY:576,warn:false},
-   {x:320,y:544,w:32,h:32,tx:224,triggerY:576,warn:false},
-   {x:352,y:544,w:32,h:32,tx:224,triggerY:576,warn:false},
-   {x:384,y:544,w:32,h:32,tx:360,triggerY:576,warn:false},
-   {x:416,y:544,w:32,h:32,tx:360,triggerY:576,warn:false},
-   {x:448,y:544,w:32,h:32,tx:360,triggerY:576,warn:false},
-   {x:480,y:544,w:32,h:32,tx:360,triggerY:576,warn:false},
-   {x:512,y:544,w:32,h:32,tx:360,triggerY:576,warn:false},
-   {x:544,y:544,w:32,h:32,tx:360,triggerY:576,warn:false},
-   {x:576,y:544,w:32,h:32,tx:360,triggerY:576,warn:false},
-   {x:608,y:544,w:32,h:32,tx:360,triggerY:576,warn:false},
-   {x:640,y:544,w:32,h:32,tx:360,triggerY:576,warn:false},
-   {x:736,y:544,w:32,h:32,tx:680,triggerY:576,warn:false},
-   {x:768,y:544,w:32,h:32,tx:680,triggerY:576,warn:false},
-   {x:800,y:544,w:32,h:32,tx:680,triggerY:576,warn:false},
-   {x:832,y:544,w:32,h:32,tx:680,triggerY:576,warn:false},
-   {x:864,y:544,w:32,h:32,tx:680,triggerY:576,warn:false},
-   {x:896,y:544,w:32,h:32,tx:890,triggerY:576,warn:false},
-   {x:928,y:544,w:32,h:32,tx:890,triggerY:576,warn:false},
-   {x:960,y:544,w:32,h:32,tx:890,triggerY:576,warn:false},
-   {x:992,y:544,w:32,h:32,tx:890,triggerY:576,warn:false},
-   {x:1024,y:544,w:32,h:32,tx:890,triggerY:576,warn:false},
+   {x:224,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:256,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:288,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:320,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:352,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:384,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:416,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:448,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:480,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:512,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:544,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:576,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:608,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:640,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:736,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:768,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:800,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:832,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:864,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:896,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:928,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:960,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:992,y:544,w:32,h:32,triggerRadius:48,warn:false},
+   {x:1024,y:544,w:32,h:32,triggerRadius:48,warn:false},
  ],
  hg:[
    {x:488,y:288,w:16,h:32},
@@ -2801,7 +2812,7 @@ crushers:[
    {x:992,y:608,w:32,h:32}
  ],
  crushers:[
-   {x:32,y:32,w:1216,h:688,axis:'y',min:32,max:688,speed:48,startDir:1},
+   {x:32,y:32,w:1216,h:480,axis:'y',min:-400,max:112,speed:48,startDir:1},
  ],
  traps:[
    {x:736,y:608,w:32,h:32,tx:650,warn:false},
@@ -2864,14 +2875,14 @@ crushers:[
    
    {x:816,y:440,w:80,h:16},
    // room22,23,24,25,26,27,28
-    {x:192,y:624,w:16,h:80},
+   {x:192,y:624,w:16,h:80},
    {x:368,y:544,w:16,h:80},
    {x:720,y:544,w:16,h:80},
    {x:896,y:544,w:16,h:80},
    {x:1072,y:624,w:16,h:80},
    {x:1088,y:616,w:80,h:16},
    {x:192,y:528,w:16,h:16},
-   {x:252,y:176,w:16,h:16},
+   {x:384,y:176,w:16,h:16},
  ],
  fall:[
    {x:32,y:352,w:160,h:16,spikesOn:false},
@@ -2904,7 +2915,8 @@ crushers:[
  plats:[
    {x:0,y:640,w:192,h:80},
    {x:1088,y:96,w:192,h:96},
-   {x:224,y:608,w:192,h:96},
+   {x:256,y:608,w:32,h:32},
+   {x:960,y:288,w:32,h:32},
  ],
  move:[{
    x:496,y:344,w:64,h:16,
@@ -2918,7 +2930,7 @@ crushers:[
  spikes:[],traps:[],fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
  chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  crushers:[],teleporters:[],memos:[],hg:[
-   {x:1128,y:48,w:16,h:32}
+   {x:1128,y:48,w:16,h:32},{x:264,y:576,w:16,h:32}
  ],focusZones:[],darkness:{enabled:false},
  goal:{x:1200,y:0,w:80,h:96},
  spawn:{x:48,y:592}},
@@ -2941,12 +2953,12 @@ crushers:[
    {x:1152,y:368,w:32,h:32},{x:1152,y:208,w:32,h:32},
  ],
  move:[
-   {x:0,y:480,w:160,h:16,vx:-5.5,vy:0,rx:400,ry:0,sx:200,sy:560},
-   {x:1000,y:560,w:160,h:16,vx:-5.5,vy:0,rx:-400,ry:0,sx:800,sy:480},
-   {x:260,y:320,w:160,h:16,vx:5.0,vy:0,rx:400,ry:0,sx:260,sy:400},
-   {x:720,y:400,w:160,h:16,vx:5.0,vy:0,rx:-400,ry:0,sx:720,sy:320},
-   {x:0,y:160,w:160,h:16,vx:-5.5,vy:0,rx:400,ry:0,sx:100,sy:240},
-   {x:720,y:240,w:160,h:16,vx:-5.5,vy:0,rx:-400,ry:0,sx:800,sy:160},
+   {x:0,y:480,w:160,h:16,vx:-5.5,vy:0,rx:400,ry:0,sx:200,sy:560,phase:0},
+   {x:1000,y:560,w:160,h:16,vx:5.5,vy:0,rx:-400,ry:0,sx:800,sy:480,phase:Math.PI},
+   {x:260,y:320,w:160,h:16,vx:5.0,vy:0,rx:400,ry:0,sx:260,sy:400,phase:0},
+   {x:720,y:400,w:160,h:16,vx:-5.0,vy:0,rx:-400,ry:0,sx:720,sy:320,phase:Math.PI},
+   {x:0,y:160,w:160,h:16,vx:-5.5,vy:0,rx:400,ry:0,sx:100,sy:240,phase:0},
+   {x:720,y:240,w:160,h:16,vx:-5.5,vy:0,rx:-400,ry:0,sx:800,sy:160,phase:Math.PI},
  ],
  pendulums:[
    {pivotX:640,pivotY:96,length:200,speed:2.0,maxAngle:0.9,angle:0},
@@ -3021,7 +3033,7 @@ crushers:[
  chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  crushers:[],memos:[],focusZones:[],darkness:{enabled:false},
  goal:{x:592,y:0,w:80,h:96},
- spawn:{x:80,y:624}},
+ spawn:{x:64,y:624}},
 
 // STAGE 60 — THE CEILING
 {name:'STAGE 60',sub:'It comes down. Find the gap.',
@@ -3048,7 +3060,9 @@ crushers:[
  spikes:[
    {x:96,y:576,w:32,h:32},
  ],
- crushers:[],
+ crushers:[
+   {x:0,y:32,w:1216,h:480,axis:'y',min:-400,max:112,speed:32,startDir:1}
+ ],
  hg:[
    {x:368,y:544,w:16,h:32},
    {x:808,y:576,w:16,h:32},
@@ -3061,7 +3075,7 @@ crushers:[
  chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  memos:[],focusZones:[],darkness:{enabled:false},
  goal:{x:1200,y:608,w:80,h:96},
- spawn:{x:48,y:576}},
+ spawn:{x:40,y:576}},
   
 // STAGE 61 — THE PYRAMID
 {name:'STAGE 61',sub:'Climb the shifting steps.',
@@ -3069,33 +3083,37 @@ crushers:[
    {x:0,y:640,w:1280,h:80},
    {x:1152,y:160,w:128,h:480},
  ],
- move:[
-   {x:140,y:608,w:1000,h:16,vx:3.0,vy:0,rx:48,ry:0,sx:140,sy:608},
-   {x:176,y:592,w:928,h:16,vx:-3.5,vy:0,rx:48,ry:0,sx:176,sy:592},
-   {x:212,y:576,w:856,h:16,vx:4.0,vy:0,rx:48,ry:0,sx:212,sy:576},
-   {x:248,y:560,w:784,h:16,vx:-3.0,vy:0,rx:48,ry:0,sx:248,sy:560},
-   {x:284,y:544,w:712,h:16,vx:3.5,vy:0,rx:48,ry:0,sx:284,sy:544},
-   {x:320,y:528,w:640,h:16,vx:-4.0,vy:0,rx:48,ry:0,sx:320,sy:528},
-   {x:356,y:512,w:568,h:16,vx:3.0,vy:0,rx:48,ry:0,sx:356,sy:512},
-   {x:392,y:496,w:496,h:16,vx:-3.5,vy:0,rx:48,ry:0,sx:392,sy:496},
-   {x:428,y:480,w:424,h:16,vx:4.0,vy:0,rx:48,ry:0,sx:428,sy:480},
-   {x:464,y:464,w:352,h:16,vx:-3.0,vy:0,rx:48,ry:0,sx:464,sy:464},
-   {x:500,y:448,w:280,h:16,vx:3.5,vy:0,rx:48,ry:0,sx:500,sy:448},
-   {x:536,y:432,w:208,h:16,vx:-4.0,vy:0,rx:48,ry:0,sx:536,sy:432},
-   {x:560,y:416,w:160,h:16,vx:3.0,vy:0,rx:48,ry:0,sx:560,sy:416},
-   {x:576,y:400,w:128,h:16,vx:-3.5,vy:0,rx:48,ry:0,sx:576,sy:400},
-   {x:592,y:384,w:96,h:16,vx:4.0,vy:0,rx:48,ry:0,sx:592,sy:384},
-   {x:600,y:368,w:80,h:16,vx:-3.0,vy:0,rx:48,ry:0,sx:600,sy:368},
-   {x:600,y:352,w:80,h:16,vx:3.5,vy:0,rx:48,ry:0,sx:600,sy:352},
-   {x:600,y:336,w:80,h:16,vx:-4.0,vy:0,rx:48,ry:0,sx:600,sy:336},
-   {x:600,y:320,w:80,h:16,vx:3.0,vy:0,rx:48,ry:0,sx:600,sy:320},
-   {x:600,y:304,w:80,h:16,vx:-3.5,vy:0,rx:48,ry:0,sx:600,sy:304},
-   {x:600,y:288,w:80,h:16,vx:4.0,vy:0,rx:48,ry:0,sx:600,sy:288},
-   {x:600,y:272,w:80,h:16,vx:-3.0,vy:0,rx:48,ry:0,sx:600,sy:272},
-   {x:600,y:256,w:80,h:16,vx:3.5,vy:0,rx:48,ry:0,sx:600,sy:256},
-   {x:600,y:240,w:80,h:16,vx:-4.0,vy:0,rx:48,ry:0,sx:600,sy:240},
-   {x:600,y:224,w:80,h:16,vx:3.0,vy:0,rx:48,ry:0,sx:600,sy:224},
-   {x:600,y:208,w:80,h:16,vx:-3.5,vy:0,rx:48,ry:0,sx:600,sy:208},
+move:[
+   {x:0,y:608,w:1000,h:32,vx:3.0,vy:0,rx:48,ry:0,sx:140,sy:608,phase:0},
+   {x:176,y:592,w:928,h:32,vx:-3.5,vy:0,rx:88,ry:0,sx:176,sy:592,phase:Math.PI*0.7},
+   {x:212,y:576,w:856,h:32,vx:4.0,vy:0,rx:32,ry:0,sx:212,sy:576,phase:Math.PI*1.3},
+   {x:248,y:560,w:784,h:32,vx:-3.0,vy:0,rx:120,ry:0,sx:248,sy:560,phase:Math.PI*0.4},
+   {x:284,y:544,w:712,h:32,vx:3.5,vy:0,rx:64,ry:0,sx:284,sy:544,phase:Math.PI*1.8},
+   {x:320,y:528,w:640,h:32,vx:-4.0,vy:0,rx:96,ry:0,sx:320,sy:528,phase:Math.PI*0.2},
+   {x:356,y:512,w:568,h:32,vx:3.0,vy:0,rx:40,ry:0,sx:356,sy:512,phase:Math.PI*1.6},
+   {x:392,y:496,w:496,h:32,vx:-3.5,vy:0,rx:104,ry:0,sx:392,sy:496,phase:Math.PI*0.9},
+   {x:428,y:480,w:424,h:32,vx:4.0,vy:0,rx:56,ry:0,sx:428,sy:480,phase:Math.PI*1.1},
+   {x:464,y:464,w:352,h:32,vx:-3.0,vy:0,rx:80,ry:0,sx:464,sy:464,phase:Math.PI*0.5},
+   {x:500,y:448,w:280,h:32,vx:3.5,vy:0,rx:32,ry:0,sx:500,sy:448,phase:Math.PI*1.9},
+   {x:536,y:432,w:208,h:32,vx:-4.0,vy:0,rx:72,ry:0,sx:536,sy:432,phase:Math.PI*0.3},
+   {x:560,y:416,w:160,h:32,vx:3.0,vy:0,rx:48,ry:0,sx:560,sy:416,phase:Math.PI*1.4},
+   {x:576,y:400,w:128,h:32,vx:-3.5,vy:0,rx:40,ry:0,sx:576,sy:400,phase:Math.PI*0.6},
+   {x:592,y:384,w:96,h:32,vx:4.0,vy:0,rx:24,ry:0,sx:592,sy:384,phase:Math.PI*1.7},
+   {x:600,y:368,w:80,h:32,vx:-3.0,vy:0,rx:16,ry:0,sx:600,sy:368,phase:Math.PI*0.8},
+   {x:600,y:352,w:80,h:32,vx:3.5,vy:0,rx:32,ry:0,sx:600,sy:352,phase:Math.PI*1.2},
+   {x:600,y:336,w:80,h:32,vx:-4.0,vy:0,rx:24,ry:0,sx:600,sy:336,phase:Math.PI*0.1},
+   {x:600,y:320,w:80,h:32,vx:3.0,vy:0,rx:16,ry:0,sx:600,sy:320,phase:Math.PI*1.5},
+   {x:600,y:304,w:80,h:32,vx:-3.5,vy:0,rx:24,ry:0,sx:600,sy:304,phase:Math.PI*0.4},
+   {x:600,y:288,w:80,h:32,vx:4.0,vy:0,rx:16,ry:0,sx:600,sy:288,phase:Math.PI*1.9},
+   {x:600,y:272,w:80,h:32,vx:-3.0,vy:0,rx:24,ry:0,sx:600,sy:272,phase:Math.PI*0.6},
+   {x:600,y:256,w:80,h:32,vx:3.5,vy:0,rx:16,ry:0,sx:600,sy:256,phase:Math.PI*1.3},
+   {x:600,y:240,w:80,h:32,vx:-4.0,vy:0,rx:24,ry:0,sx:600,sy:240,phase:Math.PI*0.2},
+   {x:600,y:224,w:80,h:32,vx:3.0,vy:0,rx:16,ry:0,sx:600,sy:224,phase:Math.PI*1.6},
+   {x:600,y:208,w:80,h:32,vx:-3.5,vy:0,rx:24,ry:0,sx:600,sy:208,phase:Math.PI*0.9},
+
+   // 床にくっついている動く足場（追加）
+   {x:0,y:640,w:120,h:32,vx:4.5,vy:0,rx:300,ry:0,sx:120,sy:640,phase:0},
+   {x:1160,y:640,w:120,h:32,vx:-4.5,vy:0,rx:300,ry:0,sx:1160,sy:640,phase:Math.PI*0.5},
  ],
  hg:[
    // 3段ごとに両端（段1,4,7,10,13,16,19,22,25）

@@ -2294,6 +2294,7 @@ const STAGES=[
    {x:624,y:1584,w:32,h:32},
    {x:624,y:944,w:32,h:32},
    {x:624,y:304,w:32,h:32},
+   {x:624,y:944,w:32,h:32},
  ],
  spikes:[
    {x:272,y:2528,w:32,h:32},{x:608,y:2400,w:32,h:32},
@@ -2317,8 +2318,8 @@ const STAGES=[
    {x:960,y:1152,w:32,h:32,axis:'x',minX:832,maxX:1088,speed:4.5},
  ],
  chasers:[],move:[
-   {x:352,y:1792,w:160,h:16,vx:0,vy:10.0,rx:0,ry:128,sx:352,sy:1792},
-   {x:240,y:2064,w:160,h:16,vx:10.0,vy:0,rx:100,ry:0,sx:240,sy:2064},
+   {x:352,y:1792,w:160,h:16,vx:0,vy:12.0,rx:0,ry:128,sx:352,sy:1792},
+   {x:240,y:2064,w:160,h:16,vx:-12.0,vy:0,rx:100,ry:0,sx:240,sy:2064},
    {x:736,y:1152,w:160,h:16,vx:0,vy:10.0,rx:0,ry:-80,sx:896,sy:1188},
    {x:128,y:1184,w:160,h:16,vx:0,vy:10.0,rx:0,ry:-160,sx:128,sy:1152},
  ],fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
@@ -2768,8 +2769,6 @@ crushers:[
    {x:448,y:544,w:32,h:32,triggerRadius:48,warn:false},
    {x:480,y:544,w:32,h:32,triggerRadius:48,warn:false},
    {x:512,y:544,w:32,h:32,triggerRadius:48,warn:false},
-   {x:544,y:544,w:32,h:32,triggerRadius:48,warn:false},
-   {x:576,y:544,w:32,h:32,triggerRadius:48,warn:false},
    {x:608,y:544,w:32,h:32,triggerRadius:48,warn:false},
    {x:640,y:544,w:32,h:32,triggerRadius:48,warn:false},
    {x:736,y:544,w:32,h:32,triggerRadius:48,warn:false},
@@ -2785,7 +2784,7 @@ crushers:[
  ],
  hg:[
    {x:488,y:288,w:16,h:32},
-   {x:536,y:544,w:16,h:32},
+   {x:552,y:544,w:16,h:32},
    {x:648,y:160,w:16,h:32},
  ],
  fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
@@ -2919,18 +2918,18 @@ crushers:[
    {x:960,y:160,w:32,h:32},
  ],
  move:[{
-   x:496,y:344,w:64,h:16,
+   x:496,y:344,w:32,h:32,
    orbit:true,
    centerX:640,centerY:360,
    radius:240,
-   speed:1.2,
+   speed:0.8,
    angle:Math.PI,
    vx:0,vy:0,rx:0,ry:0,sx:496,sy:344,phase:0
  }],
  spikes:[],traps:[],fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
  chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  crushers:[],teleporters:[],memos:[],hg:[
-   {x:1128,y:48,w:16,h:32},{x:264,y:576,w:16,h:32}
+   {x:1128,y:64,w:16,h:32},{x:264,y:528,w:16,h:32}
  ],focusZones:[],darkness:{enabled:false},
  goal:{x:1200,y:0,w:80,h:96},
  spawn:{x:48,y:592}},
@@ -2953,15 +2952,15 @@ crushers:[
    {x:1152,y:368,w:32,h:32},{x:1152,y:208,w:32,h:32},
  ],
  move:[
-   {x:0,y:480,w:160,h:16,vx:-5.5,vy:0,rx:200,ry:0,sx:200,sy:560,phase:0},
-   {x:1000,y:560,w:160,h:16,vx:5.5,vy:0,rx:-200,ry:0,sx:800,sy:480,phase:Math.PI},
-   {x:260,y:320,w:160,h:16,vx:5.0,vy:0,rx:200,ry:0,sx:260,sy:400,phase:0},
-   {x:720,y:400,w:160,h:16,vx:-5.0,vy:0,rx:-200,ry:0,sx:720,sy:320,phase:Math.PI},
-   {x:0,y:160,w:160,h:16,vx:-5.5,vy:0,rx:200,ry:0,sx:100,sy:240,phase:0},
-   {x:720,y:240,w:160,h:16,vx:-5.5,vy:0,rx:-200,ry:0,sx:800,sy:160,phase:Math.PI},
+   {x:0,y:480,w:160,h:16,vx:-7.0,vy:0,rx:160,ry:0,sx:200,sy:560,phase:0},
+   {x:1000,y:560,w:160,h:16,vx:7.0,vy:0,rx:-160,ry:0,sx:800,sy:480,phase:Math.PI},
+   {x:260,y:320,w:160,h:16,vx:-7.0,vy:0,rx:160,ry:0,sx:260,sy:400,phase:0},
+   {x:720,y:400,w:160,h:16,vx:7.0,vy:0,rx:-160,ry:0,sx:720,sy:320,phase:Math.PI},
+   {x:0,y:160,w:160,h:16,vx:-7.0,vy:0,rx:160,ry:0,sx:100,sy:240,phase:0},
+   {x:720,y:240,w:160,h:16,vx:-7.0,vy:0,rx:-160,ry:0,sx:800,sy:160,phase:Math.PI},
  ],
  pendulums:[
-   {pivotX:640,pivotY:96,length:200,speed:2.0,maxAngle:0.9,angle:0},
+   {pivotX:640,pivotY:96,length:224,speed:2.0,maxAngle:0.9,angle:0},
  ],
  traps:[
    {x:850,y:528,w:32,h:32,triggerRadius:96,warn:false},
@@ -3053,6 +3052,7 @@ crushers:[
    {x:800,y:608,w:32,h:112},
    {x:864,y:576,w:32,h:144},
    {x:928,y:624,w:32,h:96},
+   
    {x:992,y:592,w:32,h:128},
    {x:1056,y:608,w:32,h:112},
    {x:1200,y:704,w:80,h:16},
@@ -3068,8 +3068,13 @@ crushers:[
    {x:808,y:576,w:16,h:32},
  ],
  traps:[
-   {x:288,y:576,w:32,h:32,tx:224,warn:false},
-   {x:736,y:560,w:32,h:32,tx:672,warn:false},
+   {x:224,y:560,w:32,h:32,triggerRadius:48,warn:false},
+   {x:288,y:576,w:32,h:32,triggerRadius:48,warn:false},
+   {x:480,y:560,w:32,h:32,triggerRadius:48,warn:false},
+   {x:544,y:576,w:32,h:32,triggerRadius:48,warn:false},
+   {x:736,y:560,w:32,h:32,triggerRadius:48,warn:false},
+   {x:992,y:560,w:32,h:32,triggerRadius:48,warn:false},
+   {x:1056,y:576,w:32,h:32,triggerRadius:48,warn:false},
  ],
  move:[],fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
  chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
@@ -3301,12 +3306,12 @@ move:[
  ],
  pendulums:[{pivotX:640,pivotY:0,length:176,speed:2.0,maxAngle:1.0,angle:1.0}],
  lava:[{y:200,speed:-48,color:'rgba(255,80,0,0.9)'}],
- hg:[{x:568,y:640,w:16,h:32}],
+ hg:[{x:584,y:160,w:16,h:32},{x:568,y:640,w:16,h:32}],
  fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],chasers:[],
  growingSpikes:[],buttons:[],currents:[],
  focusZones:[],darkness:{enabled:false},
  goal:{x:640,y:576,w:80,h:96},
- spawn:{x:608,y:96}},
+ spawn:{x:624,y:96}},
 
 // STAGE 66 — SEESAW CURRENTS
 {name:'STAGE 66',sub:'One press. Two outcomes.',

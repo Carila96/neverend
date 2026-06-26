@@ -2812,7 +2812,7 @@ crushers:[
    {x:992,y:608,w:32,h:32}
  ],
  crushers:[
-   {x:32,y:32,w:1216,h:480,axis:'y',min:-400,max:112,speed:48,startDir:1},
+   {x:32,y:-400,w:1216,h:480,axis:'y',min:-400,max:112,speed:48,startDir:1},
  ],
  traps:[
    {x:736,y:608,w:32,h:32,tx:650,warn:false},
@@ -2882,7 +2882,7 @@ crushers:[
    {x:1072,y:624,w:16,h:80},
    {x:1088,y:616,w:80,h:16},
    {x:192,y:528,w:16,h:16},
-   {x:384,y:176,w:16,h:16},
+   {x:368,y:176,w:16,h:16},
  ],
  fall:[
    {x:32,y:352,w:160,h:16,spikesOn:false},
@@ -2915,8 +2915,8 @@ crushers:[
  plats:[
    {x:0,y:640,w:192,h:80},
    {x:1088,y:96,w:192,h:96},
-   {x:256,y:608,w:32,h:32},
-   {x:960,y:288,w:32,h:32},
+   {x:256,y:544,w:32,h:32},
+   {x:960,y:160,w:32,h:32},
  ],
  move:[{
    x:496,y:344,w:64,h:16,
@@ -2943,7 +2943,7 @@ crushers:[
    {x:0,y:0,w:1280,h:96},
    {x:0,y:480,w:128,h:16},
    {x:0,y:320,w:128,h:16},
-   {x:0,y:160,w:128,h:16},
+   {x:0,y:160,w:192,h:16},
    {x:1152,y:400,w:128,h:16},
    {x:1152,y:240,w:128,h:16},
    {x:624,y:344,w:32,h:32},
@@ -2953,12 +2953,12 @@ crushers:[
    {x:1152,y:368,w:32,h:32},{x:1152,y:208,w:32,h:32},
  ],
  move:[
-   {x:0,y:480,w:160,h:16,vx:-5.5,vy:0,rx:400,ry:0,sx:200,sy:560,phase:0},
-   {x:1000,y:560,w:160,h:16,vx:5.5,vy:0,rx:-400,ry:0,sx:800,sy:480,phase:Math.PI},
-   {x:260,y:320,w:160,h:16,vx:5.0,vy:0,rx:400,ry:0,sx:260,sy:400,phase:0},
-   {x:720,y:400,w:160,h:16,vx:-5.0,vy:0,rx:-400,ry:0,sx:720,sy:320,phase:Math.PI},
-   {x:0,y:160,w:160,h:16,vx:-5.5,vy:0,rx:400,ry:0,sx:100,sy:240,phase:0},
-   {x:720,y:240,w:160,h:16,vx:-5.5,vy:0,rx:-400,ry:0,sx:800,sy:160,phase:Math.PI},
+   {x:0,y:480,w:160,h:16,vx:-5.5,vy:0,rx:200,ry:0,sx:200,sy:560,phase:0},
+   {x:1000,y:560,w:160,h:16,vx:5.5,vy:0,rx:-200,ry:0,sx:800,sy:480,phase:Math.PI},
+   {x:260,y:320,w:160,h:16,vx:5.0,vy:0,rx:200,ry:0,sx:260,sy:400,phase:0},
+   {x:720,y:400,w:160,h:16,vx:-5.0,vy:0,rx:-200,ry:0,sx:720,sy:320,phase:Math.PI},
+   {x:0,y:160,w:160,h:16,vx:-5.5,vy:0,rx:200,ry:0,sx:100,sy:240,phase:0},
+   {x:720,y:240,w:160,h:16,vx:-5.5,vy:0,rx:-200,ry:0,sx:800,sy:160,phase:Math.PI},
  ],
  pendulums:[
    {pivotX:640,pivotY:96,length:200,speed:2.0,maxAngle:0.9,angle:0},
@@ -3061,7 +3061,7 @@ crushers:[
    {x:96,y:576,w:32,h:32},
  ],
  crushers:[
-   {x:0,y:32,w:1216,h:480,axis:'y',min:-400,max:112,speed:32,startDir:1}
+   {x:0,y:-400,w:1280,h:480,axis:'y',min:-400,max:112,speed:32,startDir:1}
  ],
  hg:[
    {x:368,y:544,w:16,h:32},
@@ -3084,37 +3084,33 @@ crushers:[
    {x:1152,y:160,w:128,h:480},
  ],
 move:[
-   {x:0,y:608,w:1000,h:32,vx:3.0,vy:0,rx:48,ry:0,sx:140,sy:608,phase:0},
-   {x:176,y:592,w:928,h:32,vx:-3.5,vy:0,rx:88,ry:0,sx:176,sy:592,phase:Math.PI*0.7},
-   {x:212,y:576,w:856,h:32,vx:4.0,vy:0,rx:32,ry:0,sx:212,sy:576,phase:Math.PI*1.3},
-   {x:248,y:560,w:784,h:32,vx:-3.0,vy:0,rx:120,ry:0,sx:248,sy:560,phase:Math.PI*0.4},
-   {x:284,y:544,w:712,h:32,vx:3.5,vy:0,rx:64,ry:0,sx:284,sy:544,phase:Math.PI*1.8},
-   {x:320,y:528,w:640,h:32,vx:-4.0,vy:0,rx:96,ry:0,sx:320,sy:528,phase:Math.PI*0.2},
-   {x:356,y:512,w:568,h:32,vx:3.0,vy:0,rx:40,ry:0,sx:356,sy:512,phase:Math.PI*1.6},
-   {x:392,y:496,w:496,h:32,vx:-3.5,vy:0,rx:104,ry:0,sx:392,sy:496,phase:Math.PI*0.9},
-   {x:428,y:480,w:424,h:32,vx:4.0,vy:0,rx:56,ry:0,sx:428,sy:480,phase:Math.PI*1.1},
-   {x:464,y:464,w:352,h:32,vx:-3.0,vy:0,rx:80,ry:0,sx:464,sy:464,phase:Math.PI*0.5},
-   {x:500,y:448,w:280,h:32,vx:3.5,vy:0,rx:32,ry:0,sx:500,sy:448,phase:Math.PI*1.9},
-   {x:536,y:432,w:208,h:32,vx:-4.0,vy:0,rx:72,ry:0,sx:536,sy:432,phase:Math.PI*0.3},
-   {x:560,y:416,w:160,h:32,vx:3.0,vy:0,rx:48,ry:0,sx:560,sy:416,phase:Math.PI*1.4},
-   {x:576,y:400,w:128,h:32,vx:-3.5,vy:0,rx:40,ry:0,sx:576,sy:400,phase:Math.PI*0.6},
-   {x:592,y:384,w:96,h:32,vx:4.0,vy:0,rx:24,ry:0,sx:592,sy:384,phase:Math.PI*1.7},
-   {x:600,y:368,w:80,h:32,vx:-3.0,vy:0,rx:16,ry:0,sx:600,sy:368,phase:Math.PI*0.8},
-   {x:600,y:352,w:80,h:32,vx:3.5,vy:0,rx:32,ry:0,sx:600,sy:352,phase:Math.PI*1.2},
-   {x:600,y:336,w:80,h:32,vx:-4.0,vy:0,rx:24,ry:0,sx:600,sy:336,phase:Math.PI*0.1},
-   {x:600,y:320,w:80,h:32,vx:3.0,vy:0,rx:16,ry:0,sx:600,sy:320,phase:Math.PI*1.5},
-   {x:600,y:304,w:80,h:32,vx:-3.5,vy:0,rx:24,ry:0,sx:600,sy:304,phase:Math.PI*0.4},
-   {x:600,y:288,w:80,h:32,vx:4.0,vy:0,rx:16,ry:0,sx:600,sy:288,phase:Math.PI*1.9},
-   {x:600,y:272,w:80,h:32,vx:-3.0,vy:0,rx:24,ry:0,sx:600,sy:272,phase:Math.PI*0.6},
-   {x:600,y:256,w:80,h:32,vx:3.5,vy:0,rx:16,ry:0,sx:600,sy:256,phase:Math.PI*1.3},
-   {x:600,y:240,w:80,h:32,vx:-4.0,vy:0,rx:24,ry:0,sx:600,sy:240,phase:Math.PI*0.2},
-   {x:600,y:224,w:80,h:32,vx:3.0,vy:0,rx:16,ry:0,sx:600,sy:224,phase:Math.PI*1.6},
-   {x:600,y:208,w:80,h:32,vx:-3.5,vy:0,rx:24,ry:0,sx:600,sy:208,phase:Math.PI*0.9},
-
-   // 床にくっついている動く足場（追加）
-   {x:0,y:640,w:120,h:32,vx:4.5,vy:0,rx:300,ry:0,sx:120,sy:640,phase:0},
-   {x:1160,y:640,w:120,h:32,vx:-4.5,vy:0,rx:300,ry:0,sx:1160,sy:640,phase:Math.PI*0.5},
- ],
+   // 1段目 y:608 幅1000 (x:140〜1140)
+   {x:140,y:608,w:1000,h:32,vx:3.0,vy:0,rx:48,ry:0,sx:140,sy:608,phase:0},
+   // 2段目 y:576 幅880 (x:200〜1080) ※前段の内側に収まる
+   {x:200,y:576,w:880,h:32,vx:-3.5,vy:0,rx:64,ry:0,sx:200,sy:576,phase:Math.PI*0.7},
+   // 3段目 y:544 幅760 (x:260〜1020)
+   {x:260,y:544,w:760,h:32,vx:4.0,vy:0,rx:48,ry:0,sx:260,sy:544,phase:Math.PI*1.3},
+   // 4段目 y:512 幅640 (x:320〜960)
+   {x:320,y:512,w:640,h:32,vx:-3.0,vy:0,rx:56,ry:0,sx:320,sy:512,phase:Math.PI*0.4},
+   // 5段目 y:480 幅520 (x:380〜900)
+   {x:380,y:480,w:520,h:32,vx:3.5,vy:0,rx:40,ry:0,sx:380,sy:480,phase:Math.PI*1.8},
+   // 6段目 y:448 幅400 (x:440〜840)
+   {x:440,y:448,w:400,h:32,vx:-4.0,vy:0,rx:48,ry:0,sx:440,sy:448,phase:Math.PI*0.2},
+   // 7段目 y:416 幅320 (x:480〜800)
+   {x:480,y:416,w:320,h:32,vx:3.0,vy:0,rx:32,ry:0,sx:480,sy:416,phase:Math.PI*1.6},
+   // 8段目 y:384 幅260 (x:510〜770)
+   {x:510,y:384,w:260,h:32,vx:-3.5,vy:0,rx:32,ry:0,sx:510,sy:384,phase:Math.PI*0.9},
+   // 9段目 y:352 幅220 (x:530〜750)
+   {x:530,y:352,w:220,h:32,vx:4.0,vy:0,rx:24,ry:0,sx:530,sy:352,phase:Math.PI*1.1},
+   // 10段目 y:320 幅220 (壺の入り口、ほぼ同幅) 
+   {x:530,y:320,w:220,h:32,vx:-3.0,vy:0,rx:24,ry:0,sx:530,sy:320,phase:Math.PI*0.5},
+   // 11段目 y:288 幅220
+   {x:530,y:288,w:220,h:32,vx:3.5,vy:0,rx:16,ry:0,sx:530,sy:288,phase:Math.PI*1.9},
+   // 12段目 y:256 幅220
+   {x:530,y:256,w:220,h:32,vx:-4.0,vy:0,rx:16,ry:0,sx:530,sy:256,phase:Math.PI*0.3},
+   // 13段目（頂上）y:224 幅220
+   {x:530,y:224,w:220,h:32,vx:3.0,vy:0,rx:24,ry:0,sx:530,sy:224,phase:Math.PI*1.4},
+],
  hg:[
    // 3段ごとに両端（段1,4,7,10,13,16,19,22,25）
    {x:108,y:592,w:16,h:32},{x:1124,y:592,w:16,h:32},
@@ -3158,7 +3154,7 @@ move:[
  traps:[
    {x:1096,y:160,w:32,h:32,tx:920,warn:false}
  ],
- hg:[{x:640,y:160,w:16,h:32},{x:320,y:160,w:16,h:32}],
+ hg:[{x:640,y:160,w:16,h:32},{x:320,y:160,w:16,h:32},{x:24,y:368,w:16,h:32}],
  fall:[
    {x:800,y:192,w:128,h:528,spikesOn:false,gravity:10.0},
  ],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],
@@ -3169,7 +3165,7 @@ move:[
    {x:16,y:450,w:32,h:32,axis:'x',right:false,maxSize:96,growSpeed:30,shrinkSpeed:30},
    {x:128,y:350,w:32,h:32,axis:'x',right:true,maxSize:96,growSpeed:30,shrinkSpeed:30},
    {x:16,y:250,w:32,h:32,axis:'x',right:false,maxSize:96,growSpeed:30,shrinkSpeed:30},
-   {x:992,y:160,w:32,h:32,maxSize:96,growSpeed:30,shrinkSpeed:20},
+   {x:672,y:160,w:32,h:32,maxSize:96,growSpeed:30,shrinkSpeed:20},
  ],buttons:[],currents:[],
  focusZones:[],darkness:{enabled:false},
  goal:{x:1200,y:96,w:80,h:96},
@@ -3279,12 +3275,7 @@ move:[
    {centerX:640,centerY:200,radius:64,speed:-4.5,angle:0,size:14,color:'rgba(200,80,255,0.9)'},
    {centerX:640,centerY:200,radius:64,speed:-4.5,angle:Math.PI,size:14,color:'rgba(200,80,255,0.9)'},
  ],
- traps:[
-   {x:432,y:2304,w:32,h:32,tx:368,warn:false},
-   {x:132,y:2176,w:32,h:32,tx:68,warn:false},
-   {x:282,y:1152,w:32,h:32,tx:218,warn:false},
-   {x:232,y:256,w:32,h:32,tx:168,warn:false},
- ],
+ traps:[],
  hg:[
    {x:432,y:2560,w:16,h:32},{x:582,y:2080,w:16,h:32},
    {x:582,y:1312,w:16,h:32},{x:532,y:160,w:16,h:32},
@@ -3308,7 +3299,7 @@ move:[
  traps:[
    {x:750,y:300,w:32,h:32,tx:700,warn:false},
  ],
- pendulums:[{pivotX:640,pivotY:0,length:176,speed:2.0,maxAngle:1.0,angle:0}],
+ pendulums:[{pivotX:640,pivotY:0,length:176,speed:2.0,maxAngle:1.0,angle:1.0}],
  lava:[{y:200,speed:-48,color:'rgba(255,80,0,0.9)'}],
  hg:[{x:568,y:640,w:16,h:32}],
  fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],chasers:[],

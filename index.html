@@ -3085,7 +3085,7 @@ crushers:[
 // STAGE 61 — THE PYRAMID
 {name:'STAGE 61',sub:'Climb the shifting steps.',
  plats:[
-   {x:1152,y:160,w:128,h:480},
+   {x:1184,y:0,w:16,h:16},
  ],
 move:[
    {x:44,y:720,w:1192,h:32,vx:4.5,vy:0,rx:80,ry:0,sx:44,sy:720,phase:0},
@@ -3107,25 +3107,28 @@ move:[
    {x:434,y:208,w:412,h:32,vx:5.0,vy:0,rx:48,ry:0,sx:434,sy:208,phase:Math.PI*1.2},
    {x:434,y:176,w:412,h:32,vx:-5.5,vy:0,rx:48,ry:0,sx:434,sy:176,phase:Math.PI*0.1},
    {x:434,y:144,w:412,h:32,vx:4.5,vy:0,rx:40,ry:0,sx:434,sy:144,phase:Math.PI*1.5},
+   {
+   x:1224,y:656,w:32,h:32,
+   waypoints:[
+     {x:1224,y:656,t:2.0},
+     {x:1224,y:160,t:2.0},
+   ],
+   pingpong:true,
+   triggerOnBoard:true,
+   vx:0,vy:0,rx:0,ry:0,sx:1224,sy:656,phase:0
+ }
 ],
  hg:[
-   {x:108,y:704,w:16,h:32},{x:1124,y:704,w:16,h:32},
-   {x:216,y:656,w:16,h:32},{x:1016,y:656,w:16,h:32},
-   {x:324,y:608,w:16,h:32},{x:908,y:608,w:16,h:32},
-   {x:432,y:560,w:16,h:32},{x:800,y:560,w:16,h:32},
-   {x:528,y:512,w:16,h:32},{x:704,y:512,w:16,h:32},
-   {x:568,y:464,w:16,h:32},{x:664,y:464,w:16,h:32},
-   {x:568,y:416,w:16,h:32},{x:664,y:416,w:16,h:32},
-   {x:568,y:368,w:16,h:32},{x:664,y:368,w:16,h:32},
-   {x:568,y:320,w:16,h:32},{x:664,y:320,w:16,h:32},
-   {x:568,y:272,w:16,h:32},{x:664,y:272,w:16,h:32},
-   {x:568,y:224,w:16,h:32},{x:664,y:224,w:16,h:32},
-   {x:568,y:176,w:16,h:32},{x:664,y:176,w:16,h:32},
+   {x:96,y:688,w:16,h:32},
+   {x:192,y:624,w:16,h:32},{x:1048,y:24,w:16,h:32},
+   {x:256,y:592,w:16,h:32},{x:988,y:592,w:16,h:32},
+   {x:312,y:528,w:16,h:32},{x:864,y:528,w:16,h:32},
+   {x:448,y:480,w:16,h:32},{x:800,y:480,w:16,h:32},
  ],
  spikes:[],traps:[],fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
  chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  crushers:[],teleporters:[],memos:[],focusZones:[],darkness:{enabled:false},
- goal:{x:1152,y:64,w:128,h:96},
+ goal:{x:1200,y:0,w:80,h:96},
  spawn:{x:48,y:692}},
 
 // STAGE 62 — ORBIT HALL
@@ -3234,6 +3237,7 @@ move:[
    {x:400,y:2592,w:192,h:16},
    {x:700,y:2464,w:192,h:16},
    {x:400,y:2336,w:192,h:16},
+   {x:700,y:2272,w:32,h:32},
    {x:100,y:2208,w:224,h:16},
    {x:550,y:2080,w:192,h:16},
    {x:850,y:1952,w:192,h:16},

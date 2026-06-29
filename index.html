@@ -3085,7 +3085,7 @@ crushers:[
 // STAGE 61 — THE PYRAMID
 {name:'STAGE 61',sub:'Climb the shifting steps.',
  plats:[
-   {x:1184,y:0,w:16,h:16},
+   {x:1184,y:0,w:16,h:96},
  ],
 move:[
    {x:44,y:720,w:1192,h:32,vx:4.5,vy:0,rx:80,ry:0,sx:44,sy:720,phase:0},
@@ -3099,7 +3099,7 @@ move:[
    {x:434,y:464,w:412,h:32,vx:5.5,vy:0,rx:48,ry:0,sx:434,sy:464,phase:Math.PI*1.1},
    {x:434,y:432,w:412,h:32,vx:-4.5,vy:0,rx:48,ry:0,sx:434,sy:432,phase:Math.PI*0.5},
    {x:434,y:400,w:412,h:32,vx:5.0,vy:0,rx:40,ry:0,sx:434,sy:400,phase:Math.PI*1.9},
-   {x:434,y:368,w:412,h:32,vx:-5.5,vy:0,rx:40,ry:0,sx:434,sy:368,phase:Math.PI*0.3},
+   {x:466,y:368,w:444,h:32,vx:-5.5,vy:0,rx:40,ry:0,sx:434,sy:368,phase:Math.PI*0.3},
    {x:434,y:336,w:412,h:32,vx:4.5,vy:0,rx:48,ry:0,sx:434,sy:336,phase:Math.PI*1.4},
    {x:434,y:304,w:412,h:32,vx:-5.0,vy:0,rx:48,ry:0,sx:434,sy:304,phase:Math.PI*0.6},
    {x:434,y:272,w:412,h:32,vx:5.5,vy:0,rx:40,ry:0,sx:434,sy:272,phase:Math.PI*1.7},
@@ -3330,19 +3330,28 @@ move:[
    {x:440,y:704,w:100,h:16},{x:540,y:704,w:100,h:16},
    {x:640,y:704,w:100,h:16},{x:740,y:704,w:100,h:16},{x:840,y:704,w:100,h:16},
    {x:940,y:704,w:100,h:16},{x:1040,y:704,w:100,h:16},{x:1140,y:704,w:100,h:16},
+   {x:340,y:360,w:32,h:32},{x:1140,y:360,w:32,h:32},{x:190,y:592,w:32,h:32}
  ],
  buttons:[
-   {x:200,y:224,w:32,h:16,id:'btn1'},
    {x:472,y:224,w:32,h:16,id:'btn1'},
    {x:520,y:224,w:32,h:16,id:'btn2'},
-   {x:872,y:224,w:32,h:16,id:'btn3'},
+   {x:872,y:224,w:32,h:16,id:'btn2'},
+   {x:972,y:224,w:32,h:16,id:'btn3'},
+   {x:200,y:224,w:32,h:16,id:'btn4'},
+   {x:390,y:688,w:32,h:16,id:'btn5'},
  ],
  currents:[
    // ボタン1：シーソー
-   {x1:240,y1:176,x2:440,y2:176,buttonIds:['btn1'],startActive:false}, // ON時にON
-   {x1:440,y1:16,x2:440,y2:176,buttonIds:['btn1'],startActive:false},
-   {x1:640,y1:16,x2:640,y2:176,buttonIds:['btn1'],startActive:true},  // ON時にOFF
-   {x1:240,y1:16,x2:240,y2:176,buttonIds:['btn1'],startActive:true},
+   {x1:440,y1:0,x2:440,y2:240,buttonIds:['btn1'],startActive:false}, // ON時にON
+   {x1:640,y1:240,x2:840,y2:240,buttonIds:['btn2'],startActive:false},
+   {x1:940,y1:0,x2:940,y2:240,buttonIds:['btn2'],startActive:false},
+   {x1:540,y1:240,x2:540,y2:480,buttonIds:['btn3'],startActive:false},
+   {x1:240,y1:240,x2:440,y2:240,buttonIds:['btn1'],startActive:true},  // ON時にOFF
+   {x1:840,y1:0,x2:840,y2:240,buttonIds:['btn2'],startActive:true},
+   {x1:640,y1:250,x2:840,y2:250,buttonIds:['btn3'],startActive:true},
+   {x1:1040,y1:496,x2:1040,y2:704,buttonIds:['btn4'],startActive:true},
+   {x1:1030,y1:496,x2:1030,y2:704,buttonIds:['btn5'],startActive:true},
+   
    // ボタン2：シーソー
    {x1:640,y1:176,x2:840,y2:176,buttonIds:['btn2'],startActive:false},
    {x1:1040,y1:16,x2:1040,y2:176,buttonIds:['btn2'],startActive:false},
@@ -3354,7 +3363,7 @@ move:[
  spikes:[],traps:[],fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
  chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],crushers:[],
  memos:[],hg:[],focusZones:[],darkness:{enabled:false},
- goal:{x:1200,y:608,w:80,h:96},
+ goal:{x:1160,y:608,w:80,h:96},
  spawn:{x:48,y:32}},
 
 // STAGE 67 — THE GUARDIAN

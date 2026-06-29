@@ -5794,7 +5794,6 @@ function loop(ts){
       const wps=p.waypoints;
       ctx.moveTo(wps[0].x+p.w/2,wps[0].y+p.h/2);
       for(let i=1;i<wps.length;i++)ctx.lineTo(wps[i].x+p.w/2,wps[i].y+p.h/2);
-      ctx.lineTo(wps[0].x+p.w/2,wps[0].y+p.h/2);
       ctx.stroke();
       // 各経由点に小さな丸
       ctx.setLineDash([]);

@@ -4238,13 +4238,13 @@ function drawMovingPlatform(p){
 function drawHourglass(h){
   if(h.taken)return;
   const bob=Math.sin(animT*3+h.x*.01)*4,cx=h.x+h.w/2,cy=h.y+bob;
-  const col='rgba(130,255,200,0.9)';
+  const col=h.penalty?'rgba(255,80,80,0.9)':'rgba(130,255,200,0.9)';
   ctx.save();ctx.shadowColor=col;ctx.shadowBlur=12;ctx.strokeStyle=col;ctx.lineWidth=2;ctx.fillStyle='rgba(0,0,0,0.5)';
   ctx.beginPath();ctx.moveTo(cx-10,cy-12);ctx.lineTo(cx+10,cy-12);ctx.lineTo(cx,cy);ctx.closePath();ctx.fill();ctx.stroke();
   ctx.beginPath();ctx.moveTo(cx-10,cy+12);ctx.lineTo(cx+10,cy+12);ctx.lineTo(cx,cy);ctx.closePath();ctx.fill();ctx.stroke();
   ctx.beginPath();ctx.moveTo(cx-10,cy);ctx.lineTo(cx+10,cy);ctx.stroke();
   ctx.restore();
-  neonText('+5s',cx,cy-20+bob,col,11,6,'center');
+  neonText(h.penalty?'-1s':'+5s',cx,cy-20+bob,col,11,6,'center');
 }
 
 function drawMimic(m){
@@ -5054,8 +5054,16 @@ function update(dt){
     }
     for(const h of hourglasses){
       if(!h.taken&&overlap(player,{x:h.x,y:h.y,w:h.w,h:h.h})){
-        h.taken=true;if(timeLeft<1)incStat('closeGrabs');timeLeft=Math.min(MAX_TIME,timeLeft+5);score+=50;
-        floatMsgs.push({txt:'+5s!',x:h.x+12,y:h.y,life:1.2});sfxHourglass();
+        h.taken=true;
+        if(h.penalty){
+          timeLeft=Math.max(0,timeLeft-1);
+          floatMsgs.push({txt:'-1s!',x:h.x+12,y:h.y,life:1.2,color:'rgba(255,80,80,1)'});
+          sfxHourglass();
+        }else{
+          if(timeLeft<1)incStat('closeGrabs');
+          timeLeft=Math.min(MAX_TIME,timeLeft+5);score+=50;
+          floatMsgs.push({txt:'+5s!',x:h.x+12,y:h.y,life:1.2});sfxHourglass();
+        }
       }
     }
     // Mimic check

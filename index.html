@@ -5229,7 +5229,10 @@ function update(dt){
         const yUpOk=f.triggerYUp==null||player.y<f.triggerYUp;
         if(xOk&&yOk&&yUpOk)f.triggered=true;
       }
-      if(f.triggered){f.currentY+=f.speed*dt;}
+      if(f.triggered){
+        f.currentY+=f.speed*dt;
+        if(f.stopY!=null&&f.currentY>=f.stopY){f.currentY=f.stopY;}
+      }
       if(overlap(player,{x:f.x+4,y:f.currentY+4,w:f.w-8,h:f.h-8})){lastDeathCause='spike';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
     }
     // Chasers (boulders)

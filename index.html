@@ -3458,15 +3458,19 @@ move:[
  ],
  spikes:[],
  crushers:[
-   // 1段目（y:160付近、左から右へ）
-   {x:32,y:160,w:560,h:48,axis:'x',min:32,max:688,speed:180,startDir:1},
-   // 2段目（y:288付近、右から左へ）
-   {x:688,y:288,w:560,h:48,axis:'x',min:32,max:688,speed:160,startDir:-1},
-   // 3段目（y:416付近、左から右へ）
-   {x:32,y:416,w:560,h:48,axis:'x',min:32,max:688,speed:200,startDir:1},
-   // 4段目（y:544付近、右から左へ）
-   {x:688,y:544,w:560,h:48,axis:'x',min:32,max:688,speed:140,startDir:-1},
- ],
+   // 1段目：左から（x:32→592まで）＋右から（x:656→1216まで）
+   {x:32,y:160,w:560,h:48,axis:'x',min:32,max:592,speed:180,startDir:1},
+   {x:656,y:160,w:560,h:48,axis:'x',min:656,max:1216,speed:180,startDir:-1},
+   // 2段目
+   {x:32,y:288,w:560,h:48,axis:'x',min:32,max:592,speed:160,startDir:-1},
+   {x:656,y:288,w:560,h:48,axis:'x',min:656,max:1216,speed:160,startDir:1},
+   // 3段目
+   {x:32,y:416,w:560,h:48,axis:'x',min:32,max:592,speed:200,startDir:1},
+   {x:656,y:416,w:560,h:48,axis:'x',min:656,max:1216,speed:200,startDir:-1},
+   // 4段目
+   {x:32,y:544,w:560,h:48,axis:'x',min:32,max:592,speed:140,startDir:-1},
+   {x:656,y:544,w:560,h:48,axis:'x',min:656,max:1216,speed:140,startDir:1},
+],
  traps:[],
  hg:[
    {x:80,y:224,w:16,h:32},

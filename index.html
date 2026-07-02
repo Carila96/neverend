@@ -4315,6 +4315,157 @@ move:[
  crushers:[],memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
  goal:{x:1200,y:256,w:80,h:96},
  spawn:{x:48,y:304}},
+
+  // STAGE 85 — TRUE AMIDAKUJI
+{name:'STAGE 85',sub:'Choose your path. No going back.',
+ plats:[
+   // 床
+   {x:0,y:704,w:1280,h:16},
+   // 柱12本（y:128〜728、穴あり）
+   // 柱1 x:64 穴なし
+   {x:64,y:128,w:32,h:576},
+   // 柱2 x:160 穴なし
+   {x:160,y:128,w:32,h:576},
+   // 柱3 x:256 穴あり（y:352〜432の間に64px穴）
+   {x:256,y:128,w:32,h:224},
+   {x:256,y:432,w:32,h:272},
+   // 柱4 x:352 穴なし
+   {x:352,y:128,w:32,h:576},
+   // 柱5 x:448 穴なし
+   {x:448,y:128,w:32,h:576},
+   // 柱6 x:544 穴あり（y:288〜368の間に80px穴）
+   {x:544,y:128,w:32,h:160},
+   {x:544,y:368,w:32,h:336},
+   // 柱7 x:640 穴なし
+   {x:640,y:128,w:32,h:576},
+   // 柱8 x:736 穴あり（y:448〜528の間に80px穴）
+   {x:736,y:128,w:32,h:320},
+   {x:736,y:528,w:32,h:176},
+   // 柱9 x:832 穴なし
+   {x:832,y:128,w:32,h:576},
+   // 柱10 x:928 穴あり（y:224〜288の間に64px穴）
+   {x:928,y:128,w:32,h:96},
+   {x:928,y:288,w:32,h:416},
+   // 柱11 x:1024 穴なし
+   {x:1024,y:128,w:32,h:576},
+   // 柱12 x:1120 穴なし
+   {x:1120,y:128,w:32,h:576},
+
+   // 柱と柱の間の上部に透明蓋（phantom）
+   {x:96,y:128,w:64,h:16,phantom:true},
+   {x:192,y:128,w:64,h:16,phantom:true},
+   {x:288,y:128,w:64,h:16,phantom:true},
+   {x:384,y:128,w:64,h:16,phantom:true},
+   {x:480,y:128,w:64,h:16,phantom:true},
+   {x:576,y:128,w:64,h:16,phantom:true},
+   {x:672,y:128,w:64,h:16,phantom:true},
+   {x:768,y:128,w:64,h:16,phantom:true},
+   {x:864,y:128,w:64,h:16,phantom:true},
+   {x:960,y:128,w:64,h:16,phantom:true},
+   {x:1056,y:128,w:64,h:16,phantom:true},
+   {x:1152,y:128,w:64,h:16,phantom:true},
+
+   // スタート台（柱1の上）
+   {x:32,y:96,w:96,h:32},
+ ],
+ pendulums:[
+   // 通路2と3の間（難しいルート）
+   {pivotX:208,pivotY:128,length:180,speed:2.0,maxAngle:0.85,angle:0.85},
+   // 通路5と6の間（難しいルート）
+   {pivotX:496,pivotY:128,length:200,speed:1.8,maxAngle:0.9,angle:-0.9},
+   // 通路8と9の間（難しいルート）
+   {pivotX:784,pivotY:128,length:160,speed:2.2,maxAngle:0.8,angle:0.8},
+ ],
+ spikes:[
+   // 難しいルートの着地点付近
+   {x:96,y:672,w:32,h:32},
+   {x:480,y:672,w:32,h:32},
+   {x:768,y:672,w:32,h:32},
+   // 罠：一見簡単そうだが落ちるとスパイク
+   {x:352,y:672,w:32,h:32},
+   {x:1024,y:672,w:32,h:32},
+ ],
+ traps:[
+   {x:160,y:480,w:32,h:32,triggerRadius:48,warn:false},
+   {x:640,y:560,w:32,h:32,triggerRadius:48,warn:false},
+ ],
+ hg:[
+   {x:272,y:400,w:16,h:32},
+   {x:944,y:256,w:16,h:32},
+   {x:560,y:320,w:16,h:32},
+   {x:752,y:480,w:16,h:32},
+ ],
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],
+ chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
+ crushers:[],memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
+ goal:{x:576,y:608,w:80,h:96},
+ spawn:{x:64,y:64}},
+
+  // STAGE 86 — TRUST NOBODY
+{name:'STAGE 86',sub:'It looks safe.',
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:384,y:576,w:512,h:16},
+ ],
+ spikes:[
+   {x:384,y:608,w:32,h:32},
+   {x:864,y:608,w:32,h:32},
+ ],
+ traps:[
+   {x:480,y:544,w:32,h:32,tx:416,warn:false},
+   {x:640,y:544,w:32,h:32,tx:576,warn:false},
+   {x:800,y:544,w:32,h:32,tx:736,warn:false},
+ ],
+ fallingSpikes:[
+   {x:528,y:0,w:32,h:48,triggerX:460,speed:480,triggered:false,startY:0,currentY:0},
+   {x:720,y:0,w:32,h:48,triggerX:652,speed:480,triggered:false,startY:0,currentY:0},
+ ],
+ hg:[
+   {x:608,y:544,w:16,h:32},
+   {x:992,y:608,w:16,h:32},
+ ],
+ fall:[],move:[],mimics:[],ceiling:[],lava:[],pendulums:[],chasers:[],
+ orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
+ crushers:[],memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
+ goal:{x:1184,y:528,w:80,h:112},
+ spawn:{x:48,y:592}},
+
+  // STAGE 87 — LEAP OF FAITH
+{name:'STAGE 87',sub:'Jump. Just jump.',
+ plats:[
+   {x:0,y:640,w:128,h:80},
+   {x:1152,y:640,w:128,h:80},
+   {x:480,y:352,w:96,h:16},
+   {x:704,y:256,w:96,h:16},
+ ],
+ spikes:[
+   {x:128,y:608,w:32,h:32},{x:192,y:608,w:32,h:32},
+   {x:256,y:608,w:32,h:32},{x:320,y:608,w:32,h:32},
+   {x:384,y:608,w:32,h:32},{x:448,y:608,w:32,h:32},
+   {x:512,y:608,w:32,h:32},{x:576,y:608,w:32,h:32},
+   {x:640,y:608,w:32,h:32},{x:704,y:608,w:32,h:32},
+   {x:768,y:608,w:32,h:32},{x:832,y:608,w:32,h:32},
+   {x:896,y:608,w:32,h:32},{x:960,y:608,w:32,h:32},
+   {x:1024,y:608,w:32,h:32},{x:1088,y:608,w:32,h:32},
+   {x:1120,y:608,w:32,h:32},
+ ],
+ move:[
+   {x:224,y:496,w:96,h:16,vx:4.0,vy:0,rx:128,ry:0,sx:224,sy:496,phase:0},
+   {x:576,y:432,w:96,h:16,vx:-4.0,vy:0,rx:-128,ry:0,sx:576,sy:432,phase:Math.PI},
+   {x:864,y:496,w:96,h:16,vx:4.0,vy:0,rx:128,ry:0,sx:864,sy:496,phase:Math.PI*0.5},
+ ],
+ traps:[
+   {x:512,y:320,w:32,h:32,tx:448,warn:false},
+ ],
+ hg:[
+   {x:488,y:320,w:16,h:32},
+   {x:712,y:224,w:16,h:32},
+ ],
+ fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],
+ orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
+ crushers:[],memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
+ goal:{x:1168,y:528,w:80,h:112},
+ spawn:{x:48,y:592}},
 ];
 
 

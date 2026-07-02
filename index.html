@@ -4680,9 +4680,10 @@ function drawLava(l){
 }
 
 function drawFallingSpikeExt(f){
-  const col=f.triggered?'rgba(220,80,60,0.9)':'rgba(255,180,0,0.85)';
-  ctx.save();ctx.shadowColor=col;ctx.shadowBlur=f.triggered?10:14;
-  ctx.fillStyle=f.triggered?'rgba(0,0,0,0.5)':'rgba(40,20,0,0.6)';
+  const isFixed=f.stopY!=null&&f.speed===0;
+  const col=(f.triggered&&!isFixed)?'rgba(220,80,60,0.9)':'rgba(255,180,0,0.85)';
+  ctx.save();ctx.shadowColor=col;ctx.shadowBlur=(f.triggered&&!isFixed)?10:14;
+  ctx.fillStyle=(f.triggered&&!isFixed)?'rgba(0,0,0,0.5)':'rgba(40,20,0,0.6)';
   ctx.strokeStyle=col;ctx.lineWidth=2;
   ctx.beginPath();
   ctx.moveTo(f.x,f.currentY);

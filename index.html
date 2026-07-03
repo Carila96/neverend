@@ -4647,6 +4647,229 @@ move:[
  crushers:[],memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
  goal:{x:1184,y:528,w:80,h:112},
  spawn:{x:48,y:592}},
+  
+  // STAGE 93 — LADDER
+{name:'STAGE 93',sub:'Press them all.',
+ plats:[
+   // 左縦長足場（スタート台）
+   {x:128,y:80,w:96,h:624},
+   // ①〜⑤
+   {x:224,y:704,w:1056,h:16},
+   {x:224,y:548,w:960,h:16},
+   {x:224,y:392,w:864,h:16},
+   {x:224,y:236,w:768,h:16},
+   {x:224,y:80,w:672,h:16},
+ ],
+ buttons:[
+   {x:1248,y:688,w:32,h:16,id:'btn1'},
+   {x:1152,y:532,w:32,h:16,id:'btn2'},
+   {x:1056,y:376,w:32,h:16,id:'btn3'},
+   {x:960,y:220,w:32,h:16,id:'btn4'},
+ ],
+ currents:[
+   {x1:1120,y1:80,x2:1120,y2:176,buttonIds:['btn1'],startActive:true},
+   {x1:1120,y1:80,x2:1120,y2:176,buttonIds:['btn2'],startActive:true},
+   {x1:1120,y1:80,x2:1120,y2:176,buttonIds:['btn3'],startActive:true},
+   {x1:1120,y1:80,x2:1120,y2:176,buttonIds:['btn4'],startActive:true},
+ ],
+ slidingSpikes:[
+   {x:224,y:516,w:32,h:32,axis:'x',minX:224,maxX:1088,speed:4.0},
+   {x:700,y:516,w:32,h:32,axis:'x',minX:224,maxX:1088,speed:3.5},
+ ],
+ spikes:[],
+ hg:[
+   {x:640,y:672,w:16,h:32},        // ①
+   {x:640,y:360,w:16,h:32},        // ③
+   {x:640,y:204,w:16,h:32},        // ④
+ ],
+ traps:[
+   {x:400,y:672,w:32,h:32,tx:336,warn:false},
+   {x:400,y:360,w:32,h:32,tx:336,warn:false},
+ ],
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
+ chasers:[],orbits:[],growingSpikes:[],crushers:[],
+ memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
+ goal:{x:1120,y:0,w:80,h:80},
+ spawn:{x:160,y:48}},
+
+  // STAGE 94 — THREE TIERS
+{name:'STAGE 94',sub:'Choose your floor.',
+ plats:[
+   {x:0,y:0,w:1280,h:32},
+   {x:0,y:688,w:1280,h:32},
+   {x:32,y:192,w:160,h:496},
+   {x:1088,y:192,w:160,h:496},
+   {x:224,y:196,w:832,h:32},
+   {x:224,y:360,w:832,h:32},
+   {x:224,y:524,w:832,h:32},
+ ],
+ spikes:[
+   // 上段（一番難しい）スパイク多め
+   {x:256,y:164,w:32,h:32},{x:384,y:164,w:32,h:32},
+   {x:512,y:164,w:32,h:32},{x:640,y:164,w:32,h:32},
+   {x:768,y:164,w:32,h:32},{x:896,y:164,w:32,h:32},
+   {x:1024,y:164,w:32,h:32},
+   // 中段（一番楽）スパイクなし
+   // 下段（中間）スパイク少なめ
+   {x:384,y:492,w:32,h:32},
+   {x:768,y:492,w:32,h:32},
+ ],
+ traps:[
+   // 上段（難しい）trap多め・warn:false
+   {x:320,y:164,w:32,h:32,tx:256,warn:false},
+   {x:448,y:164,w:32,h:32,tx:384,warn:false},
+   {x:576,y:164,w:32,h:32,tx:512,warn:false},
+   {x:704,y:164,w:32,h:32,tx:640,warn:false},
+   {x:832,y:164,w:32,h:32,tx:768,warn:false},
+   {x:960,y:164,w:32,h:32,tx:896,warn:false},
+   // 中段（楽）trap少なめ・warn:true
+   {x:512,y:328,w:32,h:32,tx:448,warn:true},
+   {x:768,y:328,w:32,h:32,tx:704,warn:true},
+   // 下段（中間）warn:false×2、warn:true×1
+   {x:320,y:492,w:32,h:32,tx:256,warn:false},
+   {x:576,y:492,w:32,h:32,tx:512,warn:true},
+   {x:832,y:492,w:32,h:32,tx:768,warn:false},
+ ],
+ hg:[
+   // 上段
+   {x:688,y:164,w:16,h:32},
+   // 中段
+   {x:400,y:328,w:16,h:32},
+   {x:848,y:328,w:16,h:32},
+   // 下段
+   {x:688,y:492,w:16,h:32},
+ ],
+ fallingSpikes:[
+   // 上段が一番難しいのでfallingSpikesも上段に
+   {x:480,y:0,w:32,h:48,triggerX:412,speed:450,triggered:false,startY:0,currentY:0},
+   {x:800,y:0,w:32,h:48,triggerX:732,speed:450,triggered:false,startY:0,currentY:0},
+ ],
+ fall:[],move:[],mimics:[],ceiling:[],lava:[],pendulums:[],
+ chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
+ crushers:[],memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
+ goal:{x:1088,y:96,w:160,h:96},
+ spawn:{x:32,y:96}},
+
+  // STAGE 95 — THREE TIERS II
+{name:'STAGE 95',sub:'Now they move.',
+ plats:[
+   {x:0,y:0,w:1280,h:32},
+   {x:0,y:688,w:1280,h:32},
+   {x:32,y:192,w:160,h:496},
+   {x:1088,y:192,w:160,h:496},
+   {x:224,y:196,w:832,h:32},
+   {x:224,y:360,w:832,h:32},
+   {x:224,y:524,w:832,h:32},
+ ],
+ spikes:[
+   {x:384,y:164,w:32,h:32},{x:896,y:164,w:32,h:32},
+   {x:384,y:492,w:32,h:32},{x:896,y:492,w:32,h:32},
+ ],
+ pendulums:[
+   // 上段（難しい）振り子2本
+   {pivotX:448,pivotY:32,length:180,speed:2.2,maxAngle:1.0,angle:1.0},
+   {pivotX:832,pivotY:32,length:180,speed:2.0,maxAngle:1.0,angle:-1.0},
+   // 下段（中間）振り子1本
+   {pivotX:640,pivotY:360,length:160,speed:1.8,maxAngle:0.9,angle:0.9},
+ ],
+ orbits:[
+   // 中段（楽）orbit1個だけ
+   {centerX:640,centerY:344,radius:80,speed:2.0,angle:0,size:13,color:'rgba(100,200,255,0.9)'},
+   // 上段にorbitも追加（さらに難しく）
+   {centerX:448,centerY:180,radius:64,speed:-2.5,angle:Math.PI,size:12,color:'rgba(255,100,100,0.9)'},
+   {centerX:832,centerY:180,radius:64,speed:2.5,angle:0,size:12,color:'rgba(255,100,100,0.9)'},
+ ],
+ traps:[
+   // 上段warn:false
+   {x:576,y:164,w:32,h:32,tx:512,warn:false},
+   {x:704,y:164,w:32,h:32,tx:640,warn:false},
+   // 中段warn:true
+   {x:512,y:328,w:32,h:32,tx:448,warn:true},
+   // 下段warn:false×1、warn:true×1
+   {x:448,y:492,w:32,h:32,tx:384,warn:false},
+   {x:768,y:492,w:32,h:32,tx:704,warn:true},
+ ],
+ hg:[
+   {x:688,y:164,w:16,h:32},
+   {x:640,y:328,w:16,h:32},
+   {x:688,y:492,w:16,h:32},
+ ],
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],
+ chasers:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
+ crushers:[],memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
+ goal:{x:1088,y:96,w:160,h:96},
+ spawn:{x:32,y:96}},
+
+  // STAGE 96 — ROOMS II
+{name:'STAGE 96',sub:'Find the way through.',
+ plats:[
+   // 外枠
+   {x:0,y:0,w:1280,h:16},
+   {x:0,y:704,w:1280,h:16},
+   {x:0,y:16,w:32,h:688},
+   {x:1248,y:16,w:32,h:688},
+   // room1,2,3,4,5,6,7
+   {x:192,y:96,w:16,h:80},
+   {x:368,y:16,w:16,h:80},
+   {x:544,y:96,w:16,h:160},
+   {x:720,y:16,w:16,h:160},
+   {x:32,y:176,w:160,h:16},
+   {x:208,y:176,w:160,h:16},
+   {x:384,y:176,w:160,h:16},
+   {x:736,y:176,w:160,h:16},
+   {x:912,y:176,w:160,h:16},
+   // room8,9,10,11,12,13,14
+   {x:192,y:192,w:16,h:80},
+   {x:368,y:272,w:16,h:80},
+   {x:720,y:272,w:16,h:160},
+   {x:896,y:192,w:16,h:160},
+   {x:1072,y:272,w:16,h:80},
+   {x:208,y:352,w:160,h:16},
+   {x:384,y:352,w:160,h:16},
+   {x:560,y:352,w:160,h:16},
+   {x:912,y:352,w:160,h:16},
+   // room15,16,17,18,19,20,21
+   {x:192,y:368,w:16,h:80},
+   {x:368,y:448,w:16,h:80},
+   {x:544,y:368,w:16,h:160},
+   {x:720,y:368,w:16,h:80},
+   {x:1072,y:448,w:16,h:80},
+   {x:32,y:528,w:160,h:16},
+   {x:208,y:528,w:160,h:16},
+   {x:384,y:528,w:160,h:16},
+   {x:736,y:528,w:80,h:16},
+   {x:912,y:528,w:160,h:16},
+   {x:816,y:440,w:80,h:16},
+   // room22,23,24,25,26,27,28
+   {x:192,y:624,w:16,h:80},
+   {x:368,y:544,w:16,h:80},
+   {x:720,y:544,w:16,h:80},
+   {x:896,y:544,w:16,h:80},
+   {x:1072,y:624,w:16,h:80},
+   {x:192,y:528,w:16,h:16},
+   {x:368,y:176,w:16,h:16},
+   {x:544,y:544,w:16,h:160},
+ ],
+ fall:[
+   {x:32,y:352,w:160,h:16,spikesOn:false},
+   {x:736,y:352,w:160,h:16,spikesOn:false},
+   // 一番右側の横長足場4つをfall化
+   {x:1088,y:176,w:160,h:16,spikesOn:false},
+   {x:1088,y:352,w:80,h:16,spikesOn:false},
+   {x:1168,y:528,w:80,h:16,spikesOn:false},
+   {x:1088,y:600,w:80,h:16,spikesOn:false},
+ ],
+ spikes:[],
+ traps:[],
+ teleporters:[],
+ hg:[],
+ slidingSpikes:[],
+ move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
+ chasers:[],orbits:[],growingSpikes:[],buttons:[],currents:[],crushers:[],
+ memos:[],focusZones:[],darkness:{enabled:false},
+ goal:{x:736,y:80,w:80,h:96},
+ spawn:{x:48,y:144}},
+
 ];
 
 

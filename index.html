@@ -4123,7 +4123,9 @@ move:[
    {x:1160,y:416,w:16,h:32},
    {x:520,y:256,w:16,h:32,penalty:true},
  ],
- fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[
+   {x:544,y:116,w:32,h:48,triggerXleft:620,speed:280,triggered:false,startY:0,currentY:0},
+ ],lava:[],
  chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],crushers:[],
  teleporters:[],memos:[],focusZones:[],darkness:{enabled:false},
  goal:{x:32,y:592,w:80,h:96},
@@ -4279,12 +4281,12 @@ move:[
    {x:640,y:256,w:32,h:32},
    {x:800,y:224,w:32,h:32},
    {x:960,y:160,w:32,h:32},
-   {x:512,y:400,w:32,h:32},
+   {x:672,y:400,w:32,h:32},
    {x:1152,y:96,w:128,h:624},
  ],
  spikes:[],
  orbits:[
-   {centerX:496,centerY:384,radius:48,speed:2.0,angle:0,size:12,color:'rgba(255,255,255,0.9)'},
+   {centerX:688,centerY:416,radius:48,speed:2.0,angle:0,size:12,color:'rgba(255,255,255,0.9)'},
    {centerX:208,centerY:592,radius:48,speed:2.0,angle:0,size:12,color:'rgba(255,255,255,0.9)'},
    {centerX:368,centerY:496,radius:48,speed:2.0,angle:Math.PI*0.5,size:12,color:'rgba(255,255,255,0.9)'},
    {centerX:896,centerY:448,radius:48,speed:2.0,angle:Math.PI,size:12,color:'rgba(255,255,255,0.9)'},
@@ -4352,10 +4354,7 @@ move:[
    {x:760,y:320,w:16,h:32},
    {x:1080,y:320,w:16,h:32},
  ],
- traps:[
-   {x:512,y:320,w:32,h:32,tx:448,warn:false},
-   {x:960,y:320,w:32,h:32,tx:896,warn:false},
- ],
+ traps:[],
  fall:[],move:[],mimics:[],ceiling:[],lava:[],pendulums:[],
  chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  crushers:[],memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
@@ -4410,9 +4409,6 @@ move:[
    {x:960,y:128,w:64,h:16,phantom:true},
    {x:1056,y:128,w:64,h:16,phantom:true},
    {x:1152,y:128,w:64,h:16,phantom:true},
-
-   // スタート台（柱1の上）
-   {x:32,y:96,w:96,h:32},
  ],
  pendulums:[
    // 通路2と3の間（難しいルート）
@@ -4445,7 +4441,7 @@ move:[
  chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  crushers:[],memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
  goal:{x:576,y:608,w:80,h:96},
- spawn:{x:64,y:64}},
+ spawn:{x:80,y:64}},
 
   // STAGE 86 — TRUST NOBODY
 {name:'STAGE 86',sub:'It looks safe.',
@@ -4618,8 +4614,6 @@ move:[
  plats:[
    {x:0,y:0,w:1280,h:224},
    {x:0,y:352,w:1280,h:368},
-   {x:0,y:224,w:96,h:128},
-   {x:1184,y:224,w:96,h:128},
  ],
  spikes:[
    {x:96,y:320,w:32,h:32},{x:192,y:320,w:32,h:32},

@@ -5241,16 +5241,18 @@ function drawCeilingTrap(c){
 
 function drawLava(l){
   const pulse=Math.sin(animT*4)*0.15+0.85;
+  const screenY=l.currentY-Math.round(cameraY);
+  if(screenY>H)return;
   ctx.save();
   ctx.shadowColor='rgba(255,100,0,0.8)';ctx.shadowBlur=24;
-  const grad=ctx.createLinearGradient(0,l.currentY,0,H);
+  const grad=ctx.createLinearGradient(0,screenY,0,H);
   grad.addColorStop(0,'rgba(255,80,0,0.9)');
   grad.addColorStop(0.3,'rgba(200,40,0,0.88)');
   grad.addColorStop(1,'rgba(120,10,0,0.95)');
-  ctx.fillStyle=grad;ctx.fillRect(0,l.currentY,W,H-l.currentY+10);
+  ctx.fillStyle=grad;ctx.fillRect(0,screenY,W,H-screenY+10);
   // Wavy top
-  ctx.beginPath();ctx.moveTo(0,l.currentY);
-  for(let x=0;x<=W;x+=8){ctx.lineTo(x,l.currentY+Math.sin(x*0.04+animT*3)*6*pulse);}
+  ctx.beginPath();ctx.moveTo(0,screenY);
+  for(let x=0;x<=W;x+=8){ctx.lineTo(x,screenY+Math.sin(x*0.04+animT*3)*6*pulse);}
   ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();
   ctx.fillStyle=`rgba(255,130,0,${0.65*pulse})`;ctx.fill();
   ctx.restore();

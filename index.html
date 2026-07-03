@@ -4425,10 +4425,7 @@ move:[
    {x:0,y:640,w:1280,h:80},
    {x:384,y:576,w:512,h:16},
  ],
- spikes:[
-   {x:384,y:608,w:32,h:32},
-   {x:864,y:608,w:32,h:32},
- ],
+ spikes:[],
  traps:[
    {x:480,y:544,w:32,h:32,tx:416,warn:false},
    {x:640,y:544,w:32,h:32,tx:576,warn:false},
@@ -4441,6 +4438,25 @@ move:[
  hg:[
    {x:608,y:544,w:16,h:32},
    {x:992,y:608,w:16,h:32},
+   {x:384,y:608,w:16,h:32,penalty:true},
+   {x:409,y:608,w:16,h:32,penalty:true},
+   {x:434,y:608,w:16,h:32,penalty:true},
+   {x:459,y:608,w:16,h:32,penalty:true},
+   {x:484,y:608,w:16,h:32,penalty:true},
+   {x:509,y:608,w:16,h:32,penalty:true},
+   {x:534,y:608,w:16,h:32,penalty:true},
+   {x:559,y:608,w:16,h:32,penalty:true},
+   {x:584,y:608,w:16,h:32,penalty:true},
+   {x:609,y:608,w:16,h:32,penalty:true},
+   {x:634,y:608,w:16,h:32,penalty:true},
+   {x:659,y:608,w:16,h:32,penalty:true},
+   {x:684,y:608,w:16,h:32,penalty:true},
+   {x:709,y:608,w:16,h:32,penalty:true},
+   {x:734,y:608,w:16,h:32,penalty:true},
+   {x:759,y:608,w:16,h:32,penalty:true},
+   {x:784,y:608,w:16,h:32,penalty:true},
+   {x:809,y:608,w:16,h:32,penalty:true},
+   {x:834,y:608,w:16,h:32,penalty:true},
  ],
  fall:[],move:[],mimics:[],ceiling:[],lava:[],pendulums:[],chasers:[],
  orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
@@ -4456,21 +4472,11 @@ move:[
    {x:480,y:352,w:96,h:16},
    {x:704,y:256,w:96,h:16},
  ],
- spikes:[
-   {x:128,y:608,w:32,h:32},{x:192,y:608,w:32,h:32},
-   {x:256,y:608,w:32,h:32},{x:320,y:608,w:32,h:32},
-   {x:384,y:608,w:32,h:32},{x:448,y:608,w:32,h:32},
-   {x:512,y:608,w:32,h:32},{x:576,y:608,w:32,h:32},
-   {x:640,y:608,w:32,h:32},{x:704,y:608,w:32,h:32},
-   {x:768,y:608,w:32,h:32},{x:832,y:608,w:32,h:32},
-   {x:896,y:608,w:32,h:32},{x:960,y:608,w:32,h:32},
-   {x:1024,y:608,w:32,h:32},{x:1088,y:608,w:32,h:32},
-   {x:1120,y:608,w:32,h:32},
- ],
+ spikes:[],
  move:[
-   {x:224,y:496,w:96,h:16,vx:4.0,vy:0,rx:128,ry:0,sx:224,sy:496,phase:0},
-   {x:576,y:432,w:96,h:16,vx:-4.0,vy:0,rx:-128,ry:0,sx:576,sy:432,phase:Math.PI},
-   {x:864,y:496,w:96,h:16,vx:4.0,vy:0,rx:128,ry:0,sx:864,sy:496,phase:Math.PI*0.5},
+   {x:224,y:496,w:96,h:16,vx:7.0,vy:0,rx:128,ry:0,sx:224,sy:496,phase:0},
+   {x:576,y:432,w:96,h:16,vx:-7.0,vy:0,rx:-128,ry:0,sx:576,sy:432,phase:Math.PI},
+   {x:864,y:496,w:96,h:16,vx:7.0,vy:0,rx:128,ry:0,sx:864,sy:496,phase:Math.PI*0.5},
  ],
  traps:[
    {x:512,y:320,w:32,h:32,tx:448,warn:false},
@@ -4482,7 +4488,164 @@ move:[
  fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],
  orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  crushers:[],memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
+ goal:{x:1200,y:544,w:80,h:96},
+ spawn:{x:48,y:592}},
+
+// STAGE 88 — ONE SHOT
+{name:'STAGE 88',sub:'You only get one.',
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:528,y:480,w:224,h:16},
+ ],
+ spikes:[
+   {x:528,y:448,w:32,h:32},{x:720,y:448,w:32,h:32},
+ ],
+ fallingSpikes:[
+   {x:576,y:0,w:32,h:48,triggerX:510,speed:500,triggered:false,startY:0,currentY:0},
+   {x:640,y:0,w:32,h:48,triggerX:570,speed:500,triggered:false,startY:0,currentY:0},
+   {x:704,y:0,w:32,h:48,triggerX:630,speed:500,triggered:false,startY:0,currentY:0},
+ ],
+ traps:[
+   {x:256,y:608,w:32,h:32,tx:192,warn:false},
+   {x:960,y:608,w:32,h:32,tx:896,warn:false},
+ ],
+ hg:[
+   {x:608,y:448,w:16,h:32},
+   {x:800,y:608,w:16,h:32},
+ ],
+ fall:[],move:[],mimics:[],ceiling:[],lava:[],pendulums:[],
+ chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
+ crushers:[],memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
+ goal:{x:1184,y:528,w:80,h:112},
+ spawn:{x:48,y:592}},
+
+// STAGE 89 — CROSSFIRE
+{name:'STAGE 89',sub:'Pick a lane.',
+ plats:[
+   {x:0,y:640,w:192,h:80},
+   {x:1088,y:640,w:192,h:80},
+   {x:0,y:0,w:1280,h:32},
+   {x:0,y:352,w:192,h:16},
+   {x:1088,y:352,w:192,h:16},
+   {x:544,y:256,w:192,h:16},
+ ],
+ spikes:[
+   {x:192,y:608,w:32,h:32},{x:288,y:608,w:32,h:32},
+   {x:960,y:608,w:32,h:32},{x:1056,y:608,w:32,h:32},
+ ],
+ slidingSpikes:[
+   {x:192,y:320,w:32,h:32,axis:'x',minX:192,maxX:896,speed:5.0},
+   {x:896,y:416,w:32,h:32,axis:'x',minX:192,maxX:896,speed:5.0},
+ ],
+ traps:[
+   {x:576,y:224,w:32,h:32,triggerRadius:64,warn:false},
+ ],
+ hg:[
+   {x:200,y:320,w:16,h:32},
+   {x:1096,y:320,w:16,h:32},
+   {x:608,y:224,w:16,h:32},
+ ],
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
+ chasers:[],orbits:[],growingSpikes:[],buttons:[],currents:[],
+ crushers:[],memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
+ goal:{x:1104,y:528,w:80,h:112},
+ spawn:{x:48,y:592}},
+
+// STAGE 90 — THE CLOCK
+{name:'STAGE 90',sub:'Faster.',
+ plats:[
+   {x:0,y:640,w:320,h:80},
+   {x:960,y:640,w:320,h:80},
+   {x:0,y:0,w:1280,h:32},
+ ],
+ spikes:[
+   {x:320,y:608,w:32,h:32},{x:384,y:608,w:32,h:32},
+   {x:864,y:608,w:32,h:32},{x:928,y:608,w:32,h:32},
+ ],
+ move:[
+   {x:288,y:480,w:128,h:16,vx:5.0,vy:0,rx:160,ry:0,sx:288,sy:480,phase:0},
+   {x:864,y:400,w:128,h:16,vx:-5.0,vy:0,rx:-160,ry:0,sx:864,sy:400,phase:Math.PI},
+   {x:544,y:320,w:128,h:16,vx:5.0,vy:0,rx:160,ry:0,sx:544,sy:320,phase:Math.PI*0.5},
+   {x:608,y:240,w:128,h:16,vx:-5.0,vy:0,rx:-160,ry:0,sx:608,sy:240,phase:Math.PI*1.5},
+ ],
+ hg:[
+   {x:352,y:448,w:16,h:32},
+   {x:672,y:288,w:16,h:32},
+   {x:880,y:368,w:16,h:32},
+   // 赤砂時計
+   {x:416,y:448,w:16,h:32,penalty:true},
+   {x:736,y:288,w:16,h:32,penalty:true},
+ ],
+ traps:[
+   {x:576,y:288,w:32,h:32,triggerRadius:64,warn:false},
+ ],
+ fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
+ chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
+ crushers:[],memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
  goal:{x:1168,y:528,w:80,h:112},
+ spawn:{x:48,y:592}},
+
+// STAGE 91 — THE CORRIDOR
+{name:'STAGE 91',sub:'Stay low.',
+ plats:[
+   {x:0,y:0,w:1280,h:224},
+   {x:0,y:352,w:1280,h:368},
+   {x:0,y:224,w:96,h:128},
+   {x:1184,y:224,w:96,h:128},
+ ],
+ spikes:[
+   {x:96,y:320,w:32,h:32},{x:192,y:320,w:32,h:32},
+   {x:960,y:320,w:32,h:32},{x:1056,y:320,w:32,h:32},
+   {x:1152,y:320,w:32,h:32},
+ ],
+ slidingSpikes:[
+   {x:288,y:320,w:32,h:32,axis:'x',minX:288,maxX:640,speed:3.5},
+   {x:640,y:256,w:32,h:32,axis:'x',minX:640,maxX:928,speed:4.0},
+ ],
+ traps:[
+   {x:480,y:320,w:32,h:32,tx:416,warn:false},
+   {x:800,y:320,w:32,h:32,tx:736,warn:true},
+ ],
+ hg:[
+   {x:352,y:320,w:16,h:32},
+   {x:720,y:320,w:16,h:32},
+   {x:960,y:256,w:16,h:32},
+ ],
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
+ chasers:[],orbits:[],growingSpikes:[],buttons:[],currents:[],
+ crushers:[],memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
+ goal:{x:1184,y:256,w:96,h:96},
+ spawn:{x:48,y:304}},
+
+// STAGE 92 — DEAD OR ALIVE
+{name:'STAGE 92',sub:'One is safe. One is not.',
+ plats:[
+   {x:0,y:640,w:1280,h:80},
+   {x:256,y:480,w:192,h:16},
+   {x:832,y:480,w:192,h:16},
+   {x:544,y:320,w:192,h:16},
+ ],
+ spikes:[
+   {x:256,y:448,w:32,h:32},{x:416,y:448,w:32,h:32},
+   {x:832,y:448,w:32,h:32},
+ ],
+ traps:[
+   {x:288,y:448,w:32,h:32,tx:224,warn:false},
+   {x:864,y:448,w:32,h:32,tx:800,warn:false},
+   {x:576,y:288,w:32,h:32,tx:512,warn:false},
+ ],
+ fallingSpikes:[
+   {x:608,y:0,w:32,h:48,triggerX:540,speed:420,triggered:false,startY:0,currentY:0},
+ ],
+ hg:[
+   {x:384,y:448,w:16,h:32},
+   {x:960,y:448,w:16,h:32},
+   {x:672,y:288,w:16,h:32},
+ ],
+ fall:[],move:[],mimics:[],ceiling:[],lava:[],pendulums:[],
+ chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
+ crushers:[],memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
+ goal:{x:1184,y:528,w:80,h:112},
  spawn:{x:48,y:592}},
 ];
 

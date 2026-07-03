@@ -2296,7 +2296,7 @@ const STAGES=[
    {x:576,y:2016,w:32,h:32},{x:864,y:1888,w:32,h:32},
    {x:672,y:1504,w:32,h:32},{x:960,y:1376,w:32,h:32},
    {x:720,y:992,w:32,h:32},{x:576,y:608,w:32,h:32},
-   {x:1024,y:480,w:32,h:32},{x:512,y:352,w:32,h:32},
+   {x:1088,y:480,w:32,h:32},{x:288,y:224,w:32,h:32},
  ],
  traps:[],
  orbits:[
@@ -2889,7 +2889,7 @@ crushers:[
    {x:104,y:672,w:16,h:32},{x:1128,y:672,w:16,h:32},
  ],
  spikes:[
-   {x:624,y:320,w:32,h:16},{x:256,y:672,w:32,h:16},
+   {x:464,y:320,w:32,h:32},{x:256,y:672,w:32,h:32},
  ],traps:[
    {x:456,y:144,w:32,h:32,triggerRadius:64,warn:false},
    {x:736,y:320,w:32,h:32,triggerRadius:64,warn:false},
@@ -2900,7 +2900,7 @@ crushers:[
    {x:784,y:672,w:32,h:32,triggerRadius:64,warn:false},
  ],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
  chasers:[],orbits:[
-   {centerX:374,centerY:440,radius:112,speed:2.0,angle:0,size:14,color:'rgba(255,140,60,0.9)'},
+   {centerX:374,centerY:440,radius:64,speed:1.5,angle:0,size:14,color:'rgba(255,140,60,0.9)'},
  ],slidingSpikes:[
   {x:960,y:336,w:32,h:32,axis:'y',minY:176,maxY:336,speed:3.5},
  ],growingSpikes:[],buttons:[],currents:[],crushers:[],
@@ -2928,7 +2928,7 @@ crushers:[
    {x:1088,y:96,w:192,h:96,spikesOn:false,gravity:10.0},
  ],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
  chasers:[
-   {x:-500,y:96,w:600,h:600,speed:30,triggerX:0,active:false},
+   {x:-1000,y:96,w:600,h:600,speed:30,triggerX:0,active:false},
  ],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  crushers:[],teleporters:[],memos:[],hg:[
    {x:1128,y:64,w:16,h:32},{x:264,y:528,w:16,h:32}
@@ -2941,7 +2941,7 @@ crushers:[
  plats:[
    {x:0,y:640,w:128,h:80},
    {x:1152,y:640,w:128,h:80},
-   {x:0,y:0,w:1280,h:96},
+   {x:0,y:0,w:1280,h:16},
    {x:0,y:480,w:128,h:16},
    {x:0,y:320,w:128,h:16},
    {x:0,y:160,w:192,h:16},
@@ -2955,17 +2955,17 @@ crushers:[
  ],
  move:[
   // 1段目
-  {x:0,y:480,w:160,h:16,vx:-7.0,vy:0,rx:160,ry:0,sx:200,sy:560,phase:0},
-  {x:1000,y:560,w:160,h:16,vx:7.0,vy:0,rx:-160,ry:0,sx:800,sy:480,phase:Math.PI},
+  {x:200,y:480,w:160,h:16,vx:-7.0,vy:0,rx:160,ry:0,sx:360,sy:560,phase:0},
+  {x:800,y:560,w:160,h:16,vx:7.0,vy:0,rx:-160,ry:0,sx:960,sy:480,phase:Math.PI},
   // 2段目（1段目とずらす）
-  {x:260,y:320,w:160,h:16,vx:-7.0,vy:0,rx:160,ry:0,sx:260,sy:400,phase:Math.PI*0.5},
-  {x:720,y:400,w:160,h:16,vx:7.0,vy:0,rx:-160,ry:0,sx:720,sy:320,phase:Math.PI*1.5},
+  {x:300,y:320,w:160,h:16,vx:-7.0,vy:0,rx:160,ry:0,sx:300,sy:400,phase:Math.PI*0.5},
+  {x:560,y:400,w:160,h:16,vx:7.0,vy:0,rx:-160,ry:0,sx:560,sy:320,phase:Math.PI*1.5},
   // 3段目（さらにずらす）
-  {x:0,y:160,w:160,h:16,vx:-7.0,vy:0,rx:160,ry:0,sx:100,sy:240,phase:Math.PI*0.75},
+  {x:200,y:160,w:160,h:16,vx:-7.0,vy:0,rx:160,ry:0,sx:200,sy:240,phase:Math.PI*0.75},
   {x:720,y:240,w:160,h:16,vx:-7.0,vy:0,rx:-160,ry:0,sx:800,sy:160,phase:Math.PI*1.75},
 ],
  pendulums:[
-   {pivotX:640,pivotY:96,length:224,speed:2.0,maxAngle:0.9,angle:0},
+   {pivotX:640,pivotY:96,length:304,speed:2.0,maxAngle:0.9,angle:0},
  ],
  traps:[
    {x:850,y:528,w:32,h:32,triggerRadius:96,warn:false},
@@ -2975,7 +2975,7 @@ crushers:[
  fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],chasers:[],orbits:[],
  slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  focusZones:[],darkness:{enabled:false},
- goal:{x:0,y:96,w:96,h:64},
+ goal:{x:0,y:64,w:80,h:96},
  spawn:{x:1184,y:592}},
 
 // STAGE 59 — THE SHAFT
@@ -3260,6 +3260,13 @@ move:[
    {x:500,y:416,w:192,h:16},
    {x:200,y:288,w:192,h:16},
    {x:500,y:160,w:256,h:16},
+   // platsに追加（orbit中心の足場）
+   {x:624,y:2384,w:32,h:32},   // centerY:2400
+   {x:624,y:1984,w:32,h:32},   // centerY:2000
+   {x:624,y:1584,w:32,h:32},   // centerY:1600
+   {x:624,y:1084,w:32,h:32},   // centerY:1100
+   {x:624,y:584,w:32,h:32},    // centerY:600
+   {x:624,y:184,w:32,h:32},    // centerY:200
  ],
  spikes:[
    {x:400,y:2560,w:32,h:32},{x:700,y:2432,w:32,h:32},
@@ -3288,11 +3295,14 @@ move:[
    {x:432,y:2560,w:16,h:32},{x:582,y:2080,w:16,h:32},
    {x:582,y:1312,w:16,h:32},{x:532,y:160,w:16,h:32},
  ],
- fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],
+ // lava追加
+ lava:[{y:2900,speed:20,color:'rgba(255,60,0,0.95)'}],
+ pendulums:[],chasers:[],
  slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  focusZones:[],darkness:{enabled:false},
  goal:{x:500,y:32,w:256,h:96},
- spawn:{x:128,y:2768}},
+ spawn:{x:128,y:2688}},
 
 // STAGE 65 — NOWHERE TO HIDE
 {name:'STAGE 65',sub:'Every corner is watched.',
@@ -3324,18 +3334,18 @@ move:[
    {x:490,y:240,w:150,h:16},
    {x:790,y:240,w:150,h:16},{x:940,y:240,w:150,h:16},{x:1090,y:240,w:150,h:16},
 
-   {x:40,y:480,w:150,h:16},{x:190,y:480,w:150,h:16},{x:340,y:480,w:150,h:16},
+   {x:190,y:480,w:150,h:16},{x:340,y:480,w:150,h:16},
    {x:490,y:480,w:150,h:16},{x:640,y:480,w:150,h:16},{x:790,y:480,w:150,h:16},
    {x:940,y:480,w:150,h:16},{x:1090,y:480,w:150,h:16},
 
-   {x:190,y:704,w:150,h:16},{x:340,y:704,w:150,h:16},{x:490,y:704,w:150,h:16},
+   {x:40,y:704,w:150,h:16},{x:190,y:704,w:150,h:16},{x:340,y:704,w:150,h:16},{x:490,y:704,w:150,h:16},
    {x:640,y:704,w:150,h:16},{x:790,y:704,w:150,h:16},
    {x:940,y:704,w:150,h:16},{x:1090,y:704,w:150,h:16},
    {x:340,y:360,w:32,h:32},{x:1140,y:360,w:32,h:32},{x:190,y:592,w:32,h:32}
  ],
  buttons:[
-   {x:472,y:224,w:32,h:16,id:'btn1'},
-   {x:520,y:224,w:32,h:16,id:'btn2'},
+   {x:504,y:224,w:32,h:16,id:'btn1'},
+   {x:568,y:224,w:32,h:16,id:'btn2'},
    {x:872,y:224,w:32,h:16,id:'btn2'},
    {x:972,y:224,w:32,h:16,id:'btn3'},
    {x:200,y:224,w:32,h:16,id:'btn4'},
@@ -3343,7 +3353,7 @@ move:[
  ],
  currents:[
    // ボタン1：シーソー
-   {x1:340,y1:0,x2:440,y2:240,buttonIds:['btn1'],startActive:false}, // ON時にON
+   {x1:490,y1:0,x2:490,y2:240,buttonIds:['btn1'],startActive:false}, // ON時にON
    {x1:640,y1:244,x2:790,y2:244,buttonIds:['btn2'],startActive:false},
    {x1:940,y1:0,x2:940,y2:240,buttonIds:['btn2'],startActive:false},
    {x1:490,y1:240,x2:490,y2:480,buttonIds:['btn3'],startActive:false},
@@ -3417,8 +3427,8 @@ move:[
    vx:0,vy:0,rx:0,ry:0,sx:328,sy:624,phase:0
  }],
  growingSpikes:[
-   {x:860,y:360,w:32,h:32,axis:'x',right:true,maxSize:96,growSpeed:35,shrinkSpeed:25},
-   {x:860,y:240,w:32,h:32,axis:'x',right:true,maxSize:96,growSpeed:30,shrinkSpeed:20},
+   {x:864,y:426,w:32,h:32,axis:'x',right:true,maxSize:96,growSpeed:35,shrinkSpeed:25},
+   {x:864,y:224,w:32,h:32,axis:'x',right:true,maxSize:96,growSpeed:30,shrinkSpeed:20},
  ],
  spikes:[],
  traps:[],
@@ -3474,29 +3484,26 @@ move:[
 // STAGE 69 — THE GAUNTLET
 {name:'STAGE 69',sub:'Time it. Fall through.',
  plats:[
-   {x:0,y:96,w:580,h:16},
-   {x:700,y:96,w:580,h:16},
-   {x:32,y:112,w:32,h:560},
-   {x:1216,y:96,w:32,h:560},
+   {x:32,y:96,w:548,h:16},
+   {x:700,y:96,w:548,h:16},
+   {x:32,y:112,w:32,h:544},
+   {x:1216,y:112,w:32,h:544},
    {x:0,y:704,w:1280,h:16},
  ],
  spikes:[],
  crushers:[
-   // 1段目 y:96（天井直下）
-   {x:32,y:112,w:560,h:48,axis:'x',min:32,max:592,speed:160,startDir:1},
-   {x:688,y:112,w:560,h:48,axis:'x',min:688,max:1248,speed:160,startDir:-1},
-   // 2段目
-   {x:32,y:208,w:560,h:48,axis:'x',min:32,max:592,speed:160,startDir:-1},
-   {x:688,y:208,w:560,h:48,axis:'x',min:688,max:1248,speed:160,startDir:1},
+   // 1段目
+   {x:64,y:112,w:576,h:116,axis:'x',min:64,max:640,speed:160,startDir:1},
+   {x:640,y:112,w:576,h:116,axis:'x',min:640,max:1216,speed:160,startDir:1},
+   // 2段目（右側を逆スタートでずらす）
+   {x:64,y:228,w:576,h:116,axis:'x',min:64,max:640,speed:160,startDir:-1},
+   {x:640,y:228,w:576,h:116,axis:'x',min:640,max:1216,speed:160,startDir:1},
    // 3段目
-   {x:32,y:320,w:560,h:48,axis:'x',min:32,max:592,speed:160,startDir:1},
-   {x:688,y:320,w:560,h:48,axis:'x',min:688,max:1248,speed:160,startDir:-1},
+   {x:64,y:344,w:576,h:116,axis:'x',min:64,max:640,speed:160,startDir:1},
+   {x:640,y:344,w:576,h:116,axis:'x',min:640,max:1216,speed:160,startDir:-1},
    // 4段目
-   {x:32,y:432,w:560,h:48,axis:'x',min:32,max:592,speed:160,startDir:-1},
-   {x:688,y:432,w:560,h:48,axis:'x',min:688,max:1248,speed:160,startDir:1},
-   // 5段目
-   {x:32,y:544,w:560,h:48,axis:'x',min:32,max:592,speed:160,startDir:1},
-   {x:688,y:544,w:560,h:48,axis:'x',min:688,max:1248,speed:160,startDir:-1},
+   {x:64,y:460,w:576,h:116,axis:'x',min:64,max:640,speed:160,startDir:-1},
+   {x:640,y:460,w:576,h:116,axis:'x',min:640,max:1216,speed:160,startDir:1},
  ],
  traps:[],
  hg:[

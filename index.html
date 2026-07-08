@@ -2050,8 +2050,8 @@ const STAGES=[
     {x1:0,y1:240,x2:96,y2:240,buttonIds:['btn2'],startActive:true},
     {x1:680,y1:400,x2:680,y2:512,buttonIds:['btn3'],startActive:true},
  ],
- hg:[{x:600,y:416,w:16,h:32},{x:976,y:352,w:16,h:32},{x:1088,y:608,w:16,h:32},{x:588,y:608,w:16,h:32},
-     {x:388,y:480,w:16,h:32},{x:416,y:416,w:16,h:32},{x:218,y:208,w:16,h:32},{x:800,y:480,w:16,h:32}
+ hg:[{x:568,y:416,w:16,h:32},{x:1008,y:352,w:16,h:32},{x:1088,y:608,w:16,h:32},{x:524,y:608,w:16,h:32},
+     {x:356,y:480,w:16,h:32},{x:416,y:352,w:16,h:32},{x:218,y:208,w:16,h:32},{x:800,y:480,w:16,h:32}
     ],
  focusZones:[],darkness:{enabled:false},
  goal:{x:1152,y:544,w:128,h:96},
@@ -2078,15 +2078,16 @@ const STAGES=[
    {x:800,y:240,w:192,h:16},
    {x:400,y:144,w:192,h:16},
    // 透明足場（phantom）
-   {x:600,y:528,w:128,h:16,phantom:true},
-   {x:300,y:432,w:128,h:16,phantom:true},
-   {x:700,y:336,w:128,h:16,phantom:true},
+   {x:600,y:528,w:128,h:16},
+   {x:332,y:432,w:64,h:32},
+   {x:832,y:336,w:96,h:16},
+   {x:1100,y:336,w:128,h:16,phantom:true},
    {x:100,y:144,w:128,h:16,phantom:true},
-   {x:900,y:144,w:128,h:16,phantom:true},
+   {x:1000,y:144,w:128,h:16,phantom:true},
  ],
  spikes:[
    {x:232,y:592,w:32,h:32},{x:832,y:592,w:32,h:32},
-   {x:432,y:496,w:32,h:32},{x:932,y:400,w:32,h:32},
+   {x:496,y:496,w:32,h:32},{x:932,y:400,w:32,h:32},
    {x:200,y:208,w:32,h:32},{x:832,y:208,w:32,h:32},
  ],
  move:[
@@ -2096,7 +2097,7 @@ const STAGES=[
    {x:700,y:144,w:96,h:16,vx:-4.0,vy:0,rx:-96,ry:0,sx:800,sy:144,phase:Math.PI*1.5},
  ],
  slidingSpikes:[
-   {x:200,y:528,w:32,h:32,axis:'x',minX:200,maxX:560,speed:4.0},
+   {x:632,y:704,w:32,h:32,axis:'x',minX:632,maxX:856,speed:4.0},
    {x:800,y:336,w:32,h:32,axis:'x',minX:500,maxX:880,speed:3.5},
    {x:400,y:240,w:32,h:32,axis:'x',minX:200,maxX:700,speed:4.5},
  ],
@@ -2735,13 +2736,13 @@ crushers:[
  ],
 move:[
    // 左グループ（中央から左、互い違い）
-   {x:200,y:480,w:160,h:16,vx:5.0,vy:0,rx:96,ry:0,sx:300,sy:480,phase:0},
-   {x:200,y:320,w:160,h:16,vx:5.0,vy:0,rx:96,ry:0,sx:300,sy:320,phase:Math.PI},
-   {x:200,y:160,w:160,h:16,vx:5.0,vy:0,rx:96,ry:0,sx:300,sy:160,phase:Math.PI*0.5},
+   {x:200,y:480,w:160,h:16,vx:7.0,vy:0,rx:96,ry:0,sx:300,sy:480,phase:0},
+   {x:200,y:320,w:160,h:16,vx:7.0,vy:0,rx:96,ry:0,sx:300,sy:320,phase:Math.PI},
+   {x:200,y:160,w:160,h:16,vx:7.0,vy:0,rx:96,ry:0,sx:300,sy:160,phase:Math.PI*0.5},
    // 右グループ（中央から右、互い違い）
-   {x:800,y:560,w:160,h:16,vx:5.0,vy:0,rx:96,ry:0,sx:900,sy:560,phase:0},
-   {x:800,y:400,w:160,h:16,vx:5.0,vy:0,rx:96,ry:0,sx:900,sy:400,phase:Math.PI},
-   {x:800,y:240,w:160,h:16,vx:5.0,vy:0,rx:96,ry:0,sx:900,sy:240,phase:Math.PI*0.5},
+   {x:800,y:560,w:160,h:16,vx:7.0,vy:0,rx:96,ry:0,sx:900,sy:560,phase:0},
+   {x:800,y:400,w:160,h:16,vx:7.0,vy:0,rx:96,ry:0,sx:900,sy:400,phase:Math.PI},
+   {x:800,y:240,w:160,h:16,vx:7.0,vy:0,rx:96,ry:0,sx:900,sy:240,phase:Math.PI*0.5},
  ],
  pendulums:[
    {pivotX:640,pivotY:96,length:304,speed:2.0,maxAngle:0.9,angle:0},
@@ -2786,7 +2787,7 @@ move:[
    {x:1152,y:112,w:96,h:16},
 
    // ゴール足場（上中央）
-   {x:32,y:96,w:928,h:464},
+   {x:32,y:96,w:928,h:480},
    {x:32,y:0,w:560,h:96},
  ],
  spikes:[
@@ -2818,53 +2819,44 @@ move:[
  goal:{x:592,y:0,w:80,h:96},
  spawn:{x:64,y:624}},
 
-// STAGE 60 — THE CEILING
-{name:'STAGE 60',sub:'It comes down. Find the gap.',
+// STAGE 60 — GRID PUZZLE
+{name:'STAGE 60',sub:'Think before you press.',
  plats:[
-   {x:32,y:624,w:32,h:96},
-   {x:96,y:608,w:32,h:112},
-   {x:160,y:576,w:32,h:144},
-   {x:224,y:592,w:32,h:128},
-   {x:288,y:608,w:32,h:112},
-   {x:352,y:576,w:32,h:144},
-   {x:416,y:624,w:32,h:96},
-   {x:480,y:592,w:32,h:128},
-   {x:544,y:608,w:32,h:112},
-   {x:608,y:576,w:32,h:144},
-   {x:672,y:624,w:32,h:96},
-   {x:736,y:592,w:32,h:128},
-   {x:800,y:608,w:32,h:112},
-   {x:864,y:576,w:32,h:144},
-   {x:928,y:624,w:32,h:96},
-   
-   {x:992,y:592,w:32,h:128},
-   {x:1056,y:608,w:32,h:112},
-   {x:1200,y:704,w:80,h:16},
+   // 横足場（各行の床）
+   {x:0,y:0,w:1280,h:160},
+   {x:0,y:384,w:850,h:336},
+   {x:1068,y:384,w:280,h:336},
  ],
- spikes:[
-   {x:96,y:576,w:32,h:32},
+ spikes:[],
+ buttons:[
+   {x:380,y:368,w:32,h:16,id:'b1'},   // 左エリア中段床
+   {x:460,y:368,w:32,h:16,id:'b2'},  // 左エリア上段床
+   {x:540,y:368,w:32,h:16,id:'b3'},  // 右エリア下段床
+   {x:620,y:368,w:32,h:16,id:'b4'},
+   {x:700,y:368,w:32,h:16,id:'b5'},
  ],
- crushers:[
-   {x:0,y:-400,w:1280,h:480,axis:'y',min:-400,max:112,speed:32,startDir:1}
- ],
- hg:[
-   {x:368,y:544,w:16,h:32},
-   {x:808,y:576,w:16,h:32},
+ currents:[
+   // 縦電流（列の区切り）
+   // B1でOFF→左から右エリアへ通れる
+   {x1:850,y1:160,x2:850,y2:384,buttonIds:['b3'],startActive:true},
+   {x1:900,y1:160,x2:900,y2:384,buttonIds:['b1'],startActive:false},
+   {x1:960,y1:160,x2:960,y2:384,buttonIds:['b5'],startActive:false},
+   {x1:1010,y1:160,x2:1010,y2:384,buttonIds:['b4'],startActive:false},
+   {x1:1068,y1:160,x2:1068,y2:384,buttonIds:['b2'],startActive:false},
  ],
  traps:[
-   {x:224,y:560,w:32,h:32,triggerRadius:48,warn:false},
-   {x:288,y:576,w:32,h:32,triggerRadius:48,warn:false},
-   {x:480,y:560,w:32,h:32,triggerRadius:48,warn:false},
-   {x:544,y:576,w:32,h:32,triggerRadius:48,warn:false},
-   {x:736,y:560,w:32,h:32,triggerRadius:48,warn:false},
-   {x:992,y:560,w:32,h:32,triggerRadius:48,warn:false},
-   {x:1056,y:576,w:32,h:32,triggerRadius:48,warn:false},
+   {x:1068,y:352,w:32,h:32,tx:1000,warn:false},
  ],
- move:[],fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
- chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
+ hg:[
+   {x:1120,y:352,w:16,h:32},
+ ],
+ fall:[
+   {x:959,y:384,w:16,h:16,spikesOn:false,gravity:10.0}
+ ],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
+ chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],crushers:[],
  memos:[],focusZones:[],darkness:{enabled:false},
- goal:{x:1200,y:608,w:80,h:96},
- spawn:{x:40,y:576}},
+ goal:{x:1200,y:288,w:80,h:96},
+ spawn:{x:48,y:352}},
   
 // STAGE 61 — THE PYRAMID
 {name:'STAGE 61',sub:'Climb the shifting steps.',
@@ -3378,44 +3370,53 @@ move:[
  goal:{x:1200,y:64,w:80,h:96},
  spawn:{x:48,y:592}},
 
-// STAGE 72 — GRID PUZZLE
-{name:'STAGE 72',sub:'Think before you press.',
+// STAGE 72 — THE CEILING
+{name:'STAGE 72',sub:'It comes down. Find the gap.',
  plats:[
-   // 横足場（各行の床）
-   {x:0,y:0,w:1280,h:160},
-   {x:0,y:384,w:850,h:336},
-   {x:1068,y:384,w:280,h:336},
+   {x:32,y:624,w:32,h:96},
+   {x:96,y:608,w:32,h:112},
+   {x:160,y:576,w:32,h:144},
+   {x:224,y:592,w:32,h:128},
+   {x:288,y:608,w:32,h:112},
+   {x:352,y:576,w:32,h:144},
+   {x:416,y:624,w:32,h:96},
+   {x:480,y:592,w:32,h:128},
+   {x:544,y:608,w:32,h:112},
+   {x:608,y:576,w:32,h:144},
+   {x:672,y:624,w:32,h:96},
+   {x:736,y:592,w:32,h:128},
+   {x:800,y:608,w:32,h:112},
+   {x:864,y:576,w:32,h:144},
+   {x:928,y:624,w:32,h:96},
+   
+   {x:992,y:592,w:32,h:128},
+   {x:1056,y:608,w:32,h:112},
+   {x:1200,y:704,w:80,h:16},
  ],
- spikes:[],
- buttons:[
-   {x:380,y:368,w:32,h:16,id:'b1'},   // 左エリア中段床
-   {x:460,y:368,w:32,h:16,id:'b2'},  // 左エリア上段床
-   {x:540,y:368,w:32,h:16,id:'b3'},  // 右エリア下段床
-   {x:620,y:368,w:32,h:16,id:'b4'},
-   {x:700,y:368,w:32,h:16,id:'b5'},
+ spikes:[
+   {x:96,y:576,w:32,h:32},
  ],
- currents:[
-   // 縦電流（列の区切り）
-   // B1でOFF→左から右エリアへ通れる
-   {x1:850,y1:160,x2:850,y2:384,buttonIds:['b3'],startActive:true},
-   {x1:900,y1:160,x2:900,y2:384,buttonIds:['b1'],startActive:false},
-   {x1:960,y1:160,x2:960,y2:384,buttonIds:['b5'],startActive:false},
-   {x1:1010,y1:160,x2:1010,y2:384,buttonIds:['b4'],startActive:false},
-   {x1:1068,y1:160,x2:1068,y2:384,buttonIds:['b2'],startActive:false},
- ],
- traps:[
-   {x:1068,y:352,w:32,h:32,tx:1000,warn:false},
+ crushers:[
+   {x:0,y:-400,w:1280,h:480,axis:'y',min:-400,max:112,speed:32,startDir:1}
  ],
  hg:[
-   {x:1120,y:352,w:16,h:32},
+   {x:368,y:544,w:16,h:32},
+   {x:808,y:576,w:16,h:32},
  ],
- fall:[
-   {x:959,y:384,w:16,h:16,spikesOn:false,gravity:10.0}
- ],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
- chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],crushers:[],
+ traps:[
+   {x:224,y:560,w:32,h:32,triggerRadius:48,warn:false},
+   {x:288,y:576,w:32,h:32,triggerRadius:48,warn:false},
+   {x:480,y:560,w:32,h:32,triggerRadius:48,warn:false},
+   {x:544,y:576,w:32,h:32,triggerRadius:48,warn:false},
+   {x:736,y:560,w:32,h:32,triggerRadius:48,warn:false},
+   {x:992,y:560,w:32,h:32,triggerRadius:48,warn:false},
+   {x:1056,y:576,w:32,h:32,triggerRadius:48,warn:false},
+ ],
+ move:[],fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
+ chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  memos:[],focusZones:[],darkness:{enabled:false},
- goal:{x:1200,y:288,w:80,h:96},
- spawn:{x:48,y:352}},
+ goal:{x:1200,y:608,w:80,h:96},
+ spawn:{x:40,y:576}},
 
 
 // STAGE 73 — EVERYTHING ORBITS
@@ -3435,13 +3436,11 @@ move:[
    {x:800,y:432,w:32,h:32},
    {x:1024,y:368,w:32,h:32},
    {x:864,y:272,w:32,h:32},
-   {x:640,y:208,w:32,h:32},
-   {x:400,y:304,w:32,h:32},
    {x:224,y:336,w:32,h:32},
    {x:96,y:240,w:32,h:32},
-   {x:320,y:144,w:32,h:32},
+   {x:320,y:112,w:32,h:32},
    {x:480,y:336,w:32,h:32},
-   {x:1056,y:160,w:192,h:16},
+   {x:1056,y:160,w:192,h:16}
    // orbit中心の足場（画面全体に）
    {x:448,y:560,w:32,h:32},
    {x:688,y:336,w:32,h:32},
@@ -3450,6 +3449,7 @@ move:[
    {x:272,y:464,w:32,h:32},
    {x:752,y:160,w:32,h:32},
    {x:512,y:112,w:32,h:32},
+   {x:368,y:304,w:32,h:32},
  ],
  spikes:[
    {x:224,y:656,w:32,h:32},
@@ -3466,6 +3466,7 @@ move:[
    {centerX:288,centerY:480,radius:72,speed:3.0,angle:Math.PI*0.3,size:11,color:'rgba(255,220,0,0.9)'},
    {centerX:768,centerY:176,radius:64,speed:-2.8,angle:Math.PI*0.8,size:11,color:'rgba(255,140,0,0.9)'},
    {centerX:528,centerY:128,radius:56,speed:2.5,angle:Math.PI*1.2,size:11,color:'rgba(255,30,30,0.9)'},
+   {centerX:384,centerY:320,radius:80,speed:2.0,angle:0,size:13,color:'rgba(148,0,211,0.9)'},
  ],
  traps:[
    {x:832,y:400,w:32,h:32,triggerRadius:64,warn:false},
@@ -3483,14 +3484,16 @@ move:[
    {x:1152,y:128,w:16,h:32},
    {x:1184,y:128,w:16,h:32},
    {x:1216,y:128,w:16,h:32},
-   {x:328,y:112,w:16,h:32},
+   {x:328,y:80,w:16,h:32},
    // 地面のトゲとトゲの間に赤砂時計
    {x:304,y:656,w:16,h:32,penalty:true},
    {x:560,y:656,w:16,h:32,penalty:true},
    {x:816,y:656,w:16,h:32,penalty:true},
    {x:1072,y:656,w:16,h:32,penalty:true},
  ],
- fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
+ fall:[],move:[
+   {x:640,y:208,w:32,h:32,vx:0,vy:6.0,rx:0,ry:96,sx:1056,sy:160},
+ ],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
  chasers:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  crushers:[],memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
  goal:{x:32,y:0,w:80,h:96},
@@ -3560,67 +3563,74 @@ move:[
  goal:{x:1168,y:64,w:80,h:96},
  spawn:{x:48,y:592}},
 
-    // STAGE 75 — THREE TIERS II
-{name:'STAGE 75',sub:'Now they move.',
+  // STAGE 75 — THREE TIERS
+{name:'STAGE 75',sub:'Choose your floor.',
  plats:[
    {x:0,y:0,w:1280,h:32},
    {x:0,y:688,w:1280,h:32},
-   {x:32,y:192,w:160,h:496},
-   {x:1088,y:192,w:160,h:496},
-   {x:224,y:196,w:832,h:32},
-   {x:224,y:360,w:832,h:32},
-   {x:224,y:524,w:832,h:32},
+   {x:0,y:192,w:160,h:496},
+   {x:1120,y:192,w:160,h:496},
+   {x:272,y:196,w:736,h:32},
+   {x:272,y:360,w:736,h:32},
+   {x:272,y:524,w:736,h:32},
  ],
  spikes:[
-   {x:384,y:164,w:32,h:32},{x:896,y:164,w:32,h:32},
-   {x:384,y:492,w:32,h:32},{x:896,y:492,w:32,h:32},
- ],
- pendulums:[
-   // 上段（難しい）振り子2本
-   {pivotX:448,pivotY:32,length:180,speed:2.2,maxAngle:1.0,angle:1.0},
-   {pivotX:832,pivotY:32,length:180,speed:2.0,maxAngle:1.0,angle:-1.0},
-   // 下段（中間）振り子1本
-   {pivotX:640,pivotY:360,length:160,speed:1.8,maxAngle:0.9,angle:0.9},
- ],
- orbits:[
-   // 中段（楽）orbit1個だけ
-   {centerX:640,centerY:344,radius:80,speed:2.0,angle:0,size:13,color:'rgba(100,200,255,0.9)'},
-   // 上段にorbitも追加（さらに難しく）
-   {centerX:448,centerY:180,radius:64,speed:-2.5,angle:Math.PI,size:12,color:'rgba(255,100,100,0.9)'},
-   {centerX:832,centerY:180,radius:64,speed:2.5,angle:0,size:12,color:'rgba(255,100,100,0.9)'},
+   // 上段（一番難しい）スパイク多め
+   {x:256,y:164,w:32,h:32},{x:384,y:164,w:32,h:32},
+   {x:512,y:164,w:32,h:32},{x:640,y:164,w:32,h:32},
+   {x:768,y:164,w:32,h:32},{x:896,y:164,w:32,h:32},
+   {x:1024,y:164,w:32,h:32},
+   // 中段（一番楽）スパイクなし
+   // 下段（中間）スパイク少なめ
+   {x:384,y:492,w:32,h:32},
+   {x:768,y:492,w:32,h:32},
  ],
  traps:[
-   // 上段warn:false
+   // 上段（難しい）trap多め・warn:false
+   {x:320,y:164,w:32,h:32,tx:256,warn:false},
+   {x:448,y:164,w:32,h:32,tx:384,warn:false},
    {x:576,y:164,w:32,h:32,tx:512,warn:false},
    {x:704,y:164,w:32,h:32,tx:640,warn:false},
-   // 中段warn:true
+   {x:832,y:164,w:32,h:32,tx:768,warn:false},
+   {x:960,y:164,w:32,h:32,tx:896,warn:false},
+   // 中段（楽）trap少なめ・warn:true
    {x:512,y:328,w:32,h:32,tx:448,warn:true},
-   // 下段warn:false×1、warn:true×1
-   {x:448,y:492,w:32,h:32,tx:384,warn:false},
-   {x:768,y:492,w:32,h:32,tx:704,warn:true},
+   {x:768,y:328,w:32,h:32,tx:704,warn:true},
+   // 下段（中間）warn:false×2、warn:true×1
+   {x:320,y:492,w:32,h:32,tx:256,warn:false},
+   {x:576,y:492,w:32,h:32,tx:512,warn:true},
+   {x:832,y:492,w:32,h:32,tx:768,warn:false},
+   {x:160,y:656,w:960,h:32,triggerRadius:64,warn:false},
  ],
  hg:[
+   // 上段
    {x:688,y:164,w:16,h:32},
-   {x:640,y:328,w:16,h:32},
+   // 中段
+   {x:400,y:328,w:16,h:32},
+   {x:848,y:328,w:16,h:32},
+   // 下段
    {x:688,y:492,w:16,h:32},
  ],
- fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],
- chasers:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
+ fallingSpikes:[
+   // 上段が一番難しいのでfallingSpikesも上段に
+   {x:480,y:0,w:32,h:48,triggerX:412,speed:450,triggered:false,startY:0,currentY:0},
+   {x:800,y:0,w:32,h:48,triggerX:732,speed:450,triggered:false,startY:0,currentY:0},
+ ],
+ fall:[],move:[],mimics:[],ceiling:[],lava:[],pendulums:[],
+ chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  crushers:[],memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
- goal:{x:1088,y:96,w:160,h:96},
+ goal:{x:1200,y:96,w:80,h:96},
  spawn:{x:32,y:96}},
 
 // STAGE 76 — ORBIT INTRO
 {name:'STAGE 76',sub:'Something circles here.',
  plats:[
    // 外枠
-   {x:0,y:688,w:1280,h:32},
    {x:0,y:0,w:1280,h:32},
    // スタート台（左）
    {x:0,y:336,w:192,h:16},
    // 左側の経由足場2つ（幅96）
    {x:272,y:336,w:96,h:16},
-   {x:448,y:336,w:96,h:16},
    // 中央orbit足場（32×32）
    {x:624,y:336,w:32,h:32},
    // 右側の経由足場2つ（透明＋動く）
@@ -3629,10 +3639,9 @@ move:[
    // ゴール台（右）
    {x:1088,y:336,w:192,h:16},
  ],
- move:[{
-   x:912,y:336,w:64,h:16,
-   vx:0,vy:3.0,rx:0,ry:128,sx:912,sy:336,phase:0
- }],
+ move:[{x:912,y:336,w:64,h:16,vx:0,vy:8.0,rx:0,ry:128,sx:912,sy:336,phase:0},
+       {x:448,y:336,w:64,h:16,vx:0,vy:-8.0,rx:0,ry:128,sx:912,sy:336,phase:0},
+      ],
  orbits:[
    {centerX:640,centerY:352,radius:96,speed:2.0,angle:0,size:14,color:'rgba(100,200,255,0.9)'},
    {centerX:640,centerY:352,radius:96,speed:2.0,angle:Math.PI,size:14,color:'rgba(100,200,255,0.9)'},
@@ -3712,10 +3721,10 @@ move:[
 {name:'STAGE 78',sub:'You only get one.',
  plats:[
    {x:0,y:640,w:1280,h:80},
-   {x:528,y:480,w:224,h:16},
+   {x:528,y:416,w:224,h:16},
  ],
  spikes:[
-   {x:528,y:448,w:32,h:32},{x:720,y:448,w:32,h:32},
+   {x:528,y:512,w:32,h:32},{x:720,y:512,w:32,h:32},
  ],
  fallingSpikes:[
    {x:576,y:0,w:32,h:48,triggerX:510,speed:500,triggered:false,startY:0,currentY:0},
@@ -3724,10 +3733,11 @@ move:[
  ],
  traps:[
    {x:256,y:608,w:32,h:32,tx:192,warn:false},
+   {x:608,y:608,w:32,h:32,tx:192,warn:false},
    {x:960,y:608,w:32,h:32,tx:896,warn:false},
  ],
  hg:[
-   {x:608,y:448,w:16,h:32},
+   {x:608,y:512,w:16,h:32},
    {x:800,y:608,w:16,h:32},
  ],
  fall:[],move:[],mimics:[],ceiling:[],lava:[],pendulums:[],
@@ -3905,36 +3915,48 @@ move:[
  goal:{x:1152,y:624,w:96,h:80},
  spawn:{x:48,y:48}},
 
-  // STAGE 80 — THE WARP
-{name:'STAGE 80',sub:'Step in. Step out.',
+// STAGE 80 — STAIRWAY DOWN
+{name:'STAGE 80',sub:'Step down. Do not get crushed.',
  plats:[
-   {x:0,y:640,w:1280,h:80},
-   {x:0,y:0,w:1280,h:96},
-   {x:0,y:96,w:32,h:544},
-   {x:1248,y:96,w:32,h:544},
-   {x:192,y:560,w:160,h:16},
-   {x:1024,y:160,w:160,h:16},
+   {x:0,y:0,w:1280,h:32},
+   {x:0,y:688,w:1280,h:32},
+   {x:0,y:0,w:32,h:688},
+   {x:1248,y:0,w:32,h:688},
+   // 階段6段
+   {x:0,y:96,w:192,h:16},
+   {x:192,y:192,w:192,h:16},
+   {x:384,y:288,w:192,h:16},
+   {x:576,y:384,w:192,h:16},
+   {x:768,y:480,w:192,h:16},
+   {x:960,y:576,w:320,h:112},
+ ],
+ crushers:[
+   {x:32,y:0,w:160,h:48,axis:'y',min:0,max:608,speed:72,startDir:1},
+   {x:192,y:0,w:192,h:48,axis:'y',min:0,max:608,speed:88,startDir:1},
+   {x:384,y:0,w:192,h:48,axis:'y',min:0,max:608,speed:64,startDir:1},
+   {x:576,y:0,w:192,h:48,axis:'y',min:0,max:608,speed:96,startDir:1},
+   {x:768,y:0,w:192,h:48,axis:'y',min:0,max:608,speed:80,startDir:1},
+   {x:960,y:0,w:192,h:48,axis:'y',min:0,max:608,speed:56,startDir:1},
  ],
  spikes:[
-   {x:480,y:608,w:32,h:32},{x:640,y:608,w:32,h:32},{x:800,y:608,w:32,h:32},
-   {x:480,y:128,w:32,h:32},{x:640,y:128,w:32,h:32},{x:800,y:128,w:32,h:32},
- ],
- teleporters:[
-   {x:272,y:528,w:32,h:32,id:'tpA',linkTo:'tpB'},
-   {x:1104,y:128,w:32,h:32,id:'tpB',linkTo:'tpA'},
- ],
- traps:[
-   {x:240,y:528,w:32,h:32,tx:176,warn:false},
-   {x:1136,y:128,w:32,h:32,tx:1072,warn:true},
+   {x:192,y:656,w:32,h:32},{x:384,y:656,w:32,h:32},
+   {x:576,y:656,w:32,h:32},{x:768,y:656,w:32,h:32},
  ],
  hg:[
-   {x:640,y:608,w:16,h:32},
+   {x:64,y:64,w:16,h:32},
+   {x:256,y:160,w:16,h:32},
+   {x:448,y:256,w:16,h:32},
+   {x:640,y:352,w:16,h:32},
+ ],
+ traps:[
+   {x:224,y:160,w:32,h:32,tx:160,warn:false},
+   {x:608,y:352,w:32,h:32,tx:544,warn:false},
  ],
  fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
  chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
- crushers:[],memos:[],focusZones:[],darkness:{enabled:false},
- goal:{x:1104,y:64,w:144,h:96},
- spawn:{x:48,y:592}},
+ memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
+ goal:{x:1168,y:576,w:80,h:112},
+ spawn:{x:48,y:64}},
 
 // STAGE 81 — FAKE SAFE CORRIDOR
 {name:'STAGE 81',sub:'Looks safe. Wait for it.',
@@ -4127,35 +4149,37 @@ move:[
    {x:0,y:704,w:1280,h:16},
    // 柱12本（y:128〜728、穴あり）
    // 柱1 x:64 穴なし
-   {x:64,y:128,w:32,h:576},
+   {x:64,y:128,w:32,h:448},
    // 柱2 x:160 穴なし
-   {x:160,y:128,w:32,h:576},
+   {x:160,y:128,w:32,h:448},
    // 柱3 x:256 穴あり（y:352〜432の間に64px穴）
    {x:256,y:128,w:32,h:224},
-   {x:256,y:432,w:32,h:272},
+   {x:256,y:432,w:32,h:144},
    // 柱4 x:352 穴なし
-   {x:352,y:128,w:32,h:576},
+   {x:352,y:128,w:32,h:448},
    // 柱5 x:448 穴なし
-   {x:448,y:128,w:32,h:576},
+   {x:448,y:128,w:32,h:448},
    // 柱6 x:544 穴あり（y:288〜368の間に80px穴）
    {x:544,y:128,w:32,h:160},
-   {x:544,y:368,w:32,h:336},
+   {x:544,y:368,w:32,h:208},
    // 柱7 x:640 穴なし
-   {x:640,y:128,w:32,h:576},
+   {x:640,y:128,w:32,h:448},
    // 柱8 x:736 穴あり（y:448〜528の間に80px穴）
    {x:736,y:128,w:32,h:320},
-   {x:736,y:528,w:32,h:176},
+   {x:736,y:528,w:32,h:48},
    // 柱9 x:832 穴なし
-   {x:832,y:128,w:32,h:576},
+   {x:832,y:128,w:32,h:448},
    // 柱10 x:928 穴あり（y:224〜288の間に64px穴）
    {x:928,y:128,w:32,h:96},
-   {x:928,y:288,w:32,h:416},
+   {x:928,y:288,w:32,h:288},
    // 柱11 x:1024 穴なし
-   {x:1024,y:128,w:32,h:576},
+   {x:1024,y:128,w:32,h:448},
    // 柱12 x:1120 穴なし
-   {x:1120,y:128,w:32,h:576},
+   {x:1120,y:128,w:32,h:448},
+   {x:1184,y:128,w:32,h:448},
 
    // 柱と柱の間の上部に透明蓋（phantom）
+   {x:0,y:128,w:64,h:16,phantom:true},
    {x:96,y:128,w:64,h:16,phantom:true},
    {x:192,y:128,w:64,h:16,phantom:true},
    {x:288,y:128,w:64,h:16,phantom:true},
@@ -4180,27 +4204,47 @@ move:[
  spikes:[
    // 難しいルートの着地点付近
    {x:96,y:672,w:32,h:32},
-   {x:480,y:672,w:32,h:32},
+   {x:128,y:672,w:32,h:32},
+   {x:512,y:672,w:32,h:32},{x:544,y:672,w:32,h:32},
    {x:768,y:672,w:32,h:32},
    // 罠：一見簡単そうだが落ちるとスパイク
    {x:352,y:672,w:32,h:32},
-   {x:1024,y:672,w:32,h:32},
+   {x:1056,y:672,w:32,h:32},{x:1088,y:672,w:32,h:32},
  ],
  traps:[
    {x:160,y:480,w:32,h:32,triggerRadius:48,warn:false},
    {x:640,y:560,w:32,h:32,triggerRadius:48,warn:false},
+   // テレポート下のtrap
+   {x:304,y:448,w:32,h:32,triggerRadius:64,warn:false},
  ],
  hg:[
    {x:272,y:400,w:16,h:32},
    {x:944,y:256,w:16,h:32},
    {x:560,y:320,w:16,h:32},
    {x:752,y:480,w:16,h:32},
+   // 8-9本目間に赤砂時計びっしり（y:128〜576、64px間隔）
+   {x:768,y:160,w:16,h:32,penalty:true},
+   {x:768,y:224,w:16,h:32,penalty:true},
+   {x:768,y:288,w:16,h:32,penalty:true},
+   {x:768,y:352,w:16,h:32,penalty:true},
+   {x:768,y:416,w:16,h:32,penalty:true},
+   {x:768,y:480,w:16,h:32,penalty:true},
+   {x:768,y:544,w:16,h:32,penalty:true},
+   {x:768,y:608,w:16,h:32,penalty:true}
  ],
  fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],
- chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
- crushers:[],memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
+ chasers:[],orbits:[
+   {centerX:464,centerY:420,radius:80,speed:2.0,angle:0,size:13,color:'rgba(100,200,255,0.9)'},
+ ],slidingSpikes:[
+   {x:960,y:400,w:32,h:32,axis:'x',minX:960,maxX:1024,speed:4.0},
+   {x:960,y:500,w:32,h:32,axis:'x',minX:960,maxX:1024,speed:3.5},
+ ],growingSpikes:[],buttons:[],currents:[],
+ crushers:[],memos:[],teleporters:[
+   {x:304,y:400,w:32,h:32,id:'tp1',linkTo:'tp2'},
+   {x:688,y:300,w:32,h:32,id:'tp2',linkTo:'tp1'},
+ ],focusZones:[],darkness:{enabled:false},
  goal:{x:576,y:608,w:80,h:96},
- spawn:{x:80,y:64}},
+ spawn:{x:64,y:64}},
 
   // STAGE 86 — TRUST NOBODY
 {name:'STAGE 86',sub:'It looks safe.',
@@ -4255,13 +4299,13 @@ move:[
  ],
  spikes:[],
  move:[
-   {x:160,y:560,w:32,h:16,vx:4.0,vy:0,rx:80,ry:0,sx:160,sy:560,phase:0},
-   {x:320,y:496,w:32,h:16,vx:-4.5,vy:0,rx:-80,ry:0,sx:400,sy:496,phase:Math.PI},
-   {x:480,y:432,w:32,h:16,vx:4.0,vy:0,rx:80,ry:0,sx:480,sy:432,phase:Math.PI*0.5},
-   {x:640,y:368,w:32,h:16,vx:-5.0,vy:0,rx:-96,ry:0,sx:720,sy:368,phase:Math.PI*1.5},
-   {x:800,y:304,w:32,h:16,vx:4.5,vy:0,rx:80,ry:0,sx:800,sy:304,phase:Math.PI*0.3},
-   {x:960,y:240,w:32,h:16,vx:-4.0,vy:0,rx:-80,ry:0,sx:1040,sy:240,phase:Math.PI*1.2},
-   {x:1088,y:176,w:32,h:16,vx:4.5,vy:0,rx:64,ry:0,sx:1088,sy:176,phase:Math.PI*0.7},
+   {x:224,y:496,w:32,h:16,vx:4.0,vy:0,rx:80,ry:0,sx:224,sy:496,phase:0},
+   {x:576,y:432,w:32,h:16,vx:-4.5,vy:0,rx:-80,ry:0,sx:576,sy:432,phase:Math.PI},
+   {x:864,y:496,w:32,h:16,vx:4.0,vy:0,rx:80,ry:0,sx:864,sy:496,phase:Math.PI*0.5},
+   {x:352,y:352,w:32,h:16,vx:-4.5,vy:0,rx:-80,ry:0,sx:432,sy:352,phase:Math.PI*1.5},
+   {x:720,y:288,w:32,h:16,vx:4.0,vy:0,rx:80,ry:0,sx:720,sy:288,phase:Math.PI*0.3},
+   {x:480,y:224,w:32,h:16,vx:-5.0,vy:0,rx:-80,ry:0,sx:560,sy:224,phase:Math.PI*1.2},
+   {x:900,y:352,w:32,h:16,vx:4.5,vy:0,rx:64,ry:0,sx:900,sy:352,phase:Math.PI*0.7},
  ],
  traps:[],
  hg:[
@@ -4356,38 +4400,67 @@ move:[
  spawn:{x:1184,y:48}},
 
 
-
-// STAGE 89 — CROSSFIRE
-{name:'STAGE 89',sub:'Pick a lane.',
+// STAGE 89 — THE SPIRAL RIDE
+{name:'STAGE 89',sub:'Hold on. Do not let go.',
  plats:[
-   {x:0,y:640,w:192,h:80},
-   {x:1088,y:640,w:192,h:80},
-   {x:0,y:0,w:1280,h:32},
-   {x:0,y:352,w:192,h:16},
-   {x:1088,y:352,w:192,h:16},
-   {x:544,y:256,w:192,h:16},
+   // 中央スタート足場
+   {x:624,y:344,w:32,h:32},
+   // ゴール（左下）
+   {x:0,y:576,w:160,h:144},
+ ],
+ move:[{
+   x:528,y:344,w:96,h:16,
+   waypoints:[
+     // 中心付近からスタート
+     {x:528,y:344,t:0.5},
+     // 1周目（小さい）反時計回り
+     {x:528,y:256,t:1.0},
+     {x:352,y:256,t:1.0},
+     {x:352,y:432,t:1.0},
+     {x:624,y:432,t:1.0},
+     // 2周目（中くらい）
+     {x:624,y:160,t:1.2},
+     {x:192,y:160,t:1.2},
+     {x:192,y:528,t:1.2},
+     {x:800,y:528,t:1.2},
+     // 3周目（大きい）
+     {x:800,y:96,t:1.4},
+     {x:64,y:96,t:1.4},
+     {x:64,y:608,t:1.4},
+     // 左上で停止
+     {x:64,y:96,t:0.5},
+   ],
+   stopAtEnd:true,
+   triggerOnBoard:true,
+   showPath:true,
+   vx:0,vy:0,rx:0,ry:0,sx:528,sy:344,phase:0
+ }],
+ orbits:[
+   {centerX:640,centerY:360,radius:160,speed:2.0,angle:0,size:13,color:'rgba(255,100,100,0.9)'},
+   {centerX:640,centerY:360,radius:160,speed:2.0,angle:Math.PI,size:13,color:'rgba(255,140,60,0.9)'},
+   {centerX:640,centerY:360,radius:280,speed:-1.5,angle:Math.PI*0.5,size:13,color:'rgba(200,80,255,0.9)'},
+   {centerX:640,centerY:360,radius:280,speed:-1.5,angle:Math.PI*1.5,size:13,color:'rgba(100,200,255,0.9)'},
  ],
  spikes:[
-   {x:192,y:608,w:32,h:32},{x:288,y:608,w:32,h:32},
-   {x:960,y:608,w:32,h:32},{x:1056,y:608,w:32,h:32},
- ],
- slidingSpikes:[
-   {x:192,y:320,w:32,h:32,axis:'x',minX:192,maxX:896,speed:5.0},
-   {x:896,y:416,w:32,h:32,axis:'x',minX:192,maxX:896,speed:5.0},
- ],
- traps:[
-   {x:576,y:224,w:32,h:32,triggerRadius:64,warn:false},
+   {x:352,y:224,w:32,h:32},{x:544,y:224,w:32,h:32},
+   {x:192,y:496,w:32,h:32},{x:640,y:496,w:32,h:32},
+   {x:800,y:64,w:32,h:32},{x:192,y:64,w:32,h:32},
+   {x:64,y:576,w:32,h:32},
  ],
  hg:[
-   {x:200,y:320,w:16,h:32},
-   {x:1096,y:320,w:16,h:32},
-   {x:608,y:224,w:16,h:32},
+   {x:360,y:224,w:16,h:32},
+   {x:200,y:160,w:16,h:32},
+   {x:808,y:496,w:16,h:32},
  ],
- fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
- chasers:[],orbits:[],growingSpikes:[],buttons:[],currents:[],
+ traps:[
+   {x:624,y:160,w:32,h:32,triggerRadius:64,warn:false},
+   {x:800,y:496,w:32,h:32,triggerRadius:64,warn:true},
+ ],
+ fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
+ chasers:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  crushers:[],memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
- goal:{x:1104,y:528,w:80,h:112},
- spawn:{x:48,y:592}},
+ goal:{x:0,y:480,w:160,h:96},
+ spawn:{x:640,y:312}},
 
 // STAGE 90 — THE CLOCK
 {name:'STAGE 90',sub:'Faster.',
@@ -4523,7 +4596,7 @@ move:[
    {x:576,y:288,w:32,h:32,tx:512,warn:false},
  ],
  fallingSpikes:[
-   {x:608,y:0,w:32,h:48,triggerX:540,speed:420,triggered:false,startY:0,currentY:0},
+   {x:608,y:0,w:32,h:48,triggerX:500,speed:420,triggered:false,startY:0,currentY:0},
  ],
  hg:[
    {x:384,y:448,w:16,h:32},
@@ -4540,29 +4613,32 @@ move:[
 {name:'STAGE 93',sub:'Press them all.',
  plats:[
    // 左縦長足場（スタート台）
-   {x:128,y:80,w:96,h:624},
+   {x:0,y:80,w:96,h:624},
+   {x:1200,y:80,w:80,h:640},
    // ①〜⑤
-   {x:224,y:704,w:1056,h:16},
-   {x:224,y:548,w:960,h:16},
-   {x:224,y:392,w:864,h:16},
-   {x:224,y:236,w:768,h:16},
-   {x:224,y:80,w:672,h:16},
+   {x:96,y:704,w:1056,h:16},
+   {x:96,y:548,w:960,h:16},
+   {x:96,y:392,w:864,h:16},
+   {x:96,y:236,w:768,h:16},
+   {x:96,y:80,w:672,h:16},
  ],
  buttons:[
-   {x:1248,y:688,w:32,h:16,id:'btn1'},
-   {x:1152,y:532,w:32,h:16,id:'btn2'},
-   {x:1056,y:376,w:32,h:16,id:'btn3'},
-   {x:960,y:220,w:32,h:16,id:'btn4'},
+   {x:120,y:688,w:32,h:16,id:'btn1'},
+   {x:120,y:532,w:32,h:16,id:'btn2'},
+   {x:120,y:376,w:32,h:16,id:'btn3'},
+   {x:120,y:220,w:32,h:16,id:'btn4'},
  ],
  currents:[
-   {x1:1120,y1:80,x2:1120,y2:176,buttonIds:['btn1'],startActive:true},
-   {x1:1120,y1:80,x2:1120,y2:176,buttonIds:['btn2'],startActive:true},
-   {x1:1120,y1:80,x2:1120,y2:176,buttonIds:['btn3'],startActive:true},
-   {x1:1120,y1:80,x2:1120,y2:176,buttonIds:['btn4'],startActive:true},
+   {x1:250,y1:408,x2:250,y2:548,buttonIds:['btn1'],startActive:true},
+   {x1:400,y1:252,x2:400,y2:392,buttonIds:['btn2'],startActive:false},
+   {x1:250,y1:96,x2:250,y2:236,buttonIds:['btn3'],startActive:false},
+   {x1:120,y1:0,x2:120,y2:80,buttonIds:['btn4'],startActive:false},
+   {x1:160,y1:0,x2:160,y2:80,buttonIds:['btn1'],startActive:false},
+   {x1:200,y1:0,x2:200,y2:80,buttonIds:['btn3'],startActive:true},
  ],
  slidingSpikes:[
    {x:224,y:516,w:32,h:32,axis:'x',minX:224,maxX:1088,speed:4.0},
-   {x:700,y:516,w:32,h:32,axis:'x',minX:224,maxX:1088,speed:3.5},
+   {x:700,y:672,w:32,h:32,axis:'x',minX:224,maxX:1088,speed:3.5},
  ],
  spikes:[],
  hg:[
@@ -4577,65 +4653,58 @@ move:[
  fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
  chasers:[],orbits:[],growingSpikes:[],crushers:[],
  memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
- goal:{x:1120,y:0,w:80,h:80},
- spawn:{x:160,y:48}},
+ goal:{x:0,y:0,w:80,h:96},
+ spawn:{x:1200,y:48}},
 
-  // STAGE 94 — THREE TIERS
-{name:'STAGE 94',sub:'Choose your floor.',
+// STAGE 94 — THREE TIERS II
+{name:'STAGE 94',sub:'Now they move.',
  plats:[
    {x:0,y:0,w:1280,h:32},
    {x:0,y:688,w:1280,h:32},
-   {x:32,y:192,w:160,h:496},
-   {x:1088,y:192,w:160,h:496},
-   {x:224,y:196,w:832,h:32},
-   {x:224,y:360,w:832,h:32},
-   {x:224,y:524,w:832,h:32},
+   {x:0,y:192,w:160,h:496},
+   {x:1120,y:192,w:160,h:496},
+   {x:272,y:196,w:736,h:32},
+   {x:272,y:360,w:736,h:32},
+   {x:272,y:524,w:736,h:32},
  ],
  spikes:[
-   // 上段（一番難しい）スパイク多め
-   {x:256,y:164,w:32,h:32},{x:384,y:164,w:32,h:32},
-   {x:512,y:164,w:32,h:32},{x:640,y:164,w:32,h:32},
-   {x:768,y:164,w:32,h:32},{x:896,y:164,w:32,h:32},
-   {x:1024,y:164,w:32,h:32},
-   // 中段（一番楽）スパイクなし
-   // 下段（中間）スパイク少なめ
-   {x:384,y:492,w:32,h:32},
-   {x:768,y:492,w:32,h:32},
+   {x:384,y:164,w:32,h:32},{x:896,y:164,w:32,h:32},
+   {x:384,y:492,w:32,h:32},{x:896,y:492,w:32,h:32},
+ ],
+ pendulums:[
+   // 上段（難しい）振り子2本
+   {pivotX:448,pivotY:32,length:180,speed:2.2,maxAngle:1.0,angle:1.0},
+   {pivotX:832,pivotY:32,length:180,speed:2.0,maxAngle:1.0,angle:-1.0},
+   // 下段（中間）振り子1本
+   {pivotX:640,pivotY:360,length:160,speed:1.8,maxAngle:0.9,angle:0.9},
+ ],
+ orbits:[
+   // 中段（楽）orbit1個だけ
+   {centerX:640,centerY:344,radius:80,speed:2.0,angle:0,size:13,color:'rgba(100,200,255,0.9)'},
+   // 上段にorbitも追加（さらに難しく）
+   {centerX:448,centerY:180,radius:64,speed:-2.5,angle:Math.PI,size:12,color:'rgba(255,100,100,0.9)'},
+   {centerX:832,centerY:180,radius:64,speed:2.5,angle:0,size:12,color:'rgba(255,100,100,0.9)'},
  ],
  traps:[
-   // 上段（難しい）trap多め・warn:false
-   {x:320,y:164,w:32,h:32,tx:256,warn:false},
-   {x:448,y:164,w:32,h:32,tx:384,warn:false},
+   // 上段warn:false
    {x:576,y:164,w:32,h:32,tx:512,warn:false},
    {x:704,y:164,w:32,h:32,tx:640,warn:false},
-   {x:832,y:164,w:32,h:32,tx:768,warn:false},
-   {x:960,y:164,w:32,h:32,tx:896,warn:false},
-   // 中段（楽）trap少なめ・warn:true
+   // 中段warn:true
    {x:512,y:328,w:32,h:32,tx:448,warn:true},
-   {x:768,y:328,w:32,h:32,tx:704,warn:true},
-   // 下段（中間）warn:false×2、warn:true×1
-   {x:320,y:492,w:32,h:32,tx:256,warn:false},
-   {x:576,y:492,w:32,h:32,tx:512,warn:true},
-   {x:832,y:492,w:32,h:32,tx:768,warn:false},
+   // 下段warn:false×1、warn:true×1
+   {x:448,y:492,w:32,h:32,tx:384,warn:false},
+   {x:768,y:492,w:32,h:32,tx:704,warn:true},
+   {x:160,y:656,w:960,h:32,triggerRadius:48,warn:true},
  ],
  hg:[
-   // 上段
    {x:688,y:164,w:16,h:32},
-   // 中段
-   {x:400,y:328,w:16,h:32},
-   {x:848,y:328,w:16,h:32},
-   // 下段
+   {x:640,y:328,w:16,h:32},
    {x:688,y:492,w:16,h:32},
  ],
- fallingSpikes:[
-   // 上段が一番難しいのでfallingSpikesも上段に
-   {x:480,y:0,w:32,h:48,triggerX:412,speed:450,triggered:false,startY:0,currentY:0},
-   {x:800,y:0,w:32,h:48,triggerX:732,speed:450,triggered:false,startY:0,currentY:0},
- ],
- fall:[],move:[],mimics:[],ceiling:[],lava:[],pendulums:[],
- chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
+ fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],
+ chasers:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  crushers:[],memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
- goal:{x:1088,y:96,w:160,h:96},
+ goal:{x:1200,y:96,w:80,h:96},
  spawn:{x:32,y:96}},
 
 // STAGE 95 — WARP ROOMS

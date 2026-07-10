@@ -3918,30 +3918,22 @@ move:[
 // STAGE 80 — STAIRWAY DOWN
 {name:'STAGE 80',sub:'Step down. Do not get crushed.',
  plats:[
-   {x:0,y:0,w:1280,h:32},
    {x:0,y:688,w:1280,h:32},
-   {x:0,y:0,w:32,h:688},
-   {x:1248,y:0,w:32,h:688},
    // 階段6段
-   {x:0,y:96,w:192,h:16},
-   {x:192,y:192,w:192,h:16},
-   {x:384,y:288,w:192,h:16},
-   {x:576,y:384,w:192,h:16},
-   {x:768,y:480,w:192,h:16},
-   {x:960,y:576,w:320,h:112},
+   {x:0,y:96,w:192,h:624},
+   {x:192,y:192,w:192,h:528},
+   {x:384,y:288,w:192,h:432},
+   {x:576,y:384,w:192,h:336},
+   {x:768,y:480,w:192,h:240},
+   {x:960,y:576,w:320,h:144},
  ],
  crushers:[
-   {x:32,y:0,w:160,h:48,axis:'y',min:0,max:608,speed:72,startDir:1},
-   {x:192,y:0,w:192,h:48,axis:'y',min:0,max:608,speed:88,startDir:1},
-   {x:384,y:0,w:192,h:48,axis:'y',min:0,max:608,speed:64,startDir:1},
-   {x:576,y:0,w:192,h:48,axis:'y',min:0,max:608,speed:96,startDir:1},
-   {x:768,y:0,w:192,h:48,axis:'y',min:0,max:608,speed:80,startDir:1},
-   {x:960,y:0,w:192,h:48,axis:'y',min:0,max:608,speed:56,startDir:1},
+   {x:192,y:0,w:192,h:48,axis:'y',min:0,max:192,speed:90,startDir:1},
+   {x:384,y:0,w:192,h:48,axis:'y',min:0,max:288,speed:100,startDir:1},
+   {x:576,y:0,w:192,h:48,axis:'y',min:0,max:384,speed:110,startDir:1},
+   {x:768,y:0,w:192,h:48,axis:'y',min:0,max:480,speed:120,startDir:1},
  ],
- spikes:[
-   {x:192,y:656,w:32,h:32},{x:384,y:656,w:32,h:32},
-   {x:576,y:656,w:32,h:32},{x:768,y:656,w:32,h:32},
- ],
+ spikes:[],
  hg:[
    {x:64,y:64,w:16,h:32},
    {x:256,y:160,w:16,h:32},
@@ -3955,7 +3947,7 @@ move:[
  fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
  chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
- goal:{x:1168,y:576,w:80,h:112},
+ goal:{x:1168,y:480,w:80,h:96},
  spawn:{x:48,y:64}},
 
 // STAGE 81 — FAKE SAFE CORRIDOR
@@ -4653,7 +4645,7 @@ move:[
  fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
  chasers:[],orbits:[],growingSpikes:[],crushers:[],
  memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
- goal:{x:0,y:0,w:80,h:96},
+ goal:{x:0,y:0,w:80,h:80},
  spawn:{x:1200,y:48}},
 
 // STAGE 94 — THREE TIERS II
@@ -4960,7 +4952,62 @@ move:[
  spawn:{x:48,y:32}}
 ,
 
+// STAGE 98 — TWIN CAROUSEL
+{name:'STAGE 98',sub:'Two circles, one path.',
+ plats:[
+   {x:0,y:640,w:192,h:80},
+   {x:1088,y:640,w:192,h:80},
+ ],
+ move:[
+   {
+     x:304,y:360,w:32,h:32,
+     orbit:true,
+     centerX:448,centerY:360,
+     radius:160,
+     speed:1.3,
+     angle:Math.PI,
+     vx:0,vy:0,rx:0,ry:0,sx:304,sy:360,phase:0
+   },
+   {
+     x:816,y:360,w:32,h:32,
+     orbit:true,
+     centerX:832,centerY:360,
+     radius:160,
+     speed:1.3,
+     angle:0,
+     vx:0,vy:0,rx:0,ry:0,sx:816,sy:360,phase:0
+   },
+ ],
+ spikes:[],traps:[],fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
+ chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
+ crushers:[],teleporters:[],memos:[],hg:[
+   {x:96,y:608,w:16,h:32},{x:1120,y:608,w:16,h:32}
+ ],focusZones:[],darkness:{enabled:false},
+ goal:{x:1088,y:528,w:192,h:112},
+ spawn:{x:48,y:592}},
 
+// STAGE 99 — THE PIT
+{name:'STAGE 99',sub:"Don't miss.",
+ plats:[
+   {x:0,y:160,w:96,h:16},
+   {x:760,y:416,w:32,h:32},
+   {x:860,y:384,w:32,h:32},
+   {x:960,y:416,w:32,h:32},
+   {x:1168,y:560,w:112,h:16},
+ ],
+ spikes:[],
+ traps:[],
+ move:[
+   {x:260,y:224,w:32,h:32,vx:16.0,vy:0,rx:100,ry:0,sx:260,sy:200},
+   {x:460,y:288,w:32,h:32,vx:-16.0,vy:0,rx:-100,ry:0,sx:460,sy:288},
+   {x:560,y:352,w:32,h:32,vx:-16.0,vy:0,rx:100,ry:0,sx:560,sy:352},
+ ],
+ fall:[
+   {x:1060,y:384,w:32,h:32,spikesOn:false},
+ ],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],focusZones:[],
+ darkness:{enabled:false},
+ hg:[{x:868,y:352,w:16,h:32},{x:56,y:128,w:16,h:32}],
+ goal:{x:1200,y:464,w:80,h:96},spawn:{x:32,y:128}},
 
 ];
 

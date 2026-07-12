@@ -6978,7 +6978,7 @@ function loop(ts){
     ctx.save();
     ctx.translate(Math.random()*6-3,Math.random()*4-2);
   }
-  if(state==='title'){drawTitle();}
+  if(state==='title'){drawTitle();drawFloatMsgs();}
   else if(state==='mypage'){drawMyPage();}
   else if(state==='testcomplete'){drawTestComplete();}
   else{

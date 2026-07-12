@@ -5995,7 +5995,6 @@ function drawTitle(){
   ctx.fillText('How far can you get up the tower?',W/2,H/2+50);ctx.restore();
   // ===== Mode selection UI =====
   {
-    if(!deathModeUnlocked)_titleModeSel=0; // ロック中はNORMAL固定
     const _modeCX=W/2, _normalY=H/2+78, _deathY=H/2+104, _rowH=24, _hw=150;
     ctx.save();
     ctx.font='bold 18px "Courier New"';ctx.textAlign='center';
@@ -6011,8 +6010,8 @@ function drawTitle(){
       ctx.shadowColor=_dSel?'rgba(255,60,40,0.8)':'rgba(0,0,0,0)';ctx.shadowBlur=_dSel?10:0;
       ctx.fillText((_dSel?'▶  ':'      ')+'DEATH MODE',_modeCX,_deathY);
     }else{
-      ctx.fillStyle='rgba(110,110,130,0.4)';ctx.shadowBlur=0;
-      ctx.fillText('???',_modeCX,_deathY);
+      ctx.fillStyle=_dSel?'rgba(170,170,190,0.7)':'rgba(110,110,130,0.4)';ctx.shadowBlur=0;
+      ctx.fillText((_dSel?'▶  ':'      ')+'???',_modeCX,_deathY);
     }
     ctx.restore();
     _titleNormalBtn={x:_modeCX-_hw,y:_normalY-_rowH+6,w:_hw*2,h:_rowH};
@@ -6598,15 +6597,20 @@ function update(dt){
     if(keys['Escape']&&!prevKeys['Escape']){state='title';}
     if(keys['t']&&!prevKeys['t']){state='title';}
   } else if(state==='title'){
-    // モード選択（DEATH解放時のみ切替可能）
-    if(deathModeUnlocked){
-      if(keys['ArrowUp']&&!prevKeys['ArrowUp'])_titleModeSel=0;
-      if(keys['ArrowDown']&&!prevKeys['ArrowDown'])_titleModeSel=1;
-    }else{
-      _titleModeSel=0;
+    // モード選択（↑↓で切替、未解放でも???へカーソル移動可）
+    if(keys['ArrowUp']&&!prevKeys['ArrowUp'])_titleModeSel=0;
+    if(keys['ArrowDown']&&!prevKeys['ArrowDown'])_titleModeSel=1;
+    // gameMode は解放済みのときだけ death にする
+    gameMode=(deathModeUnlocked&&_titleModeSel===1)?'death':'normal';
+    if(keys[' ']&&!prevKeys[' ']){
+      if(_titleModeSel===1&&!deathModeUnlocked){
+        // ???選択中（未解放）：ヒント表示のみ、ゲーム開始しない
+        floatMsgs.push({txt:'Clear all 100 floors to unlock.',x:W/2,y:H/2,life:3,color:'rgba(255,220,50,0.9)'});
+      }else{
+        gameMode=(_titleModeSel===1)?'death':'normal';
+        _retryStreak=0;resetRun();state='play';startBGM(getBGMTrack(1));
+      }
     }
-    gameMode=_titleModeSel===1?'death':'normal';
-    if(keys[' ']&&!prevKeys[' ']){_retryStreak=0;resetRun();state='play';startBGM(getBGMTrack(1));}
   } else if(state==='dying'){
     // 死亡演出中：ゲーム画面のまま、DAMNだけ表示
     if(damnTimer>0)damnTimer-=dt;else damnEffect=null;

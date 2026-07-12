@@ -489,7 +489,7 @@ function updateBGMTempo(){
 }
 
 // ======== HIDDEN COMMANDS ========
-let adminMode=false,hardMode=false,retroMode=false,easyMode=false,inputBuf=[];
+let adminMode=false,hardMode=false,retroMode=false,inputBuf=[];
 let memoOpen=false,memoContent=[],memoAnim=0;
 let jumpHeld = false;
 const retroOffCanvas=document.createElement('canvas');
@@ -507,19 +507,30 @@ _bgCache.width=1280;_bgCache.height=720;
     }
   }
 })();
-let easyModeSavedStage=1;
+let _titleModeSel=0;                   // 0=NORMAL, 1=DEATH
 let gameMode='normal';                 // 'normal' | 'death'
 let deathModeUnlocked=false;           // デスモード解放済みか
 let _stageStartTimeLeft=30;            // 現在のステージ開始時点の残り時間（ノーマルのリトライ用）
 deathModeUnlocked = getStat('deathModeUnlocked',0)===1;
 const ADMIN_SEQ=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a','1','9','8','4'];
 const HARD_SEQ=['h','h','h','h','h'],RETRO_SEQ=['r','r','r','r','r'];
-const EASY_SEQ=['g','i','v','e','u','p'];
+const TAUNTS={
+  11:'Ten floors. Only ninety more. Take your time — you have infinite retries.',
+  21:'Progress saves. Deaths don\'t count. Anyone could do this, really.',
+  31:'You\'ve died {N} times to get here. But who\'s counting?',
+  41:'Forty floors. Somewhere, someone did this without dying. Not you, obviously.',
+  51:'Halfway. The tower doesn\'t care. Neither do we.',
+  61:'Sixty floors. The tower is patient. It has all the time in the world.',
+  71:'Seventy floors. You\'re getting good at this. Or the game is getting tired of you.',
+  81:'Eighty floors. That\'s {N} deaths and counting. Still think you\'re winning?',
+  91:'Ninety floors. Don\'t get comfortable. The last ten are watching.',
+  101:'All 100 floors. Your persistence is world-class. Your skill, less so.\nNow the real game begins.'
+};
 
 // ======== TESTER CREDIT TRACKING ========
 const _sessionStart=Date.now();
 let _sessionDeaths=0,_sessionBestStage=1,_stage5ToastShown=false;
-let _sessionUsedEasyMode=false,_stageAttemptDeaths=0;
+let _stageAttemptDeaths=0;
 let _retryStreak=0,_attemptStartMs=Date.now(),_recentDeathTimes=[];
 function _submitTesterData(){
   if(!testMode)return;
@@ -605,7 +616,6 @@ document.addEventListener('keydown',e=>{
     if(b.length>=5){
       if(HARD_SEQ.every((k,i)=>k===b.slice(-5)[i])){hardMode=!hardMode;inputBuf=[];return;}
       if(RETRO_SEQ.every((k,i)=>k===b.slice(-5)[i])){retroMode=!retroMode;inputBuf=[];return;}
-    if(b.length>=6&&EASY_SEQ.every((k,i)=>k===b.slice(-6)[i])){easyMode=!easyMode;inputBuf=[];floatMsgs.push({txt:easyMode?'BABY MODE ON':'BABY MODE OFF',x:W/2,y:H/2,life:2,color:'rgba(255,180,255,1)'});if(easyMode){incStat('babyModeUses');_sessionUsedEasyMode=true;checkAllTitles();}return;}
     }
   }
 },{passive:false});
@@ -5194,9 +5204,9 @@ function prefetchAllPlacements(){
 }
 
 function resetRun(){
-  timeLeft=easyMode?30:hardMode?25:30;score=0;
+  timeLeft=hardMode?25:30;score=0;
   loadStage(1);damnEffect=null;damnTimer=0;floatMsgs=[];
-  sessionStartTime=Date.now();sessionDeaths=0;sessionMaxStage=1;_sessionUsedEasyMode=false;
+  sessionStartTime=Date.now();sessionDeaths=0;sessionMaxStage=1;
   incStat('gamesStarted');
   checkAllTitles();
 }
@@ -5668,7 +5678,10 @@ function drawFloatMsgs(){
       ctx.shadowColor=col;ctx.shadowBlur=8;
       ctx.fillStyle=col.replace(/[\d.]+\)$/,`${a})`);
       ctx.font='bold 20px "Courier New"';ctx.textAlign='center';
-      ctx.fillText(m.txt,m.x,m.y-rise);
+      const _lines=String(m.txt).split('\n');
+      for(let _li=0;_li<_lines.length;_li++){
+        ctx.fillText(_lines[_li],m.x,m.y-rise+_li*26);
+      }
     }
     ctx.restore();
   }
@@ -5866,6 +5879,7 @@ function _drawMpBtn(ctx,btn,label,stroke,fill){
 
 const settingsBtn={x:16,y:16,w:120,h:28};
 const mpBtn={x:W-120,y:12,w:104,h:28};
+let _titleNormalBtn={x:0,y:0,w:0,h:0},_titleDeathBtn={x:0,y:0,w:0,h:0};
 const mpBackBtn={x:W/2-270,y:H-62,w:140,h:36};
 const mpResetBtn={x:W/2-70,y:H-62,w:140,h:36};
 const mpSalesBtn={x:W/2+90,y:H-62,w:180,h:36};
@@ -5876,6 +5890,13 @@ canvas.addEventListener('click',e=>{
   const scaleX=W/rect.width,scaleY=H/rect.height;
   const cx=(e.clientX-rect.left)*scaleX,cy=(e.clientY-rect.top)*scaleY;
   if(state==='title'){
+    // モード選択クリック
+    function _inRegion(b){return cx>=b.x&&cx<=b.x+b.w&&cy>=b.y&&cy<=b.y+b.h;}
+    if(_inRegion(_titleNormalBtn)){_titleModeSel=0;gameMode='normal';}
+    else if(_inRegion(_titleDeathBtn)){
+      if(deathModeUnlocked){_titleModeSel=1;gameMode='death';}
+      else{floatMsgs.push({txt:'Clear all 100 floors to unlock.',x:W/2,y:H/2,life:3,color:'rgba(255,220,50,0.9)'});}
+    }
     if(cx>=settingsBtn.x&&cx<=settingsBtn.x+settingsBtn.w&&cy>=settingsBtn.y&&cy<=settingsBtn.y+settingsBtn.h){openSettings();}
     if(!testMode&&cx>=mpBtn.x&&cx<=mpBtn.x+mpBtn.w&&cy>=mpBtn.y&&cy<=mpBtn.y+mpBtn.h){document.getElementById('mypageOverlay').style.display='block';document.getElementById('c').style.display='none';}
     // testMode: LOGIN button click (H/2+134 area)
@@ -5975,13 +5996,38 @@ function drawTitle(){
   neonText('30 seconds to live. Forever.',W/2,H/2+24,'rgba(160,185,255,0.75)',20,8,'center');
   ctx.save();ctx.fillStyle='rgba(140,140,160,0.4)';ctx.font='14px "Courier New"';ctx.textAlign='center';
   ctx.fillText('How far can you get up the tower?',W/2,H/2+50);ctx.restore();
+  // ===== Mode selection UI =====
+  {
+    if(!deathModeUnlocked)_titleModeSel=0; // ロック中はNORMAL固定
+    const _modeCX=W/2, _normalY=H/2+78, _deathY=H/2+104, _rowH=24, _hw=150;
+    ctx.save();
+    ctx.font='bold 18px "Courier New"';ctx.textAlign='center';
+    // NORMAL MODE
+    const _nSel=_titleModeSel===0;
+    ctx.fillStyle=_nSel?'rgba(255,255,255,0.95)':'rgba(150,160,190,0.4)';
+    ctx.shadowColor=_nSel?'rgba(180,200,255,0.8)':'rgba(0,0,0,0)';ctx.shadowBlur=_nSel?10:0;
+    ctx.fillText((_nSel?'▶  ':'      ')+'NORMAL MODE',_modeCX,_normalY);
+    // DEATH MODE / ???
+    const _dSel=_titleModeSel===1;
+    if(deathModeUnlocked){
+      ctx.fillStyle=_dSel?'rgba(255,90,70,0.95)':'rgba(150,110,110,0.5)';
+      ctx.shadowColor=_dSel?'rgba(255,60,40,0.8)':'rgba(0,0,0,0)';ctx.shadowBlur=_dSel?10:0;
+      ctx.fillText((_dSel?'▶  ':'      ')+'DEATH MODE',_modeCX,_deathY);
+    }else{
+      ctx.fillStyle='rgba(110,110,130,0.4)';ctx.shadowBlur=0;
+      ctx.fillText('???',_modeCX,_deathY);
+    }
+    ctx.restore();
+    _titleNormalBtn={x:_modeCX-_hw,y:_normalY-_rowH+6,w:_hw*2,h:_rowH};
+    _titleDeathBtn={x:_modeCX-_hw,y:_deathY-_rowH+6,w:_hw*2,h:_rowH};
+  }
   const pulse=Math.sin(animT*2)*.3+.7;
-  neonText('[ SPACE ] START',W/2,H/2+90,`rgba(255,255,255,${pulse})`,24,14,'center');
+  neonText('[ SPACE ] START',W/2,H/2+140,`rgba(255,255,255,${pulse})`,22,14,'center');
   // Name display below START
   ctx.save();ctx.font='12px "Courier New"';ctx.textAlign='center';
   const _pn=_getDisplayName();
   ctx.fillStyle='rgba(160,180,220,0.7)';
-  ctx.fillText('Playing as: '+_pn,W/2,H/2+114);
+  ctx.fillText('Playing as: '+_pn,W/2,H/2+164);
   ctx.restore();
   ctx.save();ctx.fillStyle='rgba(100,120,160,0.6)';ctx.font='13px "Courier New"';ctx.textAlign='center';
   ctx.fillText('← →  MOVE    SPACE  JUMP    F / ESC  PAUSE',W/2,H-36);ctx.restore();
@@ -6004,7 +6050,6 @@ function drawTitle(){
   ctx.fillText(testMode?'[ HALL OF LEGENDS ] Coming Soon':'[ HALL OF LEGENDS ]',W-20,H-14);
   ctx.restore();
   if(hardMode)neonText('HARD MODE ON',160,H-48,'rgba(255,80,60,0.6)',10,4);
-  if(easyMode)neonText('BABY MODE ON — Progress saved. Dignity lost.',W/2,H-32,'rgba(255,180,255,0.7)',10,4,'center');
   if(retroMode)neonText('RETRO MODE ON',W-160,H-48,'rgba(100,255,120,0.6)',10,4);
   // TEST MODE badge + login prompt
   if(testMode){
@@ -6463,7 +6508,6 @@ function update(dt){
       _goalReached=true;
       state='goal';
       if(!adminMode){incStat('points',50);incStat('totalClears');}
-      if(easyMode)easyModeSavedStage=stageNum+1;
       const next=stageNum+1;
       checkTitlesOnClear(next);
       timeLeft=Math.min(MAX_TIME,timeLeft+3);score+=500+Math.floor(timeLeft*10);sfxGoal();
@@ -6494,7 +6538,12 @@ function update(dt){
             loadStage(_goalNext);
             floatMsgs.push({txt:'FLOOR '+_goalNext+'!',x:W/2,y:H/2,life:2,color:'rgba(255,220,50,1)'});
             if(testMode&&_goalNext===5&&!_stage5ToastShown){_stage5ToastShown=true;floatMsgs.push({txt:'Playing well! Your progress is being recorded for credits.',x:W/2,y:H/2+64,life:5,color:'rgba(100,255,180,0.95)'});}
-            if(easyMode)floatMsgs.push({txt:'Cleared Baby Mode? Cool. Nobody cares.',x:W/2,y:H/2+48,life:3,color:'rgba(255,180,255,0.8)'});
+            // ノーマルモードのみ、10面ごとの煽り文句
+            if(gameMode==='normal'&&TAUNTS[_goalNext]){
+              let _taunt=TAUNTS[_goalNext].replace('{N}',getStat('totalDeaths',0).toLocaleString());
+              const _tauntLife=(_goalNext===101)?5:3;
+              floatMsgs.push({txt:_taunt,x:W/2,y:H/2+48,life:_tauntLife,color:'rgba(255,180,255,0.9)'});
+            }
             const nt=getBGMTrack(_goalNext);if(nt!==bgmTrack)startBGM(nt);
           } else {
             floatMsgs.push({txt:'ALL CLEAR!!',x:W/2,y:H/2,life:3,color:'rgba(255,220,50,1)'});
@@ -6552,6 +6601,14 @@ function update(dt){
     if(keys['Escape']&&!prevKeys['Escape']){state='title';}
     if(keys['t']&&!prevKeys['t']){state='title';}
   } else if(state==='title'){
+    // モード選択（DEATH解放時のみ切替可能）
+    if(deathModeUnlocked){
+      if(keys['ArrowUp']&&!prevKeys['ArrowUp'])_titleModeSel=0;
+      if(keys['ArrowDown']&&!prevKeys['ArrowDown'])_titleModeSel=1;
+    }else{
+      _titleModeSel=0;
+    }
+    gameMode=_titleModeSel===1?'death':'normal';
     if(keys[' ']&&!prevKeys[' ']){_retryStreak=0;resetRun();state='play';startBGM(getBGMTrack(1));}
   } else if(state==='dying'){
     // 死亡演出中：ゲーム画面のまま、DAMNだけ表示
@@ -6581,7 +6638,6 @@ function update(dt){
       _retryStreak++;if(_retryStreak>getStat('maxRetryStreak'))setStat('maxRetryStreak',_retryStreak);
       if(adminMode){loadStage(stageNum);timeLeft=hardMode?25:30;damnEffect=null;damnTimer=0;floatMsgs=[];}
       else if(testMode){loadStage(stageNum);timeLeft=30;damnEffect=null;damnTimer=0;floatMsgs=[];}
-      else if(easyMode){loadStage(easyModeSavedStage);timeLeft=30;damnEffect=null;damnTimer=0;floatMsgs=[];}
       else if(gameMode==='normal'){
         // ノーマルモード：同ステージから、そのステージ開始時点の残り時間で再開
         const _retryTime=_stageStartTimeLeft;
@@ -6736,9 +6792,8 @@ function checkTitlesOnClear(nextStage){
   if(nextStage>curBest&&timeLeft<=5)incStat('comebackCount');
   if(_stageAttemptDeaths===0)incStat('ghostClears');
   if(nextStage===5&&(Date.now()-sessionStartTime)<180000)setStat('speedDemon',1);
-  if(easyMode&&nextStage===101)incStat('babyClear');
   // Update bestStage to include cleared stages
-  if(!easyMode&&nextStage>curBest)setStat('bestStage',nextStage);
+  if(nextStage>curBest)setStat('bestStage',nextStage);
   // モード別の最高到達階層
   if(gameMode==='normal'){
     if(nextStage>getStat('normalBestStage',0)){
@@ -6837,7 +6892,7 @@ function triggerDeath(){
       }).then(function(r){if(r&&r.error)console.warn('profile fetch error:',r.error);});
   }
   const best=getStat('bestStage',1);
-  if(!easyMode&&lastDeathStage>best)setStat('bestStage',lastDeathStage);
+  if(lastDeathStage>best)setStat('bestStage',lastDeathStage);
   // モード別の最高到達階層（死亡時）
   if(gameMode==='normal'){
     if(lastDeathStage>getStat('normalBestStage',0)){

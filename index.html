@@ -508,6 +508,10 @@ _bgCache.width=1280;_bgCache.height=720;
   }
 })();
 let easyModeSavedStage=1;
+let gameMode='normal';                 // 'normal' | 'death'
+let deathModeUnlocked=false;           // デスモード解放済みか
+let _stageStartTimeLeft=30;            // 現在のステージ開始時点の残り時間（ノーマルのリトライ用）
+deathModeUnlocked = getStat('deathModeUnlocked',0)===1;
 const ADMIN_SEQ=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a','1','9','8','4'];
 const HARD_SEQ=['h','h','h','h','h'],RETRO_SEQ=['r','r','r','r','r'];
 const EASY_SEQ=['g','i','v','e','u','p'];
@@ -5115,6 +5119,7 @@ function loadStage(n){
   state='play';
   if(n !== stageNum) stagePlacements = []; // 別ステージの時だけクリア
   stageNum=n;
+  _stageStartTimeLeft=timeLeft;
   const _loadingStage=n;
   fetch('/api/grid?stage_id='+n)
     .then(r=>r.json())
@@ -6577,7 +6582,15 @@ function update(dt){
       if(adminMode){loadStage(stageNum);timeLeft=hardMode?25:30;damnEffect=null;damnTimer=0;floatMsgs=[];}
       else if(testMode){loadStage(stageNum);timeLeft=30;damnEffect=null;damnTimer=0;floatMsgs=[];}
       else if(easyMode){loadStage(easyModeSavedStage);timeLeft=30;damnEffect=null;damnTimer=0;floatMsgs=[];}
-      else resetRun();
+      else if(gameMode==='normal'){
+        // ノーマルモード：同ステージから、そのステージ開始時点の残り時間で再開
+        const _retryTime=_stageStartTimeLeft;
+        loadStage(stageNum);
+        timeLeft=_retryTime;
+        _stageStartTimeLeft=_retryTime;
+        damnEffect=null;damnTimer=0;floatMsgs=[];
+      }
+      else resetRun();   // デスモード：1面に戻る（既存挙動）
       state='play';startBGM(getBGMTrack(stageNum));
     }
     if(keys['t']&&!prevKeys['t']){_retryStreak=0;resetRun();stopBGM();state='title';}
@@ -6713,6 +6726,11 @@ function checkTitlesOnDeath(){
 }
 function checkTitlesOnClear(nextStage){
   if(adminMode)return;
+  // ノーマルモードで100面クリア → デスモード解放
+  if(gameMode==='normal'&&nextStage>=101&&!deathModeUnlocked){
+    deathModeUnlocked=true;
+    setStat('deathModeUnlocked',1);
+  }
   // Track stats before updating bestStage
   const curBest=getStat('bestStage',1);
   if(nextStage>curBest&&timeLeft<=5)incStat('comebackCount');
@@ -6721,6 +6739,18 @@ function checkTitlesOnClear(nextStage){
   if(easyMode&&nextStage===101)incStat('babyClear');
   // Update bestStage to include cleared stages
   if(!easyMode&&nextStage>curBest)setStat('bestStage',nextStage);
+  // モード別の最高到達階層
+  if(gameMode==='normal'){
+    if(nextStage>getStat('normalBestStage',0)){
+      setStat('normalBestStage',nextStage);
+      setStat('normalBestStageAt',Date.now());
+    }
+  } else if(gameMode==='death'){
+    if(nextStage>getStat('deathBestStage',0)){
+      setStat('deathBestStage',nextStage);
+      setStat('deathBestStageAt',Date.now());
+    }
+  }
   if(supabaseClient&&_currentUser){
     supabaseClient.from('player_profiles').upsert({
       id:_currentUser.id,
@@ -6778,6 +6808,7 @@ function triggerDeath(){
   incStat('deaths_stage_'+lastDeathStage);
   if(lastDeathStage===1)incStat('stage1Deaths');
   if(hardMode)incStat('hardModeDeaths');
+  if(gameMode==='death')incStat('deathModeDeaths');
   fetch('/api/stats?type=death',{method:'POST'}).then(r=>{
     if(!r.ok)console.warn('death API failed:',r.status);
   }).catch(e=>console.warn('death API error:',e));
@@ -6807,6 +6838,18 @@ function triggerDeath(){
   }
   const best=getStat('bestStage',1);
   if(!easyMode&&lastDeathStage>best)setStat('bestStage',lastDeathStage);
+  // モード別の最高到達階層（死亡時）
+  if(gameMode==='normal'){
+    if(lastDeathStage>getStat('normalBestStage',0)){
+      setStat('normalBestStage',lastDeathStage);
+      setStat('normalBestStageAt',Date.now());
+    }
+  } else if(gameMode==='death'){
+    if(lastDeathStage>getStat('deathBestStage',0)){
+      setStat('deathBestStage',lastDeathStage);
+      setStat('deathBestStageAt',Date.now());
+    }
+  }
   incStat('totalStagesReached',lastDeathStage);
   // Longest survival per stage attempt
   const _survivalSecs=(Date.now()-_attemptStartMs)/1000;

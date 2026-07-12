@@ -6779,6 +6779,13 @@ function checkTitlesOnClear(nextStage){
   if(gameMode==='normal'&&nextStage>=101&&!deathModeUnlocked){
     deathModeUnlocked=true;
     setStat('deathModeUnlocked',1);
+    // 解放状態を即座にDBへ保存（このあとの upsert でも保存されるが、確実に残すため）
+    if(supabaseClient&&_currentUser){
+      supabaseClient.from('player_profiles').upsert({
+        id:_currentUser.id,
+        death_mode_unlocked:true
+      },{onConflict:'id'}).then(function(r){if(r&&r.error)console.warn('unlock sync error:',r.error);});
+    }
   }
   // Track stats before updating bestStage
   const curBest=getStat('bestStage',1);
@@ -6800,12 +6807,22 @@ function checkTitlesOnClear(nextStage){
     }
   }
   if(supabaseClient&&_currentUser){
-    supabaseClient.from('player_profiles').upsert({
+    const _syncData={
       id:_currentUser.id,
       best_stage:nextStage,
       total_deaths:getStat('totalDeaths',0),
-      total_play_time:Math.floor(getStat('totalPlayTime',0))
-    },{onConflict:'id'}).then(function(r){if(r&&r.error)console.warn('profile sync error:',r.error);});
+      total_play_time:Math.floor(getStat('totalPlayTime',0)),
+      normal_best_stage:getStat('normalBestStage',0),
+      death_best_stage:getStat('deathBestStage',0),
+      death_mode_deaths:getStat('deathModeDeaths',0),
+      death_mode_unlocked:getStat('deathModeUnlocked',0)===1
+    };
+    const _nAt=getStat('normalBestStageAt',0);
+    const _dAt=getStat('deathBestStageAt',0);
+    if(_nAt>0)_syncData.normal_best_stage_at=new Date(_nAt).toISOString();
+    if(_dAt>0)_syncData.death_best_stage_at=new Date(_dAt).toISOString();
+
+    supabaseClient.from('player_profiles').upsert(_syncData,{onConflict:'id'}).then(function(r){if(r&&r.error)console.warn('profile sync error:',r.error);});
   }
   checkAllTitles();
 }
@@ -6863,23 +6880,56 @@ function triggerDeath(){
   if(supabaseClient&&_currentUser){
     // DBの現在値を取得してから加算
     supabaseClient.from('player_profiles')
-      .select('total_deaths,best_stage,total_play_time')
+      .select('total_deaths,best_stage,total_play_time,normal_best_stage,death_best_stage,death_mode_deaths,death_mode_unlocked,normal_best_stage_at,death_best_stage_at')
       .eq('id',_currentUser.id)
       .single()
       .then(function(r){
-        const db=r.data||{};
-        const dbDeaths=db.total_deaths||0;
-        const dbBest=db.best_stage||0;
-        const dbTime=db.total_play_time||0;
+        const d=r.data||{};
+        const dbDeaths=parseInt(d.total_deaths)||0;
+        const dbBest=parseInt(d.best_stage)||0;
+        const dbTime=parseInt(d.total_play_time)||0;
         const localDeaths=getStat('totalDeaths',0);
         const localBest=getStat('bestStage',0);
         const localTime=getStat('totalPlayTime',0);
-        supabaseClient.from('player_profiles').upsert({
+
+        // モード別データのマージ
+        const dbNormalBest=parseInt(d.normal_best_stage)||0;
+        const dbDeathBest=parseInt(d.death_best_stage)||0;
+        const dbDeathDeaths=parseInt(d.death_mode_deaths)||0;
+        const dbUnlocked=d.death_mode_unlocked===true;
+        const localNormalBest=getStat('normalBestStage',0);
+        const localDeathBest=getStat('deathBestStage',0);
+        const localDeathDeaths=getStat('deathModeDeaths',0);
+        const localUnlocked=getStat('deathModeUnlocked',0)===1;
+
+        const mergedNormalBest=Math.max(localNormalBest,dbNormalBest);
+        const mergedDeathBest=Math.max(localDeathBest,dbDeathBest);
+        const mergedUnlocked=localUnlocked||dbUnlocked;  // 一度解放したら戻らない
+
+        // 到達日時：階層が高い方の日時を採用
+        let mergedNormalAt=d.normal_best_stage_at;
+        if(localNormalBest>dbNormalBest&&getStat('normalBestStageAt',0)>0){
+          mergedNormalAt=new Date(getStat('normalBestStageAt',0)).toISOString();
+        }
+        let mergedDeathAt=d.death_best_stage_at;
+        if(localDeathBest>dbDeathBest&&getStat('deathBestStageAt',0)>0){
+          mergedDeathAt=new Date(getStat('deathBestStageAt',0)).toISOString();
+        }
+
+        const _upsertData={
           id:_currentUser.id,
           total_deaths:Math.max(localDeaths,dbDeaths),
           best_stage:Math.max(localBest,dbBest),
-          total_play_time:Math.floor(Math.max(localTime,dbTime))
-        },{onConflict:'id'}).then(function(r2){
+          total_play_time:Math.floor(Math.max(localTime,dbTime)),
+          normal_best_stage:mergedNormalBest,
+          death_best_stage:mergedDeathBest,
+          death_mode_deaths:Math.max(localDeathDeaths,dbDeathDeaths),
+          death_mode_unlocked:mergedUnlocked
+        };
+        if(mergedNormalAt)_upsertData.normal_best_stage_at=mergedNormalAt;
+        if(mergedDeathAt)_upsertData.death_best_stage_at=mergedDeathAt;
+
+        supabaseClient.from('player_profiles').upsert(_upsertData,{onConflict:'id'}).then(function(r2){
           if(r2.error)console.warn('profile update error:',r2.error);
         });
       }).then(function(r){if(r&&r.error)console.warn('profile fetch error:',r.error);});
@@ -7269,7 +7319,7 @@ async function initSupabase(){
       if(session){
         // DBからプロフィールを取得
         supabaseClient.from('player_profiles')
-          .select('player_name,best_stage,total_deaths,total_play_time')
+          .select('player_name,best_stage,total_deaths,total_play_time,normal_best_stage,death_best_stage,death_mode_deaths,death_mode_unlocked,normal_best_stage_at,death_best_stage_at')
           .eq('id',session.user.id)
           .single()
           .then(function(r){
@@ -7292,13 +7342,48 @@ async function initSupabase(){
                 save.bestStage=Math.max(localBest,dbBest);
                 save.totalDeaths=Math.max(localDeaths,dbDeaths);
                 save.totalPlayTime=Math.max(localTime,dbTime);
+
+                // モード別データのマージ
+                const dbNormalBest=parseInt(d.normal_best_stage)||0;
+                const dbDeathBest=parseInt(d.death_best_stage)||0;
+                const dbDeathDeaths=parseInt(d.death_mode_deaths)||0;
+                const dbUnlocked=d.death_mode_unlocked===true;
+                const localNormalBest=parseInt(save.normalBestStage)||0;
+                const localDeathBest=parseInt(save.deathBestStage)||0;
+                const localDeathDeaths=parseInt(save.deathModeDeaths)||0;
+                const localUnlocked=(parseInt(save.deathModeUnlocked)||0)===1;
+
+                save.normalBestStage=Math.max(localNormalBest,dbNormalBest);
+                save.deathBestStage=Math.max(localDeathBest,dbDeathBest);
+                save.deathModeDeaths=Math.max(localDeathDeaths,dbDeathDeaths);
+                save.deathModeUnlocked=(localUnlocked||dbUnlocked)?1:0;  // 一度解放したら戻らない
+
+                // 到達日時：DB側が新しい（階層が高い）ならDB側を採用
+                if(dbNormalBest>=localNormalBest&&d.normal_best_stage_at){
+                  save.normalBestStageAt=new Date(d.normal_best_stage_at).getTime();
+                }
+                if(dbDeathBest>=localDeathBest&&d.death_best_stage_at){
+                  save.deathBestStageAt=new Date(d.death_best_stage_at).getTime();
+                }
+
                 localStorage.setItem('neverend_save',JSON.stringify(save));
-                console.log('Profile synced: deaths='+save.totalDeaths+' best='+save.bestStage);
+                console.log('Profile synced: deaths='+save.totalDeaths+' best='+save.bestStage+' unlocked='+save.deathModeUnlocked);
                 // ゲーム変数に直接反映（リロード不要）
                 if(typeof setStat==='function'){
                   if(save.bestStage>0)setStat('bestStage',save.bestStage);
                   if(save.totalDeaths>0)setStat('totalDeaths',save.totalDeaths);
                   if(save.totalPlayTime>0)setStat('totalPlayTime',save.totalPlayTime);
+                  if(save.normalBestStage>0)setStat('normalBestStage',save.normalBestStage);
+                  if(save.deathBestStage>0)setStat('deathBestStage',save.deathBestStage);
+                  if(save.deathModeDeaths>0)setStat('deathModeDeaths',save.deathModeDeaths);
+                  setStat('deathModeUnlocked',save.deathModeUnlocked);
+                  if(save.normalBestStageAt>0)setStat('normalBestStageAt',save.normalBestStageAt);
+                  if(save.deathBestStageAt>0)setStat('deathBestStageAt',save.deathBestStageAt);
+                }
+
+                // 解放状態をゲーム変数に反映
+                if(typeof deathModeUnlocked!=='undefined'){
+                  deathModeUnlocked=(save.deathModeUnlocked===1);
                 }
               }catch(e){console.error('save sync error:',e);}
             }else{

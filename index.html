@@ -4483,6 +4483,7 @@ move:[
    {x:0,y:640,w:320,h:80},
    {x:960,y:640,w:320,h:80},
    {x:0,y:0,w:1280,h:32},
+   {x:256,y:0,w:64,h:16},
    {x:320,y:400,w:640,h:320},
  ],
  spikes:[],
@@ -4491,18 +4492,22 @@ move:[
    {x:608,y:240,w:128,h:16,vx:-5.0,vy:0,rx:-160,ry:0,sx:608,sy:240,phase:Math.PI*1.5},
  ],
  hg:[
-   {x:352,y:448,w:16,h:32},
+   {x:368,y:384,w:16,h:32},
    {x:672,y:288,w:16,h:32},
    {x:880,y:368,w:16,h:32},
    // 赤砂時計
-   {x:416,y:448,w:16,h:32,penalty:true},
+   {x:432,y:384,w:16,h:32,penalty:true},
    {x:736,y:288,w:16,h:32,penalty:true},
  ],
- traps:[],
+ traps:[
+   {x:400,y:368,w:32,h:32,triggerRadius:48,warn:false},
+   {x:500,y:368,w:32,h:32,triggerRadius:48,warn:false},
+   {x:600,y:368,w:32,h:32,triggerRadius:48,warn:false},
+ ],
  fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
  chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],
  crushers:[],memos:[],teleporters:[],focusZones:[],darkness:{enabled:false},
- goal:{x:1168,y:528,w:80,h:112},
+ goal:{x:1200,y:528,w:80,h:112},
  spawn:{x:48,y:592}},
 
   // STAGE 91 — THE TOWER

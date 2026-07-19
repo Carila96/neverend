@@ -445,16 +445,74 @@ const TRACKS=[
    kick:[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],snare:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],hh:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
    pulse:[0,0,1,0,0,0,1,0,0,0,1,0,0,1,0,0],
    tempo:{n:.14,r:.08},drone:false}
+  ,{_name:'Midnight Lounge',bass:[147,175,196,220,165,147,131,123,131,147,165,175,110,131,147,165,147,175,196,247,196,175,165,147,131,110,98,110,131,147,165,196],
+   bvol:[.13,.08,.1,.08,.12,.08,.1,.08,.12,.08,.1,.08,.12,.08,.1,.08,.13,.08,.1,.08,.12,.08,.1,.08,.12,.08,.1,.08,.12,.08,.1,.09],
+   lead:[0,587,0,523,494,0,440,0,0,523,494,0,440,0,392,0,0,440,494,0,587,0,523,0,0,392,349,0,330,0,294,0],
+   pad:[349,0,0,0,392,0,0,0,330,0,0,0,262,0,0,0,349,0,0,0,392,0,0,0,262,0,0,0,294,0,0,0],
+   kick:[1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0],snare:[0,0,0,0,1,0,0,0,0,0,0,1,1,0,0,0],hh:[1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1],
+   tempo:{n:.19,r:.1},drone:false}
+  ,{_name:'Smoke & Shadows',_leadDur:0.9,bass:[131,0,0,156,175,0,0,131,117,0,0,139,156,0,0,117,131,0,0,156,196,0,0,175,156,0,0,131,98,0,0,117],
+   bvol:[.12,0,0,.08,.11,0,0,.08,.12,0,0,.08,.11,0,0,.08,.12,0,0,.08,.11,0,0,.08,.12,0,0,.08,.13,0,0,.09],
+   lead:[0,0,466,0,0,415,0,0,0,0,392,0,349,0,0,0,0,0,415,0,0,466,0,0,0,392,0,0,311,0,0,0],
+   pad:[311,0,0,0,0,0,0,0,233,0,0,0,0,0,0,0,262,0,0,0,0,0,0,0,196,0,0,0,0,0,0,0],
+   kick:[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0],snare:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],hh:[1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1],
+   tempo:{n:.22,r:.13},drone:false}
+  ,{_name:'Assembly Line',bass:[110,110,0,110,110,0,110,110,98,98,0,98,98,0,98,98,87,87,0,87,87,0,87,87,110,110,0,110,110,110,0,0],
+   bvol:[.14,.1,0,.1,.12,0,.1,.08,.14,.1,0,.1,.12,0,.1,.08,.14,.1,0,.1,.12,0,.1,.08,.14,.1,0,.1,.12,.1,0,0],
+   lead:[440,523,659,523,440,523,659,523,392,494,587,494,392,494,587,494,349,440,523,440,349,440,523,440,440,523,659,784,659,523,440,0],
+   pad:[220,0,0,0,0,0,0,0,196,0,0,0,0,0,0,0,175,0,0,0,0,0,0,0,220,0,0,0,0,0,220,0],
+   kick:[1,0,0,0,1,0,0,0,1,0,0,0,1,0,1,0],snare:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],hh:[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+   pulse:[1,0,0,1,0,0,1,0,1,0,0,1,0,1,0,0],tempo:{n:.13,r:.07},drone:true}
+  ,{_name:'Sunset Highway',_leadType:'sawtooth',_leadDur:1.4,_padType:'sawtooth',_padDur:2,bass:[87,0,87,87,0,87,0,87,139,0,139,139,0,139,0,139,104,0,104,104,0,104,0,104,156,0,156,0,156,0,117,0],
+   bvol:[.14,0,.1,.07,0,.09,0,.08,.14,0,.1,.07,0,.09,0,.08,.14,0,.1,.07,0,.09,0,.08,.14,0,.1,0,.12,0,.1,0],
+   lead:[349,0,0,0,415,0,0,0,466,0,0,0,415,0,349,0,311,0,0,0,349,0,0,0,415,0,0,0,466,0,0,0],
+   pad:[175,0,208,0,262,0,208,0,139,0,175,0,208,0,175,0,208,0,262,0,311,0,262,0,156,0,208,0,233,0,175,0],
+   kick:[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],snare:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],hh:[0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
+   tempo:{n:.16,r:.09},drone:false}
+  ,{_name:'The Ascent',bass:[82,0,82,0,82,82,0,82,87,0,87,0,87,87,0,87,73,0,73,0,73,73,0,73,82,0,82,82,98,0,98,0],
+   bvol:[.15,0,.11,0,.13,.09,0,.1,.15,0,.11,0,.13,.09,0,.1,.15,0,.11,0,.13,.09,0,.1,.15,0,.11,.09,.15,0,.13,0],
+   lead:[0,0,165,0,175,0,165,0,0,0,156,0,165,0,156,0,0,0,147,0,165,0,175,0,0,196,0,175,0,165,0,0],
+   pad:[165,0,0,0,0,0,0,0,156,0,0,0,0,0,0,0,147,0,0,0,0,0,0,0,165,0,0,0,196,0,0,0],
+   kick:[1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0],snare:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],hh:[0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0],
+   tempo:{n:.16,r:.09},drone:true}
+  ,{_name:'Last Stand A',_leadType:'sawtooth',_leadDur:2.2,_padType:'sawtooth',_padDur:2.6,bass:[73,0,0,0,73,0,0,73,87,0,0,0,87,0,0,87,98,0,0,0,98,0,0,98,65,0,0,0,73,0,73,0],
+   bvol:[.15,0,0,0,.12,0,0,.1,.15,0,0,0,.12,0,0,.1,.15,0,0,0,.12,0,0,.1,.15,0,0,0,.14,0,.12,0],
+   lead:[294,0,0,0,0,0,0,0,349,0,0,0,0,0,0,0,392,0,0,0,0,0,440,0,392,0,0,0,349,0,0,0],
+   pad:[147,0,175,0,220,0,0,0,175,0,208,0,262,0,0,0,196,0,247,0,294,0,0,0,147,0,175,0,220,0,0,0],
+   kick:[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0],snare:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,1],hh:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+   tempo:{n:.17,r:.11},drone:true}
+  ,{_name:'Last Stand B',_leadType:'sawtooth',_leadDur:1,bass:[82,82,0,82,82,0,82,0,82,82,0,82,98,0,87,0,82,82,0,82,82,0,82,0,65,65,0,65,73,0,82,0],
+   bvol:[.16,.12,0,.11,.14,0,.11,0,.16,.12,0,.11,.14,0,.12,0,.16,.12,0,.11,.14,0,.11,0,.16,.12,0,.11,.15,0,.13,0],
+   lead:[165,0,175,0,165,0,0,0,196,0,175,0,165,0,0,0,165,0,175,0,196,0,220,0,175,0,165,0,147,0,0,0],
+   pad:[82,0,0,0,98,0,0,0,87,0,0,0,82,0,0,0,98,0,0,0,110,0,0,0,82,0,0,0,73,0,0,0],
+   kick:[1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0],snare:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,1],hh:[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1],
+   tempo:{n:.14,r:.08},drone:true}
 ];
 
 // Track0=Cave March(1-9面), Track1=No Return(30-39面), Track2=Last Resolve(10-19面), Track3=Beyond DAMN(20-29面), Track4=Open Sky(5,10,15...面), Track5=Iron Grid(40-49面), Track6=Pixel Rush(50-59面)
-function getBGMTrack(n){if(n%5===0)return 4;if(n<=9)return 0;if(n<=19)return 2;if(n<=29)return 3;if(n<=39)return 1;if(n<=49)return 5;if(n<=59)return 6;return 4;}
+function getBGMTrack(n){
+  if(n===100)return 12;              // Last Stand A
+  if(n===50)return 8;                // Smoke & Shadows
+  if(n>=55&&n<=95&&n%5===0)return 13;// Last Stand B (55,60,65...95)
+  if(n%5===0)return 4;               // Open Sky (5,10...45 and any other multiple of 5 below 50)
+  if(n<=9)return 0;
+  if(n<=19)return 2;
+  if(n<=29)return 3;
+  if(n<=39)return 1;
+  if(n<=49)return 5;
+  if(n<=59)return 6;
+  if(n<=69)return 7;                 // Midnight Lounge
+  if(n<=79)return 10;                // Sunset Highway
+  if(n<=89)return 9;                 // Assembly Line
+  if(n<=99)return 11;                // The Ascent
+  return 4;
+}
 function getTempoKey(t){return t/MAX_TIME>0.25?'n':'r';}
 function bgmTick(){
   const tr=TRACKS[bgmTrack],s=bgmStep%tr.bass.length,fill=(bgmStep%128)>=112;
   if(tr.bass[s])tone(tr.bass[s],bgmTempo*.8,'sawtooth',tr.bvol[s]||.1);
-  if(tr.lead[s]){tone(tr.lead[s],bgmTempo*.45,'square',fill?.07:.05);if(fill)tone(tr.lead[s]*2,bgmTempo*.2,'square',.03,.02);}
-  if(tr.pad[s])tone(tr.pad[s],bgmTempo*1.5,'sine',.04);
+  if(tr.lead[s]){const lt=tr._leadType||'square',ld=tr._leadDur?tr._leadDur:bgmTempo*.45;tone(tr.lead[s],ld,lt,fill?.07:.055);if(fill&&!tr._leadDur)tone(tr.lead[s]*2,bgmTempo*.2,lt,.03,.02);}
+  if(tr.pad[s]){const pt=tr._padType||'sine',pd=tr._padDur?tr._padDur:bgmTempo*1.5;tone(tr.pad[s],pd,pt,.04);}
   if(tr.kick[s%16]){tone(60,.08,'sine',.15);tone(80,.04,'sine',.1,.01);}
   if(tr.snare[s%16])nz(.06,fill?.1:.07);
   if(tr.hh[s%16])nz(.02,.04);
@@ -512,6 +570,7 @@ let gameMode='normal';                 // 'normal' | 'death'
 let deathModeUnlocked=false;           // デスモード解放済みか
 let _stageStartTimeLeft=30;            // 現在のステージ開始時点の残り時間（ノーマルのリトライ用）
 deathModeUnlocked = getStat('deathModeUnlocked',0)===1;
+if(deathModeUnlocked)_titleModeSel=1;
 const ADMIN_SEQ=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a','1','9','8','4'];
 const HARD_SEQ=['h','h','h','h','h'],RETRO_SEQ=['r','r','r','r','r'];
 const TAUNTS={
@@ -5112,6 +5171,43 @@ move:[
 
 ];
 
+// ===== 101 ENDING SHOWCASE STAGES =====
+const ENDING_STAGES=[
+  { // [0] 落下トゲ: フラット足場・ゴールなし・天井から無数のトゲ・避けても死ぬ
+    name:'THE END?',sub:'You survived. Now enjoy.',
+    plats:[{x:0,y:640,w:1280,h:80}],
+    spikes:[],traps:[],fall:[],move:[],mimics:[],ceiling:[],
+    fallingSpikes:[
+      // 第1波: 全体に敷き詰め（即落下）。x=400付近とx=860付近に隙間を残す。速度ゆっくり
+      {x:32,y:0,w:32,h:48,triggerX:null,speed:280,triggered:false,startY:0,currentY:0},
+      {x:96,y:0,w:32,h:48,triggerX:null,speed:270,triggered:false,startY:0,currentY:0},
+      {x:160,y:0,w:32,h:48,triggerX:null,speed:290,triggered:false,startY:0,currentY:0},
+      {x:224,y:0,w:32,h:48,triggerX:null,speed:275,triggered:false,startY:0,currentY:0},
+      {x:288,y:0,w:32,h:48,triggerX:null,speed:285,triggered:false,startY:0,currentY:0},
+      {x:512,y:0,w:32,h:48,triggerX:null,speed:280,triggered:false,startY:0,currentY:0},
+      {x:576,y:0,w:32,h:48,triggerX:null,speed:270,triggered:false,startY:0,currentY:0},
+      {x:640,y:0,w:32,h:48,triggerX:null,speed:290,triggered:false,startY:0,currentY:0},
+      {x:704,y:0,w:32,h:48,triggerX:null,speed:275,triggered:false,startY:0,currentY:0},
+      {x:768,y:0,w:32,h:48,triggerX:null,speed:285,triggered:false,startY:0,currentY:0},
+      {x:992,y:0,w:32,h:48,triggerX:null,speed:280,triggered:false,startY:0,currentY:0},
+      {x:1056,y:0,w:32,h:48,triggerX:null,speed:270,triggered:false,startY:0,currentY:0},
+      {x:1120,y:0,w:32,h:48,triggerX:null,speed:290,triggered:false,startY:0,currentY:0},
+      {x:1184,y:0,w:32,h:48,triggerX:null,speed:275,triggered:false,startY:0,currentY:0},
+      // 第2波: 左の隙間(x≈400)への追い打ち。プレイヤーが左（x<500）へ動くと降る＝triggerXLeft
+      {x:384,y:0,w:32,h:48,triggerXLeft:500,speed:310,triggered:false,startY:0,currentY:0},
+      {x:416,y:0,w:32,h:48,triggerXLeft:460,speed:330,triggered:false,startY:0,currentY:0},
+      // 第3波: 右の隙間(x≈860)への追い打ち。プレイヤーが右（x>760）へ動くと降る＝triggerX
+      {x:832,y:0,w:32,h:48,triggerX:760,speed:310,triggered:false,startY:0,currentY:0},
+      {x:864,y:0,w:32,h:48,triggerX:800,speed:330,triggered:false,startY:0,currentY:0},
+      // 第4波: 中央スポーン(x=620)周辺の遅延追い打ち。左右どちらに一歩でも動くと反対から降る
+      {x:608,y:0,w:32,h:48,triggerXLeft:600,speed:300,triggered:false,startY:0,currentY:0},
+      {x:624,y:0,w:32,h:48,triggerX:640,speed:300,triggered:false,startY:0,currentY:0}
+    ],
+    lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
+    hg:[],goal:{x:-100,y:-100,w:1,h:1},spawn:{x:620,y:596}
+  }
+];
+
 
 
 
@@ -5141,7 +5237,7 @@ function loadStage(n){
   lavas=(s.lava||[]).map(l=>({...l,currentY:l.y}));
   fallingSpikesExt=(s.fallingSpikes||[]).map(f=>({...f,triggered:false,currentY:f.y}));
   chasers=(s.chasers||[]).map(c=>({...c,active:false}));
-  pendulums=(s.pendulums||[]).map(p=>({w:32,h:32,...p,angle:0}));
+  pendulums=(s.pendulums||[]).map(p=>({w:32,h:32,...p,angle:0,phase:p.phase||0}));
   orbits=(s.orbits||[]).map(o=>({...o}));
   slidingSpikes=(s.slidingSpikes||[]).map(o=>({...o,currentX:o.x,currentY:o.y,dir:1}));
   growingSpikes=(s.growingSpikes||[]).map(o=>({...o,currentSize:0,growing:true}));
@@ -5199,6 +5295,38 @@ function loadStage(n){
       });
     })
     .catch(()=>{if(stageNum===n)stagePlacements=[];});
+}
+
+let endingShowcaseIndex=0;  // 現在表示中のショーケース面インデックス
+function loadEndingStage(idx){
+  endingShowcaseIndex=idx;
+  const s=ENDING_STAGES[idx];
+  platforms=s.plats.map(p=>({...p}));
+  spikes=(s.spikes||[]).map(sp=>({...sp}));
+  hourglasses=(s.hg||[]).map(h=>({...h,taken:false}));
+  trapSpikes=(s.traps||[]).map(t=>({...t,triggered:false}));
+  fallingBlocks=(s.fall||[]).map(f=>({...f,triggered:false,falling:false,gone:false,shakeT:0,vy:0}));
+  movingPlatforms=(s.move||[]).map(m=>({...m}));
+  mimics=(s.mimics||[]).map(m=>({...m}));
+  ceilingTraps=(s.ceiling||[]).map(c=>({...c}));
+  fallingSpikesExt=(s.fallingSpikes||[]).map(f=>({...f,triggered:false,currentY:f.y}));
+  lavas=(s.lava||[]).map(l=>({...l}));
+  pendulums=(s.pendulums||[]).map(p=>({...p,phase:p.phase||0}));
+  chasers=(s.chasers||[]).map(c=>({...c}));
+  orbits=(s.orbits||[]).map(o=>({...o}));
+  slidingSpikes=(s.slidingSpikes||[]).map(x=>({...x}));
+  growingSpikes=(s.growingSpikes||[]).map(x=>({...x}));
+  buttons=(s.buttons||[]).map(b=>({...b}));
+  currents=(s.currents||[]).map(c=>({...c}));
+  memos=(s.memos||[]).map(m=>({...m}));
+  crushers=(s.crushers||[]).map(c=>({...c}));
+  teleporters=(s.teleporters||[]).map(t=>({...t}));
+  darknessState={enabled:false,timer:0,active:false,interval:2,duration:0.5,type:'flash',radius:160};
+  goal={...s.goal};
+  player={x:s.spawn.x,y:s.spawn.y,vx:0,vy:0,w:28,h:44,onGround:false,facing:1,walkT:0,prevX:0,prevY:0};
+  cameraY=0;
+  stageNum=101;
+  _goalReached=false;
 }
 
 let sessionStartTime=Date.now(),sessionDeaths=0,sessionMaxStage=1;
@@ -5332,6 +5460,7 @@ function neonText(txt,x,y,color,size,blur,align){
 
 function drawBg(isTitle){
   if(isTitle){ctx.fillStyle='#050508';ctx.fillRect(0,0,W,H);return;}
+  if(state==='ending'){ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);return;}
   const BG=10,BGW=128,BGH=72;
   ctx.drawImage(_bgCache,0,0);
   // Draw placement logos (hidden in test mode)
@@ -5513,7 +5642,7 @@ function drawChaser(c){
 }
 
 function drawPendulum(p){
-  const ang=p.angle!==undefined?p.angle:Math.sin(animT*p.speed)*(p.maxAngle||Math.PI/4);
+  const ang=p.angle!==undefined?p.angle:Math.sin(animT*p.speed+(p.phase||0))*(p.maxAngle||Math.PI/4);
   const sx=p.pivotX+Math.sin(ang)*p.length;
   const sy=p.pivotY+Math.cos(ang)*p.length;
   ctx.save();
@@ -5970,7 +6099,7 @@ function drawTitle(){
   }
   ctx.restore();
   // 到達階層マーカー
-  const bestFloor=getStat('bestStage',0)||0;
+  const bestFloor=(deathModeUnlocked?getStat('deathBestStage',0):getStat('normalBestStage',0))||getStat('bestStage',0)||0;
   const totalFloors=100;
   if(bestFloor>0){
     const towerTop=50,towerBase=650;
@@ -6080,7 +6209,7 @@ function drawTitle(){
   ctx.font='12px "Courier New"';
   // 左下：YOUR DEATHS + WORLD DEATHS
   ctx.fillStyle='rgba(255,100,100,0.8)';ctx.textAlign='left';
-  ctx.fillText('YOUR DEATHS: '+(td>0?td.toLocaleString():'0'),20,H-30);
+  {const _dmd=getStat('deathModeDeaths',0);const _dtxt='YOUR DEATHS: '+(td>0?td.toLocaleString():'0')+(deathModeUnlocked?'  (Death Mode: '+Number(_dmd).toLocaleString()+')':'');ctx.fillText(_dtxt,20,H-30);}
   ctx.fillStyle='rgba(220,120,120,0.8)';ctx.textAlign='left';
   ctx.fillText('WORLD DEATHS: '+Number(worldDeaths||0).toLocaleString(),20,H-14);
   // 右下：HALL OF LEGENDS
@@ -6121,12 +6250,12 @@ function drawTitle(){
 
 // ======== UPDATE ========
 function update(dt){
-  if(state==='play'){
+  if(state==='play'||state==='ending'){
     player.prevX=player.x+player.w/2;
     player.prevY=player.y+player.h/2;
     if(!adminMode){incStat('totalPlayTime',dt);checkTitlesOnPlayTime();}
-    timeLeft-=dt;
-    if(timeLeft<=0){lastDeathCause='time';lastDeathStage=stageNum;lastTimeLeft=0;triggerDeath();return;}
+    if(state!=='ending')timeLeft-=dt;
+    if(state!=='ending'&&timeLeft<=0){lastDeathCause='time';lastDeathStage=stageNum;lastTimeLeft=0;triggerDeath();return;}
     if(keys['ArrowLeft']||keys['a']||keys['A']){player.vx=-4.8;player.facing=-1;}
     else if(keys['ArrowRight']||keys['d']||keys['D']){player.vx=4.8;player.facing=1;}
     else if(player.onGround){player.vx*=(STAGES[stageNum-1]?.friction??0.75);}
@@ -6308,15 +6437,16 @@ function update(dt){
     for(const f of fallingSpikesExt){
       if(!f.triggered){
         const xOk=f.triggerX==null||player.x>f.triggerX;
+        const xLeftOk=f.triggerXLeft==null||player.x<f.triggerXLeft;
         const yOk=f.triggerY==null||player.y>f.triggerY;
         const yUpOk=f.triggerYUp==null||player.y<f.triggerYUp;
-        if(xOk&&yOk&&yUpOk)f.triggered=true;
+        if(xOk&&xLeftOk&&yOk&&yUpOk)f.triggered=true;
       }
       if(f.triggered){
         f.currentY+=f.speed*dt;
         if(f.stopY!=null&&f.currentY>=f.stopY){f.currentY=f.stopY;}
       }
-      if(overlap(player,{x:f.x+4,y:f.currentY+4,w:f.w-8,h:f.h-8})){lastDeathCause='spike';lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
+      if(overlap(player,{x:f.x+4,y:f.currentY+4,w:f.w-8,h:f.h-8})){lastDeathCause='spike';if(state==='ending'){endingDeath();return;}lastDeathStage=stageNum;lastTimeLeft=timeLeft;triggerDeath();return;}
     }
     // Chasers (boulders)
     for(const c of chasers){
@@ -6335,7 +6465,7 @@ function update(dt){
     }
     // Pendulums — angle stored on object each frame so draw and collision always match
     for(const p of pendulums){
-      p.angle=Math.sin(animT*p.speed)*(p.maxAngle||Math.PI/4);
+      p.angle=Math.sin(animT*p.speed+(p.phase||0))*(p.maxAngle||Math.PI/4);
       const tipX=p.pivotX+Math.sin(p.angle)*p.length;
       const tipY=p.pivotY+Math.cos(p.angle)*p.length;
       const pcx=player.x+player.w/2,pcy=player.y+player.h/2;
@@ -6595,6 +6725,12 @@ function update(dt){
     const pauseKey=(keys['Escape']&&!prevKeys['Escape'])||(keys['f']&&!prevKeys['f'])||(keys['F']&&!prevKeys['F']);
     if(pauseKey){state='pause';stopBGM();}
     if(adminMode){
+      if(keys['e']&&!prevKeys['e']){
+        console.log('E KEY PRESSED, adminMode='+adminMode+' state='+state);
+        state='ending';loadEndingStage(0);
+        const nt=getBGMTrack(101);if(nt!==bgmTrack)startBGM(nt);
+        floatMsgs=[];
+      }
       if(keys['n']&&!prevKeys['n']){
         stageNum=Math.min(STAGES.length,stageNum+1);
         loadStage(stageNum);
@@ -6890,6 +7026,15 @@ let damnScale=1.0;
 let deathTimer=0;
 let slowTimer=0,shakeTimer=0;
 let cameraY=0;
+
+function endingDeath(){
+  // 101エンディング専用：カウントせず、DAMN演出だけ出して即スタート位置に復活
+  damnEffect={x:player.x+player.w/2,y:player.y};damnTimer=1.0;sfxDamn();
+  const s=ENDING_STAGES[endingShowcaseIndex];
+  player.x=s.spawn.x;player.y=s.spawn.y;player.vx=0;player.vy=0;
+  // 落下トゲをリセット（再び降ってくるように）
+  fallingSpikesExt=(s.fallingSpikes||[]).map(f=>({...f,triggered:false,currentY:f.y}));
+}
 
 function triggerDeath(){
   damnEffect={x:player.x+player.w/2,y:player.y};damnTimer=1.5;sfxDamn();stopBGM();

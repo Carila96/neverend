@@ -487,10 +487,17 @@ const TRACKS=[
    pad:[82,0,0,0,98,0,0,0,87,0,0,0,82,0,0,0,98,0,0,0,110,0,0,0,82,0,0,0,73,0,0,0],
    kick:[1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0],snare:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,1],hh:[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1],
    tempo:{n:.14,r:.08},drone:true}
+  ,{_name:'The Real Game Begins',bass:[131,0,131,0,165,0,165,0,175,0,175,0,196,0,196,0,131,0,131,0,175,0,175,0,196,0,220,0,262,0,196,0],
+   bvol:[.13,0,.1,0,.13,0,.1,0,.13,0,.1,0,.13,0,.11,0,.13,0,.1,0,.13,0,.1,0,.13,0,.11,0,.14,0,.12,0],
+   lead:[523,0,659,0,784,0,0,659,587,0,698,0,784,0,880,0,523,0,659,0,784,0,880,0,659,0,587,0,523,0,0,0],
+   pad:[262,0,330,392,330,0,392,494,349,0,440,523,392,0,494,587,262,0,330,392,349,0,440,523,392,0,330,0,262,0,0,0],
+   kick:[1,0,0,0,1,0,0,0,1,0,0,0,1,0,1,0],snare:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,1,0],hh:[1,1,0,1,1,1,0,1,1,1,0,1,1,1,1,1],
+   pulse:[0,0,1,0,0,0,1,0,0,0,1,0,0,1,0,1],tempo:{n:.15,r:.08},drone:false}
 ];
 
 // Track0=Cave March(1-9面), Track1=No Return(30-39面), Track2=Last Resolve(10-19面), Track3=Beyond DAMN(20-29面), Track4=Open Sky(5,10,15...面), Track5=Iron Grid(40-49面), Track6=Pixel Rush(50-59面)
 function getBGMTrack(n){
+  if(n===101)return 14;              // The Real Game Begins (101エンディング)
   if(n===100)return 12;              // Last Stand A
   if(n===50)return 8;                // Smoke & Shadows
   if(n>=55&&n<=95&&n%5===0)return 13;// Last Stand B (55,60,65...95)
@@ -3130,7 +3137,7 @@ move:[
  traps:[
    {x:750,y:300,w:32,h:32,tx:700,warn:false},
  ],
- pendulums:[{pivotX:640,pivotY:0,length:176,speed:2.0,maxAngle:1.0,angle:1.0}],
+ pendulums:[{pivotX:640,pivotY:0,length:176,speed:2.0,maxAngle:1.0,phase:1.5708}],
  lava:[{y:200,speed:-48,color:'rgba(255,80,0,0.9)'}],
  hg:[{x:584,y:160,w:16,h:32},{x:568,y:640,w:16,h:32}],
  fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],chasers:[],
@@ -5225,6 +5232,63 @@ const ENDING_STAGES=[
     lava:[],pendulums:[],chasers:[],focusZones:[],darkness:{enabled:false},
     hg:[],goal:{x:-100,y:-100,w:1,h:1},spawn:{x:620,y:596}
   }
+  ,{ // [1] 巨大チェイサー: 避けられないサイズの岩が左右から迫る
+    name:'THE END?',sub:'You survived. Now enjoy.',
+    plats:[{x:0,y:640,w:1280,h:80}],
+    spikes:[],traps:[],fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
+    chasers:[
+      {x:-200,y:400,w:220,h:240,speed:180,triggerX:null},
+      {x:1260,y:300,w:240,h:340,speed:-200,triggerX:null}
+    ],
+    focusZones:[],hg:[],goal:{x:-100,y:-100,w:1,h:1},spawn:{x:620,y:596}
+  }
+  ,{ // [2] 巨大振り子: 画面を覆う巨大振り子。phaseでキャラ真上(中央)を避けて開始
+    name:'THE END?',sub:'You survived. Now enjoy.',
+    plats:[{x:0,y:640,w:1280,h:80}],
+    spikes:[],traps:[],fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],
+    pendulums:[
+      {pivotX:400,pivotY:-40,length:560,w:120,h:120,speed:1.3,maxAngle:1.1,phase:1.5708},
+      {pivotX:880,pivotY:-40,length:560,w:120,h:120,speed:1.5,maxAngle:1.1,phase:-1.5708}
+    ],
+    chasers:[],focusZones:[],hg:[],goal:{x:-100,y:-100,w:1,h:1},spawn:{x:620,y:596}
+  }
+  ,{ // [3] 沈む足場→トゲ山: 足場に乗ると沈んで消え、下のトゲ山へ落下
+    name:'THE END?',sub:'You survived. Now enjoy.',
+    plats:[
+      {x:520,y:400,w:240,h:24,sinking:true},
+      {x:200,y:500,w:180,h:24,sinking:true},
+      {x:900,y:500,w:180,h:24,sinking:true}
+    ],
+    spikes:[
+      {x:0,y:616,w:1280,h:24}
+    ],
+    traps:[],fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],
+    focusZones:[],hg:[],goal:{x:-100,y:-100,w:1,h:1},spawn:{x:600,y:356}
+  }
+  ,{ // [4] 天井プレス: crusherが天井から降りて圧殺
+    name:'THE END?',sub:'You survived. Now enjoy.',
+    plats:[{x:0,y:640,w:1280,h:80}],
+    spikes:[],traps:[],fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],
+    crushers:[
+      {x:0,y:0,w:1280,h:200,axis:'y',min:-200,max:440,speed:260,startDir:1}
+    ],
+    focusZones:[],hg:[],goal:{x:-100,y:-100,w:1,h:1},spawn:{x:620,y:596}
+  }
+  ,{ // [5] マグマ上昇: 下からマグマが迫る
+    name:'THE END?',sub:'You survived. Now enjoy.',
+    plats:[{x:0,y:640,w:1280,h:80},{x:560,y:440,w:160,h:24}],
+    spikes:[],traps:[],fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],pendulums:[],chasers:[],
+    lava:[
+      {x:0,y:700,w:1280,h:400,speed:60}
+    ],
+    focusZones:[],hg:[],goal:{x:-100,y:-100,w:1,h:1},spawn:{x:620,y:596}
+  }
+  ,{ // [6] ゴール面: ロール終了後の穏やかな締め。死なない。記録を眺めてゴールへ
+    name:'THE END',sub:'Thank you for playing.',
+    plats:[{x:0,y:640,w:1280,h:80}],
+    spikes:[],traps:[],fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],chasers:[],
+    focusZones:[],hg:[],goal:{x:1120,y:544,w:48,h:96},spawn:{x:160,y:596}
+  }
 ];
 
 
@@ -5317,6 +5381,15 @@ function loadStage(n){
 }
 
 let endingShowcaseIndex=0;  // 現在表示中のショーケース面インデックス
+let endingDying=false,endingDyingTimer=0;  // 101: dying演出中フラグと残り時間(0.85秒)
+let endingRoll=null;      // ロールの状態オブジェクト
+let endingRollDone=false; // ロールが全部終わったか（ステップ4のゴール遷移で使う）
+let endingRollShowSummary=false; // ゴール面(6)で記録一覧を出し続けるか
+let endingFinalReached=false;    // ゴール面でゴールに触れたか
+let endingFinalT=0;              // ゴール到達後の経過時間（締めメッセージ演出用）
+let endingPhase='';              // ''|'suck'|'fade'|'final'  終了フローの段階
+let endingFadeT=0;               // 暗転フェード経過
+let endingSuckT=0,endingSuckX0=0,endingSuckY0=0; // 吸い込み演出用（開始時刻・開始座標）
 function loadEndingStage(idx){
   endingShowcaseIndex=idx;
   const s=ENDING_STAGES[idx];
@@ -5329,16 +5402,16 @@ function loadEndingStage(idx){
   mimics=(s.mimics||[]).map(m=>({...m}));
   ceilingTraps=(s.ceiling||[]).map(c=>({...c}));
   fallingSpikesExt=(s.fallingSpikes||[]).map(f=>({...f,triggered:false,currentY:f.y}));
-  lavas=(s.lava||[]).map(l=>({...l}));
+  lavas=(s.lava||[]).map(l=>({...l,currentY:l.y}));
   pendulums=(s.pendulums||[]).map(p=>({...p,phase:p.phase||0}));
-  chasers=(s.chasers||[]).map(c=>({...c}));
+  chasers=(s.chasers||[]).map(c=>({...c,active:false}));
   orbits=(s.orbits||[]).map(o=>({...o}));
   slidingSpikes=(s.slidingSpikes||[]).map(x=>({...x}));
   growingSpikes=(s.growingSpikes||[]).map(x=>({...x}));
   buttons=(s.buttons||[]).map(b=>({...b}));
   currents=(s.currents||[]).map(c=>({...c}));
   memos=(s.memos||[]).map(m=>({...m}));
-  crushers=(s.crushers||[]).map(c=>({...c}));
+  crushers=(s.crushers||[]).map(c=>({...c,_dir:c.startDir||1}));
   teleporters=(s.teleporters||[]).map(t=>({...t}));
   darknessState={enabled:false,timer:0,active:false,interval:2,duration:0.5,type:'flash',radius:160};
   goal={...s.goal};
@@ -5346,6 +5419,47 @@ function loadEndingStage(idx){
   cameraY=0;
   stageNum=101;
   _goalReached=false;
+}
+
+function initEndingRoll(){
+  // 最多死亡階を集計
+  let maxDeaths=0,maxFloor=1;
+  for(let n=1;n<=100;n++){ const d=getStat('deaths_stage_'+n,0)||0; if(d>maxDeaths){maxDeaths=d;maxFloor=n;} }
+  // プレイ時間を h/m に変換
+  const secs=Math.floor(getStat('totalPlayTime',0)||0);
+  const hh=Math.floor(secs/3600), mm=Math.floor((secs%3600)/60);
+  const timeStr=(hh>0?hh+'h ':'')+mm+'m';
+  const totalD=getStat('totalDeaths',0)||0;
+  // ロール項目（表示順：TOTAL DEATHSを最後、締めはその後）
+  const items=[
+    {label:'FLOORS CLEARED',value:'100'},
+    {label:'TIME PLAYED',value:timeStr},
+    {label:'MOST DEATHS ON FLOOR',value:'Floor '+maxFloor+'  ('+maxDeaths+' deaths)'},
+    {label:'TOTAL DEATHS',value:totalD.toLocaleString()}
+  ];
+  endingRoll={
+    items:items,
+    idx:0,           // 現在表示中の項目
+    t:0,             // 現在項目の経過時間
+    perItem:3.0,     // 1項目の表示秒数
+    phase:'items',   // 'items'→各項目順次表示, 'summary'→全項目一覧, 'closer'→締め, 'done'
+    summaryT:0,
+    closerT:0
+  };
+  endingRollDone=false;
+  endingRollShowSummary=false;
+  endingFinalReached=false;
+  endingFinalT=0;
+  endingPhase='';
+  endingFadeT=0;
+  endingSuckT=0;
+}
+
+function loadRandomEndingStage(){
+  const n=6; // ショーケースは0〜5のみ（6はゴール面なのでランダム対象外）
+  let idx=Math.floor(Math.random()*n);
+  if(idx===endingShowcaseIndex&&endingShowcaseIndex<n){ idx=(idx+1+Math.floor(Math.random()*(n-1)))%n; }
+  loadEndingStage(idx);
 }
 
 let sessionStartTime=Date.now(),sessionDeaths=0,sessionMaxStage=1;
@@ -5395,6 +5509,18 @@ function resetRun(){
   sessionStartTime=Date.now();sessionDeaths=0;sessionMaxStage=1;
   incStat('gamesStarted');
   checkAllTitles();
+}
+
+// 101エンディング終了フロー → タイトルへ戻す（ending系フラグを全リセット）
+function returnToTitle(){
+  endingRoll=null; endingRollDone=false; endingRollShowSummary=false;
+  endingFinalReached=false; endingFinalT=0;
+  endingPhase=''; endingFadeT=0; endingSuckT=0;
+  endingDying=false; endingDyingTimer=0;
+  _goalReached=false;
+  floatMsgs=[];
+  stopBGM();
+  state='title';
 }
 
 // ======== PHYSICS ========
@@ -5479,7 +5605,7 @@ function neonText(txt,x,y,color,size,blur,align){
 
 function drawBg(isTitle){
   if(isTitle){ctx.fillStyle='#050508';ctx.fillRect(0,0,W,H);return;}
-  if(state==='ending'){ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);return;}
+  if(state==='ending'||endingDying){ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);return;}
   const BG=10,BGW=128,BGH=72;
   ctx.drawImage(_bgCache,0,0);
   // Draw placement logos (hidden in test mode)
@@ -6269,10 +6395,59 @@ function drawTitle(){
 
 // ======== UPDATE ========
 function update(dt){
+  // 101ロールは実時間で進行（プレイヤーの生死・dying状態に関係なく進む）
+  if(endingRoll && (state==='ending'||endingDying) && !endingRollDone){
+    const R=endingRoll;
+    if(R.phase==='items'){
+      R.t+=dt;
+      if(R.t>=R.perItem){ R.t=0; R.idx++; if(R.idx>=R.items.length){ R.phase='summary'; R.summaryT=0; } }
+    } else if(R.phase==='summary'){
+      R.summaryT+=dt;
+      if(R.summaryT>=4.0){
+        R.phase='done'; endingRollDone=true;
+        state='ending'; loadEndingStage(6); endingRollShowSummary=true;
+        endingDying=false;  // dying中だったら解除してゴール面へ
+      }
+    }
+  }
   if(state==='play'||state==='ending'){
     player.prevX=player.x+player.w/2;
     player.prevY=player.y+player.h/2;
     if(!adminMode){incStat('totalPlayTime',dt);checkTitlesOnPlayTime();}
+    // ===== 101 終了フロー: ゴール接触→吸い込み→暗転→最終画面→タイトル =====
+    if(state==='ending'&&endingShowcaseIndex===6&&!endingFinalReached&&overlap(player,goal)){
+      endingFinalReached=true; endingPhase='suck';
+      _goalReached=true;
+      endingSuckT=0; endingSuckX0=player.x; endingSuckY0=player.y;
+    }
+    if(endingPhase==='suck'){
+      // 吸い込み(0.7秒)→暗転フェーズへ。位置補間はresolvePlayerの後で上書き（下記参照）
+      endingSuckT+=dt;
+      if(endingSuckT>=0.7){ endingPhase='fade'; endingFadeT=0; }
+    } else if(endingPhase==='fade'){
+      endingFadeT+=dt;
+      if(endingFadeT>=1.0){
+        endingPhase='final'; endingFinalT=0;
+        // デスモード解放を確実に（管理者テストでも通知が出るように。既存ロジックは壊さない）
+        if(!deathModeUnlocked){
+          deathModeUnlocked=true; setStat('deathModeUnlocked',1);
+          if(supabaseClient&&_currentUser){
+            supabaseClient.from('player_profiles').upsert({id:_currentUser.id,death_mode_unlocked:true},{onConflict:'id'}).then(function(r){if(r&&r.error)console.warn('unlock sync error:',r.error);});
+          }
+        }
+      }
+    } else if(endingPhase==='final'){
+      endingFinalT+=dt;
+      // メッセージが十分見えてから（0.8秒後以降）任意キーでタイトルへ
+      if(endingFinalT>0.8){
+        const anyKey=Object.keys(keys).some(k=>keys[k]&&!prevKeys[k]);
+        if(anyKey){
+          for(const k in keys)keys[k]=false;
+          if(_currentUser){ returnToTitle(); }
+          else { openLoginModal(); returnToTitle(); }
+        }
+      }
+    }
     if(state!=='ending')timeLeft-=dt;
     if(state!=='ending'&&timeLeft<=0){lastDeathCause='time';lastDeathStage=stageNum;lastTimeLeft=0;triggerDeath();return;}
     if(keys['ArrowLeft']||keys['a']||keys['A']){player.vx=-4.8;player.facing=-1;}
@@ -6349,6 +6524,14 @@ function update(dt){
       p.dy=p.y-py;
     }
     resolvePlayer();
+    // 101吸い込み: プレイヤーをゴール中心へ0.7秒で補間（物理を上書き）
+    if(endingPhase==='suck'){
+      const _st=Math.min(endingSuckT/0.7,1);
+      const _gx=goal.x+goal.w/2-player.w/2, _gy=goal.y+goal.h-player.h;
+      player.x=endingSuckX0+(_gx-endingSuckX0)*_st;
+      player.y=endingSuckY0+(_gy-endingSuckY0)*_st;
+      player.vx=0; player.vy=0;
+    }
     for(const t of trapSpikes){
       const isScrollY=STAGES[stageNum-1]?.scrollY;
       const inYRange=isScrollY
@@ -6733,8 +6916,12 @@ function update(dt){
             }
             const nt=getBGMTrack(_goalNext);if(nt!==bgmTrack)startBGM(nt);
           } else {
-            floatMsgs.push({txt:'ALL CLEAR!!',x:W/2,y:H/2,life:3,color:'rgba(255,220,50,1)'});
-            state='play';
+            // 100面クリア（_goalNext>STAGES.length）→ 101エンディング自動突入
+            state='ending';
+            loadRandomEndingStage();
+            initEndingRoll();
+            const nt=getBGMTrack(101);if(nt!==bgmTrack)startBGM(nt);
+            floatMsgs=[];
           }
         }
       }
@@ -6745,8 +6932,7 @@ function update(dt){
     if(pauseKey){state='pause';stopBGM();}
     if(adminMode){
       if(keys['e']&&!prevKeys['e']){
-        console.log('E KEY PRESSED, adminMode='+adminMode+' state='+state);
-        state='ending';loadEndingStage(0);
+        state='ending';loadRandomEndingStage();initEndingRoll();
         const nt=getBGMTrack(101);if(nt!==bgmTrack)startBGM(nt);
         floatMsgs=[];
       }
@@ -6819,6 +7005,20 @@ function update(dt){
       p.vy+=200*dt;
       p.life-=p.decay*dt;
       if(p.life<=0)deathParticles.splice(i,1);
+    }
+    // 101エンディング: dying明け(0.85秒)で通常リトライではなくランダム別面へ切替
+    if(endingDying){
+      endingDyingTimer-=dt;
+      if(endingDyingTimer<=0){
+        endingDying=false; state='ending';
+        if(endingRollDone){
+          // ロール終了後：ショーケースに戻さず、ゴール面へ
+          loadEndingStage(6); endingRollShowSummary=true;
+        } else {
+          // ロール中：通常通り次のランダムショーケース面へ
+          loadRandomEndingStage();
+        }
+      }
     }
   } else if(state==='dead'){
     // Particle update
@@ -7047,15 +7247,35 @@ let slowTimer=0,shakeTimer=0;
 let cameraY=0;
 
 function endingDeath(){
-  // 101エンディング専用：カウントせず、DAMN演出だけ出して即スタート位置に復活
-  damnEffect={x:player.x+player.w/2,y:player.y};damnTimer=1.0;sfxDamn();
-  const s=ENDING_STAGES[endingShowcaseIndex];
-  player.x=s.spawn.x;player.y=s.spawn.y;player.vx=0;player.vy=0;
-  // 落下トゲをリセット（再び降ってくるように）
-  fallingSpikesExt=(s.fallingSpikes||[]).map(f=>({...f,triggered:false,currentY:f.y}));
+  if(endingShowcaseIndex===6) return;  // ゴール面では死なない（穏やかな締めの場所）
+  // 101専用: 通常triggerDeathと同じ爆発演出を出す（死亡カウント・stopBGMは無し）。
+  // dying に入り、メインループ state==='dying' の endingDying 分岐で 0.85秒後にランダム面へ。
+  damnEffect={x:player.x+player.w/2,y:player.y};damnTimer=1.5;sfxDamn();
+  deathParticles=[];
+  for(let i=0;i<24;i++){
+    const angle=(Math.PI*2/24)*i+(Math.random()-0.5)*0.3;
+    const speed=160+Math.random()*320;
+    deathParticles.push({
+      x:player.x+player.w/2,y:player.y+player.h/2,
+      vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-60,
+      size:4+Math.random()*6,life:1.0,
+      decay:0.8+Math.random()*0.4,
+      color:Math.random()>0.5?'#ff4444':'#ffaa00'
+    });
+  }
+  slowTimer=0.08;
+  shakeTimer=0.5;
+  damnScale=0.1;
+  deathTimer=0;
+  lastDeathMsg=getDeathMsg(lastDeathCause);
+  state='dying';
+  endingDyingTimer=0.85;
+  endingDying=true;
 }
 
 function triggerDeath(){
+  // 101エンディング中は通常の死亡処理を通さず、ランダム別面へ即切替
+  if(state==='ending'){endingDeath();return;}
   damnEffect={x:player.x+player.w/2,y:player.y};damnTimer=1.5;sfxDamn();stopBGM();
   deathParticles=[];
   for(let i=0;i<24;i++){
@@ -7410,6 +7630,76 @@ function loop(ts){
     ctx.restore();
     drawUI();
     drawDarkness();
+    // 101エンディング: ロール（記録表示）を最前面に描画
+    if((state==='ending'||endingDying)&&endingRoll){
+      const R=endingRoll;
+      ctx.save();
+      ctx.textAlign='center';
+      const cx=W/2;
+      if(R.phase==='items'&&R.idx<R.items.length){
+        const it=R.items[R.idx];
+        // フェードイン/アウト（項目の表示中に軽く）
+        const a=Math.min(1, Math.min(R.t, R.perItem-R.t)*3);
+        ctx.globalAlpha=Math.max(0.15,a);
+        ctx.fillStyle='#fff';
+        ctx.font='bold 32px "Courier New"';
+        ctx.fillText(it.label, cx, H/2-30);
+        ctx.fillStyle='#ffe033';
+        ctx.font='bold 56px "Courier New"';
+        ctx.fillText(it.value, cx, H/2+40);
+      } else if((R.phase==='summary'||endingRollShowSummary)&&endingPhase!=='final'){
+        // 背景パネル（濃い赤黒＋黄枠）。ゴール面(6)ではやや上寄せにして足場/ゴールと被らないように
+        const onGoalStage=(endingShowcaseIndex===6);
+        const pw=560, ph=380, px=cx-pw/2, py=onGoalStage?(H/2-220):(H/2-160);
+        const sa=Math.min(1,R.summaryT*2);
+        ctx.globalAlpha=sa*0.88;
+        ctx.fillStyle='rgba(40,10,15,1)';
+        ctx.fillRect(px,py,pw,ph);
+        ctx.globalAlpha=sa;
+        ctx.strokeStyle='#ffe033'; ctx.lineWidth=2;
+        ctx.strokeRect(px,py,pw,ph);
+        ctx.globalAlpha=sa;
+        let y=py+60;
+        for(const it of R.items){
+          ctx.fillStyle='#fff'; ctx.font='bold 22px "Courier New"';
+          ctx.fillText(it.label, cx, y);
+          ctx.fillStyle='#ffe033'; ctx.font='bold 34px "Courier New"';
+          ctx.fillText(it.value, cx, y+34);
+          y+=76;
+        }
+      }
+      // 101終了フロー: 暗転フェーズ（既存描画の最前面に黒を重ねる）
+      if(endingPhase==='fade'){
+        ctx.globalAlpha=Math.min(1,endingFadeT);
+        ctx.fillStyle='#000';
+        ctx.fillRect(0,0,W,H);
+        ctx.globalAlpha=1;
+      }
+      // 101終了フロー: 最終画面（真っ黒背景＋締めメッセージ＋デスモード解放通知＋Press any key）
+      if(endingPhase==='final'){
+        ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H); // 完全な黒背景
+        const fa=Math.min(1,endingFinalT*1.2);
+        // 締めメッセージ
+        ctx.globalAlpha=fa;
+        ctx.fillStyle='#fff'; ctx.font='bold 40px "Courier New"';
+        ctx.fillText('THE TOWER REMEMBERS YOU', cx, H/2-80);
+        // デスモード解放通知（0.6秒後からフェードイン、赤黒でしっかり）
+        const ua=Math.min(1,Math.max(0,(endingFinalT-0.6))*1.2);
+        ctx.globalAlpha=ua;
+        ctx.fillStyle='#ff2b2b'; ctx.font='bold 52px "Courier New"';
+        ctx.fillText('DEATH MODE UNLOCKED', cx, H/2+20);
+        ctx.globalAlpha=ua;
+        ctx.fillStyle='#aaa'; ctx.font='16px "Courier New"';
+        ctx.fillText('A harder path now awaits.', cx, H/2+60);
+        // Press any key（十分見えてから＝0.8秒後、点滅）
+        if(endingFinalT>0.8){
+          ctx.globalAlpha=0.6+0.4*Math.sin(endingFinalT*3);
+          ctx.fillStyle='#fff'; ctx.font='14px "Courier New"';
+          ctx.fillText('Press any key to return to title', cx, H-60);
+        }
+      }
+      ctx.restore();
+    }
     if(state==='pause')drawPause();
     if(state==='memo')drawMemo();
     if(state==='dying'){

@@ -2681,7 +2681,7 @@ crushers:[
    {x:992,y:608,w:32,h:32}
  ],
  crushers:[
-   {x:32,y:-400,w:1216,h:592,axis:'y',min:-400,max:32,speed:48,startDir:1},
+   {x:32,y:-400,w:1216,h:592,axis:'y',min:-400,max:32,speed:38,startDir:1},
  ],
  traps:[
    {x:736,y:608,w:32,h:32,tx:650,warn:false},
@@ -2831,11 +2831,11 @@ crushers:[
 move:[
    // 左グループ（中央から左、互い違い）
    {x:200,y:480,w:160,h:16,vx:9.0,vy:0,rx:96,ry:0,sx:300,sy:480,phase:0},
-   {x:100,y:320,w:160,h:16,vx:-9.0,vy:0,rx:96,ry:0,sx:300,sy:320,phase:Math.PI},
+   {x:50,y:320,w:160,h:16,vx:-9.0,vy:0,rx:96,ry:0,sx:300,sy:320,phase:Math.PI},
    {x:200,y:160,w:160,h:16,vx:9.0,vy:0,rx:96,ry:0,sx:300,sy:160,phase:Math.PI*0.5},
    // 右グループ（中央から右、互い違い）
    {x:800,y:560,w:160,h:16,vx:-9.0,vy:0,rx:96,ry:0,sx:900,sy:560,phase:0},
-   {x:900,y:400,w:160,h:16,vx:9.0,vy:0,rx:96,ry:0,sx:900,sy:400,phase:Math.PI},
+   {x:950,y:400,w:160,h:16,vx:9.0,vy:0,rx:96,ry:0,sx:900,sy:400,phase:Math.PI},
    {x:800,y:240,w:160,h:16,vx:-9.0,vy:0,rx:96,ry:0,sx:900,sy:240,phase:Math.PI*0.5},
  ],
  pendulums:[
@@ -3193,9 +3193,9 @@ move:[
    {x:1090,y:672,w:32,h:32,triggerRadius:80,warn:false},
    {x:1122,y:672,w:32,h:32,triggerRadius:80,warn:false},
  ],fall:[],mimics:[],ceiling:[],fallingSpikes:[
-   {x:340,y:0,w:32,h:48,triggerX:280,speed:320,triggered:false,startY:0,currentY:0,stopY:672},
-   {x:640,y:0,w:32,h:48,triggerX:580,speed:280,triggered:false,startY:0,currentY:0,stopY:672},
-   {x:940,y:0,w:32,h:48,triggerX:880,speed:300,triggered:false,startY:0,currentY:0,stopY:672},
+   {x:340,y:0,w:32,h:48,triggerX:280,speed:320,triggered:false,startY:0,currentY:0},
+   {x:640,y:0,w:32,h:48,triggerX:580,speed:280,triggered:false,startY:0,currentY:0},
+   {x:940,y:0,w:32,h:48,triggerX:880,speed:300,triggered:false,startY:0,currentY:0},
  ],lava:[],pendulums:[],
  chasers:[],orbits:[
    {centerX:356,centerY:376,radius:80,speed:2.0,angle:0,size:12,color:'rgba(255,100,100,0.9)'},
@@ -3951,7 +3951,7 @@ move:[
    // 床付近
    {x:160,y:688,w:32,h:16},
    {x:480,y:688,w:32,h:16},
-   {x:832,y:688,w:32,h:16},
+   {x:736,y:688,w:32,h:16},
  ],
  traps:[
    // 1段目
@@ -4025,7 +4025,7 @@ move:[
  ],
  crushers:[
    {x:192,y:-150,w:192,h:300,axis:'y',min:-300,max:-60,speed:60,startDir:1},
-   {x:384,y:-200,w:192,h:400,axis:'y',min:-304,max:-64,speed:20,startDir:-1},
+   {x:384,y:-200,w:192,h:400,axis:'y',min:-304,max:-64,speed:25,startDir:-1},
    {x:576,y:0,w:192,h:500,axis:'y',min:-308,max:-68,speed:100,startDir:1},
    {x:768,y:0,w:192,h:600,axis:'y',min:-312,max:-72,speed:80,startDir:-1},
  ],
@@ -4571,9 +4571,9 @@ move:[
    {x:736,y:288,w:16,h:32,penalty:true},
  ],
  traps:[
-   {x:400,y:368,w:32,h:32,triggerRadius:48,warn:false},
-   {x:500,y:368,w:32,h:32,triggerRadius:48,warn:false},
-   {x:600,y:368,w:32,h:32,triggerRadius:48,warn:false},
+   {x:400,y:368,w:32,h:32,triggerRadius:64,warn:false},
+   {x:500,y:368,w:32,h:32,triggerRadius:64,warn:false},
+   {x:600,y:368,w:32,h:32,triggerRadius:64,warn:false},
  ],
  fall:[],mimics:[],ceiling:[],fallingSpikes:[],lava:[],pendulums:[],
  chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],buttons:[],currents:[],

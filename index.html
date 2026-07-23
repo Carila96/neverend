@@ -12,6 +12,9 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>neverEND — 30 Seconds to Live. Forever.</title>
 <meta name="description" content="neverEND is a brutal browser platformer. 30 seconds per attempt. Die, reset, repeat. How high can you climb the tower? Free to play.">
 <meta name="keywords" content="neverEND, DAMN, DAMNRUN, hardcore platformer, browser game, free game, tower climbing game, die and retry, impossible game, hard platformer, rage game, rage platformer, impossible platformer, skill game, free browser game, online platformer, neverend game, Carila, 30 seconds, tower game, クソゲー, 激ムズゲーム, 難しいゲーム, ブラウザゲーム, アクションゲーム, 無料ゲーム, 死にゲー">
@@ -37,11 +40,12 @@
 canvas{
   display:block;
   image-rendering:pixelated;
-  width:100vw;
-  height:56.25vw;
+  width:auto;
+  height:auto;
+  max-width:100vw;
   max-height:100vh;
   max-height:100dvh;
-  max-width:177.78vh;
+  aspect-ratio:16/9;
   margin:auto;
 }
 body{
@@ -49,6 +53,7 @@ body{
   align-items:center;
   justify-content:center;
   min-height:100vh;
+  height:100dvh;
   background:#000;
   margin:0;
   overflow:hidden;
@@ -178,20 +183,28 @@ body{
 }
 #xShareBtn:hover{background:#1a1a1a;}
 /* ---- Mobile touch controls (touch devices only) ---- */
-#touchControls{display:none;position:fixed;left:0;bottom:0;width:100%;z-index:200;box-sizing:border-box;padding:24px;justify-content:space-between;align-items:flex-end;pointer-events:none;}
+#touchControls{display:none;position:fixed;left:0;bottom:0;width:100%;z-index:200;box-sizing:border-box;padding:14px;justify-content:space-between;align-items:flex-end;pointer-events:none;}
 body.touch #touchControls{display:flex;}
 .touch-cluster{display:flex;gap:16px;pointer-events:none;}
 .touch-btn{pointer-events:auto;width:74px;height:74px;border-radius:50%;background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);color:#fff;font-size:26px;line-height:1;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:none;}
 .touch-btn:active{background:rgba(255,255,255,0.15);}
-.touch-btn-sm{width:56px;height:56px;font-size:20px;}
-#dpad{display:grid;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(3,56px);gap:6px;pointer-events:none;}
+#dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,48px);gap:3px;pointer-events:none;}
+.dpad-btn{width:48px;height:48px;}
+/* All 4 arrows drawn as identical CSS triangles (avoids iOS emoji rendering of ◀▶). */
+.dpad-btn::before{content:"";display:block;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:13px solid rgba(255,255,255,0.75);}
 #btnUp{grid-column:2;grid-row:1;}
 #btnLeft{grid-column:1;grid-row:2;}
+#btnLeft::before{transform:rotate(-90deg);}
 #btnRight{grid-column:3;grid-row:2;}
+#btnRight::before{transform:rotate(90deg);}
 #btnDown{grid-column:2;grid-row:3;}
+#btnDown::before{transform:rotate(180deg);}
 #btnJump{width:96px;height:96px;}
 #btnPause{display:none;position:fixed;top:16px;right:16px;z-index:200;width:48px;height:48px;font-size:16px;letter-spacing:2px;}
 body.touch #btnPause{display:flex;}
+#a2hsBanner{display:none;position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:300;max-width:92vw;box-sizing:border-box;padding:8px 34px 8px 12px;background:rgba(10,10,20,0.72);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.85);font-family:'Share Tech Mono',monospace;font-size:11px;line-height:1.5;text-align:center;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);}
+#a2hsBanner.show{display:block;}
+#a2hsClose{position:absolute;top:2px;right:6px;font-size:16px;line-height:1;color:rgba(255,255,255,0.7);cursor:pointer;padding:2px 4px;}
 #rotateOverlay{display:none;position:fixed;inset:0;z-index:9999;background:#000;color:#fff;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:'Share Tech Mono',monospace;font-size:18px;letter-spacing:2px;line-height:1.8;padding:20px;}
 body.touch.portrait #rotateOverlay{display:flex;}
 </style>
@@ -200,16 +213,20 @@ body.touch.portrait #rotateOverlay{display:flex;}
 <canvas id="c" width="1280" height="720"></canvas>
 <div id="touchControls" aria-hidden="true">
   <div id="dpad">
-    <div class="touch-btn touch-btn-sm" id="btnUp">▲</div>
-    <div class="touch-btn touch-btn-sm" id="btnLeft">◀</div>
-    <div class="touch-btn touch-btn-sm" id="btnRight">▶</div>
-    <div class="touch-btn touch-btn-sm" id="btnDown">▼</div>
+    <div class="touch-btn dpad-btn" id="btnUp"></div>
+    <div class="touch-btn dpad-btn" id="btnLeft"></div>
+    <div class="touch-btn dpad-btn" id="btnRight"></div>
+    <div class="touch-btn dpad-btn" id="btnDown"></div>
   </div>
   <div class="touch-cluster" id="jumpCluster">
     <div class="touch-btn" id="btnJump"></div>
   </div>
 </div>
 <div class="touch-btn" id="btnPause">❚❚</div>
+<div id="a2hsBanner">
+  <span id="a2hsClose">×</span>
+  全画面でプレイするには、共有ボタンから「ホーム画面に追加」してください<br>For fullscreen, tap Share → Add to Home Screen
+</div>
 <div id="rotateOverlay">↻<br>デバイスを横にしてください<br>Please rotate your device</div>
 <div id="xShareBtn" onclick="shareDeathX()">𝕏 Share</div>
 <div id="mypageOverlay" style="display:none;position:fixed;inset:0;z-index:1000;background:#000;">
@@ -749,6 +766,16 @@ if(isTouchDevice){
   updateOrientation();
   window.addEventListener('resize',updateOrientation);
   window.addEventListener('orientationchange',updateOrientation);
+  // Add-to-home-screen hint: iOS Safari can't go fullscreen in-browser; guide users to A2HS.
+  const _standalone = window.navigator.standalone===true || window.matchMedia('(display-mode: standalone)').matches;
+  if(!_standalone && localStorage.getItem('neverend_a2hs_dismissed')!=='1'){
+    const _banner=document.getElementById('a2hsBanner');
+    if(_banner){
+      _banner.classList.add('show');
+      const _close=document.getElementById('a2hsClose');
+      if(_close)_close.addEventListener('click',e=>{e.stopPropagation();_banner.classList.remove('show');try{localStorage.setItem('neverend_a2hs_dismissed','1');}catch(_){}});
+    }
+  }
 }
 
 // ======== STAGES 1-10 ========

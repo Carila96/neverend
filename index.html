@@ -201,7 +201,7 @@ body.touch #touchControls{display:flex;}
 #btnDown::before{transform:rotate(180deg);}
 #btnJump{width:96px;height:96px;}
 #btnPause{display:none;position:fixed;top:16px;right:16px;z-index:200;width:48px;height:48px;font-size:16px;letter-spacing:2px;}
-body.touch #btnPause{display:flex;}
+body.touch.playing #btnPause{display:flex;}
 #a2hsBanner{display:none;position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:300;max-width:92vw;box-sizing:border-box;padding:8px 34px 8px 12px;background:rgba(10,10,20,0.72);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.85);font-family:'Share Tech Mono',monospace;font-size:11px;line-height:1.5;text-align:center;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);}
 #a2hsBanner.show{display:block;}
 #a2hsClose{position:absolute;top:2px;right:6px;font-size:16px;line-height:1;color:rgba(255,255,255,0.7);cursor:pointer;padding:2px 4px;}
@@ -7645,6 +7645,8 @@ function drawMemo(){
 function loop(ts){
   let dt=Math.min((ts-last)/1000,0.05);
   last=ts;animT=ts/1000;
+  // Show pause button only during gameplay (hidden on title so it can't overlap My Page button).
+  document.body.classList.toggle('playing', state==='play'||state==='pause');
   // Slow motion after death
   if(slowTimer>0){slowTimer=Math.max(0,slowTimer-dt);dt*=0.15;}
   // Screen shake

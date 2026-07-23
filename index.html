@@ -206,7 +206,10 @@ body.touch #touchControls{display:block;}
 #btnJump{width:92px;height:92px;}
 #btnPause{display:none;position:fixed;top:16px;right:16px;z-index:200;width:48px;height:48px;font-size:16px;letter-spacing:2px;}
 body.touch.playing #btnPause{display:flex;}
-#a2hsBanner{display:none;position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:300;max-width:92vw;box-sizing:border-box;padding:8px 34px 8px 12px;background:rgba(10,10,20,0.72);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.85);font-family:'Share Tech Mono',monospace;font-size:11px;line-height:1.5;text-align:center;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);}
+#btnTitle{display:none;position:fixed;top:16px;left:16px;z-index:200;pointer-events:auto;padding:8px 14px;border-radius:8px;background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);color:#fff;font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:2px;-webkit-tap-highlight-color:transparent;touch-action:none;user-select:none;-webkit-user-select:none;}
+#btnTitle:active{background:rgba(255,255,255,0.15);}
+body.touch.paused #btnTitle{display:block;}
+#a2hsBanner{display:none;position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:300;max-width:92vw;box-sizing:border-box;padding:8px 34px 8px 12px;background:rgba(10,10,20,0.9);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.85);font-family:'Share Tech Mono',monospace;font-size:11px;line-height:1.5;text-align:center;}
 #a2hsBanner.show{display:block;}
 #a2hsClose{position:absolute;top:2px;right:6px;font-size:16px;line-height:1;color:rgba(255,255,255,0.7);cursor:pointer;padding:2px 4px;}
 #rotateOverlay{display:none;position:fixed;inset:0;z-index:9999;background:#000;color:#fff;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:'Share Tech Mono',monospace;font-size:18px;letter-spacing:2px;line-height:1.8;padding:20px;}
@@ -227,6 +230,7 @@ body.touch.portrait #rotateOverlay{display:flex;}
   </div>
 </div>
 <div class="touch-btn" id="btnPause">❚❚</div>
+<div id="btnTitle">TITLE</div>
 <div id="a2hsBanner">
   <span id="a2hsClose">×</span>
   全画面でプレイするには、共有ボタンから「ホーム画面に追加」してください<br>For fullscreen, tap Share → Add to Home Screen
@@ -746,6 +750,9 @@ document.addEventListener('keyup',e=>{keys[e.key]=false;prevKeys[e.key]=false;
 const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints>0;
 if(isTouchDevice){
   document.body.classList.add('touch');
+  // Perf: kill canvas shadowBlur on touch (neonText & HUD set it every frame; shadow blur is extremely
+  // costly on mobile GPUs and is the main cause of the fps drop -> slow-motion). PC visuals untouched.
+  try{ Object.defineProperty(ctx,'shadowBlur',{configurable:true,set(){},get(){return 0;}}); }catch(_){}
   let audioUnlocked=false;
   const unlockAudio=()=>{ if(audioUnlocked)return; const a=getAC(); if(a.state!=='running'&&a.resume)a.resume();
     try{ if(document.documentElement.requestFullscreen&&!document.fullscreenElement)document.documentElement.requestFullscreen(); }catch(_){}
@@ -759,12 +766,35 @@ if(isTouchDevice){
     el.addEventListener('touchend',e=>{e.preventDefault();fireKey('keyup',key);},{passive:false});
     el.addEventListener('touchcancel',e=>{e.preventDefault();fireKey('keyup',key);},{passive:false});
   };
-  bindBtn('btnLeft','ArrowLeft');
-  bindBtn('btnRight','ArrowRight');
-  bindBtn('btnJump',' ');
-  bindBtn('btnUp','ArrowUp');
-  bindBtn('btnDown','ArrowDown');
+  // Pause (toggle) and Title (pause-menu back-to-title) are discrete single taps.
   bindBtn('btnPause','Escape'); // PC pause is Escape/f/F -> state='pause' (stops BGM); tap toggles pause/resume
+  bindBtn('btnTitle','t');      // pause-menu "back to title" (PC uses the T key)
+  // D-pad + jump: hit-test every active touch point each event so sliding a finger from one button to
+  // another switches input instantly (old code only reacted to touchstart, so the first button stuck).
+  // Multi-touch: e.touches is fully scanned, so hold a direction + jump with a second finger works.
+  const _slideBtns=[['btnLeft','ArrowLeft'],['btnRight','ArrowRight'],['btnUp','ArrowUp'],['btnDown','ArrowDown'],['btnJump',' ']]
+    .map(([id,key])=>({el:document.getElementById(id),key})).filter(b=>b.el);
+  let _pressed=new Set();
+  const _hitTest=e=>{
+    const now=new Set(); let hitAny=false;
+    for(let i=0;i<e.touches.length;i++){
+      const t=e.touches[i];
+      for(const b of _slideBtns){
+        const r=b.el.getBoundingClientRect();
+        if(t.clientX>=r.left&&t.clientX<=r.right&&t.clientY>=r.top&&t.clientY<=r.bottom){now.add(b.key);hitAny=true;}
+      }
+    }
+    for(const k of now)if(!_pressed.has(k))fireKey('keydown',k); // newly entered -> keydown
+    for(const k of _pressed)if(!now.has(k))fireKey('keyup',k);   // left button -> keyup
+    _pressed=now;
+    return hitAny;
+  };
+  // Only preventDefault when a touch is actually on a control, so canvas taps (title mode select) still fire click.
+  const _onTouch=e=>{ if(_hitTest(e))e.preventDefault(); };
+  document.addEventListener('touchstart',_onTouch,{passive:false});
+  document.addEventListener('touchmove',_onTouch,{passive:false});
+  document.addEventListener('touchend',_onTouch,{passive:false});
+  document.addEventListener('touchcancel',_onTouch,{passive:false});
   // Orientation: JS-driven portrait detection (more reliable than CSS orientation media query across browsers).
   const updateOrientation=()=>document.body.classList.toggle('portrait', window.innerWidth<window.innerHeight);
   updateOrientation();
@@ -7649,8 +7679,9 @@ function drawMemo(){
 function loop(ts){
   let dt=Math.min((ts-last)/1000,0.05);
   last=ts;animT=ts/1000;
-  // Show pause button only during gameplay (hidden on title so it can't overlap My Page button).
+  // Show pause button only during gameplay; show TITLE button only while paused.
   document.body.classList.toggle('playing', state==='play'||state==='pause');
+  document.body.classList.toggle('paused', state==='pause');
   // Slow motion after death
   if(slowTimer>0){slowTimer=Math.max(0,slowTimer-dt);dt*=0.15;}
   // Screen shake

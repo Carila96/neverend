@@ -36,7 +36,6 @@
       "PowerShell(Get-Content *)",
       "PowerShell(Set-Content *)",
       "PowerShell(Resolve-Path *)",
-      "PowerShell(git pull *)",
       "PowerShell(git *)",
       "Edit",
       "Write",
@@ -45,6 +44,10 @@
       "Grep",
       "Bash",
       "PowerShell"
+    ],
+    "ask": [
+      "Bash(git pull:*)",
+      "PowerShell(git pull *)"
     ],
     "deny": [
       "Bash(rm -rf:*)",

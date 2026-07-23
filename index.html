@@ -181,12 +181,17 @@ body{
 #touchControls{display:none;position:fixed;left:0;bottom:0;width:100%;z-index:200;box-sizing:border-box;padding:24px;justify-content:space-between;align-items:flex-end;pointer-events:none;}
 body.touch #touchControls{display:flex;}
 .touch-cluster{display:flex;gap:16px;pointer-events:none;}
-.touch-btn{pointer-events:auto;width:74px;height:74px;border-radius:50%;background:rgba(255,255,255,0.14);border:2px solid rgba(255,255,255,0.32);color:#fff;font-size:26px;line-height:1;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:none;}
-.touch-btn:active{background:rgba(255,255,255,0.30);}
-.touch-side-left{display:flex;flex-direction:column;gap:16px;align-items:flex-start;pointer-events:none;}
-#dpadCluster{flex-direction:column;}
+.touch-btn{pointer-events:auto;width:74px;height:74px;border-radius:50%;background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);color:#fff;font-size:26px;line-height:1;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:none;}
+.touch-btn:active{background:rgba(255,255,255,0.15);}
 .touch-btn-sm{width:56px;height:56px;font-size:20px;}
-#btnJump{width:96px;height:96px;font-size:18px;letter-spacing:1px;}
+#dpad{display:grid;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(3,56px);gap:6px;pointer-events:none;}
+#btnUp{grid-column:2;grid-row:1;}
+#btnLeft{grid-column:1;grid-row:2;}
+#btnRight{grid-column:3;grid-row:2;}
+#btnDown{grid-column:2;grid-row:3;}
+#btnJump{width:96px;height:96px;}
+#btnPause{display:none;position:fixed;top:16px;right:16px;z-index:200;width:48px;height:48px;font-size:16px;letter-spacing:2px;}
+body.touch #btnPause{display:flex;}
 #rotateOverlay{display:none;position:fixed;inset:0;z-index:9999;background:#000;color:#fff;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:'Share Tech Mono',monospace;font-size:18px;letter-spacing:2px;line-height:1.8;padding:20px;}
 body.touch.portrait #rotateOverlay{display:flex;}
 </style>
@@ -194,20 +199,17 @@ body.touch.portrait #rotateOverlay{display:flex;}
 <body>
 <canvas id="c" width="1280" height="720"></canvas>
 <div id="touchControls" aria-hidden="true">
-  <div class="touch-side-left">
-    <div class="touch-cluster" id="dpadCluster">
-      <div class="touch-btn touch-btn-sm" id="btnUp">▲</div>
-      <div class="touch-btn touch-btn-sm" id="btnDown">▼</div>
-    </div>
-    <div class="touch-cluster" id="moveCluster">
-      <div class="touch-btn" id="btnLeft">◀</div>
-      <div class="touch-btn" id="btnRight">▶</div>
-    </div>
+  <div id="dpad">
+    <div class="touch-btn touch-btn-sm" id="btnUp">▲</div>
+    <div class="touch-btn touch-btn-sm" id="btnLeft">◀</div>
+    <div class="touch-btn touch-btn-sm" id="btnRight">▶</div>
+    <div class="touch-btn touch-btn-sm" id="btnDown">▼</div>
   </div>
   <div class="touch-cluster" id="jumpCluster">
-    <div class="touch-btn" id="btnJump">JUMP</div>
+    <div class="touch-btn" id="btnJump"></div>
   </div>
 </div>
+<div class="touch-btn" id="btnPause">❚❚</div>
 <div id="rotateOverlay">↻<br>デバイスを横にしてください<br>Please rotate your device</div>
 <div id="xShareBtn" onclick="shareDeathX()">𝕏 Share</div>
 <div id="mypageOverlay" style="display:none;position:fixed;inset:0;z-index:1000;background:#000;">
@@ -741,6 +743,7 @@ if(isTouchDevice){
   bindBtn('btnJump',' ');
   bindBtn('btnUp','ArrowUp');
   bindBtn('btnDown','ArrowDown');
+  bindBtn('btnPause','Escape'); // PC pause is Escape/f/F -> state='pause' (stops BGM); tap toggles pause/resume
   // Orientation: JS-driven portrait detection (more reliable than CSS orientation media query across browsers).
   const updateOrientation=()=>document.body.classList.toggle('portrait', window.innerWidth<window.innerHeight);
   updateOrientation();

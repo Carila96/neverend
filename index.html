@@ -11,7 +11,7 @@
 </script>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>neverEND — 30 Seconds to Live. Forever.</title>
 <meta name="description" content="neverEND is a brutal browser platformer. 30 seconds per attempt. Die, reset, repeat. How high can you climb the tower? Free to play.">
 <meta name="keywords" content="neverEND, DAMN, DAMNRUN, hardcore platformer, browser game, free game, tower climbing game, die and retry, impossible game, hard platformer, rage game, rage platformer, impossible platformer, skill game, free browser game, online platformer, neverend game, Carila, 30 seconds, tower game, クソゲー, 激ムズゲーム, 難しいゲーム, ブラウザゲーム, アクションゲーム, 無料ゲーム, 死にゲー">
@@ -40,6 +40,7 @@ canvas{
   width:100vw;
   height:56.25vw;
   max-height:100vh;
+  max-height:100dvh;
   max-width:177.78vh;
   margin:auto;
 }
@@ -176,10 +177,38 @@ body{
   user-select:none;
 }
 #xShareBtn:hover{background:#1a1a1a;}
+/* ---- Mobile touch controls (touch devices only) ---- */
+#touchControls{display:none;position:fixed;left:0;bottom:0;width:100%;z-index:200;box-sizing:border-box;padding:24px;justify-content:space-between;align-items:flex-end;pointer-events:none;}
+body.touch #touchControls{display:flex;}
+.touch-cluster{display:flex;gap:16px;pointer-events:none;}
+.touch-btn{pointer-events:auto;width:74px;height:74px;border-radius:50%;background:rgba(255,255,255,0.14);border:2px solid rgba(255,255,255,0.32);color:#fff;font-size:26px;line-height:1;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:none;}
+.touch-btn:active{background:rgba(255,255,255,0.30);}
+.touch-side-left{display:flex;flex-direction:column;gap:16px;align-items:flex-start;pointer-events:none;}
+#dpadCluster{flex-direction:column;}
+.touch-btn-sm{width:56px;height:56px;font-size:20px;}
+#btnJump{width:96px;height:96px;font-size:18px;letter-spacing:1px;}
+#rotateOverlay{display:none;position:fixed;inset:0;z-index:9999;background:#000;color:#fff;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:'Share Tech Mono',monospace;font-size:18px;letter-spacing:2px;line-height:1.8;padding:20px;}
+body.touch.portrait #rotateOverlay{display:flex;}
 </style>
 </head>
 <body>
 <canvas id="c" width="1280" height="720"></canvas>
+<div id="touchControls" aria-hidden="true">
+  <div class="touch-side-left">
+    <div class="touch-cluster" id="dpadCluster">
+      <div class="touch-btn touch-btn-sm" id="btnUp">▲</div>
+      <div class="touch-btn touch-btn-sm" id="btnDown">▼</div>
+    </div>
+    <div class="touch-cluster" id="moveCluster">
+      <div class="touch-btn" id="btnLeft">◀</div>
+      <div class="touch-btn" id="btnRight">▶</div>
+    </div>
+  </div>
+  <div class="touch-cluster" id="jumpCluster">
+    <div class="touch-btn" id="btnJump">JUMP</div>
+  </div>
+</div>
+<div id="rotateOverlay">↻<br>デバイスを横にしてください<br>Please rotate your device</div>
 <div id="xShareBtn" onclick="shareDeathX()">𝕏 Share</div>
 <div id="mypageOverlay" style="display:none;position:fixed;inset:0;z-index:1000;background:#000;">
   <iframe id="mypageFrame" src="/app/pages/mypage.html" style="width:100%;height:100%;border:none;"></iframe>
@@ -690,6 +719,34 @@ document.addEventListener('keyup',e=>{keys[e.key]=false;prevKeys[e.key]=false;
     jumpHeld = false;
   }
 });
+// ---- Mobile touch controls (touch devices only) ----
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints>0;
+if(isTouchDevice){
+  document.body.classList.add('touch');
+  let audioUnlocked=false;
+  const unlockAudio=()=>{ if(audioUnlocked)return; const a=getAC(); if(a.state!=='running'&&a.resume)a.resume();
+    try{ if(document.documentElement.requestFullscreen&&!document.fullscreenElement)document.documentElement.requestFullscreen(); }catch(_){}
+    audioUnlocked=true; };
+  document.addEventListener('touchstart',unlockAudio,{passive:true});
+  // Dispatch real keyboard events so all keydown/keyup-based logic (title start, menu, pause) responds identically.
+  const fireKey=(type,key)=>document.dispatchEvent(new KeyboardEvent(type,{key,bubbles:true,cancelable:true}));
+  const bindBtn=(id,key)=>{
+    const el=document.getElementById(id); if(!el)return;
+    el.addEventListener('touchstart',e=>{e.preventDefault();unlockAudio();fireKey('keydown',key);},{passive:false});
+    el.addEventListener('touchend',e=>{e.preventDefault();fireKey('keyup',key);},{passive:false});
+    el.addEventListener('touchcancel',e=>{e.preventDefault();fireKey('keyup',key);},{passive:false});
+  };
+  bindBtn('btnLeft','ArrowLeft');
+  bindBtn('btnRight','ArrowRight');
+  bindBtn('btnJump',' ');
+  bindBtn('btnUp','ArrowUp');
+  bindBtn('btnDown','ArrowDown');
+  // Orientation: JS-driven portrait detection (more reliable than CSS orientation media query across browsers).
+  const updateOrientation=()=>document.body.classList.toggle('portrait', window.innerWidth<window.innerHeight);
+  updateOrientation();
+  window.addEventListener('resize',updateOrientation);
+  window.addEventListener('orientationchange',updateOrientation);
+}
 
 // ======== STAGES 1-10 ========
 // 設計ルール準拠版
@@ -703,7 +760,7 @@ document.addEventListener('keyup',e=>{keys[e.key]=false;prevKeys[e.key]=false;
 const STAGES=[
 
 // STAGE 1 — THE FLOOR LIES
-{name:'STAGE 1',sub:'The floor lies.',
+{name:'FLOOR 1',sub:'The floor lies.',
  plats:[{x:0,y:640,w:1280,h:80},{x:480,y:576,w:96,h:16}],
  spikes:[{x:528,y:544,w:32,h:32}],
  traps:[
@@ -715,7 +772,7 @@ const STAGES=[
  goal:{x:1184,y:528,w:80,h:112},spawn:{x:48,y:592}},
 
 // STAGE 2 — STAIRWAY TO HELL
-{name:'STAGE 2',sub:'Stairs go up. You go down.',
+{name:'FLOOR 2',sub:'Stairs go up. You go down.',
  plats:[
    {x:0,y:640,w:192,h:80},
    {x:224,y:592,w:128,h:16},
@@ -734,7 +791,7 @@ const STAGES=[
  goal:{x:1168,y:240,w:64,h:112},spawn:{x:48,y:592}},
 
 // STAGE 3 — THE BAIT
-{name:'STAGE 3',sub:'The obvious one is safe.',
+{name:'FLOOR 3',sub:'The obvious one is safe.',
  plats:[
    {x:0,y:640,w:1280,h:80},
    {x:368,y:480,w:32,h:160},
@@ -751,7 +808,7 @@ const STAGES=[
  goal:{x:1056,y:208,w:64,h:112},spawn:{x:48,y:592}},
 
 // STAGE 4 — THE PIT
-{name:'STAGE 4',sub:"Don't miss.",
+{name:'FLOOR 4',sub:"Don't miss.",
  plats:[
    {x:0,y:576,w:176,h:144},
    {x:1104,y:576,w:176,h:144},
@@ -779,7 +836,7 @@ const STAGES=[
  goal:{x:1120,y:464,w:64,h:112},spawn:{x:48,y:528}},
 
 // STAGE 5 — THE CORRIDOR
-{name:'STAGE 5',sub:'Run. The other way.',
+{name:'FLOOR 5',sub:'Run. The other way.',
  plats:[
    {x:0,y:656,w:1280,h:64},
    {x:0,y:160,w:1280,h:32},
@@ -812,7 +869,7 @@ const STAGES=[
  goal:{x:1150,y:528,w:64,h:128},spawn:{x:48,y:608}},
 
 // STAGE 6 — BOWL OF REGRET
-{name:'STAGE 6',sub:'There is no reward here.',
+{name:'FLOOR 6',sub:'There is no reward here.',
  plats:[
    {x:0,y:384,w:112,h:336},
    {x:112,y:464,w:112,h:16},
@@ -834,7 +891,7 @@ const STAGES=[
  goal:{x:576,y:240,w:64,h:112},spawn:{x:48,y:336}},
 
 // STAGE 7 — THE DROP
-{name:'STAGE 7',sub:'Look up.',
+{name:'FLOOR 7',sub:'Look up.',
  plats:[
    {x:0,y:0,w:16,h:720},{x:1264,y:0,w:16,h:720},
    {x:0,y:0,w:1280,h:32},
@@ -872,7 +929,7 @@ const STAGES=[
  goal:{x:576,y:544,w:128,h:112},spawn:{x:32,y:80}},
 
 // STAGE 8 — FAKE CHECKPOINT
-{name:'STAGE 8',sub:'Rest is a trap.',
+{name:'FLOOR 8',sub:'Rest is a trap.',
  plats:[
    {x:0,y:640,w:304,h:80},
    {x:320,y:576,w:128,h:16},
@@ -889,7 +946,7 @@ const STAGES=[
  goal:{x:1200,y:464,w:64,h:112},spawn:{x:48,y:592}},
 
 // STAGE 9 — THE PENDULUM
-{name:'STAGE 9',sub:'Time it.',
+{name:'FLOOR 9',sub:'Time it.',
  plats:[
    {x:0,y:640,w:320,h:80},
    {x:320,y:576,w:128,h:16},
@@ -906,7 +963,7 @@ const STAGES=[
  goal:{x:1168,y:464,w:80,h:112},spawn:{x:48,y:592}},
 
 // STAGE 10 — LAVA RISING
-{name:'STAGE 10',sub:'The floor is actually lava.',
+{name:'FLOOR 10',sub:'The floor is actually lava.',
  plats:[
    {x:0,y:0,w:16,h:720},{x:1264,y:0,w:16,h:720},
    {x:16,y:624,w:192,h:96},
@@ -922,7 +979,7 @@ const STAGES=[
  goal:{x:1150,y:96,w:80,h:112},spawn:{x:80,y:576}},
 
 // STAGE 11 — MIRROR
-{name:'STAGE 11',sub:'Not everything is equal.',
+{name:'FLOOR 11',sub:'Not everything is equal.',
  plats:[
    {x:0,y:640,w:612,h:80},{x:668,y:640,w:612,h:80},
    {x:608,y:0,w:64,h:160},{x:608,y:256,w:64,h:464},
@@ -978,7 +1035,7 @@ const STAGES=[
  goal:{x:1168,y:528,w:80,h:112},spawn:{x:40,y:592}},
 
 // STAGE 12 — THE PHANTOM FLOOR
-{name:'STAGE 12',sub:'Trust nothing.',
+{name:'FLOOR 12',sub:'Trust nothing.',
  plats:[
    {x:0,y:640,w:176,h:80},
    {x:240,y:576,w:128,h:16},
@@ -1008,7 +1065,7 @@ const STAGES=[
  goal:{x:1168,y:144,w:64,h:112},spawn:{x:48,y:592}},
 
 // STAGE 13 — CHASE
-{name:'STAGE 13',sub:'It is behind you.',
+{name:'FLOOR 13',sub:'It is behind you.',
  plats:[
    {x:0,y:640,w:1056,h:80},
    {x:928,y:512,w:128,h:16},
@@ -1022,7 +1079,7 @@ const STAGES=[
  goal:{x:1072,y:272,w:80,h:112},spawn:{x:48,y:592}},
 
 // STAGE 14 — THE GAUNTLET
-{name:'STAGE 14',sub:'There is only one way.',
+{name:'FLOOR 14',sub:'There is only one way.',
  plats:[
    {x:0,y:0,w:16,h:720},{x:1264,y:0,w:16,h:720},
    {x:0,y:688,w:300,h:48},
@@ -1062,7 +1119,7 @@ const STAGES=[
  goal:{x:16,y:608,w:64,h:80},spawn:{x:48,y:48}},
 
 // STAGE 15 — FAKE EXIT
-{name:'STAGE 15',sub:'That is not the exit.',
+{name:'FLOOR 15',sub:'That is not the exit.',
  plats:[
    {x:0,y:640,w:1280,h:80},
    {x:80,y:480,w:128,h:16},
@@ -1089,7 +1146,7 @@ const STAGES=[
  goal:{x:624,y:128,w:80,h:112},spawn:{x:48,y:592}},
 
 // STAGE 16 — DARKNESS
-{name:'STAGE 16',sub:'You can only see so far.',
+{name:'FLOOR 16',sub:'You can only see so far.',
  plats:[
    {x:0,y:640,w:192,h:80},
    {x:240,y:576,w:128,h:16},
@@ -1106,7 +1163,7 @@ const STAGES=[
  goal:{x:1168,y:144,w:64,h:112},spawn:{x:48,y:592}},
 
 // STAGE 17 — DOUBLE CROSS
-{name:'STAGE 17',sub:'They move together.',
+{name:'FLOOR 17',sub:'They move together.',
  plats:[
    {x:0,y:528,w:192,h:144},
    {x:0,y:150,w:156,h:32},{x:156,y:150,w:156,h:32},{x:624,y:150,w:156,h:32},{x:312,y:150,w:156,h:32},{x:468,y:150,w:156,h:32},
@@ -1136,7 +1193,7 @@ const STAGES=[
  goal:{x:0,y:38,w:64,h:112},spawn:{x:48,y:528}},
 
 // STAGE 18 — THE WEIGHT
-{name:'STAGE 18',sub:'It will not hold.',
+{name:'FLOOR 18',sub:'It will not hold.',
  plats:[
    {x:0,y:640,w:192,h:80},
    {x:240,y:512,w:192,h:16},
@@ -1168,7 +1225,7 @@ const STAGES=[
  goal:{x:1056,y:576,w:64,h:112},spawn:{x:48,y:592}},
 
 // STAGE 19 — ARMY OF TRAPS
-{name:'STAGE 19',sub:'One of them will get you.',
+{name:'FLOOR 19',sub:'One of them will get you.',
  plats:[
    {x:0,y:640,w:1280,h:80},
    {x:288,y:528,w:128,h:16},
@@ -1189,7 +1246,7 @@ const STAGES=[
  goal:{x:1184,y:528,w:80,h:112},spawn:{x:48,y:592}},
 
 // STAGE 20 — THE EVERYTHING
-{name:'STAGE 20',sub:"You've seen all of this.",
+{name:'FLOOR 20',sub:"You've seen all of this.",
  plats:[
    {x:0,y:640,w:224,h:80},
    {x:256,y:576,w:128,h:16},
@@ -1216,7 +1273,7 @@ const STAGES=[
  goal:{x:1200,y:208,w:80,h:112},spawn:{x:48,y:592}},
 
 // STAGE 21 — TIMING IS EVERYTHING
-{name:'STAGE 21',sub:'Wait for the window.',
+{name:'FLOOR 21',sub:'Wait for the window.',
  plats:[
    {x:0,y:640,w:192,h:80},
    {x:1088,y:320,w:192,h:400},
@@ -1242,7 +1299,7 @@ const STAGES=[
  goal:{x:1104,y:208,w:80,h:112},spawn:{x:48,y:592}},
 
 // STAGE 22 — THE SINKHOLE
-{name:'STAGE 22',sub:'The ground is giving up.',
+{name:'FLOOR 22',sub:'The ground is giving up.',
  plats:[
    {x:0,y:640,w:160,h:80},
    {x:160,y:528,w:32,h:16,sinking:true},{x:240,y:544,w:32,h:16,sinking:true},{x:320,y:544,w:32,h:16,sinking:true},{x:384,y:544,w:32,h:16,sinking:true},
@@ -1264,7 +1321,7 @@ const STAGES=[
  goal:{x:1216,y:144,w:80,h:112},spawn:{x:48,y:592}},
 
 // STAGE 23 — TRUST THE DARK
-{name:'STAGE 23',sub:'Remember the layout.',
+{name:'FLOOR 23',sub:'Remember the layout.',
  plats:[
    {x:0,y:640,w:192,h:80},
    {x:240,y:576,w:128,h:16},
@@ -1327,7 +1384,7 @@ const STAGES=[
  goal:{x:608,y:192,w:64,h:112},spawn:{x:96,y:592}},
 
 // STAGE 25 — CREATOR ZONE: FIND THE REAL ONE
-{name:'STAGE 25',sub:'One of these is real.',
+{name:'FLOOR 25',sub:'One of these is real.',
  plats:[
    {x:0,y:640,w:1280,h:80},
    {x:848,y:480,w:432,h:16},
@@ -1348,7 +1405,7 @@ const STAGES=[
  goal:{x:1168,y:368,w:80,h:112},spawn:{x:48,y:592}},
 
   // STAGE 26 — RISING DREAD
-{name:'STAGE 26',sub:'Do not stop moving.',
+{name:'FLOOR 26',sub:'Do not stop moving.',
  plats:[
    {x:624,y:640,w:32,h:32},
    {x:624,y:500,w:32,h:32},
@@ -1376,7 +1433,7 @@ const STAGES=[
 
 
 // STAGE 27 — THE GAUNTLET II
-{name:'STAGE 27',sub:'They were all waiting.',
+{name:'FLOOR 27',sub:'They were all waiting.',
  plats:[
    {x:0,y:640,w:1280,h:80},
    {x:0,y:0,w:1280,h:32},
@@ -1411,7 +1468,7 @@ const STAGES=[
  goal:{x:1168,y:528,w:80,h:112},spawn:{x:48,y:592}},
 
 // STAGE 28 — HIGH WIRE
-{name:'STAGE 28',sub:'Do not look down.',
+{name:'FLOOR 28',sub:'Do not look down.',
  plats:[
    {x:0,y:0,w:16,h:720},{x:1264,y:0,w:16,h:720},
    {x:16,y:144,w:208,h:16},
@@ -1442,7 +1499,7 @@ const STAGES=[
  goal:{x:1184,y:528,w:80,h:112},spawn:{x:48,y:96}},
 
 // STAGE 29 — TRAP ALLEY
-{name:'STAGE 29',sub:'One wrong step.',
+{name:'FLOOR 29',sub:'One wrong step.',
  plats:[{x:0,y:640,w:1168,h:80},{x:0,y:426,w:1100,h:16}],
  spikes:[
    {x:160,y:608,w:32,h:32},
@@ -1470,7 +1527,7 @@ const STAGES=[
  goal:{x:0,y:314,w:80,h:112},spawn:{x:48,y:592}},
 
 // STAGE 30 — CREATOR ZONE: THE FINAL TEST
-{name:'STAGE 30',sub:'You know all of this now.',
+{name:'FLOOR 30',sub:'You know all of this now.',
  plats:[
    {x:0,y:640,w:160,h:80},
    {x:176,y:560,w:128,h:16,sinking:true},
@@ -1502,7 +1559,7 @@ const STAGES=[
 ,
 
   // STAGE 31 — THE SINKHOLE
-{name:'STAGE 31',sub:'The ground is giving up.',
+{name:'FLOOR 31',sub:'The ground is giving up.',
  plats:[
    {x:0,y:640,w:160,h:80},
    {x:160,y:528,w:32,h:16,sinking:true},{x:240,y:544,w:32,h:16,sinking:true},{x:320,y:544,w:32,h:16,sinking:true},{x:384,y:544,w:32,h:16,sinking:true},
@@ -1526,7 +1583,7 @@ const STAGES=[
 
 
 // STAGE 32 — VERTICAL LAVA ESCAPE
-{name:'STAGE 32',sub:'Up. Fast. Never look down.',
+{name:'FLOOR 32',sub:'Up. Fast. Never look down.',
  plats:[
    {x:0,y:624,w:176,h:96},
    {x:144,y:544,w:100,h:16},
@@ -1570,7 +1627,7 @@ const STAGES=[
 ,
 
 // STAGE 33 — TRIPLE PENDULUM
-{name:'STAGE 33',sub:'Three beats. Find yours.',
+{name:'FLOOR 33',sub:'Three beats. Find yours.',
  plats:[
    {x:0,y:640,w:1280,h:80},
    {x:0,y:0,w:1280,h:96},
@@ -1603,7 +1660,7 @@ const STAGES=[
 ,
 
 // STAGE 34 — TOTAL DARKNESS
-{name:'STAGE 34',sub:'You cannot see it. You know it is there.',
+{name:'FLOOR 34',sub:'You cannot see it. You know it is there.',
  plats:[
    {x:0,y:640,w:1280,h:80},
    {x:0,y:0,w:1280,h:96},
@@ -1645,7 +1702,7 @@ const STAGES=[
  spawn:{x:48,y:592}},
 
 // STAGE 35 — TIMING
-{name:'STAGE 35',sub:'Wait. Then move.',
+{name:'FLOOR 35',sub:'Wait. Then move.',
  plats:[
    {x:0,y:640,w:1280,h:80},
    {x:0,y:0,w:1280,h:32},
@@ -1679,7 +1736,7 @@ const STAGES=[
  spawn:{x:64,y:596}},
 
 // STAGE 36 — PINCER ATTACK
-{name:'STAGE 36',sub:'Both sides. Right now.',
+{name:'FLOOR 36',sub:'Both sides. Right now.',
  plats:[
    {x:0,y:640,w:1280,h:80},
    {x:0,y:0,w:1280,h:96},
@@ -1718,7 +1775,7 @@ const STAGES=[
 ,
 
 // STAGE 37 — SPIKE RAIN
-{name:'STAGE 37',sub:'From above. All of them.',
+{name:'FLOOR 37',sub:'From above. All of them.',
  plats:[
    {x:0,y:640,w:1280,h:80},
    {x:0,y:0,w:1280,h:96},
@@ -1814,7 +1871,7 @@ const STAGES=[
  spawn:{x:32,y:304}},
 
     // STAGE 39 — RED HARVEST
-{name:'STAGE 39',sub:'Take nothing. Trust nothing.',
+{name:'FLOOR 39',sub:'Take nothing. Trust nothing.',
  plats:[
    {x:0,y:656,w:1280,h:64},
    {x:0,y:0,w:1280,h:32},
@@ -1872,7 +1929,7 @@ const STAGES=[
 
 
 // STAGE 40 — SLIDER GAUNTLET
-{name:'STAGE 40',sub:'Learn the rhythm or die.',
+{name:'FLOOR 40',sub:'Learn the rhythm or die.',
  plats:[
    {x:0,y:640,w:128,h:80},
    {x:160,y:592,w:64,h:16},
@@ -1908,7 +1965,7 @@ const STAGES=[
  spawn:{x:48,y:592}},
 
 // STAGE 41 — GROWING PAINS
-{name:'STAGE 41',sub:'The floor breathes. Time it.',
+{name:'FLOOR 41',sub:'The floor breathes. Time it.',
  plats:[
    {x:0,y:640,w:1280,h:16},
    {x:0,y:688,w:1280,h:52},
@@ -1972,7 +2029,7 @@ const STAGES=[
  spawn:{x:48,y:592}},
 
   // STAGE 42 — LIVE WIRE
-{name:'STAGE 42',sub:'Find the gap.',
+{name:'FLOOR 42',sub:'Find the gap.',
  plats:[
    // スタート足場（左上）
    {x:0,y:180,w:80,h:16},
@@ -2022,7 +2079,7 @@ const STAGES=[
  spawn:{x:48,y:148}},
 
 // STAGE 43 — ORBIT CAGE
-{name:'STAGE 43',sub:'They never stop.',
+{name:'FLOOR 43',sub:'They never stop.',
  plats:[
    {x:0,y:640,w:192,h:80},
    {x:240,y:576,w:128,h:16},
@@ -2058,7 +2115,7 @@ const STAGES=[
  spawn:{x:48,y:592}},
 
 // STAGE 44 — SLIDER MAZE
-{name:'STAGE 44',sub:'Which gap is real?',
+{name:'FLOOR 44',sub:'Which gap is real?',
  plats:[
    {x:0,y:640,w:1280,h:80},
    {x:0,y:480,w:1140,h:16},
@@ -2099,7 +2156,7 @@ const STAGES=[
  spawn:{x:48,y:592}},
 
 // STAGE 45 — PULSE
-{name:'STAGE 45',sub:'It grows. You shrink.',
+{name:'FLOOR 45',sub:'It grows. You shrink.',
  plats:[
    {x:0,y:640,w:1280,h:80},
    {x:0,y:0,w:1280,h:96},
@@ -2151,7 +2208,7 @@ const STAGES=[
  spawn:{x:48,y:592}},
 
 // STAGE 46 — DESCENT
-{name:'STAGE 46',sub:'Watch everything.',
+{name:'FLOOR 46',sub:'Watch everything.',
  scrollY:true,
  plats:[
    {x:0,y:0,w:1280,h:32},
@@ -2214,7 +2271,7 @@ const STAGES=[
  spawn:{x:64,y:688}},
 
 // STAGE 47 — CIRCUIT BREAKER
-{name:'STAGE 47',sub:'Wrong button. Dead.',
+{name:'FLOOR 47',sub:'Wrong button. Dead.',
  plats:[
    {x:0,y:480,w:1280,h:240},
    {x:0,y:0,w:256,h:330},
@@ -2244,7 +2301,7 @@ crushers:[
  spawn:{x:48,y:448}},
 
 // STAGE 48 — THE RIDE
-{name:'STAGE 48',sub:'Stay on. Do not get hit.',
+{name:'FLOOR 48',sub:'Stay on. Do not get hit.',
  plats:[
    {x:0,y:192,w:64,h:16},
    {x:1120,y:448,w:160,h:16},
@@ -2292,7 +2349,7 @@ crushers:[
  spawn:{x:16,y:160}},
   
 // STAGE 49 — FOREST
-{name:'STAGE 49',sub:'Find the gap.',
+{name:'FLOOR 49',sub:'Find the gap.',
  plats:[
    {x:0,y:560,w:32,h:160},
    {x:32,y:480,w:32,h:240},
@@ -2368,7 +2425,7 @@ crushers:[
  spawn:{x:16,y:480}},
 
 // STAGE 50 — SECRET
-{name:'STAGE 50',sub:'',
+{name:'FLOOR 50',sub:'',
  plats:[
    {x:0,y:360,w:1280,h:16},
  ],
@@ -2436,7 +2493,7 @@ crushers:[
  goal:{x:1200,y:264,w:80,h:96},
  spawn:{x:48,y:328}},
 // STAGE 51 — SATELLITES
-{name:'STAGE 51',sub:'Every platform has a guardian.',
+{name:'FLOOR 51',sub:'Every platform has a guardian.',
  plats:[
    {x:0,y:640,w:160,h:80},
    {x:192,y:576,w:32,h:32},
@@ -2477,7 +2534,7 @@ crushers:[
  spawn:{x:48,y:608}},
 
 // STAGE 52 — THE ARENA
-{name:'STAGE 52',sub:'Circle it. Then land.',
+{name:'FLOOR 52',sub:'Circle it. Then land.',
  plats:[
    // 外枠
    {x:0,y:0,w:1280,h:32},
@@ -2543,7 +2600,7 @@ crushers:[
  spawn:{x:48,y:656}},
 
 // STAGE 53 — THE LIFT
-{name:'STAGE 53',sub:'Ride it up. Then run.',
+{name:'FLOOR 53',sub:'Ride it up. Then run.',
  plats:[
    // スタート足場（左上・長い）
    {x:0,y:96,w:160,h:16},
@@ -2583,7 +2640,7 @@ crushers:[
  spawn:{x:48,y:64}},
   
 // STAGE54 — DEEP DISH
-{name:'STAGE 54',sub:'Press the button. Then reach it.',
+{name:'FLOOR 54',sub:'Press the button. Then reach it.',
  plats:[
    // 外枠（深皿型）
    {x:0,y:0,w:1280,h:48},        // 天井
@@ -2664,7 +2721,7 @@ crushers:[
  spawn:{x:48,y:128}},
 
 // STAGE 55 — THE WALL
-{name:'STAGE 55',sub:'It will reach you.',
+{name:'FLOOR 55',sub:'It will reach you.',
  plats:[
    {x:0,y:640,w:1280,h:80},
    {x:0,y:0,w:1280,h:32},
@@ -2699,7 +2756,7 @@ crushers:[
  spawn:{x:80,y:608}},
 
 // STAGE 56 — ROOMS
-{name:'STAGE 56',sub:'Find the way through.',
+{name:'FLOOR 56',sub:'Find the way through.',
  plats:[
    // 外枠
    {x:0,y:0,w:1280,h:16},          // 天井
@@ -2784,7 +2841,7 @@ crushers:[
  spawn:{x:48,y:144}},
 
 // STAGE 57 — CAROUSEL
-{name:'STAGE 57',sub:'Ride the circle.',
+{name:'FLOOR 57',sub:'Ride the circle.',
  plats:[
    {x:0,y:640,w:192,h:80},
    {x:256,y:544,w:32,h:32},
@@ -2812,7 +2869,7 @@ crushers:[
  spawn:{x:48,y:592}},
 
 // STAGE 58 — THE CROSSING
-{name:'STAGE 58',sub:'Jump between moving platforms.',
+{name:'FLOOR 58',sub:'Jump between moving platforms.',
  plats:[
    {x:0,y:640,w:128,h:80},
    {x:1152,y:640,w:128,h:80},
@@ -2853,7 +2910,7 @@ move:[
  spawn:{x:1184,y:592}},
 
 // STAGE 59 — THE SHAFT
-{name:'STAGE 59',sub:'Find the gap. Then climb.',
+{name:'FLOOR 59',sub:'Find the gap. Then climb.',
  plats:[
    // 外枠
    {x:0,y:0,w:32,h:720},
@@ -2914,7 +2971,7 @@ move:[
  spawn:{x:64,y:624}},
 
 // STAGE 60 — GRID PUZZLE
-{name:'STAGE 60',sub:'Think before you press.',
+{name:'FLOOR 60',sub:'Think before you press.',
  plats:[
    // 横足場（各行の床）
    {x:0,y:0,w:1280,h:160},
@@ -2953,7 +3010,7 @@ move:[
  spawn:{x:48,y:352}},
   
 // STAGE 61 — THE PYRAMID
-{name:'STAGE 61',sub:'Climb the shifting steps.',
+{name:'FLOOR 61',sub:'Climb the shifting steps.',
  plats:[
    {x:1184,y:0,w:16,h:96},
  ],
@@ -3002,7 +3059,7 @@ move:[
  spawn:{x:48,y:692}},
 
 // STAGE 62 — ORBIT HALL
-{name:'STAGE 62',sub:'Every corridor has a guardian.',
+{name:'FLOOR 62',sub:'Every corridor has a guardian.',
  plats:[
    {x:0,y:192,w:16,h:528},
    {x:16,y:688,w:144,h:32},
@@ -3044,7 +3101,7 @@ move:[
  spawn:{x:48,y:656}},
 
 // STAGE 63 — KEEP MOVING
-{name:'STAGE 63',sub:'Ride it up. Then run.',
+{name:'FLOOR 63',sub:'Ride it up. Then run.',
  plats:[
    {x:0,y:96,w:96,h:16},
    {x:496,y:160,w:32,h:32},
@@ -3096,7 +3153,7 @@ move:[
  spawn:{x:48,y:64}},
 
   // STAGE 64 — THE CORRIDOR
-{name:'STAGE 64',sub:'Stay low.',
+{name:'FLOOR 64',sub:'Stay low.',
  plats:[
    {x:0,y:0,w:1280,h:224},
    {x:0,y:352,w:1280,h:368},
@@ -3124,7 +3181,7 @@ move:[
  spawn:{x:48,y:304}},
 
 // STAGE 65 — NOWHERE TO HIDE
-{name:'STAGE 65',sub:'Every corner is watched.',
+{name:'FLOOR 65',sub:'Every corner is watched.',
  plats:[
    {x:576,y:192,w:128,h:16},
    {x:750,y:332,w:32,h:32},
@@ -3148,7 +3205,7 @@ move:[
  spawn:{x:624,y:48}},
 
 // STAGE 66 — SEESAW CURRENTS
-{name:'STAGE 66',sub:'One press. Two outcomes.',
+{name:'FLOOR 66',sub:'One press. Two outcomes.',
  plats:[
    {x:0,y:0,w:40,h:720},{x:1240,y:0,w:40,h:720},
    {x:40,y:240,w:150,h:16},{x:190,y:240,w:150,h:16},
@@ -3210,7 +3267,7 @@ move:[
  spawn:{x:48,y:32}},
 
 // STAGE 67 — THE GUARDIAN
-{name:'STAGE 67',sub:'Fall right. Then ride.',
+{name:'FLOOR 67',sub:'Fall right. Then ride.',
  plats:[
    // スタート直下の壁（上から下まで）
    {x:0,y:96,w:80,h:624},
@@ -3273,7 +3330,7 @@ move:[
  goal:{x:1200,y:0,w:80,h:96},
  spawn:{x:48,y:32}},
 // STAGE 68 — PENDULUM PASS
-{name:'STAGE 68',sub:'Wait for the gap.',
+{name:'FLOOR 68',sub:'Wait for the gap.',
  plats:[
    // 外枠
    {x:0,y:0,w:1280,h:32},
@@ -3307,7 +3364,7 @@ move:[
  spawn:{x:48,y:528}},
 
 // STAGE 69 — THE GAUNTLET
-{name:'STAGE 69',sub:'Time it. Fall through.',
+{name:'FLOOR 69',sub:'Time it. Fall through.',
  plats:[
    {x:32,y:96,w:548,h:16},
    {x:700,y:96,w:548,h:16},
@@ -3344,7 +3401,7 @@ move:[
  spawn:{x:500,y:64}},
 
 // STAGE 70 — THE ARENA (REVERSE)
-{name:'STAGE 70',sub:'Back to the start.',
+{name:'FLOOR 70',sub:'Back to the start.',
  plats:[
    // 外枠
    {x:0,y:0,w:1280,h:32},
@@ -3410,7 +3467,7 @@ move:[
  spawn:{x:1056,y:272}},
 
 // STAGE 71 — CURRENT AFFAIRS
-{name:'STAGE 71',sub:'Press it. Then run.',
+{name:'FLOOR 71',sub:'Press it. Then run.',
  plats:[
    {x:0,y:640,w:160,h:80},
    {x:0,y:480,w:160,h:16},
@@ -3465,7 +3522,7 @@ move:[
  spawn:{x:48,y:592}},
 
 // STAGE 72 — THE CEILING
-{name:'STAGE 72',sub:'It comes down. Find the gap.',
+{name:'FLOOR 72',sub:'It comes down. Find the gap.',
  plats:[
    {x:32,y:624,w:32,h:96},
    {x:96,y:608,w:32,h:112},
@@ -3514,7 +3571,7 @@ move:[
 
 
 // STAGE 73 — EVERYTHING ORBITS
-{name:'STAGE 73',sub:'The whole stage spins.',
+{name:'FLOOR 73',sub:'The whole stage spins.',
  plats:[
    // 外枠
    {x:0,y:688,w:1280,h:32},
@@ -3594,7 +3651,7 @@ move:[
  spawn:{x:48,y:624}},
 
 // STAGE 74 — PHASE SHIFT
-{name:'STAGE 74',sub:'Step through. Then climb.',
+{name:'FLOOR 74',sub:'Step through. Then climb.',
  plats:[
    // 外枠
    {x:0,y:0,w:1280,h:32},
@@ -3658,7 +3715,7 @@ move:[
  spawn:{x:48,y:592}},
 
   // STAGE 75 — THREE TIERS
-{name:'STAGE 75',sub:'Choose your floor.',
+{name:'FLOOR 75',sub:'Choose your floor.',
  plats:[
    {x:0,y:0,w:1280,h:32},
    {x:0,y:688,w:1280,h:32},
@@ -3726,7 +3783,7 @@ move:[
  spawn:{x:32,y:96}},
 
 // STAGE 76 — ORBIT INTRO
-{name:'STAGE 76',sub:'Something circles here.',
+{name:'FLOOR 76',sub:'Something circles here.',
  plats:[
    // 外枠
    {x:0,y:0,w:1280,h:32},
@@ -3773,7 +3830,7 @@ move:[
  spawn:{x:48,y:304}},
 
   // STAGE 77 — CREATOR ZONE: MIMIC FIELD
-{name:'STAGE 77',sub:'Which one is real?',
+{name:'FLOOR 77',sub:'Which one is real?',
  plats:[
    {x:0,y:640,w:1280,h:80},
    {x:0,y:0,w:1280,h:16},
@@ -3817,7 +3874,7 @@ move:[
  spawn:{x:32,y:592}},
 
 // STAGE 78 — ONE SHOT
-{name:'STAGE 78',sub:'You only get one.',
+{name:'FLOOR 78',sub:'You only get one.',
  plats:[
    {x:0,y:640,w:1280,h:80},
    {x:528,y:544,w:224,h:16},
@@ -4013,7 +4070,7 @@ move:[
  spawn:{x:48,y:48}},
 
 // STAGE 80 — STAIRWAY DOWN
-{name:'STAGE 80',sub:'Step down. Do not get crushed.',
+{name:'FLOOR 80',sub:'Step down. Do not get crushed.',
  plats:[
    // 階段6段
    {x:0,y:144,w:192,h:624},
@@ -4047,7 +4104,7 @@ move:[
  spawn:{x:48,y:64}},
 
 // STAGE 81 — FAKE SAFE CORRIDOR
-{name:'STAGE 81',sub:'Looks safe. Wait for it.',
+{name:'FLOOR 81',sub:'Looks safe. Wait for it.',
  plats:[
    {x:0,y:640,w:1280,h:80},
    {x:0,y:0,w:1280,h:96},
@@ -4080,7 +4137,7 @@ move:[
 ,
 
   // STAGE 82 — SPIKE RAIN
-{name:'STAGE 82',sub:'From above. All of them.',
+{name:'FLOOR 82',sub:'From above. All of them.',
  plats:[
    {x:0,y:640,w:1280,h:80},
    {x:0,y:0,w:1280,h:96},
@@ -4137,7 +4194,7 @@ move:[
  spawn:{x:48,y:208}}
 ,
   // STAGE 83
-  {name:'STAGE 83',sub:'Every platform has a guardian.',
+  {name:'FLOOR 83',sub:'Every platform has a guardian.',
  plats:[
    {x:0,y:640,w:160,h:80},
    {x:192,y:576,w:32,h:32},
@@ -4188,7 +4245,7 @@ move:[
  spawn:{x:1184,y:64}},
   
 // STAGE 84 — NO JUMPING
-{name:'STAGE 84',sub:'Do not jump.',
+{name:'FLOOR 84',sub:'Do not jump.',
  plats:[
    {x:0,y:0,w:1280,h:224},
    {x:0,y:352,w:1280,h:368},
@@ -4231,7 +4288,7 @@ move:[
  spawn:{x:48,y:304}},
 
   // STAGE 85 — TRUE AMIDAKUJI
-{name:'STAGE 85',sub:'Choose your path. No going back.',
+{name:'FLOOR 85',sub:'Choose your path. No going back.',
  plats:[
    // 床
    {x:96,y:704,w:1184,h:16},{x:368,y:504,w:32,h:16},
@@ -4341,7 +4398,7 @@ move:[
  spawn:{x:256,y:64}},
 
   // STAGE 86 — TRUST NOBODY
-{name:'STAGE 86',sub:'It looks safe.',
+{name:'FLOOR 86',sub:'It looks safe.',
  plats:[
    {x:0,y:640,w:1280,h:80},
    {x:384,y:576,w:512,h:16},
@@ -4386,7 +4443,7 @@ move:[
  spawn:{x:48,y:592}},
 
 // STAGE 87 — LEAP OF FAITH
-{name:'STAGE 87',sub:'Jump. Just jump.',
+{name:'FLOOR 87',sub:'Jump. Just jump.',
  plats:[
    {x:0,y:640,w:128,h:80},
    {x:1152,y:640,w:128,h:80},
@@ -4413,7 +4470,7 @@ move:[
  spawn:{x:48,y:592}},
 
   // STAGE 88 — AMIDAKUJI
-{name:'STAGE 88',sub:'Which path leads down?',
+{name:'FLOOR 88',sub:'Which path leads down?',
  plats:[
    // 天井・床
    {x:0,y:688,w:224,h:32},
@@ -4486,7 +4543,7 @@ move:[
    {x:520,y:256,w:16,h:32,penalty:true},
  ],
  fall:[],move:[],mimics:[],ceiling:[],fallingSpikes:[
-   {x:544,y:116,w:32,h:48,triggerXleft:620,speed:280,triggered:false,startY:0,currentY:0},
+   {x:544,y:116,w:32,h:48,triggerXLeft:620,speed:280,triggered:false,startY:0,currentY:0},
  ],lava:[],
  chasers:[],orbits:[],slidingSpikes:[],growingSpikes:[],crushers:[],
  teleporters:[],memos:[],focusZones:[],darkness:{enabled:false},
@@ -4495,7 +4552,7 @@ move:[
 
 
 // STAGE 89 — THE SPIRAL RIDE
-{name:'STAGE 89',sub:'Hold on. Do not let go.',
+{name:'FLOOR 89',sub:'Hold on. Do not let go.',
  plats:[
    // 中央スタート足場
    {x:624,y:344,w:32,h:32},
@@ -4549,7 +4606,7 @@ move:[
  spawn:{x:632,y:312}},
 
 // STAGE 90 — THE CLOCK
-{name:'STAGE 90',sub:'Faster.',
+{name:'FLOOR 90',sub:'Faster.',
  plats:[
    {x:0,y:640,w:320,h:80},
    {x:960,y:640,w:320,h:80},
@@ -4582,7 +4639,7 @@ move:[
  spawn:{x:48,y:592}},
 
   // STAGE 91 — THE TOWER
-{name:'STAGE 91',sub:'Only way is up.',
+{name:'FLOOR 91',sub:'Only way is up.',
  plats:[
    {x:472,y:160,w:168,h:16},
    {x:240,y:250,w:160,h:16},
@@ -4641,7 +4698,7 @@ move:[
  spawn:{x:540,y:128}},
 
 // STAGE 92 — THE OBVIOUS PATH
-{name:'STAGE 92',sub:'The clean road is not the safe one.',
+{name:'FLOOR 92',sub:'The clean road is not the safe one.',
  plats:[
    {x:0,y:0,w:1280,h:32},
    {x:0,y:32,w:32,h:688},
@@ -4689,7 +4746,7 @@ move:[
  spawn:{x:48,y:356}},
   
   // STAGE 93 — LADDER
-{name:'STAGE 93',sub:'Press them all.',
+{name:'FLOOR 93',sub:'Press them all.',
  plats:[
    // 左縦長足場（スタート台）
    {x:0,y:80,w:96,h:624},
@@ -4738,7 +4795,7 @@ move:[
  spawn:{x:1200,y:48}},
 
 // STAGE 94 — THREE TIERS II
-{name:'STAGE 94',sub:'Now they move.',
+{name:'FLOOR 94',sub:'Now they move.',
  plats:[
    {x:0,y:0,w:1280,h:32},
    {x:0,y:688,w:1280,h:32},
@@ -4797,7 +4854,7 @@ move:[
  spawn:{x:32,y:96}},
 
 // STAGE 95 — WARP ROOMS
-{name:'STAGE 95',sub:'Not every door leads forward.',
+{name:'FLOOR 95',sub:'Not every door leads forward.',
  plats:[
    // 外枠
    {x:0,y:0,w:1280,h:16},
@@ -4902,7 +4959,7 @@ move:[
 
 
   // STAGE 96 — ROOMS II
-{name:'STAGE 96',sub:'Find the way through.',
+{name:'FLOOR 96',sub:'Find the way through.',
  plats:[
    // 外枠
    {x:0,y:0,w:1280,h:16},
@@ -5058,7 +5115,7 @@ move:[
 ,
 
 // STAGE 98 — TWIN CAROUSEL
-{name:'STAGE 98',sub:'Two circles, one path.',
+{name:'FLOOR 98',sub:'Two circles, one path.',
  plats:[
    {x:0,y:640,w:192,h:80},
    {x:1088,y:640,w:192,h:80},
@@ -5092,7 +5149,7 @@ move:[
  spawn:{x:48,y:592}},
 
 // STAGE 99 — THE PIT
-{name:'STAGE 99',sub:"Don't miss.",
+{name:'FLOOR 99',sub:"Don't miss.",
  plats:[
    {x:0,y:160,w:96,h:16},
    {x:760,y:416,w:32,h:32},
@@ -5115,7 +5172,7 @@ move:[
  goal:{x:1200,y:464,w:80,h:96},spawn:{x:32,y:128}},
 
   // STAGE 100 — THE TOWER
-{name:'STAGE 100',sub:'Only way is up.',
+{name:'FLOOR 100',sub:'Only way is up.',
  scrollY:true,
  plats:[
    {x:0,y:2800,w:1280,h:32},
@@ -5907,7 +5964,7 @@ function drawPendulum(p){
   const col='rgba(220,80,60,0.9)';
   ctx.shadowColor=col;ctx.shadowBlur=14;
   ctx.fillStyle=col;
-  ctx.beginPath();ctx.arc(sx,sy,16,0,Math.PI*2);ctx.fill();
+  const _r=(p.w?p.w/2:16);ctx.beginPath();ctx.arc(sx,sy,_r,0,Math.PI*2);ctx.fill();
   ctx.restore();
 }
 
@@ -6419,9 +6476,11 @@ function drawTitle(){
   ctx.fillText('How far can you get up the tower?',W/2,H/2+50);ctx.restore();
   // ===== Mode selection UI =====
   {
-    const _modeCX=W/2, _normalY=H/2+78, _deathY=H/2+104, _rowH=24, _hw=150;
+    const _isTouch=document.body.classList.contains('touch');
+    const _modeCX=W/2, _hw=150;
+    const _normalY=_isTouch?H/2+72:H/2+78, _deathY=_isTouch?H/2+112:H/2+104, _rowH=_isTouch?34:24;
     ctx.save();
-    ctx.font='bold 18px "Courier New"';ctx.textAlign='center';
+    ctx.font=(_isTouch?'bold 24px':'bold 18px')+' "Courier New"';ctx.textAlign='center';
     // NORMAL MODE
     const _nSel=_titleModeSel===0;
     ctx.fillStyle=_nSel?'rgba(255,255,255,0.95)':'rgba(150,160,190,0.4)';
@@ -6782,7 +6841,7 @@ function update(dt){
       // Swept collision: check segment from prev frame to current frame against pendulum tip
       const ax=player.prevX||pcx, ay=player.prevY||pcy;
       const bx=pcx, by=pcy;
-      const cx=tipX, cy=tipY, r=18;
+      const cx=tipX, cy=tipY, r=(p.w?p.w/2+2:18);
       const dx=bx-ax, dy=by-ay;
       const fx=ax-cx, fy=ay-cy;
       const a=dx*dx+dy*dy;
@@ -7322,7 +7381,7 @@ function checkTitlesOnClear(nextStage){
   if(supabaseClient&&_currentUser){
     const _syncData={
       id:_currentUser.id,
-      best_stage:nextStage,
+      best_stage:Math.max(nextStage,getStat('bestStage',0)),
       total_deaths:getStat('totalDeaths',0),
       total_play_time:Math.floor(getStat('totalPlayTime',0)),
       normal_best_stage:getStat('normalBestStage',0),
@@ -7933,7 +7992,7 @@ async function initSupabase(){
         supabaseClient.from('player_profiles')
           .select('player_name,best_stage,total_deaths,total_play_time,normal_best_stage,death_best_stage,death_mode_deaths,death_mode_unlocked,normal_best_stage_at,death_best_stage_at')
           .eq('id',session.user.id)
-          .single()
+          .maybeSingle()
           .then(function(r){
             if(r.data){
               const d=r.data;
@@ -7979,6 +8038,22 @@ async function initSupabase(){
                 }
 
                 localStorage.setItem('neverend_save',JSON.stringify(save));
+                // ログイン時マージ結果をDBへ書き戻す（saveは既にDB値とのMath.max済みなのでDBを下回らない）
+                const _loginUpsert={
+                  id:session.user.id,
+                  total_deaths:save.totalDeaths,
+                  best_stage:save.bestStage,
+                  total_play_time:Math.floor(save.totalPlayTime),
+                  normal_best_stage:save.normalBestStage,
+                  death_best_stage:save.deathBestStage,
+                  death_mode_deaths:save.deathModeDeaths,
+                  death_mode_unlocked:save.deathModeUnlocked===1
+                };
+                if(save.normalBestStageAt>0)_loginUpsert.normal_best_stage_at=new Date(save.normalBestStageAt).toISOString();
+                if(save.deathBestStageAt>0)_loginUpsert.death_best_stage_at=new Date(save.deathBestStageAt).toISOString();
+                supabaseClient.from('player_profiles').upsert(_loginUpsert,{onConflict:'id'}).then(function(r2){
+                  if(r2&&r2.error)console.warn('login merge upsert error:',r2.error);
+                });
                 console.log('Profile synced: deaths='+save.totalDeaths+' best='+save.bestStage+' unlocked='+save.deathModeUnlocked);
                 // ゲーム変数に直接反映（リロード不要）
                 if(typeof setStat==='function'){
@@ -8000,6 +8075,26 @@ async function initSupabase(){
               }catch(e){console.error('save sync error:',e);}
             }else{
               _showNameInputModal();
+              // 新規登録者：DBに行が無いので、未ログイン中に貯めたローカル記録をそのまま登録
+              try{
+                const saveStr=localStorage.getItem('neverend_save');
+                const save=saveStr?JSON.parse(saveStr):{};
+                const _newUpsert={
+                  id:session.user.id,
+                  total_deaths:parseInt(save.totalDeaths)||0,
+                  best_stage:parseInt(save.bestStage)||0,
+                  total_play_time:Math.floor(parseInt(save.totalPlayTime)||0),
+                  normal_best_stage:parseInt(save.normalBestStage)||0,
+                  death_best_stage:parseInt(save.deathBestStage)||0,
+                  death_mode_deaths:parseInt(save.deathModeDeaths)||0,
+                  death_mode_unlocked:(parseInt(save.deathModeUnlocked)||0)===1
+                };
+                if(save.normalBestStageAt>0)_newUpsert.normal_best_stage_at=new Date(save.normalBestStageAt).toISOString();
+                if(save.deathBestStageAt>0)_newUpsert.death_best_stage_at=new Date(save.deathBestStageAt).toISOString();
+                supabaseClient.from('player_profiles').upsert(_newUpsert,{onConflict:'id'}).then(function(r2){
+                  if(r2&&r2.error)console.warn('new profile upsert error:',r2.error);
+                });
+              }catch(e){console.error('new profile sync error:',e);}
             }
           });
       }else{

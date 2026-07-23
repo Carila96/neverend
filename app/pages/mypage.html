@@ -385,6 +385,12 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
       <button class="achieve-page-btn" id="titleNextBtn" onclick="titlesPage++;renderTitlePage()">NEXT &#9654;</button>
     </div>
   </div>
+
+  <!-- TOWER PROGRESS — shown for all users -->
+  <div class="section-block">
+    <div class="section-block-title">// TOWER PROGRESS</div>
+    <div id="towerProgressGrid"></div>
+  </div>
 </div>
 
 <div class="section" id="partnerInfoSection" style="margin-top:32px;padding:24px;background:#0d0d1a;border:1px solid #1a1a2e;">
@@ -564,7 +570,26 @@ function loadPlacement(){
 }
 
 buildAchievements(0);
+renderTowerProgress();
 // emptyState/placementContentの表示はloadPurchases()に委譲する
+
+// TOWER PROGRESS — 各モードの最高到達階を .info-row パターンで描画
+function renderTowerProgress(){
+  const el=document.getElementById('towerProgressGrid');
+  if(!el)return;
+  const normalBest=parseInt(getStat('normalBestStage',0))||0;
+  const deathBest=parseInt(getStat('deathBestStage',0))||0;
+  const unlocked=getStat('deathModeUnlocked',0)===1;
+  let rows='<div class="info-row"><span class="info-label">NORMAL</span>'
+          +'<span class="info-val">'+normalBest+'/100F</span></div>';
+  // 未解放のDEATHはタイトル画面の表記に合わせて '???'
+  rows+='<div class="info-row"><span class="info-label">DEATH</span>'
+       +(unlocked
+          ?'<span class="info-val">'+deathBest+'/100F</span>'
+          :'<span class="info-val" style="color:var(--muted)">???</span>')
+       +'</div>';
+  el.innerHTML='<div class="panel-card"><div class="info-rows">'+rows+'</div></div>';
+}
 
 async function init(p){
   document.getElementById('infoStage').textContent='STAGE '+p.stage_id;
@@ -573,6 +598,7 @@ async function init(p){
   document.getElementById('infoBlocks').textContent=(p.width*p.height)+' total';
   reservedAtGlobal=p.reserved_at||null;
   buildAchievements(p.width*p.height);
+  renderTowerProgress();
   document.getElementById('infoZone').textContent=(p.zone_type||'standard').toUpperCase();
   document.getElementById('infoPlan').textContent=(p.plan_type||'monthly').toUpperCase();
   document.getElementById('gridStageName').textContent='STAGE '+p.stage_id;

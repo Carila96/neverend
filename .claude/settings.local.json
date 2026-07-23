@@ -1,5 +1,6 @@
 {
   "permissions": {
+    "defaultMode": "acceptEdits",
     "allow": [
       "Bash(mkdir -p app/api app/data app/pages docs/specification docs/legal docs/future)",
       "Bash(mv reserve.js app/api/)",
@@ -34,7 +35,26 @@
       "Bash(python3 *)",
       "PowerShell(Get-Content *)",
       "PowerShell(Set-Content *)",
-      "PowerShell(Resolve-Path *)"
+      "PowerShell(Resolve-Path *)",
+      "PowerShell(git pull *)",
+      "PowerShell(git *)",
+      "Edit",
+      "Write",
+      "Read",
+      "Glob",
+      "Grep",
+      "Bash",
+      "PowerShell"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(rm -fr:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean -fd:*)",
+      "PowerShell(Remove-Item -Recurse -Force *)",
+      "PowerShell(git push --force *)"
     ]
   }
 }

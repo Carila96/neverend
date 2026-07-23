@@ -95,6 +95,17 @@ h1{
 .rank-deaths{color:rgba(255,100,100,0.8);text-align:right;font-size:13px;}
 .rank-time{color:var(--muted2);text-align:right;font-size:12px;}
 
+/* Ranking tabs */
+.rank-tabs{display:flex;border-bottom:1px solid var(--border);}
+.rank-tab{
+  flex:1;padding:12px 16px;font-size:12px;letter-spacing:3px;
+  color:var(--muted2);text-transform:uppercase;text-align:center;
+  background:none;border:none;border-bottom:2px solid transparent;
+  cursor:pointer;font-family:inherit;transition:all 0.2s;
+}
+.rank-tab:hover{color:var(--accent);}
+.rank-tab.active{color:var(--accent);border-bottom-color:var(--accent);background:rgba(74,184,255,0.05);}
+
 .loading{text-align:center;padding:48px 20px;color:var(--muted2);font-size:13px;letter-spacing:2px;}
 .empty{text-align:center;padding:48px 20px;color:var(--muted);font-size:12px;letter-spacing:2px;}
 .error-msg{text-align:center;padding:32px 20px;color:rgba(255,80,80,0.7);font-size:12px;letter-spacing:1px;}
@@ -165,6 +176,10 @@ footer{
   <!-- Ranking table -->
   <div class="section">
     <div class="section-title">// FLOOR RANKING — TOP 100</div>
+    <div class="rank-tabs">
+      <button class="rank-tab active" id="rankTabNormal" onclick="switchRankTab('normal')">NORMAL</button>
+      <button class="rank-tab" id="rankTabDeath" onclick="switchRankTab('death')">DEATH</button>
+    </div>
     <div id="rankingContainer">
       <div class="loading">LOADING...</div>
     </div>
@@ -218,18 +233,47 @@ function buildRankingHTML(data){
   return html+'</tbody></table>';
 }
 
+// player_profiles の行を buildRankingHTML が期待する形（name/stage_reached/death_count/play_time）へ変換
+function normalizeRank(rows,mode){
+  return (rows||[]).map(r=>({
+    name:r.player_name,
+    stage_reached:(mode==='death'?r.death_best_stage:r.normal_best_stage)||0,
+    death_count:(mode==='death'?r.death_mode_deaths:r.total_deaths)||0,
+    play_time:r.total_play_time||0
+  }));
+}
+
+let _rankData={normal:null,death:null};
+let _rankTab='normal';
+function switchRankTab(mode){
+  _rankTab=mode;
+  document.getElementById('rankTabNormal').classList.toggle('active',mode==='normal');
+  document.getElementById('rankTabDeath').classList.toggle('active',mode==='death');
+  const rows=_rankData[mode];
+  const container=document.getElementById('rankingContainer');
+  if(rows===null){container.innerHTML='<div class="loading">LOADING...</div>';return;}
+  container.innerHTML=buildRankingHTML(rows);
+}
+
 (async function(){
   const _cached=localStorage.getItem('neverend_world_stats_cache');
   if(_cached){try{const c=JSON.parse(_cached);document.getElementById('statDeaths').textContent=Number(c.total_deaths||0).toLocaleString();document.getElementById('statFloor').textContent=(c.best_stage||0)+'F';document.getElementById('statHours').textContent=((c.total_play_time||0)/3600).toFixed(1)+'h';}catch(_){}}
   const container=document.getElementById('rankingContainer');
   const sb=window.supabase.createClient(_SB_URL,_SB_KEY);
   try{
-    const [ws,rankRes]=await Promise.all([
+    const [ws,normalRes,deathRes]=await Promise.all([
       fetch('https://damnrun.com/api/stats?type=world').then(r=>r.json()).catch(()=>({})),
-      sb.from('test_players')
-        .select('name,stage_reached,death_count,play_time')
-        .order('stage_reached',{ascending:false})
-        .order('death_count',{ascending:true})
+      sb.from('player_profiles')
+        .select('player_name,normal_best_stage,total_deaths,total_play_time,normal_best_stage_at')
+        .gt('normal_best_stage',0)
+        .order('normal_best_stage',{ascending:false})
+        .order('normal_best_stage_at',{ascending:true})
+        .limit(100),
+      sb.from('player_profiles')
+        .select('player_name,death_best_stage,death_mode_deaths,total_play_time,death_best_stage_at')
+        .eq('death_mode_unlocked',true)
+        .order('death_best_stage',{ascending:false})
+        .order('death_best_stage_at',{ascending:true})
         .limit(100),
     ]);
     document.getElementById('statDeaths').textContent=Number(ws.total_deaths||0).toLocaleString();
@@ -240,8 +284,11 @@ function buildRankingHTML(data){
       document.getElementById('pilotsGrid').innerHTML=pilots.map(n=>`<span class="pilot-name">${n.replace(/</g,'&lt;')}</span>`).join('');
       document.getElementById('pilotsSection').style.display='block';
     }
-    if(rankRes.error)throw rankRes.error;
-    container.innerHTML=buildRankingHTML(rankRes.data);
+    if(normalRes.error)throw normalRes.error;
+    if(deathRes.error)throw deathRes.error;
+    _rankData.normal=normalizeRank(normalRes.data,'normal');
+    _rankData.death=normalizeRank(deathRes.data,'death');
+    switchRankTab(_rankTab);
 
     // Founding Partners取得
     const partnersRes = await sb.from('subscription_contracts')

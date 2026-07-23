@@ -8,6 +8,7 @@ export default async function handler(req, res) {
     const { data, error } = await supabase
       .from('world_stats')
       .select('total_deaths')
+      .eq('id', 1)
       .single();
     if (error || !data) return res.status(200).json({ total_deaths: 0 });
     res.setHeader('Cache-Control', 's-maxage=5, stale-while-revalidate=10');

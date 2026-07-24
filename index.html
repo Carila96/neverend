@@ -1,4 +1,4 @@
-<!-- redeploy 2026-04-20 -->
+<!-- redeploy 2026-07-25 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5549,7 +5549,7 @@ function loadStage(n){
   lavas=(s.lava||[]).map(l=>({...l,currentY:l.y}));
   fallingSpikesExt=(s.fallingSpikes||[]).map(f=>({...f,triggered:false,currentY:f.y}));
   chasers=(s.chasers||[]).map(c=>({...c,active:false}));
-  pendulums=(s.pendulums||[]).map(p=>({w:32,h:32,...p,angle:0,phase:p.phase||0}));
+  pendulums=(s.pendulums||[]).map(p=>({...p,w:(p.w||32),h:(p.h||32),angle:0,phase:p.phase||0}));
   orbits=(s.orbits||[]).map(o=>({...o}));
   slidingSpikes=(s.slidingSpikes||[]).map(o=>({...o,currentX:o.x,currentY:o.y,dir:1}));
   growingSpikes=(s.growingSpikes||[]).map(o=>({...o,currentSize:0,growing:true}));
@@ -5632,7 +5632,7 @@ function loadEndingStage(idx){
   ceilingTraps=(s.ceiling||[]).map(c=>({...c}));
   fallingSpikesExt=(s.fallingSpikes||[]).map(f=>({...f,triggered:false,currentY:f.y}));
   lavas=(s.lava||[]).map(l=>({...l,currentY:l.y}));
-  pendulums=(s.pendulums||[]).map(p=>({...p,phase:p.phase||0}));
+  pendulums=(s.pendulums||[]).map(p=>({...p,w:(p.w||32),h:(p.h||32),phase:p.phase||0}));
   chasers=(s.chasers||[]).map(c=>({...c,active:false}));
   orbits=(s.orbits||[]).map(o=>({...o}));
   slidingSpikes=(s.slidingSpikes||[]).map(x=>({...x}));

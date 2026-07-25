@@ -770,17 +770,22 @@ if(isTouchDevice){
   // D-pad + jump: hit-test every active touch point each event so sliding a finger from one button to
   // another switches input instantly (old code only reacted to touchstart, so the first button stuck).
   // Multi-touch: e.touches is fully scanned, so hold a direction + jump with a second finger works.
-  const _slideBtns=[['btnLeft','ArrowLeft'],['btnRight','ArrowRight'],['btnJump',' ']]
-    .map(([id,key])=>({el:document.getElementById(id),key})).filter(b=>b.el);
+  const _hitMargin=24; // expand touch hit area beyond the visible button on all sides (visual CSS unchanged)
+  const _elL=document.getElementById('btnLeft'),_elR=document.getElementById('btnRight'),_elJ=document.getElementById('btnJump');
+  const _inExp=(el,t)=>{const r=el.getBoundingClientRect();return t.clientX>=r.left-_hitMargin&&t.clientX<=r.right+_hitMargin&&t.clientY>=r.top-_hitMargin&&t.clientY<=r.bottom+_hitMargin;};
   let _pressed=new Set();
   const _hitTest=e=>{
     const now=new Set(); let hitAny=false;
     for(let i=0;i<e.touches.length;i++){
       const t=e.touches[i];
-      for(const b of _slideBtns){
-        const r=b.el.getBoundingClientRect();
-        if(t.clientX>=r.left&&t.clientX<=r.right&&t.clientY>=r.top&&t.clientY<=r.bottom){now.add(b.key);hitAny=true;}
+      let hL=!!(_elL&&_inExp(_elL,t)), hR=!!(_elR&&_inExp(_elR,t));
+      if(hL&&hR){ // expanded L/R zones overlap: split at the seam between the two buttons so only one fires
+        const rl=_elL.getBoundingClientRect(),rr=_elR.getBoundingClientRect();
+        if(t.clientX<(rl.right+rr.left)/2)hR=false;else hL=false;
       }
+      if(hL){now.add('ArrowLeft');hitAny=true;}
+      if(hR){now.add('ArrowRight');hitAny=true;}
+      if(_elJ&&_inExp(_elJ,t)){now.add(' ');hitAny=true;}
     }
     for(const k of now)if(!_pressed.has(k))fireKey('keydown',k); // newly entered -> keydown
     for(const k of _pressed)if(!now.has(k))fireKey('keyup',k);   // left button -> keyup

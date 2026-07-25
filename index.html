@@ -47,9 +47,10 @@ canvas{
   max-width:177.78vh;
   margin:auto;
 }
-/* Touch: keep the canvas large (~88%) and centered; controls are lightly overlaid on the bottom corners. */
+/* Touch: keep the canvas large (~88%), top-aligned (no top gap); controls overlay the freed bottom space. */
 :root{--mobile-canvas-scale:88dvh;}
-body.touch canvas{max-height:88vh;max-height:var(--mobile-canvas-scale);max-width:156.44vh;max-width:calc(var(--mobile-canvas-scale)*1.7778);}
+body.touch{align-items:flex-start;}
+body.touch canvas{margin:0 auto;max-height:88vh;max-height:var(--mobile-canvas-scale);max-width:156.44vh;max-width:calc(var(--mobile-canvas-scale)*1.7778);}
 body{
   display:flex;
   align-items:center;
@@ -191,7 +192,7 @@ body.touch #touchControls{display:block;}
 .touch-btn{pointer-events:auto;width:74px;height:74px;border-radius:50%;background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);color:#fff;font-size:26px;line-height:1;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:none;}
 .touch-btn:active{background:rgba(255,255,255,0.15);}
 #lrRow{position:fixed;left:12px;bottom:14px;z-index:200;display:flex;gap:0;pointer-events:none;} /* left/right adjacent (no gap) so sliding switches L<->R with no dead zone */
-.lr-btn{width:90px;height:90px;border-radius:14px;}
+.lr-btn{width:90px;height:64px;border-radius:14px;}
 #btnLeft{border-top-right-radius:0;border-bottom-right-radius:0;}
 #btnRight{border-top-left-radius:0;border-bottom-left-radius:0;}
 /* Arrows drawn as identical CSS triangles (avoids iOS emoji rendering of ◀▶). */
@@ -199,7 +200,7 @@ body.touch #touchControls{display:block;}
 #btnLeft::before{transform:rotate(-90deg);}
 #btnRight::before{transform:rotate(90deg);}
 #jumpCluster{position:fixed;right:12px;bottom:14px;z-index:200;display:flex;pointer-events:none;}
-#btnJump{width:96px;height:96px;}
+#btnJump{width:96px;height:68px;border-radius:50%;}
 #btnPause{display:none;position:fixed;top:16px;right:16px;z-index:200;width:48px;height:48px;font-size:16px;letter-spacing:2px;}
 body.touch.playing #btnPause{display:flex;}
 #btnTitle{display:none;position:fixed;top:16px;left:16px;z-index:200;pointer-events:auto;padding:8px 14px;border-radius:8px;background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);color:#fff;font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:2px;-webkit-tap-highlight-color:transparent;touch-action:none;user-select:none;-webkit-user-select:none;}

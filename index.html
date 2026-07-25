@@ -747,7 +747,10 @@ document.addEventListener('keyup',e=>{keys[e.key]=false;prevKeys[e.key]=false;
   }
 });
 // ---- Mobile touch controls (touch devices only) ----
-const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints>0;
+// Require a coarse (finger) primary pointer so touchscreen laptops/desktops (mouse-primary) stay in PC mode
+// (full-size canvas, no on-screen controls); phones/tablets still get mobile mode.
+const _coarsePointer = !!(window.matchMedia && window.matchMedia('(pointer:coarse)').matches);
+const isTouchDevice = ('ontouchstart' in window || navigator.maxTouchPoints>0) && _coarsePointer;
 if(isTouchDevice){
   document.body.classList.add('touch');
   // Perf: kill canvas shadowBlur on touch (neonText & HUD set it every frame; shadow blur is extremely

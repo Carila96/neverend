@@ -776,13 +776,15 @@ if(isTouchDevice){
   const _slideBtns=[['btnLeft','ArrowLeft'],['btnRight','ArrowRight'],['btnJump',' ']]
     .map(([id,key])=>({el:document.getElementById(id),key,rect:null})).filter(b=>b.el);
   const _refreshRects=()=>{for(const b of _slideBtns)b.rect=b.el.getBoundingClientRect();};
-  _refreshRects();
-  const _byKey=k=>{for(const b of _slideBtns)if(b.key===k)return b.rect;return null;};
+  // Self-healing rect getter: use the cache, but if it's missing/zero (measured before layout settled) re-measure now.
+  const _rectOf=b=>{let r=b.rect;if(!r||r.width===0||r.height===0){r=b.rect=b.el.getBoundingClientRect();}return r;};
+  const _find=k=>_slideBtns.find(b=>b.key===k)||null;
+  const _bL=_find('ArrowLeft'),_bR=_find('ArrowRight'),_bJ=_find(' ');
   const _inExp=(r,t)=>r&&t.clientX>=r.left-_hitMargin&&t.clientX<=r.right+_hitMargin&&t.clientY>=r.top-_hitMargin&&t.clientY<=r.bottom+_hitMargin;
   let _pressed=new Set();
   const _hitTest=e=>{
     const now=new Set(); let hitAny=false;
-    const _rL=_byKey('ArrowLeft'),_rR=_byKey('ArrowRight'),_rJ=_byKey(' ');
+    const _rL=_bL&&_rectOf(_bL),_rR=_bR&&_rectOf(_bR),_rJ=_bJ&&_rectOf(_bJ);
     for(let i=0;i<e.touches.length;i++){
       const t=e.touches[i];
       let hL=!!_inExp(_rL,t), hR=!!_inExp(_rR,t);
@@ -798,6 +800,10 @@ if(isTouchDevice){
     _pressed=now;
     return hitAny;
   };
+  // Measure rects only after layout has settled (body.touch already applied above); never on touchmove.
+  requestAnimationFrame(()=>requestAnimationFrame(_refreshRects));
+  window.addEventListener('load',_refreshRects);
+  document.addEventListener('touchstart',_refreshRects,{passive:true}); // cheap 1x-per-finger refresh, runs before hit-test
   // Only preventDefault when a touch is actually on a control, so canvas taps (title mode select) still fire click.
   const _onTouch=e=>{ if(_hitTest(e))e.preventDefault(); };
   document.addEventListener('touchstart',_onTouch,{passive:false});

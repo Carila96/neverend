@@ -47,9 +47,14 @@ canvas{
   max-width:177.78vh;
   margin:auto;
 }
-/* Touch: shrink canvas so the controllers live in the side gutters, off the play area. Lower this if buttons still overlap the canvas on narrow phones. */
-:root{--mobile-canvas-scale:76dvh;}
-body.touch canvas{max-height:76vh;max-height:var(--mobile-canvas-scale);max-width:135.11vh;max-width:calc(var(--mobile-canvas-scale)*1.7778);}
+/* Touch: reserve a bottom band for controls and top-align the canvas so fingers never touch the play area. */
+:root{--mobile-controls-h:150px;}
+body.touch{align-items:flex-start;}
+body.touch canvas{margin:0 auto;
+  max-height:calc(100vh - var(--mobile-controls-h));
+  max-height:calc(100dvh - var(--mobile-controls-h));
+  max-width:calc((100vh - var(--mobile-controls-h))*1.7778);
+  max-width:calc((100dvh - var(--mobile-controls-h))*1.7778);}
 body{
   display:flex;
   align-items:center;
@@ -186,23 +191,24 @@ body{
 #xShareBtn:hover{background:#1a1a1a;}
 /* ---- Mobile touch controls (touch devices only) ---- */
 #touchControls{display:none;}
-body.touch #touchControls{display:block;}
+body.touch #touchControls{display:flex;position:fixed;left:0;bottom:0;width:100%;height:var(--mobile-controls-h);z-index:200;justify-content:space-between;align-items:center;padding:0 18px;box-sizing:border-box;pointer-events:none;}
 .touch-cluster{display:flex;gap:16px;pointer-events:none;}
 .touch-btn{pointer-events:auto;width:74px;height:74px;border-radius:50%;background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);color:#fff;font-size:26px;line-height:1;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:none;}
 .touch-btn:active{background:rgba(255,255,255,0.15);}
-#dpad{position:fixed;left:6px;top:50%;transform:translateY(-50%);z-index:200;display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,46px);gap:3px;pointer-events:none;}
-.dpad-btn{width:46px;height:46px;}
-/* All 4 arrows drawn as identical CSS triangles (avoids iOS emoji rendering of ◀▶). */
-.dpad-btn::before{content:"";display:block;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:13px solid rgba(255,255,255,0.75);}
-#btnUp{grid-column:2;grid-row:1;}
-#btnLeft{grid-column:1;grid-row:2;}
-#btnLeft::before{transform:rotate(-90deg);}
-#btnRight{grid-column:3;grid-row:2;}
-#btnRight::before{transform:rotate(90deg);}
-#btnDown{grid-column:2;grid-row:3;}
+#moveGroup{display:flex;flex-direction:column;align-items:flex-start;pointer-events:none;}
+#udRow{display:flex;gap:8px;margin:0 0 8px 4px;pointer-events:none;} /* up/down: title mode-select only, kept small & separate */
+.ud-btn{width:42px;height:34px;border-radius:8px;}
+#lrRow{display:flex;gap:0;pointer-events:none;} /* left/right adjacent (no gap) so sliding switches L<->R with no dead zone */
+.lr-btn{width:92px;height:84px;border-radius:12px;}
+#btnLeft{border-top-right-radius:0;border-bottom-right-radius:0;}
+#btnRight{border-top-left-radius:0;border-bottom-left-radius:0;}
+/* All arrows drawn as identical CSS triangles (avoids iOS emoji rendering of ◀▶). */
+.dpad-btn::before{content:"";display:block;width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:14px solid rgba(255,255,255,0.75);}
 #btnDown::before{transform:rotate(180deg);}
-#jumpCluster{position:fixed;right:8px;top:50%;transform:translateY(-50%);z-index:200;display:flex;pointer-events:none;}
-#btnJump{width:92px;height:92px;}
+#btnLeft::before{transform:rotate(-90deg);}
+#btnRight::before{transform:rotate(90deg);}
+#jumpCluster{display:flex;pointer-events:none;}
+#btnJump{width:96px;height:96px;}
 #btnPause{display:none;position:fixed;top:16px;right:16px;z-index:200;width:48px;height:48px;font-size:16px;letter-spacing:2px;}
 body.touch.playing #btnPause{display:flex;}
 #btnTitle{display:none;position:fixed;top:16px;left:16px;z-index:200;pointer-events:auto;padding:8px 14px;border-radius:8px;background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);color:#fff;font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:2px;-webkit-tap-highlight-color:transparent;touch-action:none;user-select:none;-webkit-user-select:none;}
@@ -218,13 +224,17 @@ body.touch.portrait #rotateOverlay{display:flex;}
 <body>
 <canvas id="c" width="1280" height="720"></canvas>
 <div id="touchControls" aria-hidden="true">
-  <div id="dpad">
-    <div class="touch-btn dpad-btn" id="btnUp"></div>
-    <div class="touch-btn dpad-btn" id="btnLeft"></div>
-    <div class="touch-btn dpad-btn" id="btnRight"></div>
-    <div class="touch-btn dpad-btn" id="btnDown"></div>
+  <div id="moveGroup">
+    <div id="udRow">
+      <div class="touch-btn dpad-btn ud-btn" id="btnUp"></div>
+      <div class="touch-btn dpad-btn ud-btn" id="btnDown"></div>
+    </div>
+    <div id="lrRow">
+      <div class="touch-btn dpad-btn lr-btn" id="btnLeft"></div>
+      <div class="touch-btn dpad-btn lr-btn" id="btnRight"></div>
+    </div>
   </div>
-  <div class="touch-cluster" id="jumpCluster">
+  <div id="jumpCluster">
     <div class="touch-btn" id="btnJump"></div>
   </div>
 </div>

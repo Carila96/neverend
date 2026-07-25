@@ -771,39 +771,38 @@ if(isTouchDevice){
   // another switches input instantly (old code only reacted to touchstart, so the first button stuck).
   // Multi-touch: e.touches is fully scanned, so hold a direction + jump with a second finger works.
   const _hitMargin=24; // expand touch hit area beyond the visible button on all sides (visual CSS unchanged)
-  // Cache button rects: getBoundingClientRect forces reflow, so calling it per touchmove made dragging lag.
-  // Buttons are position:fixed, so rects only change on resize/orientationchange.
-  const _slideBtns=[['btnLeft','ArrowLeft'],['btnRight','ArrowRight'],['btnJump',' ']]
-    .map(([id,key])=>({el:document.getElementById(id),key,rect:null})).filter(b=>b.el);
-  const _refreshRects=()=>{for(const b of _slideBtns)b.rect=b.el.getBoundingClientRect();};
-  // Self-healing rect getter: use the cache, but if it's missing/zero (measured before layout settled) re-measure now.
-  const _rectOf=b=>{let r=b.rect;if(!r||r.width===0||r.height===0){r=b.rect=b.el.getBoundingClientRect();}return r;};
-  const _find=k=>_slideBtns.find(b=>b.key===k)||null;
-  const _bL=_find('ArrowLeft'),_bR=_find('ArrowRight'),_bJ=_find(' ');
-  const _inExp=(r,t)=>r&&t.clientX>=r.left-_hitMargin&&t.clientX<=r.right+_hitMargin&&t.clientY>=r.top-_hitMargin&&t.clientY<=r.bottom+_hitMargin;
+  // Hit zones computed from screen size + fixed CSS offsets (px) — NO getBoundingClientRect / reflow, ever.
+  // These numbers MUST match the CSS: #lrRow{left:12;bottom:14} .lr-btn{w:90,h:50}; #jumpCluster{right:12;bottom:14} #btnJump{w:96,h:96}.
+  const _LR_LEFT=12,_LR_BOTTOM=14,_LR_W=90,_LR_H=50, _J_RIGHT=12,_J_BOTTOM=14,_J_W=96,_J_H=96;
+  let _zL=null,_zR=null,_zJ=null;
+  const _computeZones=()=>{
+    const W=window.innerWidth,H=window.innerHeight;
+    const ly2=H-_LR_BOTTOM,ly1=ly2-_LR_H;
+    _zL={x1:_LR_LEFT,       x2:_LR_LEFT+_LR_W,   y1:ly1,y2:ly2}; // left button
+    _zR={x1:_LR_LEFT+_LR_W, x2:_LR_LEFT+_LR_W*2, y1:ly1,y2:ly2}; // right button (adjacent, gap:0)
+    const jx2=W-_J_RIGHT,jy2=H-_J_BOTTOM;
+    _zJ={x1:jx2-_J_W,x2:jx2,y1:jy2-_J_H,y2:jy2};                 // jump button
+  };
+  _computeZones();
+  const _inExp=(z,t)=>z&&t.clientX>=z.x1-_hitMargin&&t.clientX<=z.x2+_hitMargin&&t.clientY>=z.y1-_hitMargin&&t.clientY<=z.y2+_hitMargin;
   let _pressed=new Set();
   const _hitTest=e=>{
     const now=new Set(); let hitAny=false;
-    const _rL=_bL&&_rectOf(_bL),_rR=_bR&&_rectOf(_bR),_rJ=_bJ&&_rectOf(_bJ);
     for(let i=0;i<e.touches.length;i++){
       const t=e.touches[i];
-      let hL=!!_inExp(_rL,t), hR=!!_inExp(_rR,t);
+      let hL=_inExp(_zL,t), hR=_inExp(_zR,t);
       if(hL&&hR){ // expanded L/R zones overlap: split at the seam between the two buttons so only one fires
-        if(t.clientX<(_rL.right+_rR.left)/2)hR=false;else hL=false;
+        if(t.clientX<(_zL.x2+_zR.x1)/2)hR=false;else hL=false;
       }
       if(hL){now.add('ArrowLeft');hitAny=true;}
       if(hR){now.add('ArrowRight');hitAny=true;}
-      if(_inExp(_rJ,t)){now.add(' ');hitAny=true;}
+      if(_inExp(_zJ,t)){now.add(' ');hitAny=true;}
     }
     for(const k of now)if(!_pressed.has(k))fireKey('keydown',k); // newly entered -> keydown
     for(const k of _pressed)if(!now.has(k))fireKey('keyup',k);   // left button -> keyup
     _pressed=now;
     return hitAny;
   };
-  // Measure rects only after layout has settled (body.touch already applied above); never on touchmove.
-  requestAnimationFrame(()=>requestAnimationFrame(_refreshRects));
-  window.addEventListener('load',_refreshRects);
-  document.addEventListener('touchstart',_refreshRects,{passive:true}); // cheap 1x-per-finger refresh, runs before hit-test
   // Only preventDefault when a touch is actually on a control, so canvas taps (title mode select) still fire click.
   const _onTouch=e=>{ if(_hitTest(e))e.preventDefault(); };
   document.addEventListener('touchstart',_onTouch,{passive:false});
@@ -811,7 +810,7 @@ if(isTouchDevice){
   document.addEventListener('touchend',_onTouch,{passive:false});
   document.addEventListener('touchcancel',_onTouch,{passive:false});
   // Orientation: JS-driven portrait detection (more reliable than CSS orientation media query across browsers).
-  const updateOrientation=()=>{document.body.classList.toggle('portrait', window.innerWidth<window.innerHeight);_refreshRects();};
+  const updateOrientation=()=>{document.body.classList.toggle('portrait', window.innerWidth<window.innerHeight);_computeZones();};
   updateOrientation();
   window.addEventListener('resize',updateOrientation);
   window.addEventListener('orientationchange',updateOrientation);

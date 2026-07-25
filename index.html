@@ -47,14 +47,9 @@ canvas{
   max-width:177.78vh;
   margin:auto;
 }
-/* Touch: reserve a bottom band for controls and top-align the canvas so fingers never touch the play area. */
-:root{--mobile-controls-h:150px;}
-body.touch{align-items:flex-start;}
-body.touch canvas{margin:0 auto;
-  max-height:calc(100vh - var(--mobile-controls-h));
-  max-height:calc(100dvh - var(--mobile-controls-h));
-  max-width:calc((100vh - var(--mobile-controls-h))*1.7778);
-  max-width:calc((100dvh - var(--mobile-controls-h))*1.7778);}
+/* Touch: keep the canvas large (~88%) and centered; controls are lightly overlaid on the bottom corners. */
+:root{--mobile-canvas-scale:88dvh;}
+body.touch canvas{max-height:88vh;max-height:var(--mobile-canvas-scale);max-width:156.44vh;max-width:calc(var(--mobile-canvas-scale)*1.7778);}
 body{
   display:flex;
   align-items:center;
@@ -191,23 +186,19 @@ body{
 #xShareBtn:hover{background:#1a1a1a;}
 /* ---- Mobile touch controls (touch devices only) ---- */
 #touchControls{display:none;}
-body.touch #touchControls{display:flex;position:fixed;left:0;bottom:0;width:100%;height:var(--mobile-controls-h);z-index:200;justify-content:space-between;align-items:center;padding:0 18px;box-sizing:border-box;pointer-events:none;}
+body.touch #touchControls{display:block;}
 .touch-cluster{display:flex;gap:16px;pointer-events:none;}
 .touch-btn{pointer-events:auto;width:74px;height:74px;border-radius:50%;background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);color:#fff;font-size:26px;line-height:1;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:none;}
 .touch-btn:active{background:rgba(255,255,255,0.15);}
-#moveGroup{display:flex;flex-direction:column;align-items:flex-start;pointer-events:none;}
-#udRow{display:flex;gap:8px;margin:0 0 8px 4px;pointer-events:none;} /* up/down: title mode-select only, kept small & separate */
-.ud-btn{width:42px;height:34px;border-radius:8px;}
-#lrRow{display:flex;gap:0;pointer-events:none;} /* left/right adjacent (no gap) so sliding switches L<->R with no dead zone */
-.lr-btn{width:92px;height:84px;border-radius:12px;}
+#lrRow{position:fixed;left:12px;bottom:14px;z-index:200;display:flex;gap:0;pointer-events:none;} /* left/right adjacent (no gap) so sliding switches L<->R with no dead zone */
+.lr-btn{width:90px;height:90px;border-radius:14px;}
 #btnLeft{border-top-right-radius:0;border-bottom-right-radius:0;}
 #btnRight{border-top-left-radius:0;border-bottom-left-radius:0;}
-/* All arrows drawn as identical CSS triangles (avoids iOS emoji rendering of ◀▶). */
+/* Arrows drawn as identical CSS triangles (avoids iOS emoji rendering of ◀▶). */
 .dpad-btn::before{content:"";display:block;width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:14px solid rgba(255,255,255,0.75);}
-#btnDown::before{transform:rotate(180deg);}
 #btnLeft::before{transform:rotate(-90deg);}
 #btnRight::before{transform:rotate(90deg);}
-#jumpCluster{display:flex;pointer-events:none;}
+#jumpCluster{position:fixed;right:12px;bottom:14px;z-index:200;display:flex;pointer-events:none;}
 #btnJump{width:96px;height:96px;}
 #btnPause{display:none;position:fixed;top:16px;right:16px;z-index:200;width:48px;height:48px;font-size:16px;letter-spacing:2px;}
 body.touch.playing #btnPause{display:flex;}
@@ -224,15 +215,9 @@ body.touch.portrait #rotateOverlay{display:flex;}
 <body>
 <canvas id="c" width="1280" height="720"></canvas>
 <div id="touchControls" aria-hidden="true">
-  <div id="moveGroup">
-    <div id="udRow">
-      <div class="touch-btn dpad-btn ud-btn" id="btnUp"></div>
-      <div class="touch-btn dpad-btn ud-btn" id="btnDown"></div>
-    </div>
-    <div id="lrRow">
-      <div class="touch-btn dpad-btn lr-btn" id="btnLeft"></div>
-      <div class="touch-btn dpad-btn lr-btn" id="btnRight"></div>
-    </div>
+  <div id="lrRow">
+    <div class="touch-btn dpad-btn lr-btn" id="btnLeft"></div>
+    <div class="touch-btn dpad-btn lr-btn" id="btnRight"></div>
   </div>
   <div id="jumpCluster">
     <div class="touch-btn" id="btnJump"></div>
@@ -784,7 +769,7 @@ if(isTouchDevice){
   // D-pad + jump: hit-test every active touch point each event so sliding a finger from one button to
   // another switches input instantly (old code only reacted to touchstart, so the first button stuck).
   // Multi-touch: e.touches is fully scanned, so hold a direction + jump with a second finger works.
-  const _slideBtns=[['btnLeft','ArrowLeft'],['btnRight','ArrowRight'],['btnUp','ArrowUp'],['btnDown','ArrowDown'],['btnJump',' ']]
+  const _slideBtns=[['btnLeft','ArrowLeft'],['btnRight','ArrowRight'],['btnJump',' ']]
     .map(([id,key])=>({el:document.getElementById(id),key})).filter(b=>b.el);
   let _pressed=new Set();
   const _hitTest=e=>{
@@ -7223,9 +7208,9 @@ function update(dt){
     if(keys['Escape']&&!prevKeys['Escape']){state='title';}
     if(keys['t']&&!prevKeys['t']){state='title';}
   } else if(state==='title'){
-    // モード選択（↑↓で切替、未解放でも???へカーソル移動可）
-    if(keys['ArrowUp']&&!prevKeys['ArrowUp'])_titleModeSel=0;
-    if(keys['ArrowDown']&&!prevKeys['ArrowDown'])_titleModeSel=1;
+    // モード選択（↑↓／←→で切替、未解放でも???へカーソル移動可。モバイルは左右ボタンで選択可）
+    if((keys['ArrowUp']&&!prevKeys['ArrowUp'])||(keys['ArrowLeft']&&!prevKeys['ArrowLeft']))_titleModeSel=0;
+    if((keys['ArrowDown']&&!prevKeys['ArrowDown'])||(keys['ArrowRight']&&!prevKeys['ArrowRight']))_titleModeSel=1;
     // gameMode は解放済みのときだけ death にする
     gameMode=(deathModeUnlocked&&_titleModeSel===1)?'death':'normal';
     if(keys[' ']&&!prevKeys[' ']){

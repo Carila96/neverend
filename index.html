@@ -210,9 +210,8 @@ body.touch.paused #btnTitle{display:block;}
 #a2hsBanner.show{display:block;}
 body.touch.portrait #a2hsBanner{display:none;} /* portrait shows the rotate overlay instead; banner returns in landscape */
 #a2hsClose{position:absolute;top:-4px;right:-2px;font-size:16px;line-height:1;color:rgba(255,255,255,0.7);cursor:pointer;padding:14px 16px;} /* larger tap target (~44px) while keeping the glyph small */
-/* TEMP DEBUG overlay (touch only) */
-#dbgTouch{display:none;}
-body.touch #dbgTouch{display:block;position:fixed;top:2px;left:2px;z-index:2147483647;pointer-events:none;max-width:70vw;background:rgba(0,0,0,0.6);color:#0f0;font:10px/1.35 monospace;padding:4px 6px;white-space:pre;border-radius:4px;}
+/* TEMP DEBUG overlay (unconditional, shows on PC too) */
+#dbgTouch{display:block;position:fixed;top:2px;left:2px;z-index:2147483647;pointer-events:none;max-width:70vw;background:rgba(0,0,0,0.6);color:#0f0;font:10px/1.35 monospace;padding:4px 6px;white-space:pre;border-radius:4px;}
 #rotateOverlay{display:none;position:fixed;inset:0;z-index:9999;background:#000;color:#fff;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:'Share Tech Mono',monospace;font-size:18px;letter-spacing:2px;line-height:1.8;padding:20px;}
 body.touch.portrait #rotateOverlay{display:flex;}
 </style>
@@ -751,6 +750,16 @@ document.addEventListener('keyup',e=>{keys[e.key]=false;prevKeys[e.key]=false;
 // (full-size canvas, no on-screen controls); phones/tablets still get mobile mode.
 const _coarsePointer = !!(window.matchMedia && window.matchMedia('(pointer:coarse)').matches);
 const isTouchDevice = ('ontouchstart' in window || navigator.maxTouchPoints>0) && _coarsePointer;
+// TEMP DEBUG: show detection values immediately, before any touch, regardless of body.touch.
+(function(){const d=document.getElementById('dbgTouch');if(d)d.textContent=
+  'isTouchDevice:'+isTouchDevice
+  +'\nontouchstart:'+('ontouchstart' in window)
+  +'\nmaxTouchPoints:'+navigator.maxTouchPoints
+  +'\npointer:coarse:'+_coarsePointer
+  +'\nbody.touch:'+document.body.classList.contains('touch');})();
+// TEMP DEBUG: raw touch listener OUTSIDE the isTouchDevice gate, so we can tell whether touch events
+// reach JS at all (and whether _onTouch got registered). Fires even when isTouchDevice is false.
+document.addEventListener('touchstart',function(e){const d=document.getElementById('dbgTouch');if(d)d.textContent='RAW TOUCH FIRED @'+(performance.now()|0)+' n='+e.touches.length+'\n'+d.textContent;},{passive:true});
 if(isTouchDevice){
   document.body.classList.add('touch');
   // Perf: kill canvas shadowBlur on touch (neonText & HUD set it every frame; shadow blur is extremely

@@ -210,6 +210,9 @@ body.touch.paused #btnTitle{display:block;}
 #a2hsBanner.show{display:block;}
 body.touch.portrait #a2hsBanner{display:none;} /* portrait shows the rotate overlay instead; banner returns in landscape */
 #a2hsClose{position:absolute;top:-4px;right:-2px;font-size:16px;line-height:1;color:rgba(255,255,255,0.7);cursor:pointer;padding:14px 16px;} /* larger tap target (~44px) while keeping the glyph small */
+/* TEMP DEBUG overlay (touch only) */
+#dbgTouch{display:none;}
+body.touch #dbgTouch{display:block;position:fixed;top:2px;left:2px;z-index:2147483647;pointer-events:none;max-width:70vw;background:rgba(0,0,0,0.6);color:#0f0;font:10px/1.35 monospace;padding:4px 6px;white-space:pre;border-radius:4px;}
 #rotateOverlay{display:none;position:fixed;inset:0;z-index:9999;background:#000;color:#fff;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:'Share Tech Mono',monospace;font-size:18px;letter-spacing:2px;line-height:1.8;padding:20px;}
 body.touch.portrait #rotateOverlay{display:flex;}
 </style>
@@ -227,6 +230,7 @@ body.touch.portrait #rotateOverlay{display:flex;}
 </div>
 <div class="touch-btn" id="btnPause">❚❚</div>
 <div id="btnTitle">TITLE</div>
+<div id="dbgTouch"></div><!-- TEMP DEBUG: touch/cookie diagnostics (touch only) -->
 <div id="a2hsBanner">
   <span id="a2hsClose">×</span>
   全画面でプレイするには、共有ボタンから「ホーム画面に追加」してください<br>For fullscreen, tap Share → Add to Home Screen
@@ -821,7 +825,22 @@ if(isTouchDevice){
     || document.body.classList.contains('portrait') // rotate overlay is shown in portrait
   );
   // Run control hit-testing only during gameplay AND when no front overlay/banner is up.
-  const _onTouch=e=>{ if(state!=='play'&&state!=='pause')return; if(_blocked())return; if(_hitTest(e))e.preventDefault(); };
+  const _dbg=document.getElementById('dbgTouch'); // TEMP DEBUG
+  const _onTouch=e=>{
+    if(_dbg){ // TEMP DEBUG: show live diagnostics for every touch event
+      const t=e.touches[0]||(e.changedTouches&&e.changedTouches[0]);
+      const c=document.getElementById('cookieBanner');
+      _dbg.textContent='evt:'+e.type+' state:'+state
+        +'\ngateSkip:'+(state!=='play'&&state!=='pause')+' blocked:'+_blocked()+' cookieUp:'+_cookieUp()
+        +'\ncookieEl:'+(c?('display='+(c.style.display||'(empty)')):'NULL')
+        +'\ntouch:'+(t?((t.clientX|0)+','+(t.clientY|0)):'-');
+    }
+    if(state!=='play'&&state!=='pause')return;
+    if(_blocked())return;
+    const hit=_hitTest(e);
+    if(_dbg)_dbg.textContent+='\nhitJumpZone:'+hit; // TEMP DEBUG
+    if(hit)e.preventDefault();
+  };
   document.addEventListener('touchstart',_onTouch,{passive:false});
   document.addEventListener('touchmove',_onTouch,{passive:false});
   document.addEventListener('touchend',_onTouch,{passive:false});
@@ -8029,6 +8048,7 @@ function acceptCookies(){
   try{localStorage.setItem('neverend_cookie_consent','accepted');}catch(e){}
   const b=document.getElementById('cookieBanner');
   if(b)b.style.display='none';
+  if(document.body.classList.contains('touch')){const d=document.getElementById('dbgTouch');if(d)d.textContent='ACCEPT CALLED @'+(performance.now()|0)+'\n'+d.textContent;} // TEMP DEBUG
 }
 function declineCookies(){
   try{
@@ -8058,6 +8078,7 @@ function acceptCookies(){
   try{localStorage.setItem('neverend_cookie_consent','accepted');}catch(e){}
   const b=document.getElementById('cookieBanner');
   if(b)b.style.display='none';
+  if(document.body.classList.contains('touch')){const d=document.getElementById('dbgTouch');if(d)d.textContent='ACCEPT CALLED @'+(performance.now()|0)+'\n'+d.textContent;} // TEMP DEBUG
 }
 function declineCookies(){
   try{

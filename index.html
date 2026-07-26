@@ -208,7 +208,8 @@ body.touch.playing #btnPause{display:flex;}
 body.touch.paused #btnTitle{display:block;}
 #a2hsBanner{display:none;position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:300;max-width:92vw;box-sizing:border-box;padding:8px 34px 8px 12px;background:rgba(10,10,20,0.9);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.85);font-family:'Share Tech Mono',monospace;font-size:11px;line-height:1.5;text-align:center;}
 #a2hsBanner.show{display:block;}
-#a2hsClose{position:absolute;top:2px;right:6px;font-size:16px;line-height:1;color:rgba(255,255,255,0.7);cursor:pointer;padding:2px 4px;}
+body.touch.portrait #a2hsBanner{display:none;} /* portrait shows the rotate overlay instead; banner returns in landscape */
+#a2hsClose{position:absolute;top:-4px;right:-2px;font-size:16px;line-height:1;color:rgba(255,255,255,0.7);cursor:pointer;padding:14px 16px;} /* larger tap target (~44px) while keeping the glyph small */
 #rotateOverlay{display:none;position:fixed;inset:0;z-index:9999;background:#000;color:#fff;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:'Share Tech Mono',monospace;font-size:18px;letter-spacing:2px;line-height:1.8;padding:20px;}
 body.touch.portrait #rotateOverlay{display:flex;}
 </style>
@@ -803,8 +804,9 @@ if(isTouchDevice){
     _pressed=now;
     return hitAny;
   };
-  // Only preventDefault when a touch is actually on a control, so canvas taps (title mode select) still fire click.
-  const _onTouch=e=>{ if(_hitTest(e))e.preventDefault(); };
+  // Only run control hit-testing during actual gameplay. Outside play/pause (title, overlays, cookie/A2HS
+  // banners, rotate overlay) the zones stay off, so taps on DOM/canvas buttons underneath aren't stolen.
+  const _onTouch=e=>{ if(state!=='play'&&state!=='pause')return; if(_hitTest(e))e.preventDefault(); };
   document.addEventListener('touchstart',_onTouch,{passive:false});
   document.addEventListener('touchmove',_onTouch,{passive:false});
   document.addEventListener('touchend',_onTouch,{passive:false});

@@ -804,9 +804,21 @@ if(isTouchDevice){
     _pressed=now;
     return hitAny;
   };
-  // Only run control hit-testing during actual gameplay. Outside play/pause (title, overlays, cookie/A2HS
-  // banners, rotate overlay) the zones stay off, so taps on DOM/canvas buttons underneath aren't stolen.
-  const _onTouch=e=>{ if(state!=='play'&&state!=='pause')return; if(_hitTest(e))e.preventDefault(); };
+  // Elements cached once; _blocked() only reads style.display/classList (no reflow) each touch.
+  const _cbEl=document.getElementById('cookieBanner'),_a2hsEl2=document.getElementById('a2hsBanner'),
+        _mpEl=document.getElementById('mypageOverlay'),_holEl=document.getElementById('holOverlay'),
+        _setEl=document.getElementById('settings');
+  // Any front overlay/banner visible? Then the controller must not intercept the tap (would steal it).
+  const _blocked=()=>(
+       (_cbEl&&_cbEl.style.display!=='none'&&!_cbEl.classList.contains('hidden'))
+    || (_a2hsEl2&&_a2hsEl2.classList.contains('show'))
+    || (_mpEl&&_mpEl.style.display==='block')
+    || (_holEl&&_holEl.style.display==='block')
+    || (_setEl&&_setEl.classList.contains('open'))
+    || document.body.classList.contains('portrait') // rotate overlay is shown in portrait
+  );
+  // Run control hit-testing only during gameplay AND when no front overlay/banner is up.
+  const _onTouch=e=>{ if(state!=='play'&&state!=='pause')return; if(_blocked())return; if(_hitTest(e))e.preventDefault(); };
   document.addEventListener('touchstart',_onTouch,{passive:false});
   document.addEventListener('touchmove',_onTouch,{passive:false});
   document.addEventListener('touchend',_onTouch,{passive:false});

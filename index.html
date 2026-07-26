@@ -7738,6 +7738,9 @@ function drawMemo(){
   ctx.restore();
 }
 
+// Fixed-timestep accumulator: keep the frame-dependent player physics running at a constant real-time
+// rate even when rAF drops to 30fps (iOS low-power). 60fps -> 1 update/frame (unchanged); 30fps -> 2/frame.
+let _simAcc=0; const _SIM_STEP=1/60, _SIM_MAX=4;
 function loop(ts){
   let dt=Math.min((ts-last)/1000,0.05);
   last=ts;animT=ts/1000;
@@ -8040,7 +8043,15 @@ function loop(ts){
   if(shakeTimer>0){ctx.restore();shakeTimer=Math.max(0,shakeTimer-dt);}
   floatMsgs=floatMsgs.filter(m=>(m.life-=dt)>0);
   {const _xb=document.getElementById('xShareBtn');if(_xb)_xb.style.display=(state==='dead')?'inline-flex':'none';}
-  update(dt);
+  // Sub-step the state update so speed is fps-independent. Physics numbers are unchanged; only the number
+  // of update() calls per frame varies (each call = one fixed 1/60 step). 60fps=1 call, 30fps=2 calls, etc.
+  if(slowTimer>0){ update(dt); _simAcc=0; } // death slow-motion: preserve the original single scaled-dt update
+  else {
+    _simAcc+=dt;
+    let _steps=0;
+    while(_simAcc>=_SIM_STEP && _steps<_SIM_MAX){ update(_SIM_STEP); _simAcc-=_SIM_STEP; _steps++; }
+    if(_steps>=_SIM_MAX)_simAcc=0; // spiral guard: drop backlog (tab return / big stalls)
+  }
   requestAnimationFrame(loop);
 
 // ── COOKIE CONSENT ──

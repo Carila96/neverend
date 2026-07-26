@@ -819,9 +819,10 @@ if(isTouchDevice){
     || (_setEl&&_setEl.classList.contains('open'))
     || document.body.classList.contains('portrait') // rotate overlay is shown in portrait
   );
-  // Run control hit-testing only during gameplay AND when no front overlay/banner is up.
+  // Enable control hit-testing on title (start / mode-select), play and pause; skip other states.
+  // _blocked() still turns the zones off whenever a front overlay/banner (cookie, my page, settings…) is up.
   const _onTouch=e=>{
-    if(state!=='play'&&state!=='pause')return;
+    if(state!=='play'&&state!=='pause'&&state!=='title')return;
     if(_blocked())return;
     if(_hitTest(e))e.preventDefault();
   };
@@ -7251,9 +7252,11 @@ function update(dt){
     // gameMode は解放済みのときだけ death にする
     gameMode=(deathModeUnlocked&&_titleModeSel===1)?'death':'normal';
     if(keys[' ']&&!prevKeys[' ']){
-      // Safety net: on touch, never start while the cookie banner is up (its Accept overlaps the jump zone).
-      const _cbT=isTouchDevice&&(()=>{const c=document.getElementById('cookieBanner');return c&&c.style.display!=='none'&&!c.classList.contains('hidden');})();
-      if(_cbT){/* consent banner up on touch: ignore start so tapping Accept can't trigger it */}
+      // On touch, don't start while the cookie banner is up: its Accept overlaps the jump zone, so a tap
+      // meant for Accept must not launch the game. (Second layer of defense alongside _blocked().)
+      const _cb=document.getElementById('cookieBanner');
+      const _cookieBlocking=isTouchDevice&&_cb&&_cb.style.display!=='none'&&!_cb.classList.contains('hidden');
+      if(_cookieBlocking){/* consent banner up: ignore start */}
       else if(_titleModeSel===1&&!deathModeUnlocked){
         // ???選択中（未解放）：ヒント表示のみ、ゲーム開始しない
         floatMsgs.push({txt:'Clear all 100 floors to unlock.',x:W/2,y:H/2,life:3,color:'rgba(255,220,50,0.9)'});

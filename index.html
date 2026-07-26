@@ -805,12 +805,15 @@ if(isTouchDevice){
     return hitAny;
   };
   // Elements cached once; _blocked() only reads style.display/classList (no reflow) each touch.
-  const _cbEl=document.getElementById('cookieBanner'),_a2hsEl2=document.getElementById('a2hsBanner'),
+  const _a2hsEl2=document.getElementById('a2hsBanner'),
         _mpEl=document.getElementById('mypageOverlay'),_holEl=document.getElementById('holOverlay'),
         _setEl=document.getElementById('settings');
+  // #cookieBanner is declared AFTER this <script> (end of body), so it can't be cached at parse time
+  // (getElementById would return null). Look it up live each call — cheap (hashmap lookup, no reflow).
+  const _cookieUp=()=>{const c=document.getElementById('cookieBanner');return !!(c&&c.style.display!=='none'&&!c.classList.contains('hidden'));};
   // Any front overlay/banner visible? Then the controller must not intercept the tap (would steal it).
   const _blocked=()=>(
-       (_cbEl&&_cbEl.style.display!=='none'&&!_cbEl.classList.contains('hidden'))
+       _cookieUp()
     || (_a2hsEl2&&_a2hsEl2.classList.contains('show'))
     || (_mpEl&&_mpEl.style.display==='block')
     || (_holEl&&_holEl.style.display==='block')
@@ -7245,7 +7248,10 @@ function update(dt){
     // gameMode は解放済みのときだけ death にする
     gameMode=(deathModeUnlocked&&_titleModeSel===1)?'death':'normal';
     if(keys[' ']&&!prevKeys[' ']){
-      if(_titleModeSel===1&&!deathModeUnlocked){
+      // Safety net: on touch, never start while the cookie banner is up (its Accept overlaps the jump zone).
+      const _cbT=isTouchDevice&&(()=>{const c=document.getElementById('cookieBanner');return c&&c.style.display!=='none'&&!c.classList.contains('hidden');})();
+      if(_cbT){/* consent banner up on touch: ignore start so tapping Accept can't trigger it */}
+      else if(_titleModeSel===1&&!deathModeUnlocked){
         // ???選択中（未解放）：ヒント表示のみ、ゲーム開始しない
         floatMsgs.push({txt:'Clear all 100 floors to unlock.',x:W/2,y:H/2,life:3,color:'rgba(255,220,50,0.9)'});
       }else{

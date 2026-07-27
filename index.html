@@ -819,10 +819,13 @@ if(isTouchDevice){
     || (_setEl&&_setEl.classList.contains('open'))
     || document.body.classList.contains('portrait') // rotate overlay is shown in portrait
   );
-  // Enable control hit-testing on title (start / mode-select), play and pause; skip other states.
-  // _blocked() still turns the zones off whenever a front overlay/banner (cookie, my page, settings…) is up.
+  // Whitelist of states that consume controller input (jump=Space / arrows):
+  //  play (move/jump), title (mode-select/start), dead (Space=restart), ending (play + Space=dismiss),
+  //  memo (any key closes), pause (kept so the pause button works). Excluded: dying (transient, no input),
+  //  mypage/testcomplete (overlay / canvas-tap only). _blocked() still disables zones under any front overlay.
+  const _ctrlStates=new Set(['play','pause','title','dead','ending','memo']);
   const _onTouch=e=>{
-    if(state!=='play'&&state!=='pause'&&state!=='title')return;
+    if(!_ctrlStates.has(state))return;
     if(_blocked())return;
     if(_hitTest(e))e.preventDefault();
   };
@@ -8023,6 +8026,8 @@ function loop(ts){
   {const _xb=document.getElementById('xShareBtn');if(_xb)_xb.style.display=(state==='dead')?'inline-flex':'none';}
   // Sub-step the state update so speed is fps-independent. Physics numbers are unchanged; only the number
   // of update() calls per frame varies (each call = one fixed 1/60 step). 60fps=1 call, 30fps=2 calls, etc.
+  // NOTE (by design): at 30fps (iOS low-power) the render shows step-skips because drawing stays at 30fps
+  // while physics sub-steps; we intentionally do NOT interpolate — real speed & hitbox accuracy come first.
   if(slowTimer>0){ update(dt); _simAcc=0; } // death slow-motion: preserve the original single scaled-dt update
   else {
     _simAcc+=dt;

@@ -187,7 +187,7 @@ body{
 #xShareBtn:hover{background:#1a1a1a;}
 /* ---- Mobile touch controls (touch devices only) ---- */
 #touchControls{display:none;}
-body.touch #touchControls{display:block;}
+body.touch.ctrls #touchControls{display:block;} /* controller shown only in gameplay states (see 'ctrls' toggle); hidden on title */
 .touch-cluster{display:flex;gap:16px;pointer-events:none;}
 .touch-btn{pointer-events:auto;width:74px;height:74px;border-radius:50%;background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);color:#fff;font-size:26px;line-height:1;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:none;}
 .touch-btn:active{background:rgba(255,255,255,0.15);}
@@ -7737,6 +7737,9 @@ function loop(ts){
   // Show pause button only during gameplay; show TITLE button only while paused.
   document.body.classList.toggle('playing', state==='play'||state==='pause');
   document.body.classList.toggle('paused', state==='pause');
+  // Show on-screen controller only in states that consume it — MUST match _ctrlStates (play/pause/dead/ending/memo);
+  // hidden on title so canvas taps (NORMAL/DEATH/MY PAGE/HoL) aren't fought over.
+  document.body.classList.toggle('ctrls', state==='play'||state==='pause'||state==='dead'||state==='ending'||state==='memo');
   // Slow motion after death
   if(slowTimer>0){slowTimer=Math.max(0,slowTimer-dt);dt*=0.15;}
   // Screen shake

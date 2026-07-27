@@ -5,5 +5,15 @@
       "source": "/api/:path*",
       "destination": "/api/:path*"
     }
+  ],
+  "headers": [
+    {
+      "source": "/(.*\\.html)",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache, must-revalidate" }]
+    },
+    {
+      "source": "/",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache, must-revalidate" }]
+    }
   ]
 }

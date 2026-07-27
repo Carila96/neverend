@@ -206,10 +206,10 @@ body.touch.playing #btnPause{display:flex;}
 #btnTitle{display:none;position:fixed;top:16px;left:16px;z-index:200;pointer-events:auto;padding:8px 14px;border-radius:8px;background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);color:#fff;font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:2px;-webkit-tap-highlight-color:transparent;touch-action:none;user-select:none;-webkit-user-select:none;}
 #btnTitle:active{background:rgba(255,255,255,0.15);}
 body.touch.paused #btnTitle{display:block;}
-#a2hsBanner{display:none;position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:300;max-width:92vw;box-sizing:border-box;padding:8px 34px 8px 12px;background:rgba(10,10,20,0.9);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.85);font-family:'Share Tech Mono',monospace;font-size:11px;line-height:1.5;text-align:center;}
+#a2hsBanner{display:none;position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:300;max-width:92vw;box-sizing:border-box;padding:8px 34px 8px 12px;background:rgba(10,10,20,0.9);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.85);font-family:'Share Tech Mono',monospace;font-size:11px;line-height:1.5;text-align:center;pointer-events:none;} /* let taps pass through to buttons below (e.g. MY PAGE); only the × is tappable */
 #a2hsBanner.show{display:block;}
 body.touch.portrait #a2hsBanner{display:none;} /* portrait shows the rotate overlay instead; banner returns in landscape */
-#a2hsClose{position:absolute;top:-4px;right:-2px;font-size:16px;line-height:1;color:rgba(255,255,255,0.7);cursor:pointer;padding:14px 16px;} /* larger tap target (~44px) while keeping the glyph small */
+#a2hsClose{position:absolute;top:-4px;right:-2px;font-size:16px;line-height:1;color:rgba(255,255,255,0.7);cursor:pointer;padding:14px 16px;pointer-events:auto;} /* larger tap target (~44px); re-enable taps (banner itself is pointer-events:none) */
 #rotateOverlay{display:none;position:fixed;inset:0;z-index:9999;background:#000;color:#fff;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:'Share Tech Mono',monospace;font-size:18px;letter-spacing:2px;line-height:1.8;padding:20px;}
 body.touch.portrait #rotateOverlay{display:flex;}
 </style>
@@ -820,10 +820,12 @@ if(isTouchDevice){
     || document.body.classList.contains('portrait') // rotate overlay is shown in portrait
   );
   // Whitelist of states that consume controller input (jump=Space / arrows):
-  //  play (move/jump), title (mode-select/start), dead (Space=restart), ending (play + Space=dismiss),
-  //  memo (any key closes), pause (kept so the pause button works). Excluded: dying (transient, no input),
-  //  mypage/testcomplete (overlay / canvas-tap only). _blocked() still disables zones under any front overlay.
-  const _ctrlStates=new Set(['play','pause','title','dead','ending','memo']);
+  //  play (move/jump), dead (Space=restart), ending (play + Space=dismiss), memo (any key closes),
+  //  pause (kept so the pause button works). Title is EXCLUDED on purpose: on mobile the title is driven
+  //  purely by canvas taps (NORMAL/DEATH start, MY PAGE, Hall of Legends); keeping zones on there would
+  //  preventDefault and kill those taps. Excluded too: dying (transient), mypage/testcomplete (overlay /
+  //  canvas-tap only). _blocked() still disables zones under any front overlay.
+  const _ctrlStates=new Set(['play','pause','dead','ending','memo']);
   const _onTouch=e=>{
     if(!_ctrlStates.has(state))return;
     if(_blocked())return;
@@ -6472,9 +6474,16 @@ canvas.addEventListener('click',e=>{
   if(state==='title'){
     // モード選択クリック
     function _inRegion(b){return cx>=b.x&&cx<=b.x+b.w&&cy>=b.y&&cy<=b.y+b.h;}
-    if(_inRegion(_titleNormalBtn)){_titleModeSel=0;gameMode='normal';}
+    // Touch: tapping a mode both selects AND starts (no keyboard Space on mobile). PC keeps select-only.
+    const _cbUp=(()=>{const c=document.getElementById('cookieBanner');return !!(c&&c.style.display!=='none'&&!c.classList.contains('hidden'));})();
+    const _tapStart=isTouchDevice&&!_cbUp; // don't start while the cookie banner is up
+    if(_inRegion(_titleNormalBtn)){_titleModeSel=0;gameMode='normal';
+      if(_tapStart){_retryStreak=0;resetRun();state='play';startBGM(getBGMTrack(1));}
+    }
     else if(_inRegion(_titleDeathBtn)){
-      if(deathModeUnlocked){_titleModeSel=1;gameMode='death';}
+      if(deathModeUnlocked){_titleModeSel=1;gameMode='death';
+        if(_tapStart){_retryStreak=0;resetRun();state='play';startBGM(getBGMTrack(1));}
+      }
       else{floatMsgs.push({txt:'Clear all 100 floors to unlock.',x:W/2,y:H/2,life:3,color:'rgba(255,220,50,0.9)'});}
     }
     if(cx>=settingsBtn.x&&cx<=settingsBtn.x+settingsBtn.w&&cy>=settingsBtn.y&&cy<=settingsBtn.y+settingsBtn.h){openSettings();}

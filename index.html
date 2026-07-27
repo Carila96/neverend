@@ -6582,14 +6582,14 @@ function drawTitle(){
   ctx.fillText('never',sx,H/2-30);
   ctx.shadowColor='rgba(255,50,50,0.9)';ctx.shadowBlur=28;ctx.fillStyle='#e74c3c';
   ctx.fillText('END',sx+nw+gap,H/2-30);ctx.restore();
-  neonText('30 seconds to live. Forever.',W/2,H/2+24,'rgba(160,185,255,0.75)',20,8,'center');
-  ctx.save();ctx.fillStyle='rgba(140,140,160,0.4)';ctx.font='14px "Courier New"';ctx.textAlign='center';
-  ctx.fillText('How far can you get up the tower?',W/2,H/2+50);ctx.restore();
+  const _isTouch=document.body.classList.contains('touch'); // mobile: larger title text + wider spacing (canvas-internal coords only; CSS/layout unchanged)
+  neonText('30 seconds to live. Forever.',W/2,_isTouch?H/2+16:H/2+24,'rgba(160,185,255,0.75)',_isTouch?26:20,8,'center');
+  ctx.save();ctx.fillStyle='rgba(140,140,160,0.4)';ctx.font=(_isTouch?'18px':'14px')+' "Courier New"';ctx.textAlign='center';
+  ctx.fillText('How far can you get up the tower?',W/2,_isTouch?H/2+44:H/2+50);ctx.restore();
   // ===== Mode selection UI =====
   {
-    const _isTouch=document.body.classList.contains('touch');
-    const _modeCX=W/2, _hw=150;
-    const _normalY=_isTouch?H/2+72:H/2+78, _deathY=_isTouch?H/2+112:H/2+104, _rowH=_isTouch?34:24;
+    const _modeCX=W/2, _hw=150; // _isTouch comes from the drawTitle-scope const above
+    const _normalY=_isTouch?H/2+84:H/2+78, _deathY=_isTouch?H/2+124:H/2+104, _rowH=_isTouch?34:24;
     ctx.save();
     ctx.font=(_isTouch?'bold 24px':'bold 18px')+' "Courier New"';ctx.textAlign='center';
     // NORMAL MODE
@@ -6612,12 +6612,12 @@ function drawTitle(){
     _titleDeathBtn={x:_modeCX-_hw,y:_deathY-_rowH+6,w:_hw*2,h:_rowH};
   }
   const pulse=Math.sin(animT*2)*.3+.7;
-  neonText('[ SPACE ] START',W/2,H/2+140,`rgba(255,255,255,${pulse})`,22,14,'center');
+  neonText('[ SPACE ] START',W/2,_isTouch?H/2+166:H/2+140,`rgba(255,255,255,${pulse})`,_isTouch?29:22,14,'center');
   // Name display below START
-  ctx.save();ctx.font='12px "Courier New"';ctx.textAlign='center';
+  ctx.save();ctx.font=(_isTouch?'16px':'12px')+' "Courier New"';ctx.textAlign='center';
   const _pn=_getDisplayName();
   ctx.fillStyle='rgba(160,180,220,0.7)';
-  ctx.fillText('Playing as: '+_pn,W/2,H/2+164);
+  ctx.fillText('Playing as: '+_pn,W/2,_isTouch?H/2+196:H/2+164);
   ctx.restore();
   ctx.save();ctx.fillStyle='rgba(100,120,160,0.6)';ctx.font='13px "Courier New"';ctx.textAlign='center';
   ctx.fillText('← →  MOVE    SPACE  JUMP    F / ESC  PAUSE',W/2,H-36);ctx.restore();

@@ -17,12 +17,28 @@ export default async function handler(req, res) {
 
   // POST /api/stats?type=death → 世界デス数+1（旧 /api/death POST）
   if (req.method === 'POST' && req.query.type === 'death') {
-    try {
-      const { data: row } = await supabase.from('world_stats').select('total_deaths').eq('id', 1).single();
-      const next = (row?.total_deaths || 0) + 1;
-      await supabase.from('world_stats').update({ total_deaths: next }).eq('id', 1);
-    } catch (_) {}
-    return res.status(200).json({ ok: true });
+    // 加算ロジックは従来どおり total_deaths +1 のみ。
+    // 変更点はエラーを握りつぶさなくなったこと（旧: catch(_){} + 常に 200 ok:true）。
+    const { data: row, error: readErr } = await supabase
+      .from('world_stats').select('total_deaths').eq('id', 1).single();
+    if (readErr) {
+      console.error('[stats:death] read failed:', readErr.message);
+      return res.status(500).json({ ok: false, stage: 'read', error: readErr.message });
+    }
+    const next = (row?.total_deaths || 0) + 1;
+    const { data: updated, error: updErr } = await supabase
+      .from('world_stats').update({ total_deaths: next }).eq('id', 1).select('total_deaths');
+    if (updErr) {
+      console.error('[stats:death] update failed:', updErr.message);
+      return res.status(500).json({ ok: false, stage: 'update', error: updErr.message });
+    }
+    if (!updated || updated.length === 0) {
+      // RLSで弾かれると「0行更新・エラー無し」になる。SUPABASE_SERVICE_KEY が
+      // service_role キーか（anon キーになっていないか）を確認すること。
+      console.error('[stats:death] update affected 0 rows — check SUPABASE_SERVICE_KEY is the service_role key / world_stats RLS');
+      return res.status(500).json({ ok: false, stage: 'update', error: 'no rows updated' });
+    }
+    return res.status(200).json({ ok: true, total_deaths: updated[0].total_deaths });
   }
 
   // GET /api/stats?type=world → 世界統計+テストパイロット名（旧 /api/world-stats）

@@ -62,7 +62,7 @@ body.touch canvas{margin:0 auto;max-height:88vh;max-height:var(--mobile-canvas-s
 /* PWA(standalone)向けの canvas ずらし補正はすべて撤回済み。canvas を下げると Cookie 同意バナーの
    Accept が押せなくなり、下段UI・ゲーム画面もまとめてずれたため。canvas は上寄せ・全高のまま
    y 方向に 1px も動かさない（コントローラーを持つ指で画面が隠れないための仕様）。
-   上端ボタンの位置調整は canvas 内の y 座標だけで行う（JS 側 _TOP_DY / タッチ端末のみ）。
+   上端ボタンも下げない。押しやすさは JS 側でタップ判定矩形だけを広げて対応する。
    #btnPause/#btnTitle/#a2hsBanner の top は元の 16/16/10px。 */
 body{
   display:flex;
@@ -6506,10 +6506,24 @@ const _UI_K = isTouchDevice ? 1.7 : 1;
 // （PC: 28/2 + 0.35*13 = 18.6 ≒ 19 で従来値と一致。タッチ: 40/2 + 0.35*22.1 = 27.7 ≒ 28）。
 const _SET_BOX = isTouchDevice ? {w:136,h:40,base:28} : {w:120,h:28,base:19};
 const _MP_BOX  = isTouchDevice ? {w:176,h:40,base:28} : {w:104,h:28,base:19};
-// タッチ時のみ上端ボタンを少し下げる（画面最上端の押しにくさの緩和）。canvas は動かさない。
-const _TOP_DY = isTouchDevice ? 24 : 0;
-const settingsBtn={x:16,y:16+_TOP_DY,w:_SET_BOX.w,h:_SET_BOX.h};
-const mpBtn={x:W-16-_MP_BOX.w,y:12+_TOP_DY,w:_MP_BOX.w,h:_MP_BOX.h};   // 右マージン16pxを維持
+// ── 描画用の矩形 ───────────────────────────────────────────────
+// 位置・サイズとも従来どおり。canvas もボタンも y 方向に一切動かさない
+// （下げる方式は Cookie バナー等と競合したため廃止。_TOP_DY は削除済み）。
+const settingsBtn={x:16,y:16,w:_SET_BOX.w,h:_SET_BOX.h};
+const mpBtn={x:W-16-_MP_BOX.w,y:12,w:_MP_BOX.w,h:_MP_BOX.h};   // 右マージン16pxを維持
+// ── タップ判定用の矩形（上端2つのみ・タッチ端末のみ）─────────────
+// 見た目は settingsBtn / mpBtn のまま。判定「だけ」を外側へ広げて指の許容範囲を稼ぐ。
+// 対応関係: settingsHit ⊃ settingsBtn, mpHit ⊃ mpBtn（描画矩形を内包する上位集合）。
+//   上 : canvas y=0 まで（settings +16 / mp +12）。画面上端の外側方向なので何とも競合しない。
+//   下 : +18px のみ。判定下端は settings y74 / mp y70。タイトルの NORMAL/DEATH ボタンは
+//        y416 以降、HALL OF LEGENDS は y671 以降なので 340px 以上の余裕がある。
+//        Cookie バナーは canvas 外の DOM 要素（position:fixed; bottom:0）なので、
+//        canvas 内の判定をどう広げても届かない。下方向へは意図的に伸ばしすぎない。
+//   左右: +14px。左上/右上の画面隅方向は空き、内側も中央(x490〜790)には遠く届かない。
+// PC・通常ブラウザは広げず、描画矩形をそのまま判定に使う（従来と完全に同一）。
+const _expandHit=(r,top,bottom,side)=>({x:r.x-side,y:r.y-top,w:r.w+side*2,h:r.h+top+bottom});
+const settingsHit = isTouchDevice ? _expandHit(settingsBtn,16,18,14) : settingsBtn;
+const mpHit       = isTouchDevice ? _expandHit(mpBtn,      12,18,14) : mpBtn;
 // 右下 HALL OF LEGENDS。枠の右端 x+w が textAlign='right' のテキスト右端 W-20*K と一致し、
 // ベースライン H-14*K は必ず枠内に収まる＝描画と判定が定義上ズレない。
 //   [ HALL OF LEGENDS ] (19字) は font 12*1.7=20.4px で ≒233px → w250（左右8.5pxずつ）
@@ -6542,8 +6556,8 @@ canvas.addEventListener('click',e=>{
       else{floatMsgs.push({txt:'Clear all 100 floors to unlock.',x:W/2,y:H/2,life:3,color:'rgba(255,220,50,0.9)'});}
     }
     // 四隅はすべて _inRegion(矩形) に統一（描画が参照する矩形と同一のものを判定に使う）
-    if(_inRegion(settingsBtn)){openSettings();}
-    if(!testMode&&_inRegion(mpBtn)){document.getElementById('mypageOverlay').style.display='block';document.getElementById('c').style.display='none';}
+    if(_inRegion(settingsHit)){openSettings();}   // 判定は拡張矩形、描画は settingsBtn
+    if(!testMode&&_inRegion(mpHit)){document.getElementById('mypageOverlay').style.display='block';document.getElementById('c').style.display='none';}
     // testMode: LOGIN button click (H/2+134 area)
     if(testMode&&!_currentUser&&cx>=W/2-200&&cx<=W/2+200&&cy>=H/2+122&&cy<=H/2+146){openLoginModal();}
     // ENTER YOUR NAME click (non-testMode, when no name set)

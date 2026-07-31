@@ -62,19 +62,8 @@ body.touch canvas{margin:0 auto;max-height:88vh;max-height:var(--mobile-canvas-s
 /* PWA(standalone)向けの canvas ずらし補正はすべて撤回済み。canvas を下げると Cookie 同意バナーの
    Accept が押せなくなり、下段UI・ゲーム画面もまとめてずれたため。canvas は上寄せ・全高のまま
    y 方向に 1px も動かさない（コントローラーを持つ指で画面が隠れないための仕様）。
-   上端ボタンを下げる補正も撤去し、settingsBtn.y=16 / mpBtn.y=12 の固定値のみ。
-   #btnPause/#btnTitle/#a2hsBanner の top も元の 16/16/10px。
-   standalone 限定のセレクタは #dbgSafe（デバッグ表示）だけ。 */
-/* PWA実機デバッグ表示。PWAではConsoleが見えないので画面に出す。standalone かつ touch のときだけ。
-   pointer-events:none 固定 — この表示自体が絶対にタップを奪わないこと。 */
-#dbgSafe{display:none;}
-body.touch.standalone #dbgSafe{
-  display:block;position:fixed;left:50%;transform:translateX(-50%);bottom:2px;z-index:9998;
-  pointer-events:none;background:rgba(0,0,0,0.72);color:#0f0;
-  font-family:'Share Tech Mono',monospace;font-size:9px;line-height:1.35;
-  padding:3px 6px;border:1px solid rgba(0,255,0,0.35);border-radius:4px;
-  white-space:pre;text-align:left;max-width:96vw;overflow:hidden;
-}
+   上端ボタンの位置調整は canvas 内の y 座標だけで行う（JS 側 _TOP_DY / タッチ端末のみ）。
+   #btnPause/#btnTitle/#a2hsBanner の top は元の 16/16/10px。 */
 body{
   display:flex;
   align-items:center;
@@ -256,7 +245,6 @@ body.touch.portrait #rotateOverlay{display:flex;}
 </div>
 <div id="rotateOverlay">↻<br>デバイスを横にしてください<br>Please rotate your device</div>
 <div id="xShareBtn" onclick="shareDeathX()">𝕏 Share</div>
-<div id="dbgSafe"></div>
 <div id="mypageOverlay" style="display:none;position:fixed;inset:0;z-index:1000;background:#000;">
   <iframe id="mypageFrame" src="/app/pages/mypage.html" style="width:100%;height:100%;border:none;"></iframe>
 </div>
@@ -728,67 +716,6 @@ let worldDeaths=null;
 function _fetchWorldDeaths(){fetch('/api/stats?type=death').then(r=>r.json()).then(d=>{if(d.total_deaths!=null)worldDeaths=d.total_deaths;}).catch(()=>{});}
 _fetchWorldDeaths();
 setInterval(()=>{if(state==='title')_fetchWorldDeaths();},60000);
-// ── PWA(standalone)実機デバッグ表示 ────────────────────────────────
-// PWA では Console が見えないため、safe-area / canvas 位置 / ボタンの実ピクセル位置 /
-// 実際に届いたタップ座標を画面下部に出す。standalone かつ touch のときだけ動く
-// （呼び出し元が isTouchDevice ブロック内の if(_standalone) なので PC・通常ブラウザでは一切走らない）。
-const _BUILD_ID='0731d';   // ビルド識別子。HTMLを更新したら必ず上げる（1行目の redeploy マーカーと対）
-let _dbgLastTouch='-', _dbgLastClick='-', _dbgTouchN=0, _dbgClickN=0;
-function _initStandaloneDebug(){
-  const el=document.getElementById('dbgSafe');
-  if(!el)return;
-  // env() は JS から直接読めないので、height:env(...) のダミー要素を実測する
-  const mkProbe=side=>{
-    const p=document.createElement('div');
-    p.style.cssText='position:fixed;top:0;left:0;width:env(safe-area-inset-'+side+',0px);'+
-                    'height:env(safe-area-inset-'+side+',0px);pointer-events:none;visibility:hidden;';
-    document.body.appendChild(p);return p;
-  };
-  const pT=mkProbe('top'),pL=mkProbe('left'),pR=mkProbe('right'),pB=mkProbe('bottom');
-  // タップが「そもそもページに届いているか」を見る。passive:true なので挙動には一切干渉しない。
-  document.addEventListener('touchstart',e=>{
-    const t=e.touches[0];if(!t)return;
-    _dbgTouchN++;_dbgLastTouch=Math.round(t.clientX)+','+Math.round(t.clientY);
-  },{passive:true,capture:true});
-  document.addEventListener('click',e=>{
-    _dbgClickN++;_dbgLastClick=Math.round(e.clientX)+','+Math.round(e.clientY);
-  },{passive:true,capture:true});
-  const fmt=n=>Math.round(n*10)/10;
-  // settingsBtn/mpBtn/_currentUser はこの関数より後方で let/const 宣言されるため、
-  // 初回 tick は TDZ で throw しうる。250ms 後の定期実行では初期化済みになる。
-  const tick=()=>{ try{ _tick(); }catch(e){ el.textContent='dbg warming up…\n'+(e&&e.message||e); } };
-  const _tick=()=>{
-    const r=canvas.getBoundingClientRect();
-    const sy=r.height/H, sx=r.width/W;                 // canvas内部座標 → 画面CSSピクセル
-    const setY1=r.top+settingsBtn.y*sy, setY2=r.top+(settingsBtn.y+settingsBtn.h)*sy;
-    const setX1=r.left+settingsBtn.x*sx;
-    const mpY1=r.top+mpBtn.y*sy,        mpY2=r.top+(mpBtn.y+mpBtn.h)*sy;
-    const mpX1=r.left+mpBtn.x*sx,       mpX2=r.left+(mpBtn.x+mpBtn.w)*sx;
-    const name=(typeof _getPlayerName==='function'?(_getPlayerName()||''):'');
-    el.textContent=
-      // ビルド識別子は1行目の先頭に置く。これが期待値でなければ PWA が古いHTMLを掴んでおり、
-      // 以降の数値は全て古いビルドのもの＝読んでも意味がない。
-      'BUILD '+_BUILD_ID+'\n'+
-      'mm:'+window.matchMedia('(display-mode: standalone)').matches+
-      ' nav:'+(window.navigator.standalone===true)+
-      ' cls:'+document.body.classList.contains('standalone')+'\n'+
-      'inset T'+fmt(pT.getBoundingClientRect().height)+
-      ' L'+fmt(pL.getBoundingClientRect().width)+
-      ' R'+fmt(pR.getBoundingClientRect().width)+
-      ' B'+fmt(pB.getBoundingClientRect().height)+'\n'+
-      'canvas top:'+fmt(r.top)+' left:'+fmt(r.left)+' '+fmt(r.width)+'x'+fmt(r.height)+' sc:'+fmt(sy*100)/100+'\n'+
-      'SET y:'+fmt(setY1)+'-'+fmt(setY2)+' x:'+fmt(setX1)+'\n'+
-      'MP  y:'+fmt(mpY1)+'-'+fmt(mpY2)+' x:'+fmt(mpX1)+'-'+fmt(mpX2)+'\n'+
-      'HOL y:'+fmt(r.top+holBtn.y*sy)+'-'+fmt(r.top+(holBtn.y+holBtn.h)*sy)+
-      ' x:'+fmt(r.left+holBtn.x*sx)+'-'+fmt(r.left+(holBtn.x+holBtn.w)*sx)+
-      ' k:'+_UI_K+'\n'+
-      'tap#'+_dbgTouchN+' '+_dbgLastTouch+'  clk#'+_dbgClickN+' '+_dbgLastClick+'\n'+
-      'vp:'+window.innerWidth+'x'+window.innerHeight+' st:'+state+
-      ' login:'+(_currentUser?'yes':'no')+(name?'('+name+')':'');
-  };
-  tick();
-  setInterval(tick,250);
-}
 
 // 世界最高到達階(world_stats.best_stage)。死亡数POSTと同じ anon 経路なので未ログインでも反映される。
 // サーバ側が Math.max 相当（既存値以下は書かない + .lt ガード）なので、送りすぎても記録は後退しない。
@@ -947,12 +874,8 @@ if(isTouchDevice){
   window.addEventListener('orientationchange',updateOrientation);
   // Add-to-home-screen hint: iOS Safari can't go fullscreen in-browser; guide users to A2HS.
   const _standalone = window.navigator.standalone===true || window.matchMedia('(display-mode: standalone)').matches;
-  // PWA起動時のみ body.standalone を付与し、CSS 側で safe-area 分のオフセットを効かせる
-  // (black-translucent でステータスバーの裏に回り込む MY PAGE / SETTINGS を救済)。
-  if(_standalone){
-    document.body.classList.add('standalone');
-    _initStandaloneDebug();
-  }
+  // PWA起動時のみ body.standalone を付与（PWA固有のCSSが必要になったとき用のフック）。
+  if(_standalone)document.body.classList.add('standalone');
   if(!_standalone && localStorage.getItem('neverend_a2hs_dismissed')!=='1'){
     const _banner=document.getElementById('a2hsBanner');
     if(_banner){
@@ -6572,21 +6495,27 @@ function _drawMpBtn(ctx,btn,label,stroke,fill){
 
 // 四隅UIの拡大率。タッチ端末だけ拡大し、PC/非タッチは 1 = 全て従来と完全に同一の数値になる。
 // 描画とタップ判定は必ずこの同じ矩形を参照すること（見た目と判定のズレを構造的に防ぐ）。
-const _UI_K = isTouchDevice ? 1.5 : 1;
-// 上端2つは y を固定値のみで持つ（PWA向けオフセットは撤去。canvas もボタンも一切動かさない）。
-// 矩形は「描画される枠」そのもので、タップ判定も同じオブジェクトを見る。
-// タッチ時は文字が1.5倍になるぶんだけ枠を広げるが、文字幅に合わせて詰める:
-//   SETTINGS    19.5px Courier New ≒ 94px 幅 → w132（左右19pxずつ）
-//   [ MY PAGE ] 19.5px Courier New ≒129px 幅 → w158（左右14.5pxずつ）
-// base は文字ベースラインの枠内オフセット。PC は従来どおり 120/104×28・base19。
-const _SET_BOX = isTouchDevice ? {w:132,h:36,base:25} : {w:120,h:28,base:19};
-const _MP_BOX  = isTouchDevice ? {w:158,h:36,base:25} : {w:104,h:28,base:19};
-const settingsBtn={x:16,y:16,w:_SET_BOX.w,h:_SET_BOX.h};
-const mpBtn={x:W-16-_MP_BOX.w,y:12,w:_MP_BOX.w,h:_MP_BOX.h};   // 右マージン16pxを維持
-// 右下 HALL OF LEGENDS。矩形の右端 x+w = W-20*K がテキスト右端(textAlign='right')と一致し、
-// ベースライン H-14*K は矩形 [H-24*K, H-4*K] の内側に必ず収まる＝描画と判定が定義上ズレない。
+const _UI_K = isTouchDevice ? 1.7 : 1;
+// 四隅の矩形は「描画される枠」そのもので、タップ判定(_inRegion)も同じオブジェクトを見る。
+// タッチ時の w/h は Courier New の字送り(=0.6em)から実寸を出し、控えめな余白を足しただけの値。
+// 見た目より過大にしない＝隣接要素や画面中央を拾わない。
+//   font 13*1.7=22.1px → 1文字 13.26px
+//   SETTINGS    ( 8字) ≒106px → w136（左右15pxずつ）
+//   [ MY PAGE ] (11字) ≒146px → w176（左右15pxずつ）
+// base は枠内での文字ベースライン位置。上下中央に見えるよう base = h/2 + 0.35*font で算出
+// （PC: 28/2 + 0.35*13 = 18.6 ≒ 19 で従来値と一致。タッチ: 40/2 + 0.35*22.1 = 27.7 ≒ 28）。
+const _SET_BOX = isTouchDevice ? {w:136,h:40,base:28} : {w:120,h:28,base:19};
+const _MP_BOX  = isTouchDevice ? {w:176,h:40,base:28} : {w:104,h:28,base:19};
+// タッチ時のみ上端ボタンを少し下げる（画面最上端の押しにくさの緩和）。canvas は動かさない。
+const _TOP_DY = isTouchDevice ? 24 : 0;
+const settingsBtn={x:16,y:16+_TOP_DY,w:_SET_BOX.w,h:_SET_BOX.h};
+const mpBtn={x:W-16-_MP_BOX.w,y:12+_TOP_DY,w:_MP_BOX.w,h:_MP_BOX.h};   // 右マージン16pxを維持
+// 右下 HALL OF LEGENDS。枠の右端 x+w が textAlign='right' のテキスト右端 W-20*K と一致し、
+// ベースライン H-14*K は必ず枠内に収まる＝描画と判定が定義上ズレない。
+//   [ HALL OF LEGENDS ] (19字) は font 12*1.7=20.4px で ≒233px → w250（左右8.5pxずつ）
 // _UI_K===1 のとき {W-200, H-24, 180, 20} となり、従来のハードコード判定と完全に同一。
-const holBtn={x:W-200*_UI_K,y:H-24*_UI_K,w:180*_UI_K,h:20*_UI_K};
+const _HOL_BOX = isTouchDevice ? {w:250,h:36,base:25} : {w:180,h:20,base:10};
+const holBtn={x:W-20*_UI_K-_HOL_BOX.w,y:H-14*_UI_K-_HOL_BOX.base,w:_HOL_BOX.w,h:_HOL_BOX.h};
 let _titleNormalBtn={x:0,y:0,w:0,h:0},_titleDeathBtn={x:0,y:0,w:0,h:0};
 const mpBackBtn={x:W/2-270,y:H-62,w:140,h:36};
 const mpResetBtn={x:W/2-70,y:H-62,w:140,h:36};

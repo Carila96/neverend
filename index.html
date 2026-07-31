@@ -720,6 +720,23 @@ let worldDeaths=null;
 function _fetchWorldDeaths(){fetch('/api/stats?type=death').then(r=>r.json()).then(d=>{if(d.total_deaths!=null)worldDeaths=d.total_deaths;}).catch(()=>{});}
 _fetchWorldDeaths();
 setInterval(()=>{if(state==='title')_fetchWorldDeaths();},60000);
+// 世界最高到達階(world_stats.best_stage)。死亡数POSTと同じ anon 経路なので未ログインでも反映される。
+// サーバ側が Math.max 相当（既存値以下は書かない + .lt ガード）なので、送りすぎても記録は後退しない。
+let _worldBestSent=0;
+function _postWorldBest(stage){
+  if(adminMode)return;
+  stage=parseInt(stage,10);
+  if(!(stage>0))return;
+  if(stage<=_worldBestSent)return;   // 同一セッション内の重複送信を抑止（自己ベスト更新時のみ飛ぶ）
+  _worldBestSent=stage;
+  fetch('/api/stats?type=stage&stage='+stage,{method:'POST'}).then(r=>{
+    if(!r.ok){r.json().then(b=>console.error('[world best] POST failed:',r.status,b)).catch(()=>console.error('[world best] POST failed:',r.status));}
+  }).catch(e=>console.error('[world best] POST error:',e));
+}
+// 起動時に1回だけ、保存済みの自己ベストを送る。これが無いと本機能の追加前に到達済みの
+// 記録が世界最高到達階に永久に反映されない（既存値以下ならサーバ側で何も書かれない）。
+_postWorldBest(getStat('bestStage',0));
+
 let _worldStatsCache=null;
 function _prefetchWorldStats(){fetch('/api/stats?type=world').then(r=>r.json()).then(d=>{_worldStatsCache=d;}).catch(()=>{});}
 _prefetchWorldStats();
@@ -7588,7 +7605,7 @@ function checkTitlesOnClear(nextStage){
   if(_stageAttemptDeaths===0)incStat('ghostClears');
   if(nextStage===5&&(Date.now()-sessionStartTime)<180000)setStat('speedDemon',1);
   // Update bestStage to include cleared stages
-  if(nextStage>curBest)setStat('bestStage',nextStage);
+  if(nextStage>curBest){setStat('bestStage',nextStage);_postWorldBest(nextStage);} // 自己ベスト更新時のみ世界記録へ送信
   // モード別の最高到達階層
   if(gameMode==='normal'){
     if(nextStage>getStat('normalBestStage',0)){
@@ -7691,7 +7708,7 @@ function triggerDeath(){
   // ※ DBへの書き戻しは、下の到達階層 setStat 群がすべて終わったあとに
   //    saveProfile('death') で実行する（この位置で呼ぶと当該死亡の階層が1回分遅れる）
   const best=getStat('bestStage',1);
-  if(lastDeathStage>best)setStat('bestStage',lastDeathStage);
+  if(lastDeathStage>best){setStat('bestStage',lastDeathStage);_postWorldBest(lastDeathStage);} // 自己ベスト更新時のみ世界記録へ送信
   // モード別の最高到達階層（死亡時）
   if(gameMode==='normal'){
     if(lastDeathStage>getStat('normalBestStage',0)){

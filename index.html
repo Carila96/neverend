@@ -788,6 +788,8 @@ function _initStandaloneDebug(){
       'canvas top:'+fmt(r.top)+' left:'+fmt(r.left)+' '+fmt(r.width)+'x'+fmt(r.height)+' sc:'+fmt(sy*100)/100+'\n'+
       'SET y:'+fmt(setY1)+'-'+fmt(setY2)+' x:'+fmt(setX1)+'\n'+
       'MP  y:'+fmt(mpY1)+'-'+fmt(mpY2)+' x:'+fmt(mpX1)+'-'+fmt(mpX2)+'\n'+
+      'HOL y:'+fmt(r.top+holBtn.y*sy)+'-'+fmt(r.top+(holBtn.y+holBtn.h)*sy)+
+      ' x:'+fmt(r.left+holBtn.x*sx)+'-'+fmt(r.left+(holBtn.x+holBtn.w)*sx)+' k:'+_UI_K+'\n'+
       'tap#'+_dbgTouchN+' '+_dbgLastTouch+'  clk#'+_dbgClickN+' '+_dbgLastClick+'\n'+
       'vp:'+window.innerWidth+'x'+window.innerHeight+' st:'+state+
       ' login:'+(_currentUser?'yes':'no')+(name?'('+name+')':'')+
@@ -6577,8 +6579,15 @@ function _drawMpBtn(ctx,btn,label,stroke,fill){
   ctx.restore();
 }
 
-const settingsBtn={x:16,y:16,w:120,h:28};
-const mpBtn={x:W-120,y:12,w:104,h:28};
+// 四隅UIの拡大率。タッチ端末だけ拡大し、PC/非タッチは 1 = 全て従来と完全に同一の数値になる。
+// 描画とタップ判定は必ずこの同じ矩形を参照すること（見た目と判定のズレを構造的に防ぐ）。
+const _UI_K = isTouchDevice ? 1.5 : 1;
+const settingsBtn={x:16,y:16,w:120*_UI_K,h:28*_UI_K};
+const mpBtn={x:W-16-104*_UI_K,y:12,w:104*_UI_K,h:28*_UI_K};   // 右マージン16pxを維持したまま拡大
+// 右下 HALL OF LEGENDS。矩形の右端 x+w = W-20*K がテキスト右端(textAlign='right')と一致し、
+// ベースライン H-14*K は矩形 [H-24*K, H-4*K] の内側に必ず収まる＝描画と判定が定義上ズレない。
+// _UI_K===1 のとき {W-200, H-24, 180, 20} となり、従来のハードコード判定と完全に同一。
+const holBtn={x:W-200*_UI_K,y:H-24*_UI_K,w:180*_UI_K,h:20*_UI_K};
 let _titleNormalBtn={x:0,y:0,w:0,h:0},_titleDeathBtn={x:0,y:0,w:0,h:0};
 const mpBackBtn={x:W/2-270,y:H-62,w:140,h:36};
 const mpResetBtn={x:W/2-70,y:H-62,w:140,h:36};
@@ -6604,8 +6613,9 @@ canvas.addEventListener('click',e=>{
       }
       else{floatMsgs.push({txt:'Clear all 100 floors to unlock.',x:W/2,y:H/2,life:3,color:'rgba(255,220,50,0.9)'});}
     }
-    if(cx>=settingsBtn.x&&cx<=settingsBtn.x+settingsBtn.w&&cy>=settingsBtn.y&&cy<=settingsBtn.y+settingsBtn.h){openSettings();}
-    if(!testMode&&cx>=mpBtn.x&&cx<=mpBtn.x+mpBtn.w&&cy>=mpBtn.y&&cy<=mpBtn.y+mpBtn.h){document.getElementById('mypageOverlay').style.display='block';document.getElementById('c').style.display='none';}
+    // 四隅はすべて _inRegion(矩形) に統一（描画が参照する矩形と同一のものを判定に使う）
+    if(_inRegion(settingsBtn)){openSettings();}
+    if(!testMode&&_inRegion(mpBtn)){document.getElementById('mypageOverlay').style.display='block';document.getElementById('c').style.display='none';}
     // testMode: LOGIN button click (H/2+134 area)
     if(testMode&&!_currentUser&&cx>=W/2-200&&cx<=W/2+200&&cy>=H/2+122&&cy<=H/2+146){openLoginModal();}
     // ENTER YOUR NAME click (non-testMode, when no name set)
@@ -6613,7 +6623,8 @@ canvas.addEventListener('click',e=>{
       const _ov=document.getElementById('nameOverlay');if(_ov){_ov.classList.add('show');setTimeout(()=>document.getElementById('nameInputField').focus(),50);}
     }
     // Hall of Legends click (bottom-right area, disabled in testMode)
-    if(!testMode&&cx>=W-200&&cx<=W-20&&cy>=H-24&&cy<=H-4){if(_worldStatsCache){localStorage.setItem('neverend_world_stats_cache',JSON.stringify(_worldStatsCache));}document.getElementById('holOverlay').style.display='block';document.getElementById('c').style.display='none';}
+    // 旧: W-200/W-20/H-24/H-4 のハードコード。holBtn に統一して描画と判定を同じ矩形にした。
+    if(!testMode&&_inRegion(holBtn)){if(_worldStatsCache){localStorage.setItem('neverend_world_stats_cache',JSON.stringify(_worldStatsCache));}document.getElementById('holOverlay').style.display='block';document.getElementById('c').style.display='none';}
   } else if(state==='testcomplete'){
     if(cx>=_tcBtn.x&&cx<=_tcBtn.x+_tcBtn.w&&cy>=_tcBtn.y&&cy<=_tcBtn.y+_tcBtn.h){state='title';}
   } else if(state==='mypage'){
@@ -6680,8 +6691,8 @@ function drawTitle(){
   ctx.shadowBlur=0;
   ctx.strokeStyle='rgba(255,255,255,0.7)';ctx.lineWidth=1.5;
   ctx.strokeRect(settingsBtn.x,settingsBtn.y,settingsBtn.w,settingsBtn.h);
-  ctx.fillStyle='rgba(255,255,255,0.9)';ctx.font='13px "Courier New"';ctx.textAlign='center';
-  ctx.fillText('SETTINGS',settingsBtn.x+settingsBtn.w/2,settingsBtn.y+19);
+  ctx.fillStyle='rgba(255,255,255,0.9)';ctx.font=(13*_UI_K)+'px "Courier New"';ctx.textAlign='center';
+  ctx.fillText('SETTINGS',settingsBtn.x+settingsBtn.w/2,settingsBtn.y+19*_UI_K);
   ctx.restore();
   if(!testMode){
     ctx.save();
@@ -6689,8 +6700,8 @@ function drawTitle(){
     ctx.shadowBlur=0;
     ctx.strokeStyle='rgba(255,220,50,0.8)';ctx.lineWidth=1.5;
     ctx.strokeRect(mpBtn.x,mpBtn.y,mpBtn.w,mpBtn.h);
-    ctx.fillStyle='rgba(255,220,50,1.0)';ctx.font='13px "Courier New"';ctx.textAlign='center';
-    ctx.fillText('[ MY PAGE ]',mpBtn.x+mpBtn.w/2,mpBtn.y+19);
+    ctx.fillStyle='rgba(255,220,50,1.0)';ctx.font=(13*_UI_K)+'px "Courier New"';ctx.textAlign='center';
+    ctx.fillText('[ MY PAGE ]',mpBtn.x+mpBtn.w/2,mpBtn.y+19*_UI_K);
     ctx.restore();
   }
   ctx.save();
@@ -6747,15 +6758,15 @@ function drawTitle(){
   const td=getStat('totalDeaths');
   const tb=getStat('bestStage',0);
   ctx.save();
-  ctx.font='12px "Courier New"';
-  // 左下：YOUR DEATHS + WORLD DEATHS
+  ctx.font=(12*_UI_K)+'px "Courier New"';
+  // 左下：YOUR DEATHS + WORLD DEATHS（_UI_K===1 で従来と同じ 20,H-30 / 20,H-14）
   ctx.fillStyle='rgba(255,100,100,0.8)';ctx.textAlign='left';
-  {const _dmd=getStat('deathModeDeaths',0);const _dtxt='YOUR DEATHS: '+(td>0?td.toLocaleString():'0')+(deathModeUnlocked?'  (Death Mode: '+Number(_dmd).toLocaleString()+')':'');ctx.fillText(_dtxt,20,H-30);}
+  {const _dmd=getStat('deathModeDeaths',0);const _dtxt='YOUR DEATHS: '+(td>0?td.toLocaleString():'0')+(deathModeUnlocked?'  (Death Mode: '+Number(_dmd).toLocaleString()+')':'');ctx.fillText(_dtxt,20*_UI_K,H-30*_UI_K);}
   ctx.fillStyle='rgba(220,120,120,0.8)';ctx.textAlign='left';
-  ctx.fillText('WORLD DEATHS: '+Number(worldDeaths||0).toLocaleString(),20,H-14);
-  // 右下：HALL OF LEGENDS
+  ctx.fillText('WORLD DEATHS: '+Number(worldDeaths||0).toLocaleString(),20*_UI_K,H-14*_UI_K);
+  // 右下：HALL OF LEGENDS。テキスト右端とベースラインは holBtn 矩形から導出（判定と常に一致）
   ctx.fillStyle=testMode?'rgba(80,80,100,0.5)':'rgba(100,140,200,0.8)';ctx.textAlign='right';
-  ctx.fillText(testMode?'[ HALL OF LEGENDS ] Coming Soon':'[ HALL OF LEGENDS ]',W-20,H-14);
+  ctx.fillText(testMode?'[ HALL OF LEGENDS ] Coming Soon':'[ HALL OF LEGENDS ]',holBtn.x+holBtn.w,H-14*_UI_K);
   ctx.restore();
   if(hardMode)neonText('HARD MODE ON',160,H-48,'rgba(255,80,60,0.6)',10,4);
   if(retroMode)neonText('RETRO MODE ON',W-160,H-48,'rgba(100,255,120,0.6)',10,4);

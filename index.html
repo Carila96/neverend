@@ -1,4 +1,4 @@
-<!-- redeploy 2026-07-26 -->
+<!-- redeploy 2026-07-31 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,12 +15,14 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<!-- viewport-fit=cover は env(safe-area-inset-*) を有効にするための前提。これが無いと iOS は
-     インセットを常に 0 として報告する。PC/非ノッチ端末ではインセットが 0 なので影響なし。 -->
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<!-- viewport-fit=cover は外した。safe-area インセットを読むために入れていたが、実機計測で
+     inset は全て 0 と判明し用途が無くなったうえ、cover は本文をノッチ側まで広げてしまうため。 -->
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- black: standalone で本文がステータスバーの裏まで広がらず、その下から始まる。
+     black-translucent だと上端の帯を OS に奪われ canvas 上端のボタンが押せなかった。 -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <title>neverEND — 30 Seconds to Live. Forever.</title>
 <meta name="description" content="neverEND is a brutal browser platformer. 30 seconds per attempt. Die, reset, repeat. How high can you climb the tower? Free to play.">
 <meta name="keywords" content="neverEND, DAMN, DAMNRUN, hardcore platformer, browser game, free game, tower climbing game, die and retry, impossible game, hard platformer, rage game, rage platformer, impossible platformer, skill game, free browser game, online platformer, neverend game, Carila, 30 seconds, tower game, クソゲー, 激ムズゲーム, 難しいゲーム, ブラウザゲーム, アクションゲーム, 無料ゲーム, 死にゲー">
@@ -63,12 +65,18 @@ body.touch canvas{margin:0 auto;max-height:88vh;max-height:var(--mobile-canvas-s
    回り込み、タップが OS 側に奪われて反応しなくなる。standalone のときだけ safe-area 分 canvas を下げ、
    同じ分だけ高さを縮めてアスペクト比を保つ。
    ブラウザ表示(非standalone)は body.standalone が付かないため従来どおり。PC は body.touch が無いので無影響。 */
-body.touch.standalone{--mobile-canvas-scale:calc(88dvh - env(safe-area-inset-top,0px));}
-body.touch.standalone canvas{margin-top:env(safe-area-inset-top,0px);}
-/* ゲーム中の固定ボタン(top:16px)も同じ理由でステータスバーの裏に入るため、同量ずらす */
+/* 実機計測の結果、safe-area インセットは全て 0 で、env() ベースの補正は完全な no-op だった
+   （inset T0 なのに MP y:5.8-19.2 のタップが1件も届かない）。さらに iPhone の横向き standalone では
+   ステータスバー自体が非表示なので、status-bar-style を black にしても本文は y=0 から始まり
+   上端ボタンの位置は動かない。＝ env() にも black 化にも依存しない固定オフセットが必要。
+   28px は「上端ボタン(canvas y=12〜44 → 画面 y≈6〜21px)を、OS がジェスチャ用に押さえている
+   画面最上端の帯の外へ出す」ための実測ベースの値。canvas を同量縮めてアスペクト比を保つ。 */
+body.touch.standalone{--pwa-top-guard:28px;--mobile-canvas-scale:calc(88dvh - var(--pwa-top-guard));}
+body.touch.standalone canvas{margin-top:var(--pwa-top-guard);}
+/* ゲーム中の固定ボタン(top:16px)も同じ帯に入るため、同量ずらす */
 body.touch.standalone #btnPause,
-body.touch.standalone #btnTitle{top:calc(16px + env(safe-area-inset-top,0px));}
-body.touch.standalone #a2hsBanner{top:calc(10px + env(safe-area-inset-top,0px));}
+body.touch.standalone #btnTitle{top:calc(16px + var(--pwa-top-guard));}
+body.touch.standalone #a2hsBanner{top:calc(10px + var(--pwa-top-guard));}
 /* PWA実機デバッグ表示。PWAではConsoleが見えないので画面に出す。standalone かつ touch のときだけ。
    pointer-events:none 固定 — この表示自体が絶対にタップを奪わないこと。 */
 #dbgSafe{display:none;}
@@ -680,6 +688,7 @@ let _stageAttemptDeaths=0;
 let _retryStreak=0,_attemptStartMs=Date.now(),_recentDeathTimes=[];
 function _submitTesterData(){
   if(!testMode)return;
+  if(adminMode)return;   // 管理者モード中はテスター記録も送らない
   const name=_getPlayerName()||'Anonymous';
   const playTime=Math.floor((Date.now()-_sessionStart)/1000);
   fetch('/api/register-tester',{method:'POST',headers:{'Content-Type':'application/json'},
@@ -735,6 +744,7 @@ setInterval(()=>{if(state==='title')_fetchWorldDeaths();},60000);
 // PWA では Console が見えないため、safe-area / canvas 位置 / ボタンの実ピクセル位置 /
 // 実際に届いたタップ座標を画面下部に出す。standalone かつ touch のときだけ動く
 // （呼び出し元が isTouchDevice ブロック内の if(_standalone) なので PC・通常ブラウザでは一切走らない）。
+const _BUILD_ID='0731a';   // ビルド識別子。HTMLを更新したら必ず上げる（1行目の redeploy マーカーと対）
 let _dbgLastTouch='-', _dbgLastClick='-', _dbgTouchN=0, _dbgClickN=0;
 function _initStandaloneDebug(){
   const el=document.getElementById('dbgSafe');
@@ -780,7 +790,8 @@ function _initStandaloneDebug(){
       'MP  y:'+fmt(mpY1)+'-'+fmt(mpY2)+' x:'+fmt(mpX1)+'-'+fmt(mpX2)+'\n'+
       'tap#'+_dbgTouchN+' '+_dbgLastTouch+'  clk#'+_dbgClickN+' '+_dbgLastClick+'\n'+
       'vp:'+window.innerWidth+'x'+window.innerHeight+' st:'+state+
-      ' login:'+(_currentUser?'yes':'no')+(name?'('+name+')':'');
+      ' login:'+(_currentUser?'yes':'no')+(name?'('+name+')':'')+
+      ' b:'+_BUILD_ID;   // ビルド識別子: PWAが新HTMLを読めているか実機で一目で判る
   };
   tick();
   setInterval(tick,250);
@@ -8388,6 +8399,11 @@ async function _submitLoginName(){
   if(!supabaseClient||!_currentUser){
     closeLoginModal();return;
   }
+  // 管理者モード中は player_profiles へ一切書かない（黙って無視せず理由を出す）
+  if(adminMode){
+    if(msg){msg.style.color='#e74c3c';msg.textContent='adminMode: DB write blocked.';}
+    return;
+  }
   if(msg){msg.style.color='#aaa';msg.textContent='Checking...';}
   // 重複チェック
   try{
@@ -8458,6 +8474,13 @@ async function _onLoginSuccess(){
   const user=_currentUser||(supabaseClient?(await supabaseClient.auth.getUser()).data.user:null);
   if(!user)return;
   _currentUser=user;
+  // 管理者モード中は auth-sync を叩かない。これは service_role で player_profiles に
+  // best_stage / total_deaths / total_play_time を書き込む(RLSも迂回する)経路で、
+  // Hall of Legends に管理者記録が混入する主要因になりうる。
+  if(adminMode){
+    _setLmMsg('adminMode: profile sync skipped.','#e74c3c');
+    return;
+  }
   try{
     const playerName=_getPlayerName()||'';
     const body={

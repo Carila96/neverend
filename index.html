@@ -63,12 +63,23 @@ body.touch{align-items:flex-start;}
    PC は :root の 88dvh のままで一切変わらない。 */
 body.touch{--mobile-canvas-scale:calc(var(--app-vh, 1dvh) * 88);}
 body.touch canvas{margin:0 auto;max-height:88vh;max-height:var(--mobile-canvas-scale);max-width:156.44vh;max-width:calc(var(--mobile-canvas-scale)*1.7778);}
-/* タッチ端末のみ canvas を 4px だけ下げる（上寄せ仕様は維持したままの微調整）。
-   高さは 88dvh のまま下端が 4px 下がるだけ。下端の Cookie バナー / マイページは
-   position:fixed で viewport 基準のため canvas の移動の影響を受けない。
-   コントローラー(#lrRow/#jumpCluster)も viewport 基準なのでジャンプ判定は不変。
-   PC・非タッチには body.touch が付かないため適用されない。 */
-body.touch canvas{margin-top:4px;}
+/* タッチ端末のみ canvas を上端から 4px の位置に置く（上寄せ仕様は維持したままの微調整）。
+   下端の Cookie バナー / マイページ / コントローラーはいずれも position:fixed で viewport 基準の
+   ため、canvas の位置・高さがどう変わっても影響を受けない（ジャンプ判定も不変）。 */
+/* ★ 回転をまたいだ位置ずれの根治:
+   従来 canvas の縦位置は body の flex(align-items) で決めていたため、top は
+   「body 高さ・canvas 高さ・align-items」の3つに依存していた。iOS は回転直後に
+   これらを確定させないまま一度レイアウトし、その後 再レイアウトが走らないことがある。
+   その場合 flex-start が効く前の中央寄せ残余が残り、canvas top が 4 以外(実機で63)で固着する。
+   → タッチ端末では canvas を position:fixed で viewport に直接ピン留めし、top を 4px に固定する。
+     これで top は body 高さにも canvas 高さにも align-items にも dvh にも依存しなくなり、
+     縦横どちらで開いても・回転の途中でも・再計算が走らなくても常に 4px になる。
+     水平方向は left/right:0 + margin:0 auto で従来どおり中央。transform を使わないので
+     image-rendering:pixelated の描画品質も変わらない。
+   z-index は付けない(auto)ため、Cookie バナー(9999)/コントローラー(200)/各オーバーレイ(1000)
+   は従来どおり canvas の上に描画される。
+   PC・非タッチは body.touch が付かないので従来の flex 中央寄せのまま。 */
+body.touch canvas{position:fixed;top:4px;left:0;right:0;margin:0 auto;}
 /* PWA(standalone)向けの canvas ずらし補正はすべて撤回済み。canvas を下げると Cookie 同意バナーの
    Accept が押せなくなり、下段UI・ゲーム画面もまとめてずれたため。canvas は上寄せ・全高のまま
    y 方向に 1px も動かさない（コントローラーを持つ指で画面が隠れないための仕様）。
@@ -767,7 +778,7 @@ setInterval(()=>{if(state==='title')_fetchWorldDeaths();},60000);
 // ── PWA(standalone)実機デバッグ表示 ────────────────────────────────
 // PWA では Console が見えないため、ビルド識別子と canvas 位置を画面に出す。
 // standalone かつ touch のときだけ動く（呼び出し元が isTouchDevice ブロック内の if(_standalone)）。
-const _BUILD_ID='0731g';   // HTMLを更新したら必ず上げる（1行目の redeploy マーカーと対）
+const _BUILD_ID='0731h';   // HTMLを更新したら必ず上げる（1行目の redeploy マーカーと対）
 function _initStandaloneDebug(){
   const el=document.getElementById('dbgSafe');
   if(!el)return;
@@ -961,12 +972,16 @@ if(isTouchDevice){
   updateOrientation();
   // iOS PWA は起動後しばらくしてから innerHeight が最終値に落ち着くため、数回だけ再測定する。
   // pageshow はタスクを切ってからの復帰(bfcache)でも発火するので、再起動ごとに必ず通る。
-  [60,180,400,800,1500].forEach(function(ms){setTimeout(updateOrientation,ms);});
-  window.addEventListener('load',updateOrientation);
-  window.addEventListener('pageshow',updateOrientation);
-  if(window.visualViewport)window.visualViewport.addEventListener('resize',updateOrientation);
-  window.addEventListener('resize',updateOrientation);
-  window.addEventListener('orientationchange',updateOrientation);
+  const _reflowSoon=()=>{ updateOrientation(); [0,60,120,250,400,700,1200].forEach(function(ms){setTimeout(updateOrientation,ms);}); };
+  _reflowSoon();
+  window.addEventListener('load',_reflowSoon);
+  window.addEventListener('pageshow',_reflowSoon);
+  // orientationchange は発火が早すぎて、その瞬間の innerWidth/innerHeight はまだ回転前の値のことが
+  // ある。単発では過渡値を掴むので、必ず遅延つきで測り直す。
+  window.addEventListener('orientationchange',_reflowSoon);
+  // visualViewport の resize は回転完了後の確定値で飛ぶため、こちらを主軸にする。
+  if(window.visualViewport)window.visualViewport.addEventListener('resize',_reflowSoon);
+  window.addEventListener('resize',updateOrientation);   // 連続リサイズ用は軽い単発で十分
   // Add-to-home-screen hint: iOS Safari can't go fullscreen in-browser; guide users to A2HS.
   const _standalone = window.navigator.standalone===true || window.matchMedia('(display-mode: standalone)').matches;
   // PWA起動時のみ body.standalone を付与（PWA固有のCSSが必要になったとき用のフック）。

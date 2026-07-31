@@ -58,6 +58,10 @@ canvas{
 /* Touch: keep the canvas large (~88%), top-aligned (no top gap); controls overlay the freed bottom space. */
 :root{--mobile-canvas-scale:88dvh;}
 body.touch{align-items:flex-start;}
+/* タッチのみ: canvas 高さの基準を dvh から実測値 --app-vh に切り替える。値は 88dvh と同じだが、
+   起動タイミングで揺れない。--app-vh 未設定時は 1dvh にフォールバックし従来と同一。
+   PC は :root の 88dvh のままで一切変わらない。 */
+body.touch{--mobile-canvas-scale:calc(var(--app-vh, 1dvh) * 88);}
 body.touch canvas{margin:0 auto;max-height:88vh;max-height:var(--mobile-canvas-scale);max-width:156.44vh;max-width:calc(var(--mobile-canvas-scale)*1.7778);}
 /* タッチ端末のみ canvas を 4px だけ下げる（上寄せ仕様は維持したままの微調整）。
    高さは 88dvh のまま下端が 4px 下がるだけ。下端の Cookie バナー / マイページは
@@ -251,6 +255,25 @@ body.touch.portrait #rotateOverlay{display:flex;}
 </style>
 </head>
 <body>
+<script>
+// iOS PWA では起動直後、ステータスバー/セーフエリアが反映されるまで dvh と innerHeight が
+// 確定しない。この確定前に最初のレイアウトが走ると canvas の高さと縦位置が起動ごとに変わる。
+// さらに body.touch は従来この canvas より後ろの <script> で付与していたため、初回描画が
+// body{align-items:center}（=縦中央）で行われ、その後 flex-start へ飛ぶことがあった。
+// 対策: canvas がパースされる前に (1)touch 判定と body.touch 付与 (2)実測 innerHeight の
+// --app-vh 設定 を済ませ、初回描画から確定した値でレイアウトさせる。
+(function(){
+  var coarse=!!(window.matchMedia&&window.matchMedia('(pointer:coarse)').matches);
+  window.__neverendTouch=('ontouchstart' in window||navigator.maxTouchPoints>0)&&coarse;
+  if(window.__neverendTouch)document.body.classList.add('touch');
+  // --app-vh = innerHeight の 1% を px で固定。0 のときは書かず CSS 側の 1dvh フォールバックに任せる。
+  window.__setAppVh=function(){
+    var h=window.innerHeight;
+    if(h>0)document.documentElement.style.setProperty('--app-vh',(h/100)+'px');
+  };
+  window.__setAppVh();
+})();
+</script>
 <canvas id="c" width="1280" height="720"></canvas>
 <div id="touchControls" aria-hidden="true">
   <div id="lrRow">
@@ -744,7 +767,7 @@ setInterval(()=>{if(state==='title')_fetchWorldDeaths();},60000);
 // ── PWA(standalone)実機デバッグ表示 ────────────────────────────────
 // PWA では Console が見えないため、ビルド識別子と canvas 位置を画面に出す。
 // standalone かつ touch のときだけ動く（呼び出し元が isTouchDevice ブロック内の if(_standalone)）。
-const _BUILD_ID='0731f';   // HTMLを更新したら必ず上げる（1行目の redeploy マーカーと対）
+const _BUILD_ID='0731g';   // HTMLを更新したら必ず上げる（1行目の redeploy マーカーと対）
 function _initStandaloneDebug(){
   const el=document.getElementById('dbgSafe');
   if(!el)return;
@@ -761,6 +784,7 @@ function _initStandaloneDebug(){
       'mm:'+window.matchMedia('(display-mode: standalone)').matches+
       ' nav:'+(window.navigator.standalone===true)+
       ' cls:'+document.body.classList.contains('standalone')+'<br>'+
+      'vh:'+(getComputedStyle(document.documentElement).getPropertyValue('--app-vh')||'unset').trim()+' ch:'+fmt(canvas.getBoundingClientRect().height)+'<br>'+
       'vp:'+window.innerWidth+'x'+window.innerHeight+' st:'+state+
       ' login:'+(_currentUser?'yes':'no')+(name?'('+name+')':'');
   };
@@ -828,7 +852,9 @@ document.addEventListener('keyup',e=>{keys[e.key]=false;prevKeys[e.key]=false;
 // Require a coarse (finger) primary pointer so touchscreen laptops/desktops (mouse-primary) stay in PC mode
 // (full-size canvas, no on-screen controls); phones/tablets still get mobile mode.
 const _coarsePointer = !!(window.matchMedia && window.matchMedia('(pointer:coarse)').matches);
-const isTouchDevice = ('ontouchstart' in window || navigator.maxTouchPoints>0) && _coarsePointer;
+// 早期スクリプト(<body>直後)で判定済みならその値を使う（判定条件の二重管理を避ける）
+const isTouchDevice = (typeof window.__neverendTouch==='boolean') ? window.__neverendTouch
+                    : (('ontouchstart' in window || navigator.maxTouchPoints>0) && _coarsePointer);
 if(isTouchDevice){
   document.body.classList.add('touch');
   // Perf: kill canvas shadowBlur on touch (neonText & HUD set it every frame; shadow blur is extremely
@@ -925,8 +951,20 @@ if(isTouchDevice){
   document.addEventListener('touchend',_onTouch,{passive:false});
   document.addEventListener('touchcancel',_onTouch,{passive:false});
   // Orientation: JS-driven portrait detection (more reliable than CSS orientation media query across browsers).
-  const updateOrientation=()=>{document.body.classList.toggle('portrait', window.innerWidth<window.innerHeight);_computeZones();};
+  // canvas の高さ基準(--app-vh)とコントローラーのゾーン(_computeZones)を必ず同じ実測値・同じ
+  // タイミングで更新する。これで canvas とジャンプ/左右ボタンの位置基準がズレない。
+  const updateOrientation=()=>{
+    if(window.__setAppVh)window.__setAppVh();
+    document.body.classList.toggle('portrait', window.innerWidth<window.innerHeight);
+    _computeZones();
+  };
   updateOrientation();
+  // iOS PWA は起動後しばらくしてから innerHeight が最終値に落ち着くため、数回だけ再測定する。
+  // pageshow はタスクを切ってからの復帰(bfcache)でも発火するので、再起動ごとに必ず通る。
+  [60,180,400,800,1500].forEach(function(ms){setTimeout(updateOrientation,ms);});
+  window.addEventListener('load',updateOrientation);
+  window.addEventListener('pageshow',updateOrientation);
+  if(window.visualViewport)window.visualViewport.addEventListener('resize',updateOrientation);
   window.addEventListener('resize',updateOrientation);
   window.addEventListener('orientationchange',updateOrientation);
   // Add-to-home-screen hint: iOS Safari can't go fullscreen in-browser; guide users to A2HS.

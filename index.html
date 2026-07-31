@@ -59,6 +59,12 @@ canvas{
 :root{--mobile-canvas-scale:88dvh;}
 body.touch{align-items:flex-start;}
 body.touch canvas{margin:0 auto;max-height:88vh;max-height:var(--mobile-canvas-scale);max-width:156.44vh;max-width:calc(var(--mobile-canvas-scale)*1.7778);}
+/* タッチ端末のみ canvas を 4px だけ下げる（上寄せ仕様は維持したままの微調整）。
+   高さは 88dvh のまま下端が 4px 下がるだけ。下端の Cookie バナー / マイページは
+   position:fixed で viewport 基準のため canvas の移動の影響を受けない。
+   コントローラー(#lrRow/#jumpCluster)も viewport 基準なのでジャンプ判定は不変。
+   PC・非タッチには body.touch が付かないため適用されない。 */
+body.touch canvas{margin-top:4px;}
 /* PWA(standalone)向けの canvas ずらし補正はすべて撤回済み。canvas を下げると Cookie 同意バナーの
    Accept が押せなくなり、下段UI・ゲーム画面もまとめてずれたため。canvas は上寄せ・全高のまま
    y 方向に 1px も動かさない（コントローラーを持つ指で画面が隠れないための仕様）。
@@ -738,7 +744,7 @@ setInterval(()=>{if(state==='title')_fetchWorldDeaths();},60000);
 // ── PWA(standalone)実機デバッグ表示 ────────────────────────────────
 // PWA では Console が見えないため、ビルド識別子と canvas 位置を画面に出す。
 // standalone かつ touch のときだけ動く（呼び出し元が isTouchDevice ブロック内の if(_standalone)）。
-const _BUILD_ID='0731e';   // HTMLを更新したら必ず上げる（1行目の redeploy マーカーと対）
+const _BUILD_ID='0731f';   // HTMLを更新したら必ず上げる（1行目の redeploy マーカーと対）
 function _initStandaloneDebug(){
   const el=document.getElementById('dbgSafe');
   if(!el)return;
@@ -6573,8 +6579,13 @@ const mpBtn={x:W-16-_MP_BOX.w,y:12,w:_MP_BOX.w,h:_MP_BOX.h};   // 右マージ�
 //   左右: +14px。左上/右上の画面隅方向は空き、内側も中央(x490〜790)には遠く届かない。
 // PC・通常ブラウザは広げず、描画矩形をそのまま判定に使う（従来と完全に同一）。
 const _expandHit=(r,top,bottom,side)=>({x:r.x-side,y:r.y-top,w:r.w+side*2,h:r.h+top+bottom});
-const settingsHit = isTouchDevice ? _expandHit(settingsBtn,16,18,14) : settingsBtn;
-const mpHit       = isTouchDevice ? _expandHit(mpBtn,      12,18,14) : mpBtn;
+// 上方向は既に canvas y=0 まで到達済み（settings +16 / mp +12）。canvas より上のタップは
+// canvas の click ハンドラ自体が発火しないため、これ以上「上」へ広げても効果が無い。
+// そこで反応改善は下方向 +18→+28、左右 +14→+24 で行う（判定のみ・描画は不変）。
+// 判定下端は settings y84 / mp y80。NORMAL/DEATH は y416 以降、HALL OF LEGENDS は
+// y671 以降なので 330px 以上離れており、ゲーム開始タップとは競合しない。
+const settingsHit = isTouchDevice ? _expandHit(settingsBtn,16,28,24) : settingsBtn;
+const mpHit       = isTouchDevice ? _expandHit(mpBtn,      12,28,24) : mpBtn;
 // 右下 HALL OF LEGENDS。枠の右端 x+w が textAlign='right' のテキスト右端 W-20*K と一致し、
 // ベースライン H-14*K は必ず枠内に収まる＝描画と判定が定義上ズレない。
 //   [ HALL OF LEGENDS ] (19字) は font 12*1.7=20.4px で ≒233px → w250（左右8.5pxずつ）

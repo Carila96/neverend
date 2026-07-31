@@ -59,11 +59,12 @@ canvas{
 :root{--mobile-canvas-scale:88dvh;}
 body.touch{align-items:flex-start;}
 body.touch canvas{margin:0 auto;max-height:88vh;max-height:var(--mobile-canvas-scale);max-width:156.44vh;max-width:calc(var(--mobile-canvas-scale)*1.7778);}
-/* PWA(standalone)で canvas を下げる方式(--pwa-top-guard)は撤回した。canvas を下げると
-   Cookie 同意バナーの Accept が押せなくなり、下段UI・ゲーム画面もまとめてずれるため。
-   canvas は上寄せ・全高のまま一切動かさず（コントローラーを持つ指で画面が隠れないための仕様）、
-   OS が吸う画面最上端の帯の回避は「canvas 内のボタン y 座標だけを下げる」方式に変更した。
-   → JS 側 _applyTopBtnOffset() を参照。#btnPause/#btnTitle/#a2hsBanner の top も元の値に戻した。 */
+/* PWA(standalone)向けの canvas ずらし補正はすべて撤回済み。canvas を下げると Cookie 同意バナーの
+   Accept が押せなくなり、下段UI・ゲーム画面もまとめてずれたため。canvas は上寄せ・全高のまま
+   y 方向に 1px も動かさない（コントローラーを持つ指で画面が隠れないための仕様）。
+   上端ボタンを下げる補正も撤去し、settingsBtn.y=16 / mpBtn.y=12 の固定値のみ。
+   #btnPause/#btnTitle/#a2hsBanner の top も元の 16/16/10px。
+   standalone 限定のセレクタは #dbgSafe（デバッグ表示）だけ。 */
 /* PWA実機デバッグ表示。PWAではConsoleが見えないので画面に出す。standalone かつ touch のときだけ。
    pointer-events:none 固定 — この表示自体が絶対にタップを奪わないこと。 */
 #dbgSafe{display:none;}
@@ -731,7 +732,7 @@ setInterval(()=>{if(state==='title')_fetchWorldDeaths();},60000);
 // PWA では Console が見えないため、safe-area / canvas 位置 / ボタンの実ピクセル位置 /
 // 実際に届いたタップ座標を画面下部に出す。standalone かつ touch のときだけ動く
 // （呼び出し元が isTouchDevice ブロック内の if(_standalone) なので PC・通常ブラウザでは一切走らない）。
-const _BUILD_ID='0731c';   // ビルド識別子。HTMLを更新したら必ず上げる（1行目の redeploy マーカーと対）
+const _BUILD_ID='0731d';   // ビルド識別子。HTMLを更新したら必ず上げる（1行目の redeploy マーカーと対）
 let _dbgLastTouch='-', _dbgLastClick='-', _dbgTouchN=0, _dbgClickN=0;
 function _initStandaloneDebug(){
   const el=document.getElementById('dbgSafe');
@@ -765,6 +766,9 @@ function _initStandaloneDebug(){
     const mpX1=r.left+mpBtn.x*sx,       mpX2=r.left+(mpBtn.x+mpBtn.w)*sx;
     const name=(typeof _getPlayerName==='function'?(_getPlayerName()||''):'');
     el.textContent=
+      // ビルド識別子は1行目の先頭に置く。これが期待値でなければ PWA が古いHTMLを掴んでおり、
+      // 以降の数値は全て古いビルドのもの＝読んでも意味がない。
+      'BUILD '+_BUILD_ID+'\n'+
       'mm:'+window.matchMedia('(display-mode: standalone)').matches+
       ' nav:'+(window.navigator.standalone===true)+
       ' cls:'+document.body.classList.contains('standalone')+'\n'+
@@ -777,11 +781,10 @@ function _initStandaloneDebug(){
       'MP  y:'+fmt(mpY1)+'-'+fmt(mpY2)+' x:'+fmt(mpX1)+'-'+fmt(mpX2)+'\n'+
       'HOL y:'+fmt(r.top+holBtn.y*sy)+'-'+fmt(r.top+(holBtn.y+holBtn.h)*sy)+
       ' x:'+fmt(r.left+holBtn.x*sx)+'-'+fmt(r.left+(holBtn.x+holBtn.w)*sx)+
-      ' k:'+_UI_K+' dy:'+_topBtnDY+'\n'+
+      ' k:'+_UI_K+'\n'+
       'tap#'+_dbgTouchN+' '+_dbgLastTouch+'  clk#'+_dbgClickN+' '+_dbgLastClick+'\n'+
       'vp:'+window.innerWidth+'x'+window.innerHeight+' st:'+state+
-      ' login:'+(_currentUser?'yes':'no')+(name?'('+name+')':'')+
-      ' b:'+_BUILD_ID;   // ビルド識別子: PWAが新HTMLを読めているか実機で一目で判る
+      ' login:'+(_currentUser?'yes':'no')+(name?'('+name+')':'');
   };
   tick();
   setInterval(tick,250);
@@ -6570,42 +6573,20 @@ function _drawMpBtn(ctx,btn,label,stroke,fill){
 // 四隅UIの拡大率。タッチ端末だけ拡大し、PC/非タッチは 1 = 全て従来と完全に同一の数値になる。
 // 描画とタップ判定は必ずこの同じ矩形を参照すること（見た目と判定のズレを構造的に防ぐ）。
 const _UI_K = isTouchDevice ? 1.5 : 1;
-const _BTN_BASE_Y={settings:16,mp:12};   // PC/通常ブラウザの元座標。ここは絶対に変えない。
-const settingsBtn={x:16,y:_BTN_BASE_Y.settings,w:120*_UI_K,h:28*_UI_K};
-const mpBtn={x:W-16-104*_UI_K,y:_BTN_BASE_Y.mp,w:104*_UI_K,h:28*_UI_K};   // 右マージン16pxを維持したまま拡大
+// 上端2つは y を固定値のみで持つ（PWA向けオフセットは撤去。canvas もボタンも一切動かさない）。
+// 矩形は「描画される枠」そのもので、タップ判定も同じオブジェクトを見る。
+// タッチ時は文字が1.5倍になるぶんだけ枠を広げるが、文字幅に合わせて詰める:
+//   SETTINGS    19.5px Courier New ≒ 94px 幅 → w132（左右19pxずつ）
+//   [ MY PAGE ] 19.5px Courier New ≒129px 幅 → w158（左右14.5pxずつ）
+// base は文字ベースラインの枠内オフセット。PC は従来どおり 120/104×28・base19。
+const _SET_BOX = isTouchDevice ? {w:132,h:36,base:25} : {w:120,h:28,base:19};
+const _MP_BOX  = isTouchDevice ? {w:158,h:36,base:25} : {w:104,h:28,base:19};
+const settingsBtn={x:16,y:16,w:_SET_BOX.w,h:_SET_BOX.h};
+const mpBtn={x:W-16-_MP_BOX.w,y:12,w:_MP_BOX.w,h:_MP_BOX.h};   // 右マージン16pxを維持
 // 右下 HALL OF LEGENDS。矩形の右端 x+w = W-20*K がテキスト右端(textAlign='right')と一致し、
 // ベースライン H-14*K は矩形 [H-24*K, H-4*K] の内側に必ず収まる＝描画と判定が定義上ズレない。
 // _UI_K===1 のとき {W-200, H-24, 180, 20} となり、従来のハードコード判定と完全に同一。
 const holBtn={x:W-200*_UI_K,y:H-24*_UI_K,w:180*_UI_K,h:20*_UI_K};
-
-// ── PWA(standalone)の上端ボタン退避 ──────────────────────────────
-// canvas は動かさない。上端2つ(SETTINGS/MY PAGE)の canvas 内 y だけを下げて、
-// OS がジェスチャ用に押さえている画面最上端の帯から出す。
-// 固定値だと端末のスケール次第で足りないため、実測スケールから必要量を逆算する:
-//   画面上のボタン上端 = canvasRect.top + y * sc   (sc = canvasRect.height / 720)
-//   これを PWA_TOP_CLEAR 以上にする最小の y を求め、元 y との差をオフセットにする。
-// settingsBtn(y=16) より mpBtn(y=12) の方が上なので、mp 基準で解けば両方が条件を満たす。
-// 目標値 34px は実機実績ベース: canvas を +28px 下げたとき MY PAGE が画面 y33.3 に来て押せたので、
-// 要件の「最低30px」ぴったり(=余裕0.3px)ではなく、その実績値を上回る 34px を確保する。
-// 参考: sc≈0.48 の iPhone 15 横で dy=+59（元 y12→71）。
-const PWA_TOP_CLEAR=34;
-const _PWA = isTouchDevice && (document.body.classList.contains('standalone') ||
-             window.navigator.standalone===true ||
-             window.matchMedia('(display-mode: standalone)').matches);
-let _topBtnDY=0;
-function _applyTopBtnOffset(){
-  if(!_PWA)return;                       // PC・通常ブラウザは y を一切触らない
-  const r=canvas.getBoundingClientRect();
-  const sc=r.height/H;
-  // スケールが取れない場合は sc=0.39(想定最小)相当の安全側フォールバック
-  const dy=(sc>0)?Math.ceil((PWA_TOP_CLEAR-r.top)/sc-_BTN_BASE_Y.mp):66;
-  _topBtnDY=Math.max(0,dy);
-  settingsBtn.y=_BTN_BASE_Y.settings+_topBtnDY;
-  mpBtn.y      =_BTN_BASE_Y.mp      +_topBtnDY;   // 描画・判定とも同じ矩形を見るので両方追随する
-}
-_applyTopBtnOffset();
-window.addEventListener('resize',_applyTopBtnOffset);
-window.addEventListener('orientationchange',_applyTopBtnOffset);
 let _titleNormalBtn={x:0,y:0,w:0,h:0},_titleDeathBtn={x:0,y:0,w:0,h:0};
 const mpBackBtn={x:W/2-270,y:H-62,w:140,h:36};
 const mpResetBtn={x:W/2-70,y:H-62,w:140,h:36};
@@ -6710,7 +6691,7 @@ function drawTitle(){
   ctx.strokeStyle='rgba(255,255,255,0.7)';ctx.lineWidth=1.5;
   ctx.strokeRect(settingsBtn.x,settingsBtn.y,settingsBtn.w,settingsBtn.h);
   ctx.fillStyle='rgba(255,255,255,0.9)';ctx.font=(13*_UI_K)+'px "Courier New"';ctx.textAlign='center';
-  ctx.fillText('SETTINGS',settingsBtn.x+settingsBtn.w/2,settingsBtn.y+19*_UI_K);
+  ctx.fillText('SETTINGS',settingsBtn.x+settingsBtn.w/2,settingsBtn.y+_SET_BOX.base);
   ctx.restore();
   if(!testMode){
     ctx.save();
@@ -6719,7 +6700,7 @@ function drawTitle(){
     ctx.strokeStyle='rgba(255,220,50,0.8)';ctx.lineWidth=1.5;
     ctx.strokeRect(mpBtn.x,mpBtn.y,mpBtn.w,mpBtn.h);
     ctx.fillStyle='rgba(255,220,50,1.0)';ctx.font=(13*_UI_K)+'px "Courier New"';ctx.textAlign='center';
-    ctx.fillText('[ MY PAGE ]',mpBtn.x+mpBtn.w/2,mpBtn.y+19*_UI_K);
+    ctx.fillText('[ MY PAGE ]',mpBtn.x+mpBtn.w/2,mpBtn.y+_MP_BOX.base);
     ctx.restore();
   }
   ctx.save();

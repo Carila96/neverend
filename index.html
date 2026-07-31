@@ -69,6 +69,16 @@ body.touch.standalone canvas{margin-top:env(safe-area-inset-top,0px);}
 body.touch.standalone #btnPause,
 body.touch.standalone #btnTitle{top:calc(16px + env(safe-area-inset-top,0px));}
 body.touch.standalone #a2hsBanner{top:calc(10px + env(safe-area-inset-top,0px));}
+/* PWA実機デバッグ表示。PWAではConsoleが見えないので画面に出す。standalone かつ touch のときだけ。
+   pointer-events:none 固定 — この表示自体が絶対にタップを奪わないこと。 */
+#dbgSafe{display:none;}
+body.touch.standalone #dbgSafe{
+  display:block;position:fixed;left:50%;transform:translateX(-50%);bottom:2px;z-index:9998;
+  pointer-events:none;background:rgba(0,0,0,0.72);color:#0f0;
+  font-family:'Share Tech Mono',monospace;font-size:9px;line-height:1.35;
+  padding:3px 6px;border:1px solid rgba(0,255,0,0.35);border-radius:4px;
+  white-space:pre;text-align:left;max-width:96vw;overflow:hidden;
+}
 body{
   display:flex;
   align-items:center;
@@ -250,6 +260,7 @@ body.touch.portrait #rotateOverlay{display:flex;}
 </div>
 <div id="rotateOverlay">↻<br>デバイスを横にしてください<br>Please rotate your device</div>
 <div id="xShareBtn" onclick="shareDeathX()">𝕏 Share</div>
+<div id="dbgSafe"></div>
 <div id="mypageOverlay" style="display:none;position:fixed;inset:0;z-index:1000;background:#000;">
   <iframe id="mypageFrame" src="/app/pages/mypage.html" style="width:100%;height:100%;border:none;"></iframe>
 </div>
@@ -720,6 +731,61 @@ let worldDeaths=null;
 function _fetchWorldDeaths(){fetch('/api/stats?type=death').then(r=>r.json()).then(d=>{if(d.total_deaths!=null)worldDeaths=d.total_deaths;}).catch(()=>{});}
 _fetchWorldDeaths();
 setInterval(()=>{if(state==='title')_fetchWorldDeaths();},60000);
+// ── PWA(standalone)実機デバッグ表示 ────────────────────────────────
+// PWA では Console が見えないため、safe-area / canvas 位置 / ボタンの実ピクセル位置 /
+// 実際に届いたタップ座標を画面下部に出す。standalone かつ touch のときだけ動く
+// （呼び出し元が isTouchDevice ブロック内の if(_standalone) なので PC・通常ブラウザでは一切走らない）。
+let _dbgLastTouch='-', _dbgLastClick='-', _dbgTouchN=0, _dbgClickN=0;
+function _initStandaloneDebug(){
+  const el=document.getElementById('dbgSafe');
+  if(!el)return;
+  // env() は JS から直接読めないので、height:env(...) のダミー要素を実測する
+  const mkProbe=side=>{
+    const p=document.createElement('div');
+    p.style.cssText='position:fixed;top:0;left:0;width:env(safe-area-inset-'+side+',0px);'+
+                    'height:env(safe-area-inset-'+side+',0px);pointer-events:none;visibility:hidden;';
+    document.body.appendChild(p);return p;
+  };
+  const pT=mkProbe('top'),pL=mkProbe('left'),pR=mkProbe('right'),pB=mkProbe('bottom');
+  // タップが「そもそもページに届いているか」を見る。passive:true なので挙動には一切干渉しない。
+  document.addEventListener('touchstart',e=>{
+    const t=e.touches[0];if(!t)return;
+    _dbgTouchN++;_dbgLastTouch=Math.round(t.clientX)+','+Math.round(t.clientY);
+  },{passive:true,capture:true});
+  document.addEventListener('click',e=>{
+    _dbgClickN++;_dbgLastClick=Math.round(e.clientX)+','+Math.round(e.clientY);
+  },{passive:true,capture:true});
+  const fmt=n=>Math.round(n*10)/10;
+  // settingsBtn/mpBtn/_currentUser はこの関数より後方で let/const 宣言されるため、
+  // 初回 tick は TDZ で throw しうる。250ms 後の定期実行では初期化済みになる。
+  const tick=()=>{ try{ _tick(); }catch(e){ el.textContent='dbg warming up…\n'+(e&&e.message||e); } };
+  const _tick=()=>{
+    const r=canvas.getBoundingClientRect();
+    const sy=r.height/H, sx=r.width/W;                 // canvas内部座標 → 画面CSSピクセル
+    const setY1=r.top+settingsBtn.y*sy, setY2=r.top+(settingsBtn.y+settingsBtn.h)*sy;
+    const setX1=r.left+settingsBtn.x*sx;
+    const mpY1=r.top+mpBtn.y*sy,        mpY2=r.top+(mpBtn.y+mpBtn.h)*sy;
+    const mpX1=r.left+mpBtn.x*sx,       mpX2=r.left+(mpBtn.x+mpBtn.w)*sx;
+    const name=(typeof _getPlayerName==='function'?(_getPlayerName()||''):'');
+    el.textContent=
+      'mm:'+window.matchMedia('(display-mode: standalone)').matches+
+      ' nav:'+(window.navigator.standalone===true)+
+      ' cls:'+document.body.classList.contains('standalone')+'\n'+
+      'inset T'+fmt(pT.getBoundingClientRect().height)+
+      ' L'+fmt(pL.getBoundingClientRect().width)+
+      ' R'+fmt(pR.getBoundingClientRect().width)+
+      ' B'+fmt(pB.getBoundingClientRect().height)+'\n'+
+      'canvas top:'+fmt(r.top)+' left:'+fmt(r.left)+' '+fmt(r.width)+'x'+fmt(r.height)+' sc:'+fmt(sy*100)/100+'\n'+
+      'SET y:'+fmt(setY1)+'-'+fmt(setY2)+' x:'+fmt(setX1)+'\n'+
+      'MP  y:'+fmt(mpY1)+'-'+fmt(mpY2)+' x:'+fmt(mpX1)+'-'+fmt(mpX2)+'\n'+
+      'tap#'+_dbgTouchN+' '+_dbgLastTouch+'  clk#'+_dbgClickN+' '+_dbgLastClick+'\n'+
+      'vp:'+window.innerWidth+'x'+window.innerHeight+' st:'+state+
+      ' login:'+(_currentUser?'yes':'no')+(name?'('+name+')':'');
+  };
+  tick();
+  setInterval(tick,250);
+}
+
 // 世界最高到達階(world_stats.best_stage)。死亡数POSTと同じ anon 経路なので未ログインでも反映される。
 // サーバ側が Math.max 相当（既存値以下は書かない + .lt ガード）なので、送りすぎても記録は後退しない。
 let _worldBestSent=0;
@@ -881,14 +947,7 @@ if(isTouchDevice){
   // (black-translucent でステータスバーの裏に回り込む MY PAGE / SETTINGS を救済)。
   if(_standalone){
     document.body.classList.add('standalone');
-    // 実際に適用されたインセットを1度だけ出力（0 のままなら端末/OS が報告していない = 要追加対応）
-    try{
-      const _probe=document.createElement('div');
-      _probe.style.cssText='position:fixed;top:0;left:0;width:0;height:env(safe-area-inset-top,0px);pointer-events:none;';
-      document.body.appendChild(_probe);
-      console.log('[standalone] safe-area-inset-top =',_probe.getBoundingClientRect().height,'px');
-      _probe.remove();
-    }catch(_){}
+    _initStandaloneDebug();
   }
   if(!_standalone && localStorage.getItem('neverend_a2hs_dismissed')!=='1'){
     const _banner=document.getElementById('a2hsBanner');

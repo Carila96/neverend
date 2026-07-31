@@ -92,6 +92,17 @@ nav a:hover{color:var(--accent2);}
 .modal-text{font-size:13px;color:var(--muted2);line-height:1.75;margin-bottom:28px;}
 .modal-text strong{color:var(--accent);}
 .modal-actions{display:flex;gap:12px;}
+/* タッチ端末 かつ 低い画面(=横向き)のときだけ。縦向きでは起きない問題:
+   横向きは表示領域が ~390px しかなく、利用規約モーダル(padding40 + 本文60vh + ボタン)が
+   viewport より高くなるため I AGREE が画面最下端 = iOS のホームインジケータ帯に落ち、
+   OS にタップを吸われて押せなくなる。モーダルを viewport 内に収め、下端から離す。
+   pointer:coarse と max-height の両方を条件にしているので PC・通常ブラウザには一切効かない。 */
+@media (pointer:coarse) and (max-height:520px){
+  .modal-overlay{padding-bottom:44px;}
+  #termsModal .modal{padding:20px;}
+  /* 本文の max-height はインラインで min(500px,60vh) が入っているため !important で上書き */
+  #termsModal .modal-text{max-height:34vh !important;margin-bottom:14px !important;line-height:1.8 !important;}
+}
 .modal-actions .btn-danger{flex:1;}
 .modal-actions .btn-secondary{flex:1;padding:11px;}
 

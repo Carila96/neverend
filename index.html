@@ -100,6 +100,12 @@ body{
   font-family:'Courier New',monospace;font-size:11px;color:#888;
 }
 #cookieBanner.hidden{display:none!important;}
+/* Touch: 横向きだと画面が低くなり、bottom:0 の Accept/Decline が iOS のホームインジケータ帯
+   (画面最下端 ~20px。OS がスワイプ用に押さえていてタップが届かない) に入ってしまう。
+   縦向きは本文が折り返してバナーが高くなり、ボタンが帯の上に出るため押せていた。
+   見た目の位置関係は変えずに下パディングだけ足して、操作面を帯の外へ出す。
+   body.touch が付かない PC・非タッチには一切適用されない。 */
+body.touch #cookieBanner{padding-bottom:34px;}
 #cookieBanner a{color:#4ab8ff;text-decoration:none;}
 #cookieBanner a:hover{text-decoration:underline;}
 .cookie-btn{
@@ -838,7 +844,8 @@ if(isTouchDevice){
   // Elements cached once; _blocked() only reads style.display/classList (no reflow) each touch.
   const _a2hsEl2=document.getElementById('a2hsBanner'),
         _mpEl=document.getElementById('mypageOverlay'),_holEl=document.getElementById('holOverlay'),
-        _setEl=document.getElementById('settings');
+        _setEl=document.getElementById('settings'),
+        _lmEl=document.getElementById('loginModal'),_noEl=document.getElementById('nameOverlay');
   // #cookieBanner is declared AFTER this <script> (end of body), so it can't be cached at parse time
   // (getElementById would return null). Look it up live each call — cheap (hashmap lookup, no reflow).
   const _cookieUp=()=>{const c=document.getElementById('cookieBanner');return !!(c&&c.style.display!=='none'&&!c.classList.contains('hidden'));};
@@ -849,6 +856,8 @@ if(isTouchDevice){
     || (_mpEl&&_mpEl.style.display==='block')
     || (_holEl&&_holEl.style.display==='block')
     || (_setEl&&_setEl.classList.contains('open'))
+    || (_lmEl&&_lmEl.classList.contains('open'))      // ログインモーダル(入力欄あり)
+    || (_noEl&&_noEl.classList.contains('show'))       // 名前入力オーバーレイ
     || document.body.classList.contains('portrait') // rotate overlay is shown in portrait
   );
   // Whitelist of states that consume controller input (jump=Space / arrows):

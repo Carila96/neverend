@@ -1,6 +1,5 @@
 {
   "permissions": {
-    "defaultMode": "acceptEdits",
     "allow": [
       "Bash(mkdir -p app/api app/data app/pages docs/specification docs/legal docs/future)",
       "Bash(mv reserve.js app/api/)",
@@ -43,11 +42,8 @@
       "Glob",
       "Grep",
       "Bash",
-      "PowerShell"
-    ],
-    "ask": [
-      "Bash(git pull:*)",
-      "PowerShell(git pull *)"
+      "PowerShell",
+      "WebFetch(domain:damnrun.com)"
     ],
     "deny": [
       "Bash(rm -rf:*)",
@@ -58,6 +54,11 @@
       "Bash(git clean -fd:*)",
       "PowerShell(Remove-Item -Recurse -Force *)",
       "PowerShell(git push --force *)"
-    ]
+    ],
+    "ask": [
+      "Bash(git pull:*)",
+      "PowerShell(git pull *)"
+    ],
+    "defaultMode": "acceptEdits"
   }
 }

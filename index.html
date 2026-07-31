@@ -15,7 +15,9 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<!-- viewport-fit=cover は env(safe-area-inset-*) を有効にするための前提。これが無いと iOS は
+     インセットを常に 0 として報告する。PC/非ノッチ端末ではインセットが 0 なので影響なし。 -->
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -55,6 +57,18 @@ canvas{
 :root{--mobile-canvas-scale:88dvh;}
 body.touch{align-items:flex-start;}
 body.touch canvas{margin:0 auto;max-height:88vh;max-height:var(--mobile-canvas-scale);max-width:156.44vh;max-width:calc(var(--mobile-canvas-scale)*1.7778);}
+/* PWA(standalone)のみ: apple-mobile-web-app-status-bar-style=black-translucent により、ホーム画面から
+   起動すると本文が画面最上部(ステータスバー/ノッチの裏)まで広がる。canvas は body.touch で上端揃え
+   (align-items:flex-start)なので、canvas 内 y=12〜44 にある MY PAGE / SETTINGS がステータスバーの裏に
+   回り込み、タップが OS 側に奪われて反応しなくなる。standalone のときだけ safe-area 分 canvas を下げ、
+   同じ分だけ高さを縮めてアスペクト比を保つ。
+   ブラウザ表示(非standalone)は body.standalone が付かないため従来どおり。PC は body.touch が無いので無影響。 */
+body.touch.standalone{--mobile-canvas-scale:calc(88dvh - env(safe-area-inset-top,0px));}
+body.touch.standalone canvas{margin-top:env(safe-area-inset-top,0px);}
+/* ゲーム中の固定ボタン(top:16px)も同じ理由でステータスバーの裏に入るため、同量ずらす */
+body.touch.standalone #btnPause,
+body.touch.standalone #btnTitle{top:calc(16px + env(safe-area-inset-top,0px));}
+body.touch.standalone #a2hsBanner{top:calc(10px + env(safe-area-inset-top,0px));}
 body{
   display:flex;
   align-items:center;
@@ -846,6 +860,19 @@ if(isTouchDevice){
   window.addEventListener('orientationchange',updateOrientation);
   // Add-to-home-screen hint: iOS Safari can't go fullscreen in-browser; guide users to A2HS.
   const _standalone = window.navigator.standalone===true || window.matchMedia('(display-mode: standalone)').matches;
+  // PWA起動時のみ body.standalone を付与し、CSS 側で safe-area 分のオフセットを効かせる
+  // (black-translucent でステータスバーの裏に回り込む MY PAGE / SETTINGS を救済)。
+  if(_standalone){
+    document.body.classList.add('standalone');
+    // 実際に適用されたインセットを1度だけ出力（0 のままなら端末/OS が報告していない = 要追加対応）
+    try{
+      const _probe=document.createElement('div');
+      _probe.style.cssText='position:fixed;top:0;left:0;width:0;height:env(safe-area-inset-top,0px);pointer-events:none;';
+      document.body.appendChild(_probe);
+      console.log('[standalone] safe-area-inset-top =',_probe.getBoundingClientRect().height,'px');
+      _probe.remove();
+    }catch(_){}
+  }
   if(!_standalone && localStorage.getItem('neverend_a2hs_dismissed')!=='1'){
     const _banner=document.getElementById('a2hsBanner');
     if(_banner){

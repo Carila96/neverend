@@ -937,16 +937,15 @@ if(isTouchDevice){
     _pressed=now;
     return hitAny;
   };
-  // ★ 不具合2(ステージ遷移直後、最初の左右タップが効かない)の対策。
-  //   loadStage() は先頭で keys={};prevKeys={} と作り直すが、コントローラー側の押下集合
-  //   (_pressed)はそのまま残る。_hitTest は「集合が変化したときだけ」keydown を撃つので、
-  //   指を置いたまま面が切り替わると、押し続けている方向キーが二度と再宣言されない。
-  //   指を離す(touchend→keyup で _pressed が空になる)まで死に、その1タップが犠牲になる。
-  //   PC は OS のキーリピートが keys を即座に埋め直すので自然に治っていた＝タッチだけの穴。
-  //   keys を作り直した直後にこれを呼び、今押されているものを keydown として流し直す。
-  window.__touchResyncHeldKeys=function(){
-    for(const k of _pressed)fireKey('keydown',k);
-  };
+  // ※ ここに以前 __touchResyncHeldKeys（loadStage 時に _pressed を keydown として流し直す）を
+  //   置いていたが、暴発を起こしたため撤去した(fc88945 → 本コミットで revert)。
+  //   _pressed は「タッチイベントが最後に観測した押下状態」のキャッシュでしかなく、実際に指が
+  //   今その場所にあることの保証ではない。ゴールへは右を押しながら入るのが普通なので、
+  //   0.7秒のゴール演出(_goalDuration)を挟んで loadStage が走る頃には ArrowRight（時にジャンプも）
+  //   が残っており、それを次の面の開始と同時に自動入力していた＝勝手に走り出す/跳ぶ。
+  //   キャッシュを実入力として再生する設計そのものが誤り。入力は必ず実際のタッチからのみ作る。
+  //   その結果「指を置いたまま面移動すると最初の左右タップが1回死ぬ」は再発するが、
+  //   指を離して押し直せば直る軽微な事象であり、暴発死より遥かに軽い。安全側に倒す。
   // Elements cached once; _blocked() only reads style.display/classList (no reflow) each touch.
   const _a2hsEl2=document.getElementById('a2hsBanner'),
         _mpEl=document.getElementById('mypageOverlay'),_holEl=document.getElementById('holOverlay'),
@@ -5751,11 +5750,10 @@ const ENDING_STAGES=[
 
 
 function loadStage(n){
+  // 押下状態を必ず空にしてから面を始める。ここへ入力を「復元」してはいけない
+  // （復元するとゴール直前に押していた右/ジャンプが次の面の開始と同時に暴発する）。
+  // 次の面は常に静止で始まり、以後の入力は実際のタッチ/キー操作からのみ生まれる。
   keys={};prevKeys={};
-  // タッチ: 上の作り直しで押下状態が消える。指がまだボタンに乗っているものは押し直さずに
-  // 効き続けるべきなので、コントローラーが把握している押下中のキーを復元する。
-  // 非タッチ(PC)では __touchResyncHeldKeys 自体が未定義 → 何も起きず従来と完全に同じ。
-  if(window.__touchResyncHeldKeys)window.__touchResyncHeldKeys();
   _stageAttemptDeaths=0;deathParticles=[];_attemptStartMs=Date.now();
   const s=STAGES[Math.min(n-1,STAGES.length-1)];
   const fallSet=new Set(s.fall.map(b=>`${b.x},${b.y}`));

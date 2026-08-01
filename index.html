@@ -908,6 +908,40 @@ const isTouchDevice = (window.__neverendTouch===true) || _liveTouch;
 //   両方増えなければタッチ自体が来ていない、と切り分けられる。
 window.__rawTaps=0;
 document.addEventListener('touchstart',function(){window.__rawTaps++;},{passive:true,capture:true});
+// ▼一時デバッグ(BUILD 0801g): 「タップがページに届かない」を現行犯で押さえるための計測。
+//   入力の種類ごとに、document より外側(window)と document の capture 段で別々に数える。
+//   touch だけ来ない / pointer は来る / どちらも来ない、のどれなのかを切り分ける。
+window.__ev={wTS:0,dTS:0,dTC:0,dPD:0,dPC:0,dMD:0,dClick:0};
+// 最後に「入力が届いた」瞬間の座標と、その座標に実際に乗っていた要素。
+// elementFromPoint は pointer-events:none を無視して“指が実際に当たる要素”を返すので、
+// canvas 以外が出たらそれが犯人。
+window.__hitEl='-';window.__hitXY='-';
+window.__descEl=function(el){
+  if(!el)return 'null';
+  let s=el.id?('#'+el.id):el.tagName.toLowerCase();
+  if(!el.id&&el.className&&typeof el.className==='string'&&el.className.trim())s+='.'+el.className.trim().split(/\s+/)[0];
+  return s;
+};
+window.__probeAt=function(x,y){
+  try{
+    window.__hitXY=Math.round(x)+','+Math.round(y);
+    window.__hitEl=window.__descEl(document.elementFromPoint(x,y));
+  }catch(_){window.__hitEl='err';}
+};
+// 計測はタッチ端末に限定する。PC では一切登録しない（elementFromPoint はレイアウト読みを
+// 伴うので、PC の mousedown/click 経路に余計な負荷を持ち込まないため）。
+// すべて passive:true = preventDefault できない＝挙動には一切影響しない、純粋な観測。
+if(isTouchDevice){
+  window.addEventListener('touchstart',function(){window.__ev.wTS++;},{passive:true,capture:true});
+  document.addEventListener('touchstart',function(e){window.__ev.dTS++;
+    const t=e.changedTouches&&e.changedTouches[0];if(t)window.__probeAt(t.clientX,t.clientY);
+  },{passive:true,capture:true});
+  document.addEventListener('touchcancel',function(){window.__ev.dTC++;},{passive:true,capture:true});
+  document.addEventListener('pointerdown',function(e){window.__ev.dPD++;window.__probeAt(e.clientX,e.clientY);},{passive:true,capture:true});
+  document.addEventListener('pointercancel',function(){window.__ev.dPC++;},{passive:true,capture:true});
+  document.addEventListener('mousedown',function(e){window.__ev.dMD++;window.__probeAt(e.clientX,e.clientY);},{passive:true,capture:true});
+  document.addEventListener('click',function(){window.__ev.dClick++;},{passive:true,capture:true});
+}
 if(isTouchDevice){
   document.body.classList.add('touch');
   // Perf: kill canvas shadowBlur on touch (neonText & HUD set it every frame; shadow blur is extremely
@@ -1281,31 +1315,62 @@ if(isTouchDevice){
     const el=document.getElementById('dbgSafe');
     if(!el)return;
     const r=n=>Math.round(n);
+    // 画面を覆いうる要素。ここに挙げたものは毎 tick で computed display / pointer-events /
+    // z-index を実測する。display が none 以外のものだけを列挙するので、回転直後に何が
+    // 生きているかが一目で分かる。
+    const COVERS=['rotateOverlay','a2hsDim','a2hsBanner','dbgSafe','cookieBanner',
+                  'mypageOverlay','holOverlay','settings','loginModal','touchControls','nameOverlay'];
+    const ev=()=>window.__ev||{};
     const tick=()=>{
       try{
         const c=document.querySelector('canvas'),cr=c?c.getBoundingClientRect():null;
         const d=document.documentElement,vv=window.visualViewport;
         const [uw,uh]=_viewport();
-        const ro=document.getElementById('rotateOverlay'),dim=document.getElementById('a2hsDim');
-        const vis=el2=>el2?getComputedStyle(el2).display:'-';
-        el.innerHTML='<b>BUILD 0801f</b> <b>raw:'+(window.__rawTaps|0)+' start:'+_tapStart+' all:'+_tapSeen+
-          ' gate:'+_lastGate+' hit:'+(window.__lastHit||'-')+' fix:'+_fixLog+'</b>'+(_tapErr?' ERR:'+_tapErr:'')+'<br>'+
-          'ctap:'+(_cTapId===null?'idle':'trk')+' blk:'+(_blocked()?_blockReason():'no')+
-          'regs:'+(window.__onTouchRegs|0)+
-          ' touch:'+(document.body.classList.contains('touch')?'1':'0')+
-          ' early:'+(window.__neverendTouch===true?'1':'0')+' live:'+(_liveTouch?'1':'0')+
-          ' ort:'+(_orientLandscape()?'LAND':'PORT')+' set:'+(_viewportSettled()?'ok':'WAIT')+
-          ' pt:'+(document.body.classList.contains('portrait')?'1':'0')+'<br>'+
-          'in:'+window.innerWidth+'x'+window.innerHeight+
+        // ★ 決定的証拠: SETTINGS ボタンの中心に、いま実際に何が乗っているか。
+        //   イベントが来なくても毎 tick 取れるので「タップが届かない最中」の状態が見える。
+        //   elementFromPoint は pointer-events:none を無視するため、ここに canvas 以外が
+        //   出たら、その要素が指を受け止めている＝犯人。
+        //   settingsBtn はこのブロックより後方で宣言される const なので、初回同期実行時は
+        //   まだ TDZ。個別に try で囲み、確定するまでは (init) と出すだけにする。
+        let probe='-',probeXY='-';
+        try{
+          if(cr&&cr.width>0){
+            const sx=cr.width/W,sy=cr.height/H;
+            const px=cr.left+(settingsBtn.x+settingsBtn.w/2)*sx;
+            const py=cr.top +(settingsBtn.y+settingsBtn.h/2)*sy;
+            probeXY=r(px)+','+r(py);
+            probe=window.__descEl(document.elementFromPoint(px,py));
+          }
+        }catch(_){probe='(init)';}
+        // 覆いうる要素のうち、いま display:none でないものだけを列挙
+        const live=[];
+        for(const id of COVERS){
+          const t=document.getElementById(id);if(!t)continue;
+          const cs=getComputedStyle(t);
+          if(cs.display==='none')continue;
+          live.push(id+'['+cs.display+','+(cs.pointerEvents==='none'?'pe0':'PE1')+',z'+cs.zIndex+']');
+        }
+        const E=ev();
+        el.innerHTML='<b>BUILD 0801g</b> <b>PROBE@'+probeXY+' &rarr; '+probe+'</b><br>'+
+          '<b>tapEl:'+(window.__hitEl||'-')+' @'+(window.__hitXY||'-')+'</b><br>'+
+          'wTS:'+(E.wTS|0)+' dTS:'+(E.dTS|0)+' PD:'+(E.dPD|0)+' MD:'+(E.dMD|0)+
+          ' clk:'+(E.dClick|0)+' TC:'+(E.dTC|0)+' PC:'+(E.dPC|0)+'<br>'+
+          'raw:'+(window.__rawTaps|0)+' start:'+_tapStart+' all:'+_tapSeen+
+          ' gate:'+_lastGate+' hit:'+(window.__lastHit||'-')+(_tapErr?' ERR:'+_tapErr:'')+'<br>'+
+          'cover:'+(live.length?live.join(' '):'(none)')+'<br>'+
+          'body:['+(document.body.className||'-')+'] st:'+state+
+          ' blk:'+(_blocked()?_blockReason():'no')+' ctap:'+(_cTapId===null?'idle':'trk')+'<br>'+
+          'ort:'+(_orientLandscape()?'LAND':'PORT')+' set:'+(_viewportSettled()?'ok':'WAIT')+
+          ' vis:'+document.visibilityState+
+          ' in:'+window.innerWidth+'x'+window.innerHeight+
           ' cl:'+(d?d.clientWidth+'x'+d.clientHeight:'-')+
           ' vv:'+(vv?r(vv.width)+'x'+r(vv.height):'-')+'<br>'+
-          'use:'+uw+'x'+uh+' z:'+_zW+'x'+_zH+' vh:'+(getComputedStyle(d).getPropertyValue('--app-vh')||'unset').trim()+'<br>'+
-          'canvas top:'+(cr?r(cr.top):'-')+' h:'+(cr?r(cr.height):'-')+' w:'+(cr?r(cr.width):'-')+
-          ' ro:'+vis(ro)+' dim:'+vis(dim)+' st:'+state;
-      }catch(e){ el.innerHTML='<b>BUILD 0801c</b> '+(e&&e.message||'err'); }
+          'use:'+uw+'x'+uh+' z:'+_zW+'x'+_zH+' vh:'+(getComputedStyle(d).getPropertyValue('--app-vh')||'unset').trim()+
+          ' cv:'+(cr?r(cr.left)+','+r(cr.top)+' '+r(cr.width)+'x'+r(cr.height):'-');
+      }catch(e){ el.innerHTML='<b>BUILD 0801g</b> ERR '+(e&&e.message||'err'); }
     };
     tick();
-    setInterval(tick,300);
+    setInterval(tick,200);
   })();
   // Add-to-home-screen hint: iOS Safari can't go fullscreen in-browser; guide users to A2HS.
   const _standalone = window.navigator.standalone===true || window.matchMedia('(display-mode: standalone)').matches;

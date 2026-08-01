@@ -121,6 +121,17 @@ body{
   font-family:'Courier New',monospace;font-size:11px;color:#888;
 }
 #cookieBanner.hidden{display:none!important;}
+/* ▼一時的な実機デバッグ表示（回転不具合の確認用。原因確定後に撤去する）。
+   タッチ端末のみ。pointer-events:none 固定＝絶対にタップを奪わない。 */
+#dbgSafe{display:none;}
+body.touch #dbgSafe{
+  display:block;position:fixed;left:50%;transform:translateX(-50%);bottom:2px;z-index:9998;
+  pointer-events:none;background:rgba(0,0,0,0.78);color:#0f0;
+  font-family:'Share Tech Mono',monospace;font-size:9px;line-height:1.35;
+  padding:3px 8px;border:1px solid rgba(0,255,0,0.4);border-radius:4px;
+  white-space:pre;text-align:left;max-width:96vw;overflow:hidden;
+}
+#dbgSafe b{font-size:12px;color:#ff0;letter-spacing:1px;}
 /* Touch: 横向きだと画面が低くなり、bottom:0 の Accept/Decline が iOS のホームインジケータ帯
    (画面最下端 ~20px。OS がスワイプ用に押さえていてタップが届かない) に入ってしまう。
    縦向きは本文が折り返してバナーが高くなり、ボタンが帯の上に出るため押せていた。
@@ -293,8 +304,11 @@ body.touch.portrait #rotateOverlay{display:flex;}
   window.__neverendTouch=('ontouchstart' in window||navigator.maxTouchPoints>0)&&coarse;
   if(window.__neverendTouch)document.body.classList.add('touch');
   // --app-vh = innerHeight の 1% を px で固定。0 のときは書かず CSS 側の 1dvh フォールバックに任せる。
-  window.__setAppVh=function(){
-    var h=window.innerHeight;
+  // h を渡せば、その実測値を採用する（回転直後に innerHeight が回転前の値を返し続ける
+  // 端末があるため、呼び出し側で向きと突き合わせて検証した高さを渡せるようにしてある）。
+  // 引数なしの呼び出しは従来どおり innerHeight。
+  window.__setAppVh=function(h){
+    if(typeof h!=='number'||!(h>0))h=window.innerHeight;
     if(h>0)document.documentElement.style.setProperty('--app-vh',(h/100)+'px');
   };
   window.__setAppVh();
@@ -316,6 +330,7 @@ body.touch.portrait #rotateOverlay{display:flex;}
   <button type="button" id="a2hsClose">CLOSE</button>
 </div>
 <div id="a2hsDim"></div>
+<div id="dbgSafe"></div>
 <div id="rotateOverlay">↻<br>デバイスを横にしてください<br>Please rotate your device</div>
 <div id="xShareBtn" onclick="shareDeathX()">𝕏 Share</div>
 <div id="mypageOverlay" style="display:none;position:fixed;inset:0;z-index:1000;background:#000;">
@@ -902,12 +917,50 @@ if(isTouchDevice){
     }catch(_){return 0;}
   };
   let _zL=null,_zR=null,_zJ=null;
+  // ── 回転直後の「実測値がまだ回転前のまま」問題への対処 ───────────────────
+  // iOS(特にPWA)は orientationchange 後しばらく window.innerWidth/innerHeight が回転前の
+  // 値を返し続けることがある。CSS の vw/vh/dvh はレイアウト由来なので正しく更新されるのに、
+  // JS から読む inner* だけが遅れる、という食い違いが起きる。これが起きると
+  //   ・--app-vh が縦向きの値のまま → canvas の max-height が実画面より大きくなり高さが破綻
+  //   ・_computeZones が縦向きの寸法でゾーンを作る → 左右もジャンプも判定から全部外れる
+  // の両方が同時に起きる。症状1と症状2が連動して見えるのはこのため。
+  // さらに厄介なことに、_onTouch の自己修正は inner* を _zW/_zH と比べていたので、
+  // 「古い値どうしを比べて一致」となり発火しなかった（fc88945 で直り切らなかった理由）。
+  // → 向き(media query)は inner* と独立に正しく取れるので、それを審判にして
+  //   「向きと矛盾しない実測値」だけを採用する。矛盾していれば別の実測源に切り替える。
+  const _orientLandscape=()=>{
+    try{ if(window.matchMedia)return window.matchMedia('(orientation: landscape)').matches; }catch(_){}
+    return null; // 判定できない環境では従来どおり inner* を無条件に信じる
+  };
+  // 採用順は inner* が先。正常時は必ずここで返るので、これまで正しく動いていた場合の
+  // 挙動は 1px も変わらない。inner* が向きと矛盾したときだけ代替の実測源へ落ちる。
+  const _viewport=()=>{
+    const L=_orientLandscape();
+    const fits=(w,h)=>L===null||(L?w>=h:w<=h);
+    const iw=window.innerWidth,ih=window.innerHeight;
+    if(fits(iw,ih))return [iw,ih];
+    const d=document.documentElement;
+    if(d&&d.clientWidth>0&&fits(d.clientWidth,d.clientHeight))return [d.clientWidth,d.clientHeight];
+    const vv=window.visualViewport;
+    if(vv&&vv.width>0){
+      const vw=Math.round(vv.width),vh=Math.round(vv.height);
+      if(fits(vw,vh))return [vw,vh];
+    }
+    return [iw,ih]; // どの実測源も向きと合わない＝まだ確定前。従来値で進み、後続の再測定に任せる
+  };
+  // 実測値が向きと一致しているか。false のあいだは「回転がまだ確定していない」と判断できる。
+  const _viewportSettled=()=>{
+    const L=_orientLandscape();
+    if(L===null)return true;
+    const [w,h]=_viewport();
+    return L?w>=h:w<=h;
+  };
   // ゾーンを計算したときの viewport を必ず一緒に控える。これが現在の viewport と食い違って
   // いれば「ゾーンは古い」と即断でき、イベント(resize/orientationchange/visualViewport)が
   // いつ飛んでくるかに依存せずに検出できる。回転直後の全ボタン不能はこれが無かったのが原因。
   let _zW=0,_zH=0;
   const _computeZones=()=>{
-    const W=window.innerWidth,H=window.innerHeight;
+    const [W,H]=_viewport();
     _zW=W;_zH=H;
     const ly2=H-_LR_BOTTOM,ly1=ly2-_LR_H;
     const lx=_LR_LEFT+_lrShift(); // CSS の left:calc(12px + var(--lr-shift)) と同値
@@ -1014,7 +1067,9 @@ if(isTouchDevice){
     //   (ゾーンだけ直すと回転オーバーレイ判定が古いまま残る)。
     //   innerWidth/innerHeight の読みは getBoundingClientRect と違いレイアウトを強制しない。
     //   実際に値が変わったときだけ再計算するので、通常のタップは今までどおり素通り。
-    if(window.innerWidth!==_zW||window.innerHeight!==_zH)updateOrientation();
+    // 比較対象は _viewport()（向きで検証済みの実測値）。以前は inner* を直接比べていたため、
+    // inner* が回転前のまま固まっているケースでは「古い値どうしが一致」して発火しなかった。
+    {const [vw,vh]=_viewport(); if(vw!==_zW||vh!==_zH)updateOrientation();}
     // ★ ゲートより前に必ず通す。ゴール演出中は state='goal' で下の return に落ちるので、
     //   ここが後ろだと「演出中に指を離した」ことを取りこぼし、遷移後の最初のタップが死ぬ。
     _syncTouchIds(e);
@@ -1030,17 +1085,34 @@ if(isTouchDevice){
   // canvas の高さ基準(--app-vh)とコントローラーのゾーン(_computeZones)を必ず同じ実測値・同じ
   // タイミングで更新する。これで canvas とジャンプ/左右ボタンの位置基準がズレない。
   const updateOrientation=()=>{
-    if(window.__setAppVh)window.__setAppVh();
-    document.body.classList.toggle('portrait', window.innerWidth<window.innerHeight);
+    // canvas の高さ基準もゾーンも、向きと矛盾しない同一の実測値から作る。
+    // これで「--app-vh だけ縦向きの値」「ゾーンだけ縦向きの寸法」というズレが生じない。
+    const [vw,vh]=_viewport();
+    if(window.__setAppVh)window.__setAppVh(vh);
+    document.body.classList.toggle('portrait', vw<vh);
     _computeZones();
   };
   updateOrientation();
+  // 回転が確定するまで測り直し続ける。setTimeout の決め打ち列だけだと、確定が遅れた回
+  // （＝起動後の初回回転で起きていた）に測り直す機会を使い切ってしまう。
+  // 「向きと実測が一致したら止める」ので、正常時は 1〜2 フレームで終わり空回りしない。
+  let _settleRaf=0,_settleUntil=0;
+  const _settleLoop=()=>{
+    _settleRaf=0;
+    updateOrientation();
+    if(_viewportSettled()||performance.now()>_settleUntil)return;
+    _settleRaf=requestAnimationFrame(_settleLoop);
+  };
+  const _settleSoon=()=>{
+    _settleUntil=performance.now()+4000; // 上限4秒。無限ループにはしない
+    if(!_settleRaf)_settleRaf=requestAnimationFrame(_settleLoop);
+  };
   // iOS PWA は起動後しばらくしてから innerHeight が最終値に落ち着くため、数回だけ再測定する。
   // pageshow はタスクを切ってからの復帰(bfcache)でも発火するので、再起動ごとに必ず通る。
   // 再測定の窓。1200ms 打ち切りだと、iOS の回転が遅れて確定したときに測り直す機会が
   // 一度も無くなる（そこから先は偶然の resize 待ち＝数秒〜十数秒の無反応）。窓を伸ばす。
   // 上の _onTouch の viewport チェックが最終防衛線なので、ここは「触らなくても直る」ための保険。
-  const _reflowSoon=()=>{ updateOrientation(); [0,60,120,250,400,700,1200,1800,2500,3500].forEach(function(ms){setTimeout(updateOrientation,ms);}); };
+  const _reflowSoon=()=>{ updateOrientation(); _settleSoon(); [0,60,120,250,400,700,1200,1800,2500,3500].forEach(function(ms){setTimeout(updateOrientation,ms);}); };
   _reflowSoon();
   window.addEventListener('load',_reflowSoon);
   window.addEventListener('pageshow',_reflowSoon);
@@ -1053,6 +1125,31 @@ if(isTouchDevice){
   // visualViewport の resize は回転完了後の確定値で飛ぶため、こちらを主軸にする。
   if(window.visualViewport)window.visualViewport.addEventListener('resize',_reflowSoon);
   window.addEventListener('resize',updateOrientation);   // 連続リサイズ用は軽い単発で十分
+  // ▼一時的な実機デバッグ表示（回転不具合の確認用。原因確定後に撤去する）。
+  //   「回転後、inner* だけが回転前の値のまま固まっていないか」を目視で確認するためのもの。
+  //   ort=実際の向き / in=innerWidth×Height / cl=documentElement.client* / vv=visualViewport
+  //   use=実際に採用した実測値 / set=向きと一致しているか / z=ゾーンの基準 / top=canvas上端
+  (function _initRotationDebug(){
+    const el=document.getElementById('dbgSafe');
+    if(!el)return;
+    const r=n=>Math.round(n);
+    const tick=()=>{
+      try{
+        const c=document.querySelector('canvas'),cr=c?c.getBoundingClientRect():null;
+        const d=document.documentElement,vv=window.visualViewport;
+        const [uw,uh]=_viewport();
+        el.innerHTML='<b>BUILD 0801a</b> ort:'+(_orientLandscape()?'LAND':'PORT')+' set:'+(_viewportSettled()?'ok':'WAIT')+'<br>'+
+          'in:'+window.innerWidth+'x'+window.innerHeight+
+          ' cl:'+(d?d.clientWidth+'x'+d.clientHeight:'-')+
+          ' vv:'+(vv?r(vv.width)+'x'+r(vv.height):'-')+'<br>'+
+          'use:'+uw+'x'+uh+' z:'+_zW+'x'+_zH+' vh:'+(getComputedStyle(d).getPropertyValue('--app-vh')||'unset').trim()+'<br>'+
+          'canvas top:'+(cr?r(cr.top):'-')+' h:'+(cr?r(cr.height):'-')+' w:'+(cr?r(cr.width):'-')+
+          ' pt:'+(document.body.classList.contains('portrait')?'1':'0');
+      }catch(e){ el.innerHTML='<b>BUILD 0801a</b> '+(e&&e.message||'err'); }
+    };
+    tick();
+    setInterval(tick,300);
+  })();
   // Add-to-home-screen hint: iOS Safari can't go fullscreen in-browser; guide users to A2HS.
   const _standalone = window.navigator.standalone===true || window.matchMedia('(display-mode: standalone)').matches;
   // PWA起動時のみ body.standalone を付与（PWA固有のCSSが必要になったとき用のフック）。

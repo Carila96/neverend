@@ -287,7 +287,11 @@ body.touch.portrait #a2hsBanner{display:none;} /* portrait shows the rotate over
 body.touch #a2hsBanner.show ~ #a2hsDim{display:block;}
 /* 縦向きはバナー自体が隠れて回転オーバーレイに替わるので、暗転も一緒に止める */
 body.touch.portrait #a2hsBanner.show ~ #a2hsDim{display:none;}
-#rotateOverlay{display:none;position:fixed;inset:0;z-index:9999;background:#000;color:#fff;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:'Share Tech Mono',monospace;font-size:18px;letter-spacing:2px;line-height:1.8;padding:20px;}
+/* pointer-events:none は必須。回転を促すだけの掲示で、押せる要素は一つも無い。
+   inset:0 / z-index:9999 で全面を覆うため、既定の pointer-events:auto のままだと
+   横に回した直後に body.portrait が一瞬でも残っている間、canvas へのタップを
+   この板が横取りしてしまう（タイトルのボタンが最初の数タップだけ効かない原因）。 */
+#rotateOverlay{display:none;position:fixed;inset:0;z-index:9999;pointer-events:none;background:#000;color:#fff;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:'Share Tech Mono',monospace;font-size:18px;letter-spacing:2px;line-height:1.8;padding:20px;}
 body.touch.portrait #rotateOverlay{display:flex;}
 </style>
 </head>
@@ -307,9 +311,18 @@ body.touch.portrait #rotateOverlay{display:flex;}
   // h を渡せば、その実測値を採用する（回転直後に innerHeight が回転前の値を返し続ける
   // 端末があるため、呼び出し側で向きと突き合わせて検証した高さを渡せるようにしてある）。
   // 引数なしの呼び出しは従来どおり innerHeight。
+  // ★ 値が変わらないときは書かない。_settleLoop は確定するまで毎フレーム呼ぶので、
+  //   毎回書くと canvas の高さ(calc(var(--app-vh)*88))が繰り返し無効化され、レイアウトが
+  //   延々と動き続ける。その間 iOS はタップを取りこぼす（回転直後に数タップ分が
+  //   ページに一切届かない＝raw が増えない、の一因）。同値なら何もしないのが重要。
+  var _lastVh='';
   window.__setAppVh=function(h){
     if(typeof h!=='number'||!(h>0))h=window.innerHeight;
-    if(h>0)document.documentElement.style.setProperty('--app-vh',(h/100)+'px');
+    if(!(h>0))return;
+    var v=(h/100)+'px';
+    if(v===_lastVh)return;
+    _lastVh=v;
+    document.documentElement.style.setProperty('--app-vh',v);
   };
   window.__setAppVh();
 })();
@@ -1151,16 +1164,28 @@ if(isTouchDevice){
   // ボタンが無反応になる。click に依存している限りタイミング次第で落ち続ける。
   // → touchend から直接同じ処理(_canvasActivate)を呼び、合成 click に依存しない経路を作る。
   //   canvas 要素にだけ張るので、Cookie バナーや A2HS の CLOSE など DOM ボタンには一切触れない。
-  let _cTapX=0,_cTapY=0,_cTapT=0,_cTapOK=false;
+  // ★ 「1本指のときだけ受け付ける」(e.touches.length!==1 で無効化)にはしない。
+  //   端末を回した直後は持ち替えで縁に指が触れやすく、余計な接触が1つ混ざるだけで
+  //   以降のタップが丸ごと無視され続ける（数タップ効かない症状の一因）。
+  //   代わりに「最初に触れた指の identifier」を覚え、その指の touchend だけを見る。
+  //   他の指が何本増えても、狙った指のタップは必ず成立する。
+  let _cTapId=null,_cTapX=0,_cTapY=0,_cTapT=0;
   canvas.addEventListener('touchstart',e=>{
-    if(e.touches.length!==1){_cTapOK=false;return;}
-    const t=e.touches[0];_cTapX=t.clientX;_cTapY=t.clientY;_cTapT=Date.now();_cTapOK=true;
+    if(_cTapId!==null)return;                 // 追跡中の指がいるなら他は無視
+    const t=e.changedTouches&&e.changedTouches[0];if(!t)return;
+    _cTapId=t.identifier;_cTapX=t.clientX;_cTapY=t.clientY;_cTapT=Date.now();
   },{passive:true});
+  const _cTapClear=e=>{
+    if(_cTapId===null)return null;
+    const cs=e.changedTouches||[];
+    for(let i=0;i<cs.length;i++)if(cs[i].identifier===_cTapId){_cTapId=null;return cs[i];}
+    return null;
+  };
+  canvas.addEventListener('touchcancel',e=>{_cTapClear(e);},{passive:true});
   canvas.addEventListener('touchend',e=>{
-    if(!_cTapOK)return;_cTapOK=false;
+    const t=_cTapClear(e);if(!t)return;  // 追跡していた指の touchend でなければ何もしない
     if(_ctrlStates.has(state))return;   // ゲーム中の画面はコントローラー側の担当（従来どおり）
     if(_blocked())return;               // Cookie バナー等が出ている間は canvas を触らせない
-    const t=e.changedTouches&&e.changedTouches[0];if(!t)return;
     if(Date.now()-_cTapT>700)return;                                        // 長押しは無視
     if(Math.abs(t.clientX-_cTapX)>16||Math.abs(t.clientY-_cTapY)>16)return; // スワイプは無視
     e.preventDefault();                 // 後続の合成 click を止めて二重発火を防ぐ
@@ -1228,6 +1253,23 @@ if(isTouchDevice){
   // screen.orientation の change は orientationchange より確実に飛ぶ端末があるため併用する
   // (どちらも _reflowSoon なので二重に来ても再測定が重なるだけで害は無い)。
   try{ if(screen.orientation&&screen.orientation.addEventListener)screen.orientation.addEventListener('change',_reflowSoon); }catch(_){}
+  // ★ 向きの media query そのものを購読する。orientationchange / screen.orientation は
+  //   実測ピクセルが確定する前に飛んだり端末によって発火が怪しかったりするが、これは
+  //   「OS が横になったと判断した瞬間」に必ず飛び、ピクセル読みに一切依存しない。
+  //   ここで body.portrait を即座に外すので、#rotateOverlay が横向きに残る時間がゼロになる。
+  //   （残っていると全面オーバーレイが最初の数タップを吸う。上の pointer-events:none と
+  //     二重の保険。クラス自体を即消せば _blocked() の portrait 判定も同時に解ける。）
+  try{
+    const _mqL=window.matchMedia&&window.matchMedia('(orientation: landscape)');
+    if(_mqL){
+      const _onOrient=ev=>{
+        document.body.classList.toggle('portrait', !(ev.matches));
+        _reflowSoon();
+      };
+      if(_mqL.addEventListener)_mqL.addEventListener('change',_onOrient);
+      else if(_mqL.addListener)_mqL.addListener(_onOrient); // 古い Safari
+    }
+  }catch(_){}
   // visualViewport の resize は回転完了後の確定値で飛ぶため、こちらを主軸にする。
   if(window.visualViewport)window.visualViewport.addEventListener('resize',_reflowSoon);
   window.addEventListener('resize',updateOrientation);   // 連続リサイズ用は軽い単発で十分
@@ -1246,8 +1288,9 @@ if(isTouchDevice){
         const [uw,uh]=_viewport();
         const ro=document.getElementById('rotateOverlay'),dim=document.getElementById('a2hsDim');
         const vis=el2=>el2?getComputedStyle(el2).display:'-';
-        el.innerHTML='<b>BUILD 0801e</b> <b>raw:'+(window.__rawTaps|0)+' start:'+_tapStart+' all:'+_tapSeen+
+        el.innerHTML='<b>BUILD 0801f</b> <b>raw:'+(window.__rawTaps|0)+' start:'+_tapStart+' all:'+_tapSeen+
           ' gate:'+_lastGate+' hit:'+(window.__lastHit||'-')+' fix:'+_fixLog+'</b>'+(_tapErr?' ERR:'+_tapErr:'')+'<br>'+
+          'ctap:'+(_cTapId===null?'idle':'trk')+' blk:'+(_blocked()?_blockReason():'no')+
           'regs:'+(window.__onTouchRegs|0)+
           ' touch:'+(document.body.classList.contains('touch')?'1':'0')+
           ' early:'+(window.__neverendTouch===true?'1':'0')+' live:'+(_liveTouch?'1':'0')+

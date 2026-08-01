@@ -1071,7 +1071,10 @@ if(isTouchDevice){
   //  preventDefault and kill those taps. Excluded too: dying (transient), mypage/testcomplete (overlay /
   //  canvas-tap only). _blocked() still disables zones under any front overlay.
   // ▼一時デバッグ: 直近のタップがどのゲートで落ちたかを記録する（原因確定後に撤去）。
-  let _lastGate='-',_tapSeen=0,_tapErr='';
+  //   _tapSeen は _onTouch の総呼び出し数(start/move/end/cancel の4種)、_tapStart は
+  //   touchstart だけ。__rawTaps も touchstart だけなので、比較すべきは raw と tapStart。
+  //   raw < tapSeen は二重登録ではなく「数えている種類が違う」だけ。
+  let _lastGate='-',_tapSeen=0,_tapStart=0,_tapErr='',_fixLog='-';
   const _blockReason=()=>(
        _cookieUp()?'cookie'
     : (_a2hsEl2&&_a2hsEl2.classList.contains('show'))?'a2hs'
@@ -1082,39 +1085,47 @@ if(isTouchDevice){
     : document.body.classList.contains('portrait')?'PORTRAIT'
     : 'blocked?'
   );
+  // ── タップの瞬間に状態を確定させる検算 ────────────────────────────────
+  // 向き(matchMedia)だけは実測ピクセルと independent に常に正しく取れるので、これを審判に
+  // 「body.touch / portrait / --app-vh / ゾーン」の4点がいま矛盾していないかを見て、
+  // 矛盾していればその場で直す。タイマーの次の発火を待たない＝待ち時間がタイマー依存でなくなる。
+  // 戻り値は直した項目の記号（デバッグ表示用）。何も直すことが無ければ空文字＝ほぼ全ての
+  // 通常タップはここを素通りする（matchMedia と classList の読みだけでレイアウトは強制しない）。
+  const _reconcile=()=>{
+    let f='';
+    // (1) body.touch。これが無いと body.touch canvas{position:fixed;top:4px} が効かず
+    //     canvas が align-items:center で画面中央に落ちる。_onTouch が呼ばれている＝
+    //     タッチ端末である動かぬ証拠なので、付いていなければ迷わず付ける。
+    if(!document.body.classList.contains('touch')){document.body.classList.add('touch');f+='T';}
+    // (2) portrait クラスが実際の向きと食い違っていないか（食い違うと _blocked() が全部落とす）
+    const L=_orientLandscape();
+    if(L!==null&&document.body.classList.contains('portrait')===L){
+      document.body.classList.toggle('portrait',!L);f+='P';
+    }
+    // (3) 実測値がゾーンの基準とズレていないか
+    const [vw,vh]=_viewport();
+    if(vw!==_zW||vh!==_zH){updateOrientation();f+='Z';}
+    // (4) ズレていなくても、ゾーンの縦横が実際の向きと逆なら作り直す
+    //     （実測とゾーンが「同じ間違った値」で一致していると (3) は素通りしてしまう）
+    else if(L!==null&&(L?_zW<_zH:_zW>_zH)){updateOrientation();f+='O';}
+    // (5) まだ実測が向きと一致していない＝確定前。測り直しループを必ず再起動しておく。
+    //     タップのたびに再武装されるので、上限で打ち切られたまま放置されることがない。
+    if(!_viewportSettled()){_settleSoon();f+='W';}
+    return f;
+  };
   const _ctrlStates=new Set(['play','pause','dead','ending','memo']);
   const _onTouch=e=>{
-    // ★ 不具合1(回転直後に全ボタンが効かない)の本丸。
-    //   ゾーンは resize / orientationchange / visualViewport.resize でしか作り直されず、
-    //   しかも回転後の再測定は 1200ms で打ち切られていた。iOS は回転直後の
-    //   innerWidth/innerHeight が過渡値のことがあり、その窓の内側で確定しないと
-    //   縦向きの寸法で作ったゾーン(例: y=780..830)が横向き画面(高さ390)に残り、
-    //   左右もジャンプも全て判定から外れる。復帰は後から偶然飛んでくる resize 待ち。
-    //   → イベントの到着を当てにせず、タップの瞬間に viewport がズレていたら
-    //     その場で測り直してから判定する。これで回転後の「最初の1タップ」から効く。
-    //   updateOrientation() を呼ぶのは body.portrait と --app-vh も同時にズレているため
-    //   (ゾーンだけ直すと回転オーバーレイ判定が古いまま残る)。
-    //   innerWidth/innerHeight の読みは getBoundingClientRect と違いレイアウトを強制しない。
-    //   実際に値が変わったときだけ再計算するので、通常のタップは今までどおり素通り。
-    // 比較対象は _viewport()（向きで検証済みの実測値）。以前は inner* を直接比べていたため、
-    // inner* が回転前のまま固まっているケースでは「古い値どうしが一致」して発火しなかった。
-    _tapSeen++; // ▼一時デバッグ: 何よりも先に数える（下で throw されても記録が残るように）
-    // ゲート前の下準備で例外が出ると、以降が丸ごと飛んで「タップが一切効かない」状態に
-    // なりうる（しかも PWA では console が見えず無症状に見える）。判定本体だけは何が
-    // あっても必ず走らせる。
-    try{
-    {const [vw,vh]=_viewport(); if(vw!==_zW||vh!==_zH)updateOrientation();}
-    // ★★ 上の再計算は「実測値がズレていたら」しか走らない。ところが実測値が既に正しく
-    //   揃っている（use==z、set:ok）状態でも、回転の途中で貼られた body.portrait だけが
-    //   残っていることがある。その場合ここは素通りし、下の _blocked() が portrait を見て
-    //   タップを落とし続ける ＝「値は全部正しいのにボタンが効かない」の正体。
-    //   実測値が正しいことが、逆に再計算を skip させてブロックを温存していた。
-    //   → ゲートの直前で、body.portrait が実際の向きと食い違っていないかだけを検算する。
-    //     matchMedia の読みのみでレイアウトを強制しないので、毎タップ通しても安全。
-    //     これで「取り残された portrait」は最初の1タップで必ず解消し、遅延がゼロになる。
-    {const L=_orientLandscape();
-     if(L!==null&&document.body.classList.contains('portrait')===L)document.body.classList.toggle('portrait',!L);}
-    }catch(err){_tapErr=(err&&err.message)||'err';}
+    _tapSeen++; if(e.type==='touchstart')_tapStart++; // ▼一時デバッグ: 何よりも先に数える
+    // ★★★ タップが来た瞬間に、状態を丸ごと検算して確定させてから判定に進む。
+    //   従来は「正しくなるのをタイマー(_reflowSoon の決め打ち列)や _settleLoop の発火に
+    //   任せて待つ」受け身の構造だった。そのため誤読がどの時点で起きたか次第で次の発火まで
+    //   の待ち時間が変わり、効くまでが毎回まちまち（悪いと10秒級）になっていた。
+    //   タップ自身に状態を確定させれば待ち時間はタイマーと無関係になり、その1タップ目から
+    //   正しい状態で判定できる。検算は matchMedia と classList の読みだけで、直すことが
+    //   無ければ何もしない＝通常のタップは素通りする。
+    //   下準備で例外が出ると以降が丸ごと飛んで「タップが一切効かない」状態になりうる
+    //   （PWA では console が見えず無症状に見える）ので、判定本体だけは必ず走らせる。
+    try{ _fixLog=_reconcile()||'-'; }catch(err){_tapErr=(err&&err.message)||'err';}
     // ★ ゲートより前に必ず通す。ゴール演出中は state='goal' で下の return に落ちるので、
     //   ここが後ろだと「演出中に指を離した」ことを取りこぼし、遷移後の最初のタップが死ぬ。
     _syncTouchIds(e);
@@ -1123,6 +1134,9 @@ if(isTouchDevice){
     _lastGate='pass';
     if(_hitTest(e))e.preventDefault();
   };
+  // ▼一時デバッグ: 登録回数を数える。ここが 1 以外なら二重登録（＝1タップが多重処理され、
+  //   consumed/keys の状態が壊れる）。現状このブロック自体が起動時 1 回しか通らない。
+  window.__onTouchRegs=(window.__onTouchRegs|0)+1;
   document.addEventListener('touchstart',_onTouch,{passive:false});
   document.addEventListener('touchmove',_onTouch,{passive:false});
   document.addEventListener('touchend',_onTouch,{passive:false});
@@ -1149,23 +1163,37 @@ if(isTouchDevice){
   // 回転が確定するまで測り直し続ける。setTimeout の決め打ち列だけだと、確定が遅れた回
   // （＝起動後の初回回転で起きていた）に測り直す機会を使い切ってしまう。
   // 「向きと実測が一致したら止める」ので、正常時は 1〜2 フレームで終わり空回りしない。
-  let _settleRaf=0,_settleUntil=0;
+  // rAF で詰めるのは最初の1秒だけ。その後は 200ms 間隔の見張りに落として、確定するまで
+  // 諦めずに測り続ける。以前は 4 秒で打ち切ってそのまま放置していたため、確定がそれより
+  // 遅れると「次に偶然 resize が飛んでくるまで」待つことになり、効くまでの時間が
+  // 毎回まちまち（悪いと10秒級）になっていた。確定した瞬間に自分で止まるので空回りしない。
+  let _settleRaf=0,_settleTimer=0,_settleUntil=0,_settleFast=0;
+  const _settleStop=()=>{
+    if(_settleRaf){cancelAnimationFrame(_settleRaf);_settleRaf=0;}
+    if(_settleTimer){clearTimeout(_settleTimer);_settleTimer=0;}
+  };
   const _settleLoop=()=>{
-    _settleRaf=0;
+    _settleRaf=0;_settleTimer=0;
     updateOrientation();
-    if(_viewportSettled()||performance.now()>_settleUntil)return;
-    _settleRaf=requestAnimationFrame(_settleLoop);
+    if(_viewportSettled())return;                       // 確定＝即終了
+    const now=performance.now();
+    if(now>_settleUntil)return;                         // 見張りの上限（タップで再武装される）
+    if(now<_settleFast)_settleRaf=requestAnimationFrame(_settleLoop); // 最初の1秒は毎フレーム
+    else _settleTimer=setTimeout(_settleLoop,200);      // 以降は省電力な間隔で粘る
   };
   const _settleSoon=()=>{
-    _settleUntil=performance.now()+4000; // 上限4秒。無限ループにはしない
-    if(!_settleRaf)_settleRaf=requestAnimationFrame(_settleLoop);
+    const now=performance.now();
+    _settleFast=now+1000;   // 最初の1秒は毎フレーム詰める
+    _settleUntil=now+8000;  // 見張りの上限。タップのたびに _reconcile が再武装するので放置にならない
+    if(!_settleRaf&&!_settleTimer)_settleRaf=requestAnimationFrame(_settleLoop);
   };
   // iOS PWA は起動後しばらくしてから innerHeight が最終値に落ち着くため、数回だけ再測定する。
   // pageshow はタスクを切ってからの復帰(bfcache)でも発火するので、再起動ごとに必ず通る。
   // 再測定の窓。1200ms 打ち切りだと、iOS の回転が遅れて確定したときに測り直す機会が
   // 一度も無くなる（そこから先は偶然の resize 待ち＝数秒〜十数秒の無反応）。窓を伸ばす。
   // 上の _onTouch の viewport チェックが最終防衛線なので、ここは「触らなくても直る」ための保険。
-  const _reflowSoon=()=>{ updateOrientation(); _settleSoon(); [0,60,120,250,400,700,1200,1800,2500,3500].forEach(function(ms){setTimeout(updateOrientation,ms);}); };
+  // _settleSoon() が「確定するまで粘る」担当なので、こちらの決め打ち列は初動の保険として短く保つ。
+  const _reflowSoon=()=>{ _settleStop(); updateOrientation(); _settleSoon(); [0,60,120,250,400,700].forEach(function(ms){setTimeout(updateOrientation,ms);}); };
   _reflowSoon();
   window.addEventListener('load',_reflowSoon);
   window.addEventListener('pageshow',_reflowSoon);
@@ -1193,8 +1221,10 @@ if(isTouchDevice){
         const [uw,uh]=_viewport();
         const ro=document.getElementById('rotateOverlay'),dim=document.getElementById('a2hsDim');
         const vis=el2=>el2?getComputedStyle(el2).display:'-';
-        el.innerHTML='<b>BUILD 0801c</b> <b>raw:'+(window.__rawTaps|0)+' tap:'+_tapSeen+' gate:'+_lastGate+'</b>'+(_tapErr?' ERR:'+_tapErr:'')+'<br>'+
-          'touch:'+(document.body.classList.contains('touch')?'1':'0')+
+        el.innerHTML='<b>BUILD 0801d</b> <b>raw:'+(window.__rawTaps|0)+' start:'+_tapStart+' all:'+_tapSeen+
+          ' gate:'+_lastGate+' fix:'+_fixLog+'</b>'+(_tapErr?' ERR:'+_tapErr:'')+'<br>'+
+          'regs:'+(window.__onTouchRegs|0)+
+          ' touch:'+(document.body.classList.contains('touch')?'1':'0')+
           ' early:'+(window.__neverendTouch===true?'1':'0')+' live:'+(_liveTouch?'1':'0')+
           ' ort:'+(_orientLandscape()?'LAND':'PORT')+' set:'+(_viewportSettled()?'ok':'WAIT')+
           ' pt:'+(document.body.classList.contains('portrait')?'1':'0')+'<br>'+

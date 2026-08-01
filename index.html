@@ -875,9 +875,26 @@ document.addEventListener('keyup',e=>{keys[e.key]=false;prevKeys[e.key]=false;
 // Require a coarse (finger) primary pointer so touchscreen laptops/desktops (mouse-primary) stay in PC mode
 // (full-size canvas, no on-screen controls); phones/tablets still get mobile mode.
 const _coarsePointer = !!(window.matchMedia && window.matchMedia('(pointer:coarse)').matches);
-// 早期スクリプト(<body>直後)で判定済みならその値を使う（判定条件の二重管理を避ける）
-const isTouchDevice = (typeof window.__neverendTouch==='boolean') ? window.__neverendTouch
-                    : (('ontouchstart' in window || navigator.maxTouchPoints>0) && _coarsePointer);
+// ★ 以前はここで「早期スクリプトの判定が boolean ならそれを無条件に採用」していた。
+//   早期スクリプトは <body> 直後＝canvas がパースされる前に走るため、iOS PWA の
+//   コールドスタート直後だと matchMedia('(pointer:coarse)') がまだ false を返すこと
+//   があり、その一度きりの誤読が確定値として残っていた。そうなると
+//     ・body.touch が付かない → body.touch canvas{position:fixed;top:4px} が効かず、
+//       canvas は body{align-items:center} + margin:auto で「画面の真ん中」に落ちる
+//     ・isTouchDevice が false → 下のブロックごと丸ごと実行されない ＝ タッチの
+//       addEventListener が一つも張られず、どこを触っても _onTouch に来ない
+//       （デバッグ表示の gate: が「-」のまま＝ブロックではなく「不達」）
+//   の2つが同時に起きる。観測された2症状はこれ一つで説明がつく。
+//   → 判定は「早期 or パース完了後」の OR にする。後者はレイアウト確定後の読みなので
+//     信頼できる。どちらも false のときだけ非タッチ＝PC 判定になり、PC の挙動は不変。
+const _liveTouch = ('ontouchstart' in window || navigator.maxTouchPoints>0) && _coarsePointer;
+const isTouchDevice = (window.__neverendTouch===true) || _liveTouch;
+// ▼一時デバッグ: タッチイベントがそもそもページに届いているかを、コントローラーとは
+//   独立に数える。capture 段階なので誰かが stopPropagation しても必ず先に通る。
+//   raw が増えるのに tap が増えなければ _onTouch までの間で落ちている、
+//   両方増えなければタッチ自体が来ていない、と切り分けられる。
+window.__rawTaps=0;
+document.addEventListener('touchstart',function(){window.__rawTaps++;},{passive:true,capture:true});
 if(isTouchDevice){
   document.body.classList.add('touch');
   // Perf: kill canvas shadowBlur on touch (neonText & HUD set it every frame; shadow blur is extremely
@@ -1054,7 +1071,7 @@ if(isTouchDevice){
   //  preventDefault and kill those taps. Excluded too: dying (transient), mypage/testcomplete (overlay /
   //  canvas-tap only). _blocked() still disables zones under any front overlay.
   // ▼一時デバッグ: 直近のタップがどのゲートで落ちたかを記録する（原因確定後に撤去）。
-  let _lastGate='-';
+  let _lastGate='-',_tapSeen=0,_tapErr='';
   const _blockReason=()=>(
        _cookieUp()?'cookie'
     : (_a2hsEl2&&_a2hsEl2.classList.contains('show'))?'a2hs'
@@ -1081,6 +1098,11 @@ if(isTouchDevice){
     //   実際に値が変わったときだけ再計算するので、通常のタップは今までどおり素通り。
     // 比較対象は _viewport()（向きで検証済みの実測値）。以前は inner* を直接比べていたため、
     // inner* が回転前のまま固まっているケースでは「古い値どうしが一致」して発火しなかった。
+    _tapSeen++; // ▼一時デバッグ: 何よりも先に数える（下で throw されても記録が残るように）
+    // ゲート前の下準備で例外が出ると、以降が丸ごと飛んで「タップが一切効かない」状態に
+    // なりうる（しかも PWA では console が見えず無症状に見える）。判定本体だけは何が
+    // あっても必ず走らせる。
+    try{
     {const [vw,vh]=_viewport(); if(vw!==_zW||vh!==_zH)updateOrientation();}
     // ★★ 上の再計算は「実測値がズレていたら」しか走らない。ところが実測値が既に正しく
     //   揃っている（use==z、set:ok）状態でも、回転の途中で貼られた body.portrait だけが
@@ -1092,6 +1114,7 @@ if(isTouchDevice){
     //     これで「取り残された portrait」は最初の1タップで必ず解消し、遅延がゼロになる。
     {const L=_orientLandscape();
      if(L!==null&&document.body.classList.contains('portrait')===L)document.body.classList.toggle('portrait',!L);}
+    }catch(err){_tapErr=(err&&err.message)||'err';}
     // ★ ゲートより前に必ず通す。ゴール演出中は state='goal' で下の return に落ちるので、
     //   ここが後ろだと「演出中に指を離した」ことを取りこぼし、遷移後の最初のタップが死ぬ。
     _syncTouchIds(e);
@@ -1168,16 +1191,20 @@ if(isTouchDevice){
         const c=document.querySelector('canvas'),cr=c?c.getBoundingClientRect():null;
         const d=document.documentElement,vv=window.visualViewport;
         const [uw,uh]=_viewport();
-        el.innerHTML='<b>BUILD 0801b</b> ort:'+(_orientLandscape()?'LAND':'PORT')+' set:'+(_viewportSettled()?'ok':'WAIT')+
-          ' <b>gate:'+_lastGate+'</b><br>'+
+        const ro=document.getElementById('rotateOverlay'),dim=document.getElementById('a2hsDim');
+        const vis=el2=>el2?getComputedStyle(el2).display:'-';
+        el.innerHTML='<b>BUILD 0801c</b> <b>raw:'+(window.__rawTaps|0)+' tap:'+_tapSeen+' gate:'+_lastGate+'</b>'+(_tapErr?' ERR:'+_tapErr:'')+'<br>'+
+          'touch:'+(document.body.classList.contains('touch')?'1':'0')+
+          ' early:'+(window.__neverendTouch===true?'1':'0')+' live:'+(_liveTouch?'1':'0')+
+          ' ort:'+(_orientLandscape()?'LAND':'PORT')+' set:'+(_viewportSettled()?'ok':'WAIT')+
+          ' pt:'+(document.body.classList.contains('portrait')?'1':'0')+'<br>'+
           'in:'+window.innerWidth+'x'+window.innerHeight+
           ' cl:'+(d?d.clientWidth+'x'+d.clientHeight:'-')+
           ' vv:'+(vv?r(vv.width)+'x'+r(vv.height):'-')+'<br>'+
           'use:'+uw+'x'+uh+' z:'+_zW+'x'+_zH+' vh:'+(getComputedStyle(d).getPropertyValue('--app-vh')||'unset').trim()+'<br>'+
           'canvas top:'+(cr?r(cr.top):'-')+' h:'+(cr?r(cr.height):'-')+' w:'+(cr?r(cr.width):'-')+
-          ' pt:'+(document.body.classList.contains('portrait')?'1':'0')+
-          ' cons:'+_consumed.size+' live:'+_liveIds.size+' st:'+state;
-      }catch(e){ el.innerHTML='<b>BUILD 0801b</b> '+(e&&e.message||'err'); }
+          ' ro:'+vis(ro)+' dim:'+vis(dim)+' st:'+state;
+      }catch(e){ el.innerHTML='<b>BUILD 0801c</b> '+(e&&e.message||'err'); }
     };
     tick();
     setInterval(tick,300);

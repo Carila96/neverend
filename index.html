@@ -1141,6 +1141,31 @@ if(isTouchDevice){
   document.addEventListener('touchmove',_onTouch,{passive:false});
   document.addEventListener('touchend',_onTouch,{passive:false});
   document.addEventListener('touchcancel',_onTouch,{passive:false});
+  // ── canvas ボタン（タイトルの SETTINGS / NORMAL・DEATH / MY PAGE / HALL OF LEGENDS）─────
+  // これらは _ctrlStates に title を入れない設計（ecbbefd「Mobile: make title fully tap-driven」）の
+  // とおり、コントローラーではなく canvas の click ハンドラが処理する。_onTouch が
+  // gate:state:title で抜けるのは仕様どおりで、そこは悪くない（preventDefault もしない）。
+  // 問題は、その click が「合成 click」であること。タップ中に body のクラスや --app-vh が
+  // 書き換わってレイアウトが動くと iOS は合成 click を出さないことがあり、回転直後や
+  // 起動直後（＝まさに _reconcile / _settleLoop が値を直している最中）にタイトルの
+  // ボタンが無反応になる。click に依存している限りタイミング次第で落ち続ける。
+  // → touchend から直接同じ処理(_canvasActivate)を呼び、合成 click に依存しない経路を作る。
+  //   canvas 要素にだけ張るので、Cookie バナーや A2HS の CLOSE など DOM ボタンには一切触れない。
+  let _cTapX=0,_cTapY=0,_cTapT=0,_cTapOK=false;
+  canvas.addEventListener('touchstart',e=>{
+    if(e.touches.length!==1){_cTapOK=false;return;}
+    const t=e.touches[0];_cTapX=t.clientX;_cTapY=t.clientY;_cTapT=Date.now();_cTapOK=true;
+  },{passive:true});
+  canvas.addEventListener('touchend',e=>{
+    if(!_cTapOK)return;_cTapOK=false;
+    if(_ctrlStates.has(state))return;   // ゲーム中の画面はコントローラー側の担当（従来どおり）
+    if(_blocked())return;               // Cookie バナー等が出ている間は canvas を触らせない
+    const t=e.changedTouches&&e.changedTouches[0];if(!t)return;
+    if(Date.now()-_cTapT>700)return;                                        // 長押しは無視
+    if(Math.abs(t.clientX-_cTapX)>16||Math.abs(t.clientY-_cTapY)>16)return; // スワイプは無視
+    e.preventDefault();                 // 後続の合成 click を止めて二重発火を防ぐ
+    _canvasActivate(t.clientX,t.clientY);
+  },{passive:false});
   // Orientation: JS-driven portrait detection (more reliable than CSS orientation media query across browsers).
   // canvas の高さ基準(--app-vh)とコントローラーのゾーン(_computeZones)を必ず同じ実測値・同じ
   // タイミングで更新する。これで canvas とジャンプ/左右ボタンの位置基準がズレない。
@@ -1221,8 +1246,8 @@ if(isTouchDevice){
         const [uw,uh]=_viewport();
         const ro=document.getElementById('rotateOverlay'),dim=document.getElementById('a2hsDim');
         const vis=el2=>el2?getComputedStyle(el2).display:'-';
-        el.innerHTML='<b>BUILD 0801d</b> <b>raw:'+(window.__rawTaps|0)+' start:'+_tapStart+' all:'+_tapSeen+
-          ' gate:'+_lastGate+' fix:'+_fixLog+'</b>'+(_tapErr?' ERR:'+_tapErr:'')+'<br>'+
+        el.innerHTML='<b>BUILD 0801e</b> <b>raw:'+(window.__rawTaps|0)+' start:'+_tapStart+' all:'+_tapSeen+
+          ' gate:'+_lastGate+' hit:'+(window.__lastHit||'-')+' fix:'+_fixLog+'</b>'+(_tapErr?' ERR:'+_tapErr:'')+'<br>'+
           'regs:'+(window.__onTouchRegs|0)+
           ' touch:'+(document.body.classList.contains('touch')?'1':'0')+
           ' early:'+(window.__neverendTouch===true?'1':'0')+' live:'+(_liveTouch?'1':'0')+
@@ -6914,28 +6939,34 @@ const mpResetBtn={x:W/2-70,y:H-62,w:140,h:36};
 const mpSalesBtn={x:W/2+90,y:H-62,w:180,h:36};
 const mpLoginBtn={x:W-200,y:90,w:180,h:22};
 const mpLogoutBtn={x:W-120,y:90,w:104,h:22};
-canvas.addEventListener('click',e=>{
+// canvas 上のボタン（タイトルの SETTINGS / NORMAL・DEATH / MY PAGE / HALL OF LEGENDS、
+// mypage の各ボタン）の処理本体。以前は click ハンドラに直書きだったが、モバイルでは
+// 合成 click が落ちることがあるため、touchend からも同じ処理を呼べるよう関数に出した。
+// 座標は clientX/clientY（ビューポート基準）で受け取り、内部で canvas 座標へ変換する。
+// function 宣言なので巻き上げられ、より手前のタッチブロックからも参照できる。
+function _canvasActivate(clientX,clientY){
   const rect=canvas.getBoundingClientRect();
   const scaleX=W/rect.width,scaleY=H/rect.height;
-  const cx=(e.clientX-rect.left)*scaleX,cy=(e.clientY-rect.top)*scaleY;
+  const cx=(clientX-rect.left)*scaleX,cy=(clientY-rect.top)*scaleY;
+  window.__lastHit='none'; // ▼一時デバッグ: どのボタンに当たったか
   if(state==='title'){
     // モード選択クリック
     function _inRegion(b){return cx>=b.x&&cx<=b.x+b.w&&cy>=b.y&&cy<=b.y+b.h;}
     // Touch: tapping a mode both selects AND starts (no keyboard Space on mobile). PC keeps select-only.
     const _cbUp=(()=>{const c=document.getElementById('cookieBanner');return !!(c&&c.style.display!=='none'&&!c.classList.contains('hidden'));})();
     const _tapStart=isTouchDevice&&!_cbUp; // don't start while the cookie banner is up
-    if(_inRegion(_titleNormalBtn)){_titleModeSel=0;gameMode='normal';
+    if(_inRegion(_titleNormalBtn)){_titleModeSel=0;gameMode='normal';window.__lastHit='normal';
       if(_tapStart){_retryStreak=0;resetRun();state='play';startBGM(getBGMTrack(1));}
     }
-    else if(_inRegion(_titleDeathBtn)){
+    else if(_inRegion(_titleDeathBtn)){window.__lastHit='death';
       if(deathModeUnlocked){_titleModeSel=1;gameMode='death';
         if(_tapStart){_retryStreak=0;resetRun();state='play';startBGM(getBGMTrack(1));}
       }
       else{floatMsgs.push({txt:'Clear all 100 floors to unlock.',x:W/2,y:H/2,life:3,color:'rgba(255,220,50,0.9)'});}
     }
     // 四隅はすべて _inRegion(矩形) に統一（描画が参照する矩形と同一のものを判定に使う）
-    if(_inRegion(settingsHit)){openSettings();}   // 判定は拡張矩形、描画は settingsBtn
-    if(!testMode&&_inRegion(mpHit)){document.getElementById('mypageOverlay').style.display='block';document.getElementById('c').style.display='none';}
+    if(_inRegion(settingsHit)){window.__lastHit='settings';openSettings();}   // 判定は拡張矩形、描画は settingsBtn
+    if(!testMode&&_inRegion(mpHit)){window.__lastHit='mypage';document.getElementById('mypageOverlay').style.display='block';document.getElementById('c').style.display='none';}
     // testMode: LOGIN button click (H/2+134 area)
     if(testMode&&!_currentUser&&cx>=W/2-200&&cx<=W/2+200&&cy>=H/2+122&&cy<=H/2+146){openLoginModal();}
     // ENTER YOUR NAME click (non-testMode, when no name set)
@@ -6944,7 +6975,7 @@ canvas.addEventListener('click',e=>{
     }
     // Hall of Legends click (bottom-right area, disabled in testMode)
     // 旧: W-200/W-20/H-24/H-4 のハードコード。holBtn に統一して描画と判定を同じ矩形にした。
-    if(!testMode&&_inRegion(holBtn)){if(_worldStatsCache){localStorage.setItem('neverend_world_stats_cache',JSON.stringify(_worldStatsCache));}document.getElementById('holOverlay').style.display='block';document.getElementById('c').style.display='none';}
+    if(!testMode&&_inRegion(holBtn)){window.__lastHit='hol';if(_worldStatsCache){localStorage.setItem('neverend_world_stats_cache',JSON.stringify(_worldStatsCache));}document.getElementById('holOverlay').style.display='block';document.getElementById('c').style.display='none';}
   } else if(state==='testcomplete'){
     if(cx>=_tcBtn.x&&cx<=_tcBtn.x+_tcBtn.w&&cy>=_tcBtn.y&&cy<=_tcBtn.y+_tcBtn.h){state='title';}
   } else if(state==='mypage'){
@@ -6955,7 +6986,8 @@ canvas.addEventListener('click',e=>{
     if(_currentUser){if(_inBtn(mpLogoutBtn)){logoutUser();}}
     else{if(_inBtn(mpLoginBtn)){openLoginModal();}}
   }
-});
+}
+canvas.addEventListener('click',e=>_canvasActivate(e.clientX,e.clientY));
 
 function drawTitle(){
   drawBg(true);

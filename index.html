@@ -836,6 +836,16 @@ setInterval(function(){
 (function(){incStat('totalSessions');const h=new Date().getHours();if(h>=0&&h<5)setStat('nightOwl',1);})();
 
 document.addEventListener('keydown',e=>{
+  // 名前入力が必須のあいだ(_nameRequired)はキーをゲーム側へ一切渡さない。
+  // PC(body.touchなし)では下で Space/矢印を preventDefault しているため、これが無いと
+  //   ・名前欄にスペースが打てない
+  //   ・裏でジャンプ/移動が暴発する
+  //   ・Tab で SETTINGS が必須モーダルの上に開く
+  // という3つが同時に起きる。ESC/Tab はここで殺し切る。
+  if(_nameRequired){
+    if(e.key==='Escape'||e.key==='Tab')e.preventDefault();
+    return;
+  }
   if(e.key==='Tab'){e.preventDefault();
     if(adminMode){toggleAdminPanel();return;}
     if(document.getElementById('settings').classList.contains('open'))closeSettings();
@@ -8409,6 +8419,9 @@ async function initSupabase(){
           });
         },0);
       }else{
+        // ログアウト＝未ログインのNonameプレイヤーに戻る。名前は不要なので必須ロックを解除する
+        // （これが無いとサインアウト後もモーダルが閉じられず操作不能になる）。
+        if(_nameRequired)_forceCloseLoginModal();
         localStorage.removeItem('neverend_playername');
         // ログアウト時はNonameに戻す
         let noname=sessionStorage.getItem('neverend_noname');
@@ -8430,42 +8443,99 @@ function openLoginModal(){
   document.getElementById('lmMsg').textContent='';
   document.getElementById('lmMsg').style.color='';
 }
-function closeLoginModal(){
+// ── ログインユーザーの名前入力は「必須」 ────────────────────────────
+// _nameRequired が true のあいだ #loginModal を閉じる経路をすべて塞ぐ。
+//   × ボタン / 背景タップ / ESC / 他コードからの closeLoginModal() 呼び出し
+//   (_onLoginSuccess の setTimeout(closeLoginModal,1800) 含む)
+// 以前はこれらで閉じられたため player_name=null の行が残り、次回ログインでも
+// また名前を聞かれ、ランキングには Anonymous として載っていた。
+// ★ 未ログインで遊ぶ人(Noname〇〇〇)は _showNameInputModal() を一切通らないので無影響。
+// ★ keydown ハンドラ(ファイル冒頭)より後ろで宣言するので、TDZを避けて var で持つ。
+var _nameRequired=false;
+// 空文字・空白のみは名前として認めない
+function _isValidPlayerName(v){return (v||'').trim().length>0;}
+// 名前が確定したときだけ通る、唯一の閉じる経路
+function _forceCloseLoginModal(){
+  _nameRequired=false;
   document.getElementById('loginModal').classList.remove('open');
 }
+function closeLoginModal(){
+  if(_nameRequired)return; // 名前が確定するまで閉じさせない
+  document.getElementById('loginModal').classList.remove('open');
+}
+// 背景(オーバーレイ余白)のタップ/クリックを capture 段階で握りつぶす。
+// PC=click、モバイル=touchstart/touchend の両方を塞ぐので端末を問わず効く。
+(function _guardNameModalBackdrop(){
+  const modal=document.getElementById('loginModal');
+  if(!modal)return;
+  const swallow=function(e){
+    if(!_nameRequired)return;
+    if(e.target===modal){e.preventDefault();e.stopPropagation();}
+  };
+  modal.addEventListener('click',swallow,true);
+  modal.addEventListener('touchstart',swallow,{capture:true,passive:false});
+  modal.addEventListener('touchend',swallow,{capture:true,passive:false});
+})();
 function _showNameInputModal(){
   // 既存のloginModalを名前入力用に転用
   const modal=document.getElementById('loginModal');
   if(!modal)return;
   const inner=document.getElementById('loginModal-inner');
   if(!inner)return;
+  // ここから名前が確定するまで閉じられない
+  _nameRequired=true;
+  // モーダルが出た瞬間に押しっぱなし判定が残っていると裏のゲームが動くのでクリア
+  try{for(const k in keys)keys[k]=false;}catch(_){}
+  // × ボタン(.lm-close)は描画しない。innerHTML ごと差し替えるので閉じるUIは存在しない。
   inner.innerHTML=`
     <div class="lm-title">ENTER YOUR NAME</div>
     <div style="font-size:10px;color:#777;letter-spacing:1px;text-align:center;margin-bottom:8px;">
-      This name will appear in your profile and Hall of Legends.
+      This name will appear in your profile and Hall of Legends.<br>
+      <span style="color:#ffe033;">Required &mdash; you cannot continue without a name.</span>
     </div>
     <input class="lm-input" id="lmNameInput" type="text" maxlength="20"
       placeholder="YOUR NAME" autocomplete="off"/>
-    <button class="lm-submit" onclick="_submitLoginName()">[ SET NAME ]</button>
+    <button class="lm-submit" id="lmNameBtn" onclick="_submitLoginName()" disabled
+      style="opacity:0.4;cursor:not-allowed;">[ SET NAME ]</button>
     <div class="lm-msg" id="lmNameMsg"></div>
   `;
   modal.classList.add('open');
-  setTimeout(function(){
-    const inp=document.getElementById('lmNameInput');
-    if(inp)inp.focus();
-  },100);
+  const inp=document.getElementById('lmNameInput');
+  const btn=document.getElementById('lmNameBtn');
+  if(inp&&btn){
+    // 有効な名前が入っているときだけ [ SET NAME ] を押せる。
+    // input イベントなので物理キーボード(PC)・ソフトキーボード(モバイル)の両方で発火する。
+    const sync=function(){
+      const ok=_isValidPlayerName(inp.value);
+      btn.disabled=!ok;
+      btn.style.opacity=ok?'1':'0.4';
+      btn.style.cursor=ok?'pointer':'not-allowed';
+    };
+    inp.addEventListener('input',sync);
+    inp.addEventListener('keydown',function(e){
+      e.stopPropagation(); // document 側のゲーム用ハンドラへ流さない
+      if(e.key==='Enter'&&_isValidPlayerName(inp.value))_submitLoginName();
+    });
+    sync();
+  }
+  setTimeout(function(){if(inp)inp.focus();},100);
 }
 async function _submitLoginName(){
   const inp=document.getElementById('lmNameInput');
   const msg=document.getElementById('lmNameMsg');
   if(!inp)return;
   const name=(inp.value||'').trim().slice(0,20);
-  if(!name){
+  // 空文字・空白のみは不可。ボタンが押せてしまった場合もここで必ず弾いて再入力させる。
+  if(!_isValidPlayerName(name)){
     if(msg){msg.style.color='#e74c3c';msg.textContent='Please enter a name.';}
+    inp.focus();
     return;
   }
+  // 以前はここで closeLoginModal() していたため、セッション確定前の一瞬に [SET NAME] を
+  // 押すと名前未設定(player_name=null)のままモーダルが閉じられた。閉じずに再試行させる。
   if(!supabaseClient||!_currentUser){
-    closeLoginModal();return;
+    if(msg){msg.style.color='#e74c3c';msg.textContent='Session not ready. Please try again.';}
+    return;
   }
   // 管理者モード中は player_profiles へ一切書かない（黙って無視せず理由を出す）
   if(adminMode){
@@ -8487,13 +8557,19 @@ async function _submitLoginName(){
       }
     }
     // DBに保存
-    await supabaseClient.from('player_profiles').upsert({
+    const {error:_upErr}=await supabaseClient.from('player_profiles').upsert({
       id:_currentUser.id,
       player_name:name
     },{onConflict:'id'});
+    // 保存できていないのに閉じたら player_name=null が残る。失敗時は必ず開いたまま。
+    if(_upErr){
+      console.error('[setName] upsert failed:',_upErr.code||'',_upErr.message||_upErr);
+      if(msg){msg.style.color='#e74c3c';msg.textContent='Could not save. Please try again.';}
+      return;
+    }
     localStorage.setItem('neverend_playername',name);
     _currentNoname='';
-    closeLoginModal();
+    _forceCloseLoginModal(); // 名前が確定したときだけ閉じる
     floatMsgs.push({txt:'Welcome, '+name+'!',x:W/2,y:H/2-60,life:3,color:'rgba(100,255,180,1)'});
   }catch(e){
     if(msg){msg.style.color='#e74c3c';msg.textContent='Error. Please try again.';}

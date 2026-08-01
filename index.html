@@ -920,10 +920,26 @@ if(isTouchDevice){
   _computeZones();
   const _inExp=(z,t)=>z&&t.clientX>=z.x1-_hitMargin&&t.clientX<=z.x2+_hitMargin&&t.clientY>=z.y1-_hitMargin&&t.clientY<=z.y2+_hitMargin;
   let _pressed=new Set();
+  // 面遷移をまたぐ指の扱い。
+  //  _liveIds : 今画面に触れている指の identifier。ゲート(_ctrlStates/_blocked)より前で必ず更新する。
+  //             ゴール中は state='goal'(:7387) で _ctrlStates を外れるため、ここをゲートの後ろに
+  //             置くと「演出中に指を離した」ことを取りこぼす。
+  //  _consumed: 面遷移の瞬間に触れていた指。その指が一度離れるまで入力として拾わない。
+  //             置きっぱなしでは動かず、離して押し直せば新しい指として1回目から効く。
+  let _liveIds=new Set(),_consumed=new Set();
+  const _syncTouchIds=e=>{
+    _liveIds=new Set();
+    for(let i=0;i<e.touches.length;i++)_liveIds.add(e.touches[i].identifier);
+    // 離れた指の無効化を解除する。identifier を再利用する端末(iOS)でも、離れた瞬間に
+    // 必ずここで外れるので、次の押下が古い無効化に巻き込まれることはない。
+    for(const id of _consumed)if(!_liveIds.has(id))_consumed.delete(id);
+  };
   const _hitTest=e=>{
     const now=new Set(); let hitAny=false;
     for(let i=0;i<e.touches.length;i++){
       const t=e.touches[i];
+      // 遷移時から乗り続けている指はここで捨てる。now に入らない＝keydown は撃たれない。
+      if(_consumed.has(t.identifier))continue;
       let hL=_inExp(_zL,t), hR=_inExp(_zR,t);
       if(hL&&hR){ // expanded L/R zones overlap: split at the seam between the two buttons so only one fires
         if(t.clientX<(_zL.x2+_zR.x1)/2)hR=false;else hL=false;
@@ -944,8 +960,18 @@ if(isTouchDevice){
   //   0.7秒のゴール演出(_goalDuration)を挟んで loadStage が走る頃には ArrowRight（時にジャンプも）
   //   が残っており、それを次の面の開始と同時に自動入力していた＝勝手に走り出す/跳ぶ。
   //   キャッシュを実入力として再生する設計そのものが誤り。入力は必ず実際のタッチからのみ作る。
-  //   その結果「指を置いたまま面移動すると最初の左右タップが1回死ぬ」は再発するが、
-  //   指を離して押し直せば直る軽微な事象であり、暴発死より遥かに軽い。安全側に倒す。
+  //   その代わり、面遷移では「入力を作らず、消すだけ」で辻褄を合わせる。
+  //   loadStage から呼ぶリセット。keys/prevKeys の初期化(:5756)と対で使う。
+  //   _pressed を空にするのは、ゴール中(state='goal')は _onTouch がゲートで止まり、演出中に
+  //   指を離しても keyup が走らず _pressed に方向キーが残るため。残ったままだと次の押下が
+  //   「変化なし」と見なされ keydown が撃たれず、遷移後の最初のタップが死ぬ（不具合2の正体）。
+  //   空にしても暴発しないのは、同時に _consumed へ「今触れている指」を入れるから。
+  //   乗り続けている指は _hitTest で捨てられ、離れて初めて新しい押下として扱われる。
+  //   この処理は入力を作らない（consumed は捨てる方向にしか効かない）ので、原理的に暴発しない。
+  window.__touchStageReset=function(){
+    _consumed=new Set(_liveIds); // 今乗っている指は「離れるまで無効」
+    _pressed=new Set();          // 押下集合も空に（consumed があるので再入力は生まれない）
+  };
   // Elements cached once; _blocked() only reads style.display/classList (no reflow) each touch.
   const _a2hsEl2=document.getElementById('a2hsBanner'),
         _mpEl=document.getElementById('mypageOverlay'),_holEl=document.getElementById('holOverlay'),
@@ -989,6 +1015,9 @@ if(isTouchDevice){
     //   innerWidth/innerHeight の読みは getBoundingClientRect と違いレイアウトを強制しない。
     //   実際に値が変わったときだけ再計算するので、通常のタップは今までどおり素通り。
     if(window.innerWidth!==_zW||window.innerHeight!==_zH)updateOrientation();
+    // ★ ゲートより前に必ず通す。ゴール演出中は state='goal' で下の return に落ちるので、
+    //   ここが後ろだと「演出中に指を離した」ことを取りこぼし、遷移後の最初のタップが死ぬ。
+    _syncTouchIds(e);
     if(!_ctrlStates.has(state))return;
     if(_blocked())return;
     if(_hitTest(e))e.preventDefault();
@@ -5754,6 +5783,9 @@ function loadStage(n){
   // （復元するとゴール直前に押していた右/ジャンプが次の面の開始と同時に暴発する）。
   // 次の面は常に静止で始まり、以後の入力は実際のタッチ/キー操作からのみ生まれる。
   keys={};prevKeys={};
+  // タッチ: コントローラー側の押下集合も空にし、今乗っている指は離れるまで無効化する。
+  // 非タッチ(PC)では __touchStageReset 自体が未定義 → 何も起きず従来と完全に同じ。
+  if(window.__touchStageReset)window.__touchStageReset();
   _stageAttemptDeaths=0;deathParticles=[];_attemptStartMs=Date.now();
   const s=STAGES[Math.min(n-1,STAGES.length-1)];
   const fallSet=new Set(s.fall.map(b=>`${b.x},${b.y}`));

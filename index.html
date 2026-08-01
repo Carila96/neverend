@@ -242,7 +242,13 @@ body.touch.ctrls #touchControls{display:block;} /* controller shown only in game
 .touch-cluster{display:flex;gap:16px;pointer-events:none;}
 .touch-btn{pointer-events:auto;width:74px;height:74px;border-radius:50%;background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);color:#fff;font-size:26px;line-height:1;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:none;}
 .touch-btn:active{background:rgba(255,255,255,0.15);}
-#lrRow{position:fixed;left:12px;bottom:14px;z-index:200;display:flex;gap:0;pointer-events:none;} /* left/right adjacent (no gap) so sliding switches L<->R with no dead zone */
+/* Horizontal nudge of the left/right pad toward the centre of the screen (it sits bottom-left,
+   so a positive value moves it right). SINGLE SOURCE OF TRUTH: _computeZones() reads this very
+   custom property, so the tap zones follow the visual position automatically — retune by editing
+   this one number only. Touch-only: #lrRow lives inside #touchControls (display:none without
+   body.touch), so PC/desktop browsers never see it. */
+:root{--lr-shift:16px;}
+#lrRow{position:fixed;left:calc(12px + var(--lr-shift));bottom:14px;z-index:200;display:flex;gap:0;pointer-events:none;} /* left/right adjacent (no gap) so sliding switches L<->R with no dead zone */
 .lr-btn{width:90px;height:50px;border-radius:12px;}
 #btnLeft{border-top-right-radius:0;border-bottom-right-radius:0;}
 #btnRight{border-top-left-radius:0;border-bottom-left-radius:0;}
@@ -902,14 +908,26 @@ if(isTouchDevice){
   // Multi-touch: e.touches is fully scanned, so hold a direction + jump with a second finger works.
   const _hitMargin=24; // expand touch hit area beyond the visible button on all sides (visual CSS unchanged)
   // Hit zones computed from screen size + fixed CSS offsets (px) — NO getBoundingClientRect / reflow, ever.
-  // These numbers MUST match the CSS: #lrRow{left:12;bottom:14} .lr-btn{w:90,h:50}; #jumpCluster{right:12;bottom:14} #btnJump{w:96,h:96}.
+  // These numbers MUST match the CSS: #lrRow{left:12 + var(--lr-shift);bottom:14} .lr-btn{w:90,h:50}; #jumpCluster{right:12;bottom:14} #btnJump{w:96,h:96}.
   const _LR_LEFT=12,_LR_BOTTOM=14,_LR_W=90,_LR_H=50, _J_RIGHT=12,_J_BOTTOM=14,_J_W=96,_J_H=96;
+  // 左右パッドの中央寄せ量は CSS の --lr-shift だけが持つ。判定側はそれを読むので、
+  // CSS の値を変えれば見た目と当たり判定が必ず同じだけ動く（二重管理でズレない）。
+  // 読み取りは _computeZones() の中だけ = 初回 + resize/orientationchange のみ。
+  // タッチ1回ごとには一切読まないので、従来どおりホットパスにレイアウト読みは無い。
+  const _lrShift=()=>{
+    try{
+      const v=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lr-shift'));
+      return isFinite(v)?v:0;
+    }catch(_){return 0;}
+  };
   let _zL=null,_zR=null,_zJ=null;
   const _computeZones=()=>{
     const W=window.innerWidth,H=window.innerHeight;
     const ly2=H-_LR_BOTTOM,ly1=ly2-_LR_H;
-    _zL={x1:_LR_LEFT,       x2:_LR_LEFT+_LR_W,   y1:ly1,y2:ly2}; // left button
-    _zR={x1:_LR_LEFT+_LR_W, x2:_LR_LEFT+_LR_W*2, y1:ly1,y2:ly2}; // right button (adjacent, gap:0)
+    const lx=_LR_LEFT+_lrShift(); // CSS の left:calc(12px + var(--lr-shift)) と同値
+    _zL={x1:lx,       x2:lx+_LR_W,   y1:ly1,y2:ly2}; // left button
+    _zR={x1:lx+_LR_W, x2:lx+_LR_W*2, y1:ly1,y2:ly2}; // right button (adjacent, gap:0)
+    // ジャンプボタンは右下のまま。--lr-shift の影響を受けない（意図的に据え置き）。
     const jx2=W-_J_RIGHT,jy2=H-_J_BOTTOM;
     _zJ={x1:jx2-_J_W,x2:jx2,y1:jy2-_J_H,y2:jy2};                 // jump button
   };

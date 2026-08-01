@@ -252,10 +252,30 @@ body.touch.playing #btnPause{display:flex;}
 #btnTitle{display:none;position:fixed;top:16px;left:16px;z-index:200;pointer-events:auto;padding:8px 14px;border-radius:8px;background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);color:#fff;font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:2px;-webkit-tap-highlight-color:transparent;touch-action:none;user-select:none;-webkit-user-select:none;}
 #btnTitle:active{background:rgba(255,255,255,0.15);}
 body.touch.paused #btnTitle{display:block;}
-#a2hsBanner{display:none;position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:300;max-width:92vw;box-sizing:border-box;padding:8px 34px 8px 12px;background:rgba(10,10,20,0.9);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.85);font-family:'Share Tech Mono',monospace;font-size:11px;line-height:1.5;text-align:center;pointer-events:none;} /* let taps pass through to buttons below (e.g. MY PAGE); only the × is tappable */
+#a2hsBanner{display:none;position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:300;max-width:92vw;box-sizing:border-box;padding:12px 16px 14px;background:rgba(10,10,20,0.96);border:2px solid rgba(255,224,51,0.75);border-radius:8px;box-shadow:0 0 24px rgba(0,0,0,0.85);color:rgba(255,255,255,0.9);font-family:'Share Tech Mono',monospace;font-size:11px;line-height:1.5;text-align:center;pointer-events:none;} /* let taps pass through to buttons below (e.g. MY PAGE); only CLOSE is tappable */
 #a2hsBanner.show{display:block;}
 body.touch.portrait #a2hsBanner{display:none;} /* portrait shows the rotate overlay instead; banner returns in landscape */
-#a2hsClose{position:absolute;top:-4px;right:-2px;font-size:16px;line-height:1;color:rgba(255,255,255,0.7);cursor:pointer;padding:14px 16px;pointer-events:auto;} /* larger tap target (~44px); re-enable taps (banner itself is pointer-events:none) */
+/* 閉じるUI。× は「閉じる関門」だと伝わらず、押さないままコントローラーが効かない理由に
+   気づかれない恐れがあったため、大きな CLOSE ボタンにした。
+   バナー本体は pointer-events:none のままなので、ここで auto に戻すのが必須。 */
+#a2hsClose{
+  display:block;margin:10px auto 0;pointer-events:auto;
+  min-width:150px;padding:12px 28px;
+  background:rgba(255,224,51,0.14);border:2px solid #ffe033;border-radius:8px;
+  color:#ffe033;font-family:'Share Tech Mono',monospace;font-size:15px;letter-spacing:4px;
+  line-height:1;cursor:pointer;-webkit-appearance:none;appearance:none;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+}
+#a2hsClose:active{background:rgba(255,224,51,0.3);}
+/* A2HS バナー表示中だけ画面を暗くし、バナーだけを浮かび上がらせる。
+   z-index 250 = ゲーム画面/コントローラー(200)より上、バナー(300)より下。
+   pointer-events:none 固定 — 見た目だけの層で、タップは一切奪わない。CLOSE を邪魔しない。
+   コントローラーのブロックは従来どおり _blocked() の .show 判定が担う（新しいブロック要因を増やさない）。
+   バナーの .show に CSS だけで連動するので、CLOSE で .show が外れれば暗転も同時に消える。 */
+#a2hsDim{display:none;position:fixed;inset:0;z-index:250;background:rgba(0,0,0,0.6);pointer-events:none;}
+body.touch #a2hsBanner.show ~ #a2hsDim{display:block;}
+/* 縦向きはバナー自体が隠れて回転オーバーレイに替わるので、暗転も一緒に止める */
+body.touch.portrait #a2hsBanner.show ~ #a2hsDim{display:none;}
 #rotateOverlay{display:none;position:fixed;inset:0;z-index:9999;background:#000;color:#fff;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:'Share Tech Mono',monospace;font-size:18px;letter-spacing:2px;line-height:1.8;padding:20px;}
 body.touch.portrait #rotateOverlay{display:flex;}
 </style>
@@ -292,9 +312,10 @@ body.touch.portrait #rotateOverlay{display:flex;}
 </div>
 <div class="touch-btn" id="btnPause">❚❚</div>
 <div id="btnTitle">TITLE</div><div id="a2hsBanner">
-  <span id="a2hsClose">×</span>
   全画面でプレイするには、共有ボタンから「ホーム画面に追加」してください<br>For fullscreen, tap Share → Add to Home Screen
+  <button type="button" id="a2hsClose">CLOSE</button>
 </div>
+<div id="a2hsDim"></div>
 <div id="rotateOverlay">↻<br>デバイスを横にしてください<br>Please rotate your device</div>
 <div id="xShareBtn" onclick="shareDeathX()">𝕏 Share</div>
 <div id="mypageOverlay" style="display:none;position:fixed;inset:0;z-index:1000;background:#000;">

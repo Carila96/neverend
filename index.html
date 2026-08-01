@@ -1053,6 +1053,18 @@ if(isTouchDevice){
   //  purely by canvas taps (NORMAL/DEATH start, MY PAGE, Hall of Legends); keeping zones on there would
   //  preventDefault and kill those taps. Excluded too: dying (transient), mypage/testcomplete (overlay /
   //  canvas-tap only). _blocked() still disables zones under any front overlay.
+  // ▼一時デバッグ: 直近のタップがどのゲートで落ちたかを記録する（原因確定後に撤去）。
+  let _lastGate='-';
+  const _blockReason=()=>(
+       _cookieUp()?'cookie'
+    : (_a2hsEl2&&_a2hsEl2.classList.contains('show'))?'a2hs'
+    : (_mpEl&&_mpEl.style.display==='block')?'mypage'
+    : (_holEl&&_holEl.style.display==='block')?'hol'
+    : (_setEl&&_setEl.classList.contains('open'))?'settings'
+    : (_lmEl&&_lmEl.classList.contains('open'))?'login'
+    : document.body.classList.contains('portrait')?'PORTRAIT'
+    : 'blocked?'
+  );
   const _ctrlStates=new Set(['play','pause','dead','ending','memo']);
   const _onTouch=e=>{
     // ★ 不具合1(回転直後に全ボタンが効かない)の本丸。
@@ -1070,11 +1082,22 @@ if(isTouchDevice){
     // 比較対象は _viewport()（向きで検証済みの実測値）。以前は inner* を直接比べていたため、
     // inner* が回転前のまま固まっているケースでは「古い値どうしが一致」して発火しなかった。
     {const [vw,vh]=_viewport(); if(vw!==_zW||vh!==_zH)updateOrientation();}
+    // ★★ 上の再計算は「実測値がズレていたら」しか走らない。ところが実測値が既に正しく
+    //   揃っている（use==z、set:ok）状態でも、回転の途中で貼られた body.portrait だけが
+    //   残っていることがある。その場合ここは素通りし、下の _blocked() が portrait を見て
+    //   タップを落とし続ける ＝「値は全部正しいのにボタンが効かない」の正体。
+    //   実測値が正しいことが、逆に再計算を skip させてブロックを温存していた。
+    //   → ゲートの直前で、body.portrait が実際の向きと食い違っていないかだけを検算する。
+    //     matchMedia の読みのみでレイアウトを強制しないので、毎タップ通しても安全。
+    //     これで「取り残された portrait」は最初の1タップで必ず解消し、遅延がゼロになる。
+    {const L=_orientLandscape();
+     if(L!==null&&document.body.classList.contains('portrait')===L)document.body.classList.toggle('portrait',!L);}
     // ★ ゲートより前に必ず通す。ゴール演出中は state='goal' で下の return に落ちるので、
     //   ここが後ろだと「演出中に指を離した」ことを取りこぼし、遷移後の最初のタップが死ぬ。
     _syncTouchIds(e);
-    if(!_ctrlStates.has(state))return;
-    if(_blocked())return;
+    if(!_ctrlStates.has(state)){_lastGate='state:'+state;return;}
+    if(_blocked()){_lastGate=_blockReason();return;}
+    _lastGate='pass';
     if(_hitTest(e))e.preventDefault();
   };
   document.addEventListener('touchstart',_onTouch,{passive:false});
@@ -1089,7 +1112,14 @@ if(isTouchDevice){
     // これで「--app-vh だけ縦向きの値」「ゾーンだけ縦向きの寸法」というズレが生じない。
     const [vw,vh]=_viewport();
     if(window.__setAppVh)window.__setAppVh(vh);
-    document.body.classList.toggle('portrait', vw<vh);
+    // ★ portrait は「実測ピクセル」ではなく向き(media query)から決める。
+    //   _blocked() が body.portrait を見てコントローラーを止める(:1048)ため、ここで
+    //   過渡的なピクセル値を使うと、回転の途中の一瞬の誤読が portrait を貼り付けてしまい、
+    //   次に updateOrientation() が走るまで（最悪 _reflowSoon の次のタイマーまで＝数秒）
+    //   タップが全部落ちる。向きは実測値と independent に正しく取れるのでそちらを使う。
+    //   matchMedia が使えない環境だけ従来どおり実測比較にフォールバック。
+    const _L=_orientLandscape();
+    document.body.classList.toggle('portrait', _L===null ? vw<vh : !_L);
     _computeZones();
   };
   updateOrientation();
@@ -1138,14 +1168,16 @@ if(isTouchDevice){
         const c=document.querySelector('canvas'),cr=c?c.getBoundingClientRect():null;
         const d=document.documentElement,vv=window.visualViewport;
         const [uw,uh]=_viewport();
-        el.innerHTML='<b>BUILD 0801a</b> ort:'+(_orientLandscape()?'LAND':'PORT')+' set:'+(_viewportSettled()?'ok':'WAIT')+'<br>'+
+        el.innerHTML='<b>BUILD 0801b</b> ort:'+(_orientLandscape()?'LAND':'PORT')+' set:'+(_viewportSettled()?'ok':'WAIT')+
+          ' <b>gate:'+_lastGate+'</b><br>'+
           'in:'+window.innerWidth+'x'+window.innerHeight+
           ' cl:'+(d?d.clientWidth+'x'+d.clientHeight:'-')+
           ' vv:'+(vv?r(vv.width)+'x'+r(vv.height):'-')+'<br>'+
           'use:'+uw+'x'+uh+' z:'+_zW+'x'+_zH+' vh:'+(getComputedStyle(d).getPropertyValue('--app-vh')||'unset').trim()+'<br>'+
           'canvas top:'+(cr?r(cr.top):'-')+' h:'+(cr?r(cr.height):'-')+' w:'+(cr?r(cr.width):'-')+
-          ' pt:'+(document.body.classList.contains('portrait')?'1':'0');
-      }catch(e){ el.innerHTML='<b>BUILD 0801a</b> '+(e&&e.message||'err'); }
+          ' pt:'+(document.body.classList.contains('portrait')?'1':'0')+
+          ' cons:'+_consumed.size+' live:'+_liveIds.size+' st:'+state;
+      }catch(e){ el.innerHTML='<b>BUILD 0801b</b> '+(e&&e.message||'err'); }
     };
     tick();
     setInterval(tick,300);

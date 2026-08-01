@@ -1,4 +1,4 @@
-<!-- redeploy 2026-07-31 -->
+<!-- redeploy 2026-08-01 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -121,17 +121,6 @@ body{
   font-family:'Courier New',monospace;font-size:11px;color:#888;
 }
 #cookieBanner.hidden{display:none!important;}
-/* PWA実機デバッグ表示。PWAではConsoleが見えないので画面に出す。standalone かつ touch のときだけ。
-   pointer-events:none 固定 — この表示自体が絶対にタップを奪わないこと。 */
-#dbgSafe{display:none;}
-body.touch.standalone #dbgSafe{
-  display:block;position:fixed;left:50%;transform:translateX(-50%);bottom:2px;z-index:9998;
-  pointer-events:none;background:rgba(0,0,0,0.78);color:#0f0;
-  font-family:'Share Tech Mono',monospace;font-size:10px;line-height:1.4;
-  padding:3px 8px;border:1px solid rgba(0,255,0,0.4);border-radius:4px;
-  white-space:pre;text-align:left;max-width:96vw;overflow:hidden;
-}
-#dbgSafe b{font-size:14px;color:#ff0;letter-spacing:1px;}
 /* Touch: 横向きだと画面が低くなり、bottom:0 の Accept/Decline が iOS のホームインジケータ帯
    (画面最下端 ~20px。OS がスワイプ用に押さえていてタップが届かない) に入ってしまう。
    縦向きは本文が折り返してバナーが高くなり、ボタンが帯の上に出るため押せていた。
@@ -308,7 +297,6 @@ body.touch.portrait #rotateOverlay{display:flex;}
 </div>
 <div id="rotateOverlay">↻<br>デバイスを横にしてください<br>Please rotate your device</div>
 <div id="xShareBtn" onclick="shareDeathX()">𝕏 Share</div>
-<div id="dbgSafe"></div>
 <div id="mypageOverlay" style="display:none;position:fixed;inset:0;z-index:1000;background:#000;">
   <iframe id="mypageFrame" src="/app/pages/mypage.html" style="width:100%;height:100%;border:none;"></iframe>
 </div>
@@ -781,34 +769,6 @@ function _fetchWorldDeaths(){fetch('/api/stats?type=death').then(r=>r.json()).th
 _fetchWorldDeaths();
 setInterval(()=>{if(state==='title')_fetchWorldDeaths();},60000);
 
-// ── PWA(standalone)実機デバッグ表示 ────────────────────────────────
-// PWA では Console が見えないため、ビルド識別子と canvas 位置を画面に出す。
-// standalone かつ touch のときだけ動く（呼び出し元が isTouchDevice ブロック内の if(_standalone)）。
-const _BUILD_ID='0731h';   // HTMLを更新したら必ず上げる（1行目の redeploy マーカーと対）
-function _initStandaloneDebug(){
-  const el=document.getElementById('dbgSafe');
-  if(!el)return;
-  const fmt=n=>Math.round(n*10)/10;
-  // canvas / state / _currentUser はこの関数より後方で宣言されるため、初回 tick は TDZ で
-  // throw しうる。250ms 後の定期実行では初期化済みになるので、まずビルド識別子だけ出す。
-  const tick=()=>{ try{ _tick(); }catch(e){ el.innerHTML='<b>BUILD '+_BUILD_ID+'</b>'; } };
-  const _tick=()=>{
-    const r=canvas.getBoundingClientRect();
-    const name=(typeof _getPlayerName==='function'?(_getPlayerName()||''):'');
-    el.innerHTML=
-      '<b>BUILD '+_BUILD_ID+'</b><br>'+
-      'canvas top:'+fmt(r.top)+' left:'+fmt(r.left)+' '+fmt(r.width)+'x'+fmt(r.height)+'<br>'+
-      'mm:'+window.matchMedia('(display-mode: standalone)').matches+
-      ' nav:'+(window.navigator.standalone===true)+
-      ' cls:'+document.body.classList.contains('standalone')+'<br>'+
-      'vh:'+(getComputedStyle(document.documentElement).getPropertyValue('--app-vh')||'unset').trim()+' ch:'+fmt(canvas.getBoundingClientRect().height)+'<br>'+
-      'vp:'+window.innerWidth+'x'+window.innerHeight+' st:'+state+
-      ' login:'+(_currentUser?'yes':'no')+(name?'('+name+')':'');
-  };
-  tick();
-  setInterval(tick,250);
-}
-
 // 世界最高到達階(world_stats.best_stage)。死亡数POSTと同じ anon 経路なので未ログインでも反映される。
 // サーバ側が Math.max 相当（既存値以下は書かない + .lt ガード）なので、送りすぎても記録は後退しない。
 let _worldBestSent=0;
@@ -1013,7 +973,7 @@ if(isTouchDevice){
   // Add-to-home-screen hint: iOS Safari can't go fullscreen in-browser; guide users to A2HS.
   const _standalone = window.navigator.standalone===true || window.matchMedia('(display-mode: standalone)').matches;
   // PWA起動時のみ body.standalone を付与（PWA固有のCSSが必要になったとき用のフック）。
-  if(_standalone){document.body.classList.add('standalone');_initStandaloneDebug();}
+  if(_standalone){document.body.classList.add('standalone');}
   if(!_standalone && localStorage.getItem('neverend_a2hs_dismissed')!=='1'){
     const _banner=document.getElementById('a2hsBanner');
     if(_banner){

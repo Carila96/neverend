@@ -334,6 +334,9 @@ body.touch.portrait #rotateOverlay{display:flex;}
     var v=(h/100)+'px';
     if(v===_lastVh)return;
     _lastVh=v;
+    // ▼一時デバッグ(0801i): 実際に書いた回数。効かない最中にこれが増え続けているなら
+    //   レイアウトが動き続けている＝タッチ消失の確定証拠。止まっていれば別原因。
+    window.__vhW=(window.__vhW|0)+1;
     document.documentElement.style.setProperty('--app-vh',v);
   };
   window.__setAppVh();
@@ -1165,7 +1168,7 @@ if(isTouchDevice){
     // (2) portrait クラスが実際の向きと食い違っていないか（食い違うと _blocked() が全部落とす）
     const L=_orientLandscape();
     if(L!==null&&document.body.classList.contains('portrait')===L){
-      document.body.classList.toggle('portrait',!L);f+='P';
+      document.body.classList.toggle('portrait',!L);_appliedPortrait=!L;f+='P';
     }
     // (3) 実測値がゾーンの基準とズレていないか
     const [vw,vh]=_viewport();
@@ -1246,20 +1249,39 @@ if(isTouchDevice){
   // Orientation: JS-driven portrait detection (more reliable than CSS orientation media query across browsers).
   // canvas の高さ基準(--app-vh)とコントローラーのゾーン(_computeZones)を必ず同じ実測値・同じ
   // タイミングで更新する。これで canvas とジャンプ/左右ボタンの位置基準がズレない。
+  // ★★★ raw:0（タップが document の capture 段にすら届かない）の本丸。
+  //   iOS はレイアウトが動いている最中のタッチを丸ごと捨てる。updateOrientation は
+  //   _settleLoop から毎フレーム、_reflowSoon の6本のタイマーから、さらに _reconcile 経由で
+  //   タッチのたびに呼ばれる。それが毎回 --app-vh を書いていたため、canvas の高さ
+  //   (calc(var(--app-vh)*88)) が回転後ずっと動き続け、その間タッチが消えていた。
+  //   visualViewport.resize は回転中に何度も飛ぶので、この周期が何重にも重なる。
+  //   → 「今 DOM に適用済みの値」を覚えておき、本当に変わる時だけ書く。
+  //     値が同じなら DOM には一切触らない＝レイアウトは動かない＝タッチは消えない。
+  //   vh は整数へ丸めたうえで 2px 未満の差は無視する（ヒステリシス）。実測は回転直後に
+  //   1px 単位で揺れることがあり、それを追いかけると永久に書き換わり続けるため。
+  //   回転のような本物の変化は数百px動くので取りこぼさない。
+  let _appliedVh=0,_appliedPortrait=null;
   const updateOrientation=()=>{
     // canvas の高さ基準もゾーンも、向きと矛盾しない同一の実測値から作る。
     // これで「--app-vh だけ縦向きの値」「ゾーンだけ縦向きの寸法」というズレが生じない。
     const [vw,vh]=_viewport();
-    if(window.__setAppVh)window.__setAppVh(vh);
+    const h=Math.round(vh);
+    if(h>0&&Math.abs(h-_appliedVh)>=2){
+      _appliedVh=h;
+      if(window.__setAppVh)window.__setAppVh(h);
+    }
     // ★ portrait は「実測ピクセル」ではなく向き(media query)から決める。
-    //   _blocked() が body.portrait を見てコントローラーを止める(:1048)ため、ここで
+    //   _blocked() が body.portrait を見てコントローラーを止めるため、ここで
     //   過渡的なピクセル値を使うと、回転の途中の一瞬の誤読が portrait を貼り付けてしまい、
-    //   次に updateOrientation() が走るまで（最悪 _reflowSoon の次のタイマーまで＝数秒）
-    //   タップが全部落ちる。向きは実測値と independent に正しく取れるのでそちらを使う。
+    //   次に updateOrientation() が走るまでタップが全部落ちる。
     //   matchMedia が使えない環境だけ従来どおり実測比較にフォールバック。
     const _L=_orientLandscape();
-    document.body.classList.toggle('portrait', _L===null ? vw<vh : !_L);
-    _computeZones();
+    const wantPortrait=(_L===null?vw<vh:!_L);
+    if(_appliedPortrait!==wantPortrait){
+      _appliedPortrait=wantPortrait;
+      document.body.classList.toggle('portrait', wantPortrait);
+    }
+    _computeZones(); // 純JS。DOM には触れないのでレイアウトは動かない
   };
   updateOrientation();
   // 回転が確定するまで測り直し続ける。setTimeout の決め打ち列だけだと、確定が遅れた回
@@ -1316,6 +1338,7 @@ if(isTouchDevice){
     if(_mqL){
       const _onOrient=ev=>{
         document.body.classList.toggle('portrait', !(ev.matches));
+        _appliedPortrait=!(ev.matches); // updateOrientation の適用済みキャッシュと必ず揃える
         _reflowSoon();
       };
       if(_mqL.addEventListener)_mqL.addEventListener('change',_onOrient);
@@ -1372,9 +1395,9 @@ if(isTouchDevice){
         // settings が「開いている(.open あり)」のか「display だけ漏れている」のかを併記する。
         const _st=document.getElementById('settings');
         const _stOpen=_st?_st.classList.contains('open'):false;
-        const _stDisp=_st?getComputedStyle(_st).display:'-';
-        el.innerHTML='<b>BUILD 0801h</b> <b>PROBE@'+probeXY+' &rarr; '+probe+'</b><br>'+
-          '<b>settings: op:'+(_stOpen?'1':'0')+' disp:'+_stDisp+' oS:'+(window.__oS|0)+'</b><br>'+
+        el.innerHTML='<b>BUILD 0801i</b> <b>PROBE@'+probeXY+' &rarr; '+probe+'</b><br>'+
+          '<b>vhW:'+(window.__vhW|0)+' settling:'+((_settleRaf||_settleTimer)?'YES':'no')+
+          ' set.op:'+(_stOpen?'1':'0')+' oS:'+(window.__oS|0)+'</b><br>'+
           '<b>tapEl:'+(window.__hitEl||'-')+' @'+(window.__hitXY||'-')+'</b><br>'+
           'wTS:'+(E.wTS|0)+' dTS:'+(E.dTS|0)+' PD:'+(E.dPD|0)+' MD:'+(E.dMD|0)+
           ' clk:'+(E.dClick|0)+' TC:'+(E.dTC|0)+' PC:'+(E.dPC|0)+'<br>'+

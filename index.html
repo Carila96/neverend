@@ -95,8 +95,16 @@ body{
   margin:0;
   overflow:hidden;
 }
-#settings{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:100;align-items:center;justify-content:center;}
-#settings.open{display:flex;}
+/* ★ 全画面モーダルは「閉じている＝display:none」だけに頼らない。
+   実機計測(BUILD 0801g)で、タイトル画面のはずなのに elementFromPoint が #settings を返し、
+   cover に settings[flex,PE1,z100] が出る＝閉じているつもりの #settings が前面に居座って
+   SETTINGS / START / MY PAGE / HALL OF LEGENDS のタップを全部吸っていた。
+   display:none が何らかの理由で効かない状態になると、この板は透明でも指を受け止めてしまう。
+   → 閉状態では pointer-events:none も併せて効かせ、「見えていない板は絶対に触れない」を
+     display とは独立に保証する。開いている時(.open)だけ auto に戻す。
+   elementFromPoint は pointer-events:none を無視するので、閉状態では必ず下の canvas(#c) を返す。 */
+#settings{display:none;pointer-events:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:100;align-items:center;justify-content:center;}
+#settings.open{display:flex;pointer-events:auto;}
 #settings-inner{display:flex;flex-direction:column;align-items:center;gap:12px;background:rgba(5,5,15,0.98);border:1px solid #333;padding:24px 40px;max-height:90vh;overflow-y:auto;min-width:400px;}
 .s-title{font-size:13px;letter-spacing:4px;color:#555;margin-bottom:8px;}
 .s-section{font-size:9px;letter-spacing:3px;color:#333;margin-top:8px;}
@@ -149,12 +157,15 @@ body.touch #cookieBanner{padding-bottom:34px;}
 .cookie-decline:hover{border-color:#555;color:#888;}
 
 /* NAME INPUT OVERLAY */
+/* #settings と同型の予防。しかもこれは .show を外すコードがどこにも無く（_blocked() の
+   コメント参照）、一度付くと外れないので、閉状態で触れないことを pointer-events でも
+   担保しておく価値が特に高い。 */
 #nameOverlay{
-  display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+  display:none;pointer-events:none;position:fixed;top:0;left:0;width:100%;height:100%;
   background:#000;z-index:200;align-items:center;justify-content:center;
   flex-direction:column;gap:20px;font-family:'Courier New',monospace;
 }
-#nameOverlay.show{display:flex;}
+#nameOverlay.show{display:flex;pointer-events:auto;}
 #nameOverlay h1{color:#ffe033;font-size:22px;letter-spacing:4px;text-shadow:0 0 18px #ffe033;}
 #nameOverlay p{color:#555;font-size:11px;letter-spacing:1px;max-width:400px;text-align:center;}
 #nameInputField{
@@ -174,10 +185,10 @@ body.touch #cookieBanner{padding-bottom:34px;}
 
 /* ADMIN PANEL */
 #adminPanel{
-  display:none;position:fixed;top:10px;right:10px;z-index:300;
+  display:none;pointer-events:none;position:fixed;top:10px;right:10px;z-index:300;
   font-family:'Courier New',monospace;
 }
-#adminPanel.show{display:block;}
+#adminPanel.show{display:block;pointer-events:auto;}
 #adminPanel-inner{
   background:rgba(4,4,12,0.97);border:1px solid rgba(255,220,50,0.6);
   padding:12px 16px;min-width:240px;box-shadow:0 0 20px rgba(255,220,50,0.15);
@@ -192,8 +203,9 @@ body.touch #cookieBanner{padding-bottom:34px;}
 .ap-danger:hover{background:rgba(255,68,68,0.1);}
 
 /* LOGIN MODAL */
-#loginModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.82);z-index:500;align-items:center;justify-content:center;}
-#loginModal.open{display:flex;}
+/* #settings と同型。閉状態で前面に残ってタップを吸う事故を display とは独立に塞ぐ。 */
+#loginModal{display:none;pointer-events:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.82);z-index:500;align-items:center;justify-content:center;}
+#loginModal.open{display:flex;pointer-events:auto;}
 #loginModal-inner{
   display:flex;flex-direction:column;align-items:center;gap:12px;
   background:rgba(4,4,14,0.99);border:1px solid #334;padding:28px 40px 24px;
@@ -482,7 +494,13 @@ function getDeathMsg(cause){
 document.getElementById('volBGM').oninput=e=>{volBGM=e.target.value/100;document.getElementById('volBGMVal').textContent=e.target.value;};
 document.getElementById('volSFX').oninput=e=>{volSFX=e.target.value/100;document.getElementById('volSFXVal').textContent=e.target.value;};
 
+// ▼一時デバッグ(BUILD 0801h): 誰が settings を開けたのかを数える。
+//   実機で見えた display:flex が「.open が付いている（＝誰かが openSettings を呼んだ）」の
+//   結果なのか、「.open は無いのに display が漏れている」CSS 事故なのかは、この2つを
+//   突き合わせないと区別できない。デバッグ表示の oS: と op: がその答えになる。
+window.__oS=0;
 function openSettings(){
+  window.__oS++;
   document.getElementById('settings').classList.add('open');
 }
 function closeSettings(){document.getElementById('settings').classList.remove('open');canvas.focus();}
@@ -1351,7 +1369,12 @@ if(isTouchDevice){
           live.push(id+'['+cs.display+','+(cs.pointerEvents==='none'?'pe0':'PE1')+',z'+cs.zIndex+']');
         }
         const E=ev();
-        el.innerHTML='<b>BUILD 0801g</b> <b>PROBE@'+probeXY+' &rarr; '+probe+'</b><br>'+
+        // settings が「開いている(.open あり)」のか「display だけ漏れている」のかを併記する。
+        const _st=document.getElementById('settings');
+        const _stOpen=_st?_st.classList.contains('open'):false;
+        const _stDisp=_st?getComputedStyle(_st).display:'-';
+        el.innerHTML='<b>BUILD 0801h</b> <b>PROBE@'+probeXY+' &rarr; '+probe+'</b><br>'+
+          '<b>settings: op:'+(_stOpen?'1':'0')+' disp:'+_stDisp+' oS:'+(window.__oS|0)+'</b><br>'+
           '<b>tapEl:'+(window.__hitEl||'-')+' @'+(window.__hitXY||'-')+'</b><br>'+
           'wTS:'+(E.wTS|0)+' dTS:'+(E.dTS|0)+' PD:'+(E.dPD|0)+' MD:'+(E.dMD|0)+
           ' clk:'+(E.dClick|0)+' TC:'+(E.dTC|0)+' PC:'+(E.dPC|0)+'<br>'+

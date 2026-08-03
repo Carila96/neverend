@@ -1219,30 +1219,33 @@ if(isTouchDevice){
   // ボタンが無反応になる。click に依存している限りタイミング次第で落ち続ける。
   // → touchend から直接同じ処理(_canvasActivate)を呼び、合成 click に依存しない経路を作る。
   //   canvas 要素にだけ張るので、Cookie バナーや A2HS の CLOSE など DOM ボタンには一切触れない。
-  // ★ 「1本指のときだけ受け付ける」(e.touches.length!==1 で無効化)にはしない。
-  //   端末を回した直後は持ち替えで縁に指が触れやすく、余計な接触が1つ混ざるだけで
-  //   以降のタップが丸ごと無視され続ける（数タップ効かない症状の一因）。
-  //   代わりに「最初に触れた指の identifier」を覚え、その指の touchend だけを見る。
-  //   他の指が何本増えても、狙った指のタップは必ず成立する。
-  let _cTapId=null,_cTapX=0,_cTapY=0,_cTapT=0;
+  // ★★★ ここは「詰まる状態」を一切持たないこと。
+  //   f8f3cb8 で入れた identifier 追跡（_cTapId に最初の指を覚え、その指の touchend だけを
+  //   受け付ける）が、タイトルのボタンを 20 数回タップしないと反応しない原因だった。
+  //   _cTapId は「覚えた指の touchend / touchcancel が canvas に届いたとき」しか解除されない。
+  //   ところが当時はレイアウトが動き続けていて iOS がタッチイベントを取りこぼしており、
+  //   その解除イベントが 1 回落ちるだけで _cTapId が居座る。以後は
+  //     ・touchstart は if(_cTapId!==null)return; で新しい指を一切追跡しない
+  //     ・touchend は「覚えた identifier」と一致しないので毎回捨てられる
+  //   となり、同じ identifier が再び払い出されるまでボタンが死ぬ。iOS は identifier を
+  //   使い回すので「何十回か叩くと 1 回通る」、単調増加で払い出す実装なら二度と通らない。
+  //   元々モバイル対応した当初は click 一本で 1 タップから動いていたのに反応が悪くなったのは、
+  //   合成 click 対策(d826803)以降このガードを足していったため。
+  //   → 直近の touchstart の位置と時刻だけを控える。毎回上書きするので居座る状態が存在せず、
+  //     イベントを何回取りこぼしても次のタップは必ず素通りする。
+  //   長押し / スワイプの除外だけは残す（誤爆防止）。identifier もフラグも使わない。
+  let _cTapX=0,_cTapY=0,_cTapT=0,_cReject='-'; // _cReject は一時デバッグ(どのガードで弾いたか)
   canvas.addEventListener('touchstart',e=>{
-    if(_cTapId!==null)return;                 // 追跡中の指がいるなら他は無視
     const t=e.changedTouches&&e.changedTouches[0];if(!t)return;
-    _cTapId=t.identifier;_cTapX=t.clientX;_cTapY=t.clientY;_cTapT=Date.now();
+    _cTapX=t.clientX;_cTapY=t.clientY;_cTapT=Date.now(); // 常に上書き＝詰まらない
   },{passive:true});
-  const _cTapClear=e=>{
-    if(_cTapId===null)return null;
-    const cs=e.changedTouches||[];
-    for(let i=0;i<cs.length;i++)if(cs[i].identifier===_cTapId){_cTapId=null;return cs[i];}
-    return null;
-  };
-  canvas.addEventListener('touchcancel',e=>{_cTapClear(e);},{passive:true});
   canvas.addEventListener('touchend',e=>{
-    const t=_cTapClear(e);if(!t)return;  // 追跡していた指の touchend でなければ何もしない
-    if(_ctrlStates.has(state))return;   // ゲーム中の画面はコントローラー側の担当（従来どおり）
-    if(_blocked())return;               // Cookie バナー等が出ている間は canvas を触らせない
-    if(Date.now()-_cTapT>700)return;                                        // 長押しは無視
-    if(Math.abs(t.clientX-_cTapX)>16||Math.abs(t.clientY-_cTapY)>16)return; // スワイプは無視
+    const t=e.changedTouches&&e.changedTouches[0];if(!t){_cReject='noTouch';return;}
+    if(_ctrlStates.has(state)){_cReject='state';return;} // ゲーム中はコントローラー側の担当
+    if(_blocked()){_cReject='blocked';return;}           // Cookie バナー等が出ている間は触らせない
+    if(Date.now()-_cTapT>700){_cReject='hold';return;}                            // 長押しは無視
+    if(Math.abs(t.clientX-_cTapX)>24||Math.abs(t.clientY-_cTapY)>24){_cReject='swipe';return;} // スワイプは無視
+    _cReject='pass';
     e.preventDefault();                 // 後続の合成 click を止めて二重発火を防ぐ
     _canvasActivate(t.clientX,t.clientY);
   },{passive:false});
@@ -1395,7 +1398,7 @@ if(isTouchDevice){
         // settings が「開いている(.open あり)」のか「display だけ漏れている」のかを併記する。
         const _st=document.getElementById('settings');
         const _stOpen=_st?_st.classList.contains('open'):false;
-        el.innerHTML='<b>BUILD 0801i</b> <b>PROBE@'+probeXY+' &rarr; '+probe+'</b><br>'+
+        el.innerHTML='<b>BUILD 0801j</b> <b>PROBE@'+probeXY+' &rarr; '+probe+'</b><br>'+
           '<b>vhW:'+(window.__vhW|0)+' settling:'+((_settleRaf||_settleTimer)?'YES':'no')+
           ' set.op:'+(_stOpen?'1':'0')+' oS:'+(window.__oS|0)+'</b><br>'+
           '<b>tapEl:'+(window.__hitEl||'-')+' @'+(window.__hitXY||'-')+'</b><br>'+
@@ -1405,7 +1408,7 @@ if(isTouchDevice){
           ' gate:'+_lastGate+' hit:'+(window.__lastHit||'-')+(_tapErr?' ERR:'+_tapErr:'')+'<br>'+
           'cover:'+(live.length?live.join(' '):'(none)')+'<br>'+
           'body:['+(document.body.className||'-')+'] st:'+state+
-          ' blk:'+(_blocked()?_blockReason():'no')+' ctap:'+(_cTapId===null?'idle':'trk')+'<br>'+
+          ' blk:'+(_blocked()?_blockReason():'no')+' cTap:'+_cReject+' cons:'+_consumed.size+'<br>'+
           'ort:'+(_orientLandscape()?'LAND':'PORT')+' set:'+(_viewportSettled()?'ok':'WAIT')+
           ' vis:'+document.visibilityState+
           ' in:'+window.innerWidth+'x'+window.innerHeight+

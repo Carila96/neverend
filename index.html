@@ -80,6 +80,21 @@ body.touch canvas{margin:0 auto;max-height:88vh;max-height:var(--mobile-canvas-s
    は従来どおり canvas の上に描画される。
    PC・非タッチは body.touch が付かないので従来の flex 中央寄せのまま。 */
 body.touch canvas{position:fixed;top:4px;left:0;right:0;margin:0 auto;}
+/* ★★★ 上寄せを JS のタイミングから切り離す。
+   実機で canvas が top:63 に落ちていた。top:63 が成立するには
+     ・align-items:center が効いている（= body.touch{align-items:flex-start} が未適用）
+     ・position:fixed;top:4px が効いていない（= body.touch canvas が未適用）
+   の両方が必要で、どちらも body.touch というクラス、つまり JS の付与タイミング頼みだった。
+   さらに body{min-height:100vh;height:100dvh} は iOS で 100vh(ツールバー込みの大きい方)が
+   100dvh を上回ると min-height が勝ち、body が可視領域より高くなる。その中で中央寄せされると
+   実測どおり top≒(472-346)/2=63 になる。
+   → 同じ条件を media query で書く。ブラウザ自身が評価するので「まだ適用されていない瞬間」が
+     原理的に存在せず、初回描画から必ず上寄せになる。(pointer:coarse) は isTouchDevice の
+     判定条件(touch && coarse)と同じ母集団なので、PC・マウス主体の端末には一切適用されない。 */
+@media (pointer:coarse){
+  body{align-items:flex-start;min-height:0;}
+  canvas#c{position:fixed;top:4px;left:0;right:0;margin:0 auto;}
+}
 /* PWA(standalone)向けの canvas ずらし補正はすべて撤回済み。canvas を下げると Cookie 同意バナーの
    Accept が押せなくなり、下段UI・ゲーム画面もまとめてずれたため。canvas は上寄せ・全高のまま
    y 方向に 1px も動かさない（コントローラーを持つ指で画面が隠れないための仕様）。
@@ -1398,7 +1413,11 @@ if(isTouchDevice){
         // settings が「開いている(.open あり)」のか「display だけ漏れている」のかを併記する。
         const _st=document.getElementById('settings');
         const _stOpen=_st?_st.classList.contains('open'):false;
-        el.innerHTML='<b>BUILD 0801j</b> <b>PROBE@'+probeXY+' &rarr; '+probe+'</b><br>'+
+        // canvas が本当に position:fixed / top:4px で効いているかを computed 値で見る。
+        const _ccs=c?getComputedStyle(c):null;
+        el.innerHTML='<b>BUILD 0801k</b> <b>PROBE@'+probeXY+' &rarr; '+probe+'</b><br>'+
+          '<b>cvPos:'+(_ccs?_ccs.position+' top:'+_ccs.top:'-')+
+          ' coarse:'+((window.matchMedia&&window.matchMedia('(pointer:coarse)').matches)?'1':'0')+'</b><br>'+
           '<b>vhW:'+(window.__vhW|0)+' settling:'+((_settleRaf||_settleTimer)?'YES':'no')+
           ' set.op:'+(_stOpen?'1':'0')+' oS:'+(window.__oS|0)+'</b><br>'+
           '<b>tapEl:'+(window.__hitEl||'-')+' @'+(window.__hitXY||'-')+'</b><br>'+

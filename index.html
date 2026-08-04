@@ -1393,7 +1393,9 @@ if(isTouchDevice){
         //   まだ TDZ。個別に try で囲み、確定するまでは (init) と出すだけにする。
         let probe='-',probeXY='-';
         try{
-          if(cr&&cr.width>0){
+          const cr2=_canvasRect(); // _canvasActivate と同じ補正済みの基準を使う
+          if(cr2&&cr2.width>0){
+            const cr=cr2;
             const sx=cr.width/W,sy=cr.height/H;
             const px=cr.left+(settingsBtn.x+settingsBtn.w/2)*sx;
             const py=cr.top +(settingsBtn.y+settingsBtn.h/2)*sy;
@@ -1415,7 +1417,8 @@ if(isTouchDevice){
         const _stOpen=_st?_st.classList.contains('open'):false;
         // canvas が本当に position:fixed / top:4px で効いているかを computed 値で見る。
         const _ccs=c?getComputedStyle(c):null;
-        el.innerHTML='<b>BUILD 0801k</b> <b>PROBE@'+probeXY+' &rarr; '+probe+'</b><br>'+
+        el.innerHTML='<b>BUILD 0801l</b> <b>PROBE@'+probeXY+' &rarr; '+probe+'</b><br>'+
+          '<b>xf:'+(window.__xf||'-')+'</b><br>'+
           '<b>cvPos:'+(_ccs?_ccs.position+' top:'+_ccs.top:'-')+
           ' coarse:'+((window.matchMedia&&window.matchMedia('(pointer:coarse)').matches)?'1':'0')+'</b><br>'+
           '<b>vhW:'+(window.__vhW|0)+' settling:'+((_settleRaf||_settleTimer)?'YES':'no')+
@@ -7120,10 +7123,41 @@ const mpLogoutBtn={x:W-120,y:90,w:104,h:22};
 // 合成 click が落ちることがあるため、touchend からも同じ処理を呼べるよう関数に出した。
 // 座標は clientX/clientY（ビューポート基準）で受け取り、内部で canvas 座標へ変換する。
 // function 宣言なので巻き上げられ、より手前のタッチブロックからも参照できる。
+// ★★★ canvas の画面上の矩形。getBoundingClientRect をそのままは信用しない。
+//   position:fixed の要素は、定義上 getBoundingClientRect().top が computed top と一致する。
+//   にもかかわらず実機は cvPos:fixed top:4px なのに rect.top:63 を返していた（縦→横回転の
+//   直後だけ）。これは iOS が回転後、fixed 要素の位置をコンポジタ側でだけ更新し、レイアウト
+//   ボックスに回転前（縦向きで中央寄せされていた時）の値を残したまま返してくるため。
+//   canvas は見た目 top:4 に描かれているのに、変換だけ top:63 基準で行われるので
+//   指が触った位置が canvas 内部座標で 59px * scaleY ぶん下にずれ、どのボタンにも当たらない
+//   （hit:none）。座標変換の基準がズレていたのが最後の原因。
+//   → fixed のときは CSS の top/left を真実として扱い、実測と食い違ったら CSS 側で作り直す。
+//     幅・高さは実測どおり正しかった（cv の 615x346 は横向きの正しい値）ので実測を使い、
+//     水平位置は left:0;right:0;margin:0 auto の定義どおり中央から導出する。
+//   PC は canvas が static（中央寄せ）なので、この分岐には入らず従来と完全に同一。
+function _canvasRect(){
+  const r=canvas.getBoundingClientRect();
+  try{
+    const cs=getComputedStyle(canvas);
+    if(cs.position==='fixed'){
+      const t=parseFloat(cs.top);
+      if(isFinite(t)&&Math.abs(r.top-t)>1){
+        const vw=(window.visualViewport&&window.visualViewport.width>0)
+                 ?window.visualViewport.width:window.innerWidth;
+        return {left:(vw-r.width)/2, top:t, width:r.width, height:r.height, fixed:true};
+      }
+    }
+  }catch(_){}
+  return {left:r.left, top:r.top, width:r.width, height:r.height, fixed:false};
+}
 function _canvasActivate(clientX,clientY){
-  const rect=canvas.getBoundingClientRect();
+  const rect=_canvasRect();
   const scaleX=W/rect.width,scaleY=H/rect.height;
   const cx=(clientX-rect.left)*scaleX,cy=(clientY-rect.top)*scaleY;
+  // ▼一時デバッグ: 実際に使った基準と変換結果
+  window.__xf=Math.round(rect.left)+','+Math.round(rect.top)+(rect.fixed?'*':'')+
+              ' tap:'+Math.round(clientX)+','+Math.round(clientY)+
+              ' -> '+Math.round(cx)+','+Math.round(cy);
   window.__lastHit='none'; // ▼一時デバッグ: どのボタンに当たったか
   if(state==='title'){
     // モード選択クリック

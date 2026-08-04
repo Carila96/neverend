@@ -990,15 +990,37 @@ if(isTouchDevice){
   document.addEventListener('touchstart',unlockAudio,{passive:true});
   // Dispatch real keyboard events so all keydown/keyup-based logic (title start, menu, pause) responds identically.
   const fireKey=(type,key)=>document.dispatchEvent(new KeyboardEvent(type,{key,bubbles:true,cancelable:true}));
+  // ★ keyup を必ず 1 フレーム以上あとに送る。
+  //   ポーズ画面の TITLE ボタン(#btnTitle)も PAUSE(#btnPause)も、押下を keys[] に載せて
+  //   ゲームループ側が keys['t']&&!prevKeys['t'] のようにエッジで拾う作りになっている。
+  //   ところが touchstart で keydown、touchend で keyup を即座に送っていたため、素早いタップだと
+  //   同じフレーム間に押して離すことになり、update() が一度も keys['t']===true を見ないまま
+  //   終わる＝タップが丸ごと無かったことになる（「ポーズからタイトルに戻れない」の正体）。
+  //   回転直後などフレームが重い場面ほど当たりやすい。90ms 保持すれば必ず 1 フレームは跨ぐ。
+  //   キーは押しっぱなし扱いになるが、対象の 2 つはどちらもエッジ判定なので二重発火しない。
   const bindBtn=(id,key)=>{
     const el=document.getElementById(id); if(!el)return;
-    el.addEventListener('touchstart',e=>{e.preventDefault();unlockAudio();fireKey('keydown',key);},{passive:false});
-    el.addEventListener('touchend',e=>{e.preventDefault();fireKey('keyup',key);},{passive:false});
-    el.addEventListener('touchcancel',e=>{e.preventDefault();fireKey('keyup',key);},{passive:false});
+    let _upT=0;
+    const release=()=>{clearTimeout(_upT);_upT=setTimeout(()=>fireKey('keyup',key),90);};
+    el.addEventListener('touchstart',e=>{e.preventDefault();unlockAudio();clearTimeout(_upT);fireKey('keydown',key);},{passive:false});
+    el.addEventListener('touchend',e=>{e.preventDefault();release();},{passive:false});
+    el.addEventListener('touchcancel',e=>{e.preventDefault();release();},{passive:false});
   };
   // Pause (toggle) and Title (pause-menu back-to-title) are discrete single taps.
   bindBtn('btnPause','Escape'); // PC pause is Escape/f/F -> state='pause' (stops BGM); tap toggles pause/resume
   bindBtn('btnTitle','t');      // pause-menu "back to title" (PC uses the T key)
+  // ★ モーダルの閉じるボタンは HTML の onclick で動いている＝合成 click 頼み。
+  //   canvas のボタンで既に判明しているとおり、モバイルの合成 click はレイアウトの動きなどで
+  //   落ちることがあり、そのぶん「閉じるボタンが中々効かない」になる。canvas と同じく
+  //   touchend から直接叩く経路を足す。element.click() を呼ぶので既存の onclick をそのまま使う。
+  //   委譲なので要素の生成順に依存せず、対象は下の 2 クラスだけ。preventDefault で
+  //   後続の合成 click を止めるため二重発火しない。
+  document.addEventListener('touchend',e=>{
+    const t=e.target&&e.target.closest&&e.target.closest('.s-close,.lm-close');
+    if(!t)return;
+    e.preventDefault();
+    try{t.click();}catch(_){}
+  },{passive:false});
   // D-pad + jump: hit-test every active touch point each event so sliding a finger from one button to
   // another switches input instantly (old code only reacted to touchstart, so the first button stuck).
   // Multi-touch: e.touches is fully scanned, so hold a direction + jump with a second finger works.
@@ -1034,6 +1056,8 @@ if(isTouchDevice){
   };
   // 採用順は inner* が先。正常時は必ずここで返るので、これまで正しく動いていた場合の
   // 挙動は 1px も変わらない。inner* が向きと矛盾したときだけ代替の実測源へ落ちる。
+  // _canvasRect（トップレベル関数）からも同じ検証済み実測を使えるように公開する。
+  window.__viewport=()=>_viewport();
   const _viewport=()=>{
     const L=_orientLandscape();
     const fits=(w,h)=>L===null||(L?w>=h:w<=h);
@@ -7135,27 +7159,41 @@ const mpLogoutBtn={x:W-120,y:90,w:104,h:22};
 //     幅・高さは実測どおり正しかった（cv の 615x346 は横向きの正しい値）ので実測を使い、
 //     水平位置は left:0;right:0;margin:0 auto の定義どおり中央から導出する。
 //   PC は canvas が static（中央寄せ）なので、この分岐には入らず従来と完全に同一。
+// ★ 前版は「top だけ CSS で直し、幅・高さ・左は実測を流用」だった。中央の START は直ったが
+//   端のボタン（SETTINGS/MY PAGE/HALL OF LEGENDS）が数回に一度しか当たらなかったのは、
+//   古い箱では幅・高さも信用できないため。scaleX=W/rect.width の誤差は変換原点(rect.left)から
+//   離れるほど拡大するので、中央の START は許容範囲に収まり、左右端・下端のボタンだけ外れる。
+//   → fixed のときは箱を実測から作らず、viewport と CSS の定義だけで丸ごと算出する。
+//   canvas の CSS は width:100vw / height:56.25vw を max-width:(--app-vh*88)*1.7778 と
+//   max-height:(--app-vh*88) で抑える形なので、縦横比は常に 16:9 (W:H) のまま
+//   「高さは viewport の 88% 以内、幅は viewport 幅以内」に収まる。これをそのまま式にする。
 function _canvasRect(){
   const r=canvas.getBoundingClientRect();
-  try{
-    const cs=getComputedStyle(canvas);
-    if(cs.position==='fixed'){
-      const t=parseFloat(cs.top);
-      if(isFinite(t)&&Math.abs(r.top-t)>1){
-        const vw=(window.visualViewport&&window.visualViewport.width>0)
-                 ?window.visualViewport.width:window.innerWidth;
-        return {left:(vw-r.width)/2, top:t, width:r.width, height:r.height, fixed:true};
-      }
-    }
-  }catch(_){}
-  return {left:r.left, top:r.top, width:r.width, height:r.height, fixed:false};
+  let cs=null; try{cs=getComputedStyle(canvas);}catch(_){}
+  if(!cs||cs.position!=='fixed'){ // PC は static のままなので必ずこちら＝従来と完全に同一
+    return {left:r.left,top:r.top,width:r.width,height:r.height,src:'rect'};
+  }
+  const t=parseFloat(cs.top)||0;
+  const ar=(r.height>0)?(r.width/r.height):0;
+  // 実測が CSS の top と一致し、かつ 16:9 が保たれていれば実測を信用する
+  if(Math.abs(r.top-t)<=1 && Math.abs(ar-(W/H))<0.02){
+    return {left:r.left,top:r.top,width:r.width,height:r.height,src:'rect'};
+  }
+  // 箱が古い／歪んでいる → viewport から作り直す（向きで検証済みの実測を使う）
+  const vp=(window.__viewport?window.__viewport():[window.innerWidth,window.innerHeight]);
+  const vw=vp[0],vh=vp[1];
+  let h=Math.min(vw*(H/W), vh*0.88); // max-height:--app-vh*88 = viewport 高の 88%
+  let w=h*(W/H);
+  if(w>vw){w=vw;h=w*(H/W);}          // width:100vw の上限
+  return {left:(vw-w)/2, top:t, width:w, height:h, src:'css'};
 }
 function _canvasActivate(clientX,clientY){
   const rect=_canvasRect();
   const scaleX=W/rect.width,scaleY=H/rect.height;
   const cx=(clientX-rect.left)*scaleX,cy=(clientY-rect.top)*scaleY;
   // ▼一時デバッグ: 実際に使った基準と変換結果
-  window.__xf=Math.round(rect.left)+','+Math.round(rect.top)+(rect.fixed?'*':'')+
+  window.__xf=rect.src+' '+Math.round(rect.left)+','+Math.round(rect.top)+' '+
+              Math.round(rect.width)+'x'+Math.round(rect.height)+
               ' tap:'+Math.round(clientX)+','+Math.round(clientY)+
               ' -> '+Math.round(cx)+','+Math.round(cy);
   window.__lastHit='none'; // ▼一時デバッグ: どのボタンに当たったか

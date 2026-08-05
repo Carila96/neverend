@@ -1359,31 +1359,62 @@ if(isTouchDevice){
   // visualViewport の resize は回転完了後の確定値で飛ぶため、こちらを主軸にする。
   if(window.visualViewport)window.visualViewport.addEventListener('resize',_reflowSoon);
   window.addEventListener('resize',updateOrientation);   // 連続リサイズ用は軽い単発で十分
-  // ▼一時的な実機デバッグ表示(BUILD 0801r)。vvOff 補正が実際にタップ座標をどう動かしたかを見る。
-  //   今回はロジックを一切変えず、_canvasRect / _canvasActivate の入出力を並べるだけ。
-  //   読み方:
-  //     adj      … 実測較正で得た補正量。末尾 ? は較正できていない（canvas が覆われている）
-  //     rawRect  … getBoundingClientRect の生値、fixRect … 補正後の基準（adj のぶん動くはず）
-  //     tap      … 指の生の clientX,clientY、cxcy … 最終的にヒット判定へ渡る canvas 内部座標
-  //     hit      … 実際に当たったボタン。none ならどの矩形にも入っていない
-  //   cxcy が下の矩形一覧のどれに入る／外れるかを直接比較できる。
-  (function _initTapDebug(){
+  // ▼一時的な実機デバッグ表示(BUILD 0801s)。
+  //   狙いは「ボタンが一斉に効き始める瞬間に何が変わるか」を捉えること。
+  //   これまでの補正が全て空振りだったのは、測っていた対象が間違っていたため:
+  //   elementFromPoint も getBoundingClientRect も同じ layout 空間を返すので、
+  //   両者を比べても常に一致（adj:0,0）し、指が触れている「合成された位置」との
+  //   ズレは原理的に検出できない。しかもポーズ(e.target)や iframe の戻る(onclick)は
+  //   座標計算を一切しないのに同じく効かない＝原因は座標変換ではなく、
+  //   ブラウザ自身のヒットテスト位置と表示位置の食い違い。
+  //   そこで、確定に関わりうる値を全て並べ、変化した瞬間に時刻を刻む。
+  //   chg: が「最後に何かが変わってから何秒経ったか」＝収束の瞬間。
+  (function _initConvergeDebug(){
     const el=document.getElementById('dbgSafe');
     if(!el)return;
     const R=b=>Math.round(b.x)+'-'+Math.round(b.x+b.w)+'/'+Math.round(b.y)+'-'+Math.round(b.y+b.h);
+    const t0=Date.now();
+    let lastSnap='',lastChangeAt=t0,lastChangeWhat='(init)';
+    const evLog=[];
+    const note=n=>{evLog.push(n+'@'+((Date.now()-t0)/1000).toFixed(1));if(evLog.length>6)evLog.shift();};
+    ['resize','orientationchange','pageshow','scroll','focus'].forEach(n=>window.addEventListener(n,()=>note(n),{passive:true}));
+    if(window.visualViewport){['resize','scroll'].forEach(n=>window.visualViewport.addEventListener(n,()=>note('vv'+n),{passive:true}));}
+    const snap=()=>{
+      const r=canvas.getBoundingClientRect(),d=document.documentElement,vv=window.visualViewport;
+      let cs='';try{cs=getComputedStyle(canvas).position+':'+getComputedStyle(canvas).top;}catch(_){}
+      return [Math.round(r.left),Math.round(r.top),Math.round(r.width),Math.round(r.height),
+              window.innerWidth,window.innerHeight,d?d.clientWidth:0,d?d.clientHeight:0,
+              vv?Math.round(vv.width):0,vv?Math.round(vv.height):0,
+              vv?Math.round(vv.offsetLeft):0,vv?Math.round(vv.offsetTop):0,
+              Math.round(window.scrollX||0),Math.round(window.scrollY||0),cs].join('|');
+    };
     const tick=()=>{
       try{
-        const d=window.__dbg||{},vv=window.visualViewport;
+        const s=snap();
+        if(s!==lastSnap){
+          if(lastSnap){ // 何が変わったかを桁ごとに比べる
+            const a=lastSnap.split('|'),b=s.split('|');
+            const names=['rL','rT','rW','rH','iW','iH','cW','cH','vvW','vvH','vvOL','vvOT','sX','sY','pos'];
+            const diff=[];for(let i=0;i<b.length;i++)if(a[i]!==b[i])diff.push(names[i]+':'+a[i]+'>'+b[i]);
+            lastChangeWhat=diff.join(' ')||'?';
+          }
+          lastSnap=s;lastChangeAt=Date.now();
+        }
+        const v=s.split('|'),d=window.__dbg||{},vv=window.visualViewport;
         const sa=(window.navigator.standalone===true?'nav':'')+
                  ((window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)?'+dm':'')||'browser';
         let rects='(init)';
-        try{ rects='set '+R(settingsHit)+'  mp '+R(mpHit)+'\nhol '+R(holBtn)+'  start '+R(_titleNormalBtn); }catch(_){}
+        try{ rects='mp '+R(mpHit)+'  hol '+R(holBtn); }catch(_){}
+        const NL='\n';
         el.innerHTML=
-          '<b>BUILD 0801r</b>  sa:'+sa+'  vvOff:'+(vv?Math.round(vv.offsetLeft)+','+Math.round(vv.offsetTop):'-')+'\n'+
-          '<b>adj:</b>'+(d.adj||'-')+'   raw '+(d.rawRect||'-')+'  fix '+(d.fixRect||'-')+'\n'+
-          '<b>tap:</b>'+(d.tap||'-')+'  <b>cxcy:</b>'+(d.cxcy||'-')+'  <i>hit:'+(d.hit||'-')+'</i>  n:'+(d.n|0)+'\n'+
-          rects;
-      }catch(e){ el.textContent='BUILD 0801r ERR '+(e&&e.message||'err'); }
+          '<b>BUILD 0801s</b> sa:'+sa+' t:'+((Date.now()-t0)/1000|0)+'s  <i>chg:'+((Date.now()-lastChangeAt)/1000).toFixed(1)+'s前</i>'+NL+
+          'was '+lastChangeWhat.slice(0,72)+NL+
+          'rect '+v[0]+','+v[1]+' '+v[2]+'x'+v[3]+'  css '+v[14]+NL+
+          'in '+v[4]+'x'+v[5]+'  cl '+v[6]+'x'+v[7]+'  vv '+v[8]+'x'+v[9]+' off '+v[10]+','+v[11]+' sc '+v[12]+','+v[13]+NL+
+          '<b>tap</b> '+(d.tap||'-')+' <b>cxcy</b> '+(d.cxcy||'-')+' <i>hit:'+(d.hit||'-')+'</i> n:'+(d.n|0)+' adj:'+(d.adj||'-')+NL+
+          rects+NL+
+          'ev '+evLog.join(' ');
+      }catch(e){ el.textContent='BUILD 0801s ERR '+(e&&e.message||'err'); }
     };
     tick(); setInterval(tick,200);
   })();
@@ -1393,6 +1424,34 @@ if(isTouchDevice){
   // canvas ボタンの矩形計算(_SA_R)からも参照するので公開する。
   // この行はボタン矩形が定義される箇所より手前で実行される。
   window.__standalone=_standalone;
+  // ★★★ standalone 限定: レイヤを作り直してヒットテストと表示を突き合わせる。
+  //   これまでの座標補正が全て空振りだった理由がはっきりした。elementFromPoint も
+  //   getBoundingClientRect も同じ layout 空間を返すので、両者を比べる較正は必ず 0 になり
+  //   （実機 adj:0,0）、指が触れている「合成された位置」とのズレは原理的に測れない。
+  //   加えて、座標計算を一切しないポーズ(e.target)や iframe 内の戻る(onclick)まで同じく
+  //   効かない以上、原因は座標変換ではなくブラウザ自身のヒットテスト位置と表示位置の食い違い。
+  //   ＝ JS 側で足し引きしても直らない類の問題で、直す唯一の方法はレイアウトを作り直させること。
+  //   「時間が経つ／何度か操作すると一斉に効き出す」のは、何かの拍子に再レイアウトが走って
+  //   両者が揃うからで、その再レイアウトをこちらから起こしてやる。
+  //   canvas の display を 1 フレームだけ外して戻すと合成レイヤが破棄・再構築される。
+  //   起動直後と復帰直後に数回だけ実行。standalone 以外では一切呼ばない＝ブラウザ・PC は不変。
+  if(_standalone){
+    const _relayout=()=>{
+      try{
+        const c=document.getElementById('c'); if(!c)return;
+        const prev=c.style.display;
+        c.style.display='none';
+        void c.offsetHeight;          // 同期的に再レイアウトさせる
+        c.style.display=prev||'';
+        void c.offsetHeight;
+      }catch(_){}
+    };
+    const _relayoutBurst=()=>{ [0,120,400,900,1800].forEach(ms=>setTimeout(_relayout,ms)); };
+    _relayoutBurst();
+    window.addEventListener('pageshow',_relayoutBurst);
+    window.addEventListener('orientationchange',_relayoutBurst);
+    if(window.visualViewport)window.visualViewport.addEventListener('resize',_relayoutBurst);
+  }
   if(_standalone){document.body.classList.add('standalone');}
   if(!_standalone && localStorage.getItem('neverend_a2hs_dismissed')!=='1'){
     const _banner=document.getElementById('a2hsBanner');

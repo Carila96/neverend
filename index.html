@@ -1306,6 +1306,9 @@ if(isTouchDevice){
     if(_appliedPortrait!==wantPortrait){
       _appliedPortrait=wantPortrait;
       document.body.classList.toggle('portrait', wantPortrait);
+      // 向きが変わった＝確定していた canvas 幾何は無効。次に横向きで落ち着いたときに
+      // 一度だけ取り直す（_freezeGeom は縦向き中は何もしない）。
+      try{_clearGeom();}catch(_){}
     }
     _computeZones(); // 純JS。DOM には触れないのでレイアウトは動かない
   };
@@ -1365,6 +1368,7 @@ if(isTouchDevice){
       const _onOrient=ev=>{
         document.body.classList.toggle('portrait', !(ev.matches));
         _appliedPortrait=!(ev.matches); // updateOrientation の適用済みキャッシュと必ず揃える
+        try{_clearGeom();}catch(_){}    // 回転したら canvas 幾何を取り直す（次に横で落ち着いた時に一度だけ）
         _reflowSoon();
       };
       if(_mqL.addEventListener)_mqL.addEventListener('change',_onOrient);
@@ -1430,14 +1434,14 @@ if(isTouchDevice){
         try{ pr='set:'+probeBtn(settingsHit)+' mp:'+probeBtn(mpHit)+' hol:'+probeBtn(holBtn)+' st:'+probeBtn(_titleNormalBtn); }catch(_){}
         const NLc='\n';
         el.innerHTML=
-          '<b>BUILD 0801u</b> sa:'+sa+' t:'+((Date.now()-t0)/1000|0)+'s st:'+state+NLc+
+          '<b>BUILD 0801v</b> sa:'+sa+' t:'+((Date.now()-t0)/1000|0)+'s st:'+state+NLc+
           '<i>(a)前面</i> '+pr+NLc+
-          '<i>box</i> '+(d.boxTop!=null?d.boxTop:'-')+' <i>see</i> '+(d.seeTop!=null?d.seeTop:'-')+' <i>gap</i> '+(d.gap||'-')+NLc+
+          '<i>geom</i> '+(d.geom||'(未確定)')+NLc+
           '<i>guard</i> '+guards()+'  docTS:'+live.docTS+' cvTE:'+live.cvTE+NLc+
           'tap '+(d.tap||'-')+' > '+(d.cxcy||'-')+' hit:'+(d.hit||'-')+' n:'+(d.n|0)+NLc+
           '<b>FAIL</b> '+lastFail+NLc+
           '<b>OK</b>   '+firstOK;
-      }catch(e){ el.textContent='BUILD 0801u ERR '+(e&&e.message||'err'); }
+      }catch(e){ el.textContent='BUILD 0801v ERR '+(e&&e.message||'err'); }
     };
     tick(); setInterval(tick,200);
   })();
@@ -7166,27 +7170,44 @@ const mpLogoutBtn={x:W-120,y:90,w:104,h:22};
 // mypage の各ボタン）の処理本体。以前は click ハンドラに直書きだったが、モバイルでは
 // 合成 click が落ちることがあるため、touchend からも同じ処理を呼べるよう関数に出した。
 // 座標は clientX/clientY（ビューポート基準）で受け取り、内部で canvas 座標へ変換する。
-// function 宣言なので巻き上げられ、より手前のタッチブロックからも参照できる。
-// ★★★ canvas の「見えている矩形」を返す。レイアウトの箱ではない。
-//   standalone では getBoundingClientRect().top が CSS の top:4px と食い違う値(41/63)を返す。
-//   実機の決定打から、絵が出ているのは CSS どおりの位置で、下にずれているのは当たり判定の箱
-//   の方だと分かった（見た目を押すとタップがハンドラに届かず、下を押すと届く）。
-//   よって position:fixed のときは top を CSS の値で置き換える。幅・高さ・left は実測が
-//   正しい（横方向のズレは報告されていない）。
-//   ブラウザ・PC では canvas が static なのでこの分岐に入らず、従来と完全に同一。
-function _canvasRect(){
+// ★★★ タッチ座標→canvas 内部座標の変換から「時間で変わる値」を完全に排除する。
+//   iOS standalone では getBoundingClientRect() が時間とともに違う値を返す。
+//   （当たり判定の箱だけが下にずれ、しばらくすると正しい位置に直る）
+//   その動く値を追いかけて補正する方式は原理的に詰んでいる。ずれ幅が再計算の前後で
+//   違うので、片方に合わせるともう片方が壊れるため。
+//   → 横向きでレイアウトが落ち着いた時点の値を「一度だけ」確定させて固定し、
+//     以降はその固定値だけで変換する。iOS がいつ再計算しようが結果が変わらない。
+//   ・top    … CSS の position:fixed; top:4px。そもそも定数で、時間変化しない。
+//   ・幅・高さ… 確定時に一度だけ実測して凍結（サイズは常に正しく報告されていた）。
+//   ・left   … 同じく確定時に凍結（margin:0 auto の中央固定なので動かない）。
+//   縦向き中は確定しない。回転を促しているだけで操作対象が無く、この時の値は
+//   信用できないため。横になってから初めて確定する（回転のたびに一度だけ）。
+let _geom=null;
+function _clearGeom(){ _geom=null; }
+function _freezeGeom(){
+  if(_geom)return;                                  // 確定済みなら二度と触らない
+  let land=null; try{ land=_orientLandscape(); }catch(_){}
+  if(land===false)return;                           // 縦向き中は計算しない
   const r=canvas.getBoundingClientRect();
-  let cs=null; try{cs=getComputedStyle(canvas);}catch(_){}
-  let top=r.top, src='rect';
-  if(cs&&cs.position==='fixed'){
-    const t=parseFloat(cs.top);
-    if(isFinite(t)){ top=t; src='css'; }
-  }
-  // ▼一時計測: 箱と見た目のズレ量。これが standalone で非ゼロになるはず。
+  if(!(r.width>1&&r.height>1))return;
+  if(Math.abs((r.width/r.height)-(W/H))>0.02)return; // 16:9 でない＝まだ落ち着いていない
+  let top=r.top;
+  try{ const cs=getComputedStyle(canvas);
+       if(cs.position==='fixed'){const t=parseFloat(cs.top); if(isFinite(t))top=t;} }catch(_){}
+  _geom={left:r.left, top:top, width:r.width, height:r.height};
   window.__dbg=window.__dbg||{};
-  window.__dbg.boxTop=Math.round(r.top);
-  window.__dbg.seeTop=Math.round(top);
-  window.__dbg.gap=Math.round(r.top-top)+'('+src+')';
+  window.__dbg.geom=Math.round(r.left)+','+Math.round(top)+' '+Math.round(r.width)+'x'+Math.round(r.height)+
+                    ' (box.top '+Math.round(r.top)+')';
+}
+// 変換に使う矩形。確定後は固定値、未確定の間だけ実測にフォールバックする
+// （ブラウザは即座に正しい値を返すので、フォールバック中でも従来どおり動く）。
+function _canvasRect(){
+  _freezeGeom();
+  if(_geom)return _geom;
+  const r=canvas.getBoundingClientRect();
+  let top=r.top;
+  try{ const cs=getComputedStyle(canvas);
+       if(cs.position==='fixed'){const t=parseFloat(cs.top); if(isFinite(t))top=t;} }catch(_){}
   return {left:r.left, top:top, width:r.width, height:r.height};
 }
 function _canvasActivate(clientX,clientY){

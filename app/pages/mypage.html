@@ -443,6 +443,16 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
+/* ★ standalone(PWA) では visual viewport の原点が layout viewport からずれ、
+   touch/click の clientX/Y (layout基準) と getBoundingClientRect (visual基準) が食い違う。
+   親フレームで実測した恒等式 rect.top = cssTop - vv.offsetTop に従い、rect 側に
+   vv のオフセットを足して座標系を揃える。ブラウザでは offset が 0 なので加算は無効。 */
+function _vvOff(){var vv=window.visualViewport;if(!vv)return[0,0];
+  var ox=vv.offsetLeft||0,oy=vv.offsetTop||0;
+  return[isFinite(ox)?ox:0,isFinite(oy)?oy:0];}
+function _rectVV(el){var r=el.getBoundingClientRect(),o=_vvOff();
+  return{left:r.left+o[0],top:r.top+o[1],width:r.width,height:r.height};}
+
 const BASE='https://damnrun.com';
 const GRID_COLS=128,GRID_ROWS=72,CELL=10;
 
@@ -1711,7 +1721,7 @@ document.addEventListener('DOMContentLoaded',function(){
   const CELL=10;
 
   function getGridPos(e){
-    const rect=canvas.getBoundingClientRect();
+    const rect=_rectVV(canvas); // standalone の座標系ズレを補正
     const scaleX=1280/rect.width,scaleY=720/rect.height;
     const mx=(e.clientX-rect.left)*scaleX,my=(e.clientY-rect.top)*scaleY;
     const offsetX=Math.floor((_editW||1)/2);
@@ -1790,7 +1800,7 @@ document.addEventListener('DOMContentLoaded',function(){
   if(prevCanvas){
     prevCanvas.addEventListener('click', function(e){
       if(!_editPixelArt) return;
-      const rect = prevCanvas.getBoundingClientRect();
+      const rect = _rectVV(prevCanvas); // standalone の座標系ズレを補正
       const scaleX = prevCanvas.width / rect.width;
       const scaleY = prevCanvas.height / rect.height;
       const zoom = Math.max(1, Math.min(8, Math.floor(300 / Math.max(_editW, _editH))));

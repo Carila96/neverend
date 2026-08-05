@@ -287,6 +287,13 @@ body.touch.ctrls #touchControls{display:block;} /* controller shown only in game
 #btnJump{width:96px;height:96px;border-radius:50%;}
 #btnPause{display:none;position:fixed;top:16px;right:16px;z-index:200;width:48px;height:48px;font-size:16px;letter-spacing:2px;}
 body.touch.playing #btnPause{display:flex;}
+/* ★ standalone(PWA) だけ、右端のシステムジェスチャ帯から外へ出す。
+   canvas 側の MY PAGE / HALL OF LEGENDS を _SA_R で内側へ寄せたのと同じ理由。
+   Safari ブラウザでは帯が無く 1 タップで効いているので、そちらは 1px も動かさない。
+   media query 判定なので JS のクラス付与タイミングにも依存しない。 */
+@media (display-mode: standalone){
+  #btnPause{right:40px;}
+}
 #btnTitle{display:none;position:fixed;top:16px;left:16px;z-index:200;pointer-events:auto;padding:8px 14px;border-radius:8px;background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);color:#fff;font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:2px;-webkit-tap-highlight-color:transparent;touch-action:none;user-select:none;-webkit-user-select:none;}
 #btnTitle:active{background:rgba(255,255,255,0.15);}
 body.touch.paused #btnTitle{display:block;}
@@ -1474,7 +1481,15 @@ if(isTouchDevice){
         const _stOpen=_st?_st.classList.contains('open'):false;
         // canvas が本当に position:fixed / top:4px で効いているかを computed 値で見る。
         const _ccs=c?getComputedStyle(c):null;
-        el.innerHTML='<b>BUILD 0801n</b> <b>PROBE@'+probeXY+' &rarr; '+probe+'</b><br>'+
+        // ▼standalone とブラウザの差分。Safari では全ボタン 1 タップ、standalone だけ渋いので
+        //   両方でこの行を読み比べれば、座標系のどこがズレているかが直接分かる。
+        const _sa='sa:'+(window.navigator.standalone===true?'nav':'')+
+                  ((window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)?'+dm':'')+
+                  (window.__standalone?'':'(no)')+
+                  ' vvOff:'+(vv?r(vv.offsetLeft)+','+r(vv.offsetTop)+' pg:'+r(vv.pageLeft)+','+r(vv.pageTop):'-')+
+                  ' saR:'+(function(){try{return _SA_R;}catch(_){return '(init)';}})(); // 後方で宣言される const
+        el.innerHTML='<b>BUILD 0801o</b> <b>PROBE@'+probeXY+' &rarr; '+probe+'</b><br>'+
+          '<b>'+_sa+'</b><br>'+
           '<b>xf:'+(window.__xf||'-')+'</b><br>'+
           'rect '+(function(){try{
             const R=b=>Math.round(b.x)+'-'+Math.round(b.x+b.w)+'/'+Math.round(b.y)+'-'+Math.round(b.y+b.h);
@@ -1499,7 +1514,7 @@ if(isTouchDevice){
           ' vv:'+(vv?r(vv.width)+'x'+r(vv.height):'-')+'<br>'+
           'use:'+uw+'x'+uh+' z:'+_zW+'x'+_zH+' vh:'+(getComputedStyle(d).getPropertyValue('--app-vh')||'unset').trim()+
           ' cv:'+(cr?r(cr.left)+','+r(cr.top)+' '+r(cr.width)+'x'+r(cr.height):'-');
-      }catch(e){ el.innerHTML='<b>BUILD 0801n</b> ERR '+(e&&e.message||'err'); }
+      }catch(e){ el.innerHTML='<b>BUILD 0801o</b> ERR '+(e&&e.message||'err'); }
     };
     tick();
     setInterval(tick,200);
@@ -1507,6 +1522,9 @@ if(isTouchDevice){
   // Add-to-home-screen hint: iOS Safari can't go fullscreen in-browser; guide users to A2HS.
   const _standalone = window.navigator.standalone===true || window.matchMedia('(display-mode: standalone)').matches;
   // PWA起動時のみ body.standalone を付与（PWA固有のCSSが必要になったとき用のフック）。
+  // canvas ボタンの矩形計算(_SA_R)からも参照するので公開する。
+  // この行はボタン矩形が定義される箇所より手前で実行される。
+  window.__standalone=_standalone;
   if(_standalone){document.body.classList.add('standalone');}
   if(!_standalone && localStorage.getItem('neverend_a2hs_dismissed')!=='1'){
     const _banner=document.getElementById('a2hsBanner');
@@ -7147,8 +7165,23 @@ const _MP_BOX  = isTouchDevice ? {w:176,h:40,base:28} : {w:104,h:28,base:19};
 // ── 描画用の矩形 ───────────────────────────────────────────────
 // 位置・サイズとも従来どおり。canvas もボタンも y 方向に一切動かさない
 // （下げる方式は Cookie バナー等と競合したため廃止。_TOP_DY は削除済み）。
+// ★★★ standalone(PWA) のときだけ、右端に接する UI を内側へ寄せる。
+//   Safari ブラウザでは全ボタンが 1 タップで動くのに standalone だけ渋い、という切り分けと、
+//   実機の成否が「画面右端からの距離」ときれいに一致することから、iOS が standalone で
+//   画面端に確保するシステムジェスチャ帯にタッチを吸われていると判断した。
+//     右端からの距離   実機
+//       MY PAGE  -8px  4-5タップ   ← 右端をはみ出している。最悪
+//       HALL     34px  2-3タップ
+//       PAUSE    16px  効かない    （HTML側。下の @media で同様に内側へ）
+//       START   490px  1タップ
+//       SETTINGS 1104px 1タップ
+//   ブラウザで無症状なのは、ブラウザだと帯の位置にアドレスバー等があってページが
+//   そこまで広がらないため。canvas 自体は動かさない（過去に Cookie バナーの Accept が
+//   押せなくなって撤回済み）。動かすのは右端の 2 ボタンの矩形だけ。
+//   描画も判定も同じ矩形から導出しているので、見た目と判定は自動で一致したまま動く。
+const _SA_R = (window.__standalone && isTouchDevice) ? 48 : 0; // canvas内部px（画面上 約23px）
 const settingsBtn={x:16,y:16,w:_SET_BOX.w,h:_SET_BOX.h};
-const mpBtn={x:W-16-_MP_BOX.w,y:12,w:_MP_BOX.w,h:_MP_BOX.h};   // 右マージン16pxを維持
+const mpBtn={x:W-16-_SA_R-_MP_BOX.w,y:12,w:_MP_BOX.w,h:_MP_BOX.h};   // 右マージン16px + standalone補正
 // ── タップ判定用の矩形（上端2つのみ・タッチ端末のみ）─────────────
 // 見た目は settingsBtn / mpBtn のまま。判定「だけ」を外側へ広げて指の許容範囲を稼ぐ。
 // 対応関係: settingsHit ⊃ settingsBtn, mpHit ⊃ mpBtn（描画矩形を内包する上位集合）。
@@ -7172,7 +7205,7 @@ const mpHit       = isTouchDevice ? _expandHit(mpBtn,      12,28,24) : mpBtn;
 //   [ HALL OF LEGENDS ] (19字) は font 12*1.7=20.4px で ≒233px → w250（左右8.5pxずつ）
 // _UI_K===1 のとき {W-200, H-24, 180, 20} となり、従来のハードコード判定と完全に同一。
 const _HOL_BOX = isTouchDevice ? {w:250,h:36,base:25} : {w:180,h:20,base:10};
-const holBtn={x:W-20*_UI_K-_HOL_BOX.w,y:H-14*_UI_K-_HOL_BOX.base,w:_HOL_BOX.w,h:_HOL_BOX.h};
+const holBtn={x:W-20*_UI_K-_SA_R-_HOL_BOX.w,y:H-14*_UI_K-_HOL_BOX.base,w:_HOL_BOX.w,h:_HOL_BOX.h};
 let _titleNormalBtn={x:0,y:0,w:0,h:0},_titleDeathBtn={x:0,y:0,w:0,h:0};
 const mpBackBtn={x:W/2-270,y:H-62,w:140,h:36};
 const mpResetBtn={x:W/2-70,y:H-62,w:140,h:36};

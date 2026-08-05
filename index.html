@@ -111,8 +111,8 @@ body{
   overflow:hidden;
 }
 /* ★ 全画面モーダルは「閉じている＝display:none」だけに頼らない。
-   実機計測(BUILD 0801g)で、タイトル画面のはずなのに elementFromPoint が #settings を返し、
-   cover に settings[flex,PE1,z100] が出る＝閉じているつもりの #settings が前面に居座って
+   実機計測で、タイトル画面のはずなのに elementFromPoint が #settings を返すことがあった。
+   閉じているつもりの #settings が display:flex / pointer-events:auto のまま前面に居座り、
    SETTINGS / START / MY PAGE / HALL OF LEGENDS のタップを全部吸っていた。
    display:none が何らかの理由で効かない状態になると、この板は透明でも指を受け止めてしまう。
    → 閉状態では pointer-events:none も併せて効かせ、「見えていない板は絶対に触れない」を
@@ -144,17 +144,6 @@ body{
   font-family:'Courier New',monospace;font-size:11px;color:#888;
 }
 #cookieBanner.hidden{display:none!important;}
-/* ▼一時的な実機デバッグ表示（回転不具合の確認用。原因確定後に撤去する）。
-   タッチ端末のみ。pointer-events:none 固定＝絶対にタップを奪わない。 */
-#dbgSafe{display:none;}
-body.touch #dbgSafe{
-  display:block;position:fixed;left:50%;transform:translateX(-50%);bottom:2px;z-index:9998;
-  pointer-events:none;background:rgba(0,0,0,0.78);color:#0f0;
-  font-family:'Share Tech Mono',monospace;font-size:9px;line-height:1.35;
-  padding:3px 8px;border:1px solid rgba(0,255,0,0.4);border-radius:4px;
-  white-space:pre;text-align:left;max-width:96vw;overflow:hidden;
-}
-#dbgSafe b{font-size:12px;color:#ff0;letter-spacing:1px;}
 /* Touch: 横向きだと画面が低くなり、bottom:0 の Accept/Decline が iOS のホームインジケータ帯
    (画面最下端 ~20px。OS がスワイプ用に押さえていてタップが届かない) に入ってしまう。
    縦向きは本文が折り返してバナーが高くなり、ボタンが帯の上に出るため押せていた。
@@ -356,9 +345,6 @@ body.touch.portrait #rotateOverlay{display:flex;}
     var v=(h/100)+'px';
     if(v===_lastVh)return;
     _lastVh=v;
-    // ▼一時デバッグ(0801i): 実際に書いた回数。効かない最中にこれが増え続けているなら
-    //   レイアウトが動き続けている＝タッチ消失の確定証拠。止まっていれば別原因。
-    window.__vhW=(window.__vhW|0)+1;
     document.documentElement.style.setProperty('--app-vh',v);
   };
   window.__setAppVh();
@@ -380,7 +366,6 @@ body.touch.portrait #rotateOverlay{display:flex;}
   <button type="button" id="a2hsClose">CLOSE</button>
 </div>
 <div id="a2hsDim"></div>
-<div id="dbgSafe"></div>
 <div id="rotateOverlay">↻<br>デバイスを横にしてください<br>Please rotate your device</div>
 <div id="xShareBtn" onclick="shareDeathX()">𝕏 Share</div>
 <div id="mypageOverlay" style="display:none;position:fixed;inset:0;z-index:1000;background:#000;">
@@ -519,13 +504,7 @@ function getDeathMsg(cause){
 document.getElementById('volBGM').oninput=e=>{volBGM=e.target.value/100;document.getElementById('volBGMVal').textContent=e.target.value;};
 document.getElementById('volSFX').oninput=e=>{volSFX=e.target.value/100;document.getElementById('volSFXVal').textContent=e.target.value;};
 
-// ▼一時デバッグ(BUILD 0801h): 誰が settings を開けたのかを数える。
-//   実機で見えた display:flex が「.open が付いている（＝誰かが openSettings を呼んだ）」の
-//   結果なのか、「.open は無いのに display が漏れている」CSS 事故なのかは、この2つを
-//   突き合わせないと区別できない。デバッグ表示の oS: と op: がその答えになる。
-window.__oS=0;
 function openSettings(){
-  window.__oS++;
   document.getElementById('settings').classList.add('open');
 }
 function closeSettings(){document.getElementById('settings').classList.remove('open');canvas.focus();}
@@ -945,46 +924,6 @@ const _coarsePointer = !!(window.matchMedia && window.matchMedia('(pointer:coars
 //     信頼できる。どちらも false のときだけ非タッチ＝PC 判定になり、PC の挙動は不変。
 const _liveTouch = ('ontouchstart' in window || navigator.maxTouchPoints>0) && _coarsePointer;
 const isTouchDevice = (window.__neverendTouch===true) || _liveTouch;
-// ▼一時デバッグ: タッチイベントがそもそもページに届いているかを、コントローラーとは
-//   独立に数える。capture 段階なので誰かが stopPropagation しても必ず先に通る。
-//   raw が増えるのに tap が増えなければ _onTouch までの間で落ちている、
-//   両方増えなければタッチ自体が来ていない、と切り分けられる。
-window.__rawTaps=0;
-document.addEventListener('touchstart',function(){window.__rawTaps++;},{passive:true,capture:true});
-// ▼一時デバッグ(BUILD 0801g): 「タップがページに届かない」を現行犯で押さえるための計測。
-//   入力の種類ごとに、document より外側(window)と document の capture 段で別々に数える。
-//   touch だけ来ない / pointer は来る / どちらも来ない、のどれなのかを切り分ける。
-window.__ev={wTS:0,dTS:0,dTC:0,dPD:0,dPC:0,dMD:0,dClick:0};
-// 最後に「入力が届いた」瞬間の座標と、その座標に実際に乗っていた要素。
-// elementFromPoint は pointer-events:none を無視して“指が実際に当たる要素”を返すので、
-// canvas 以外が出たらそれが犯人。
-window.__hitEl='-';window.__hitXY='-';
-window.__descEl=function(el){
-  if(!el)return 'null';
-  let s=el.id?('#'+el.id):el.tagName.toLowerCase();
-  if(!el.id&&el.className&&typeof el.className==='string'&&el.className.trim())s+='.'+el.className.trim().split(/\s+/)[0];
-  return s;
-};
-window.__probeAt=function(x,y){
-  try{
-    window.__hitXY=Math.round(x)+','+Math.round(y);
-    window.__hitEl=window.__descEl(document.elementFromPoint(x,y));
-  }catch(_){window.__hitEl='err';}
-};
-// 計測はタッチ端末に限定する。PC では一切登録しない（elementFromPoint はレイアウト読みを
-// 伴うので、PC の mousedown/click 経路に余計な負荷を持ち込まないため）。
-// すべて passive:true = preventDefault できない＝挙動には一切影響しない、純粋な観測。
-if(isTouchDevice){
-  window.addEventListener('touchstart',function(){window.__ev.wTS++;},{passive:true,capture:true});
-  document.addEventListener('touchstart',function(e){window.__ev.dTS++;
-    const t=e.changedTouches&&e.changedTouches[0];if(t)window.__probeAt(t.clientX,t.clientY);
-  },{passive:true,capture:true});
-  document.addEventListener('touchcancel',function(){window.__ev.dTC++;},{passive:true,capture:true});
-  document.addEventListener('pointerdown',function(e){window.__ev.dPD++;window.__probeAt(e.clientX,e.clientY);},{passive:true,capture:true});
-  document.addEventListener('pointercancel',function(){window.__ev.dPC++;},{passive:true,capture:true});
-  document.addEventListener('mousedown',function(e){window.__ev.dMD++;window.__probeAt(e.clientX,e.clientY);},{passive:true,capture:true});
-  document.addEventListener('click',function(){window.__ev.dClick++;},{passive:true,capture:true});
-}
 if(isTouchDevice){
   document.body.classList.add('touch');
   // Perf: kill canvas shadowBlur on touch (neonText & HUD set it every frame; shadow blur is extremely
@@ -1215,26 +1154,11 @@ if(isTouchDevice){
   //  purely by canvas taps (NORMAL/DEATH start, MY PAGE, Hall of Legends); keeping zones on there would
   //  preventDefault and kill those taps. Excluded too: dying (transient), mypage/testcomplete (overlay /
   //  canvas-tap only). _blocked() still disables zones under any front overlay.
-  // ▼一時デバッグ: 直近のタップがどのゲートで落ちたかを記録する（原因確定後に撤去）。
-  //   _tapSeen は _onTouch の総呼び出し数(start/move/end/cancel の4種)、_tapStart は
-  //   touchstart だけ。__rawTaps も touchstart だけなので、比較すべきは raw と tapStart。
-  //   raw < tapSeen は二重登録ではなく「数えている種類が違う」だけ。
-  let _lastGate='-',_tapSeen=0,_tapStart=0,_tapErr='',_fixLog='-';
-  const _blockReason=()=>(
-       _cookieUp()?'cookie'
-    : (_a2hsEl2&&_a2hsEl2.classList.contains('show'))?'a2hs'
-    : (_mpEl&&_mpEl.style.display==='block')?'mypage'
-    : (_holEl&&_holEl.style.display==='block')?'hol'
-    : (_setEl&&_setEl.classList.contains('open'))?'settings'
-    : (_lmEl&&_lmEl.classList.contains('open'))?'login'
-    : document.body.classList.contains('portrait')?'PORTRAIT'
-    : 'blocked?'
-  );
   // ── タップの瞬間に状態を確定させる検算 ────────────────────────────────
   // 向き(matchMedia)だけは実測ピクセルと independent に常に正しく取れるので、これを審判に
   // 「body.touch / portrait / --app-vh / ゾーン」の4点がいま矛盾していないかを見て、
   // 矛盾していればその場で直す。タイマーの次の発火を待たない＝待ち時間がタイマー依存でなくなる。
-  // 戻り値は直した項目の記号（デバッグ表示用）。何も直すことが無ければ空文字＝ほぼ全ての
+  // 何も直すことが無ければ何も書き換えない＝ほぼ全ての
   // 通常タップはここを素通りする（matchMedia と classList の読みだけでレイアウトは強制しない）。
   const _reconcile=()=>{
     let f='';
@@ -1260,7 +1184,6 @@ if(isTouchDevice){
   };
   const _ctrlStates=new Set(['play','pause','dead','ending','memo']);
   const _onTouch=e=>{
-    _tapSeen++; if(e.type==='touchstart')_tapStart++; // ▼一時デバッグ: 何よりも先に数える
     // ★★★ タップが来た瞬間に、状態を丸ごと検算して確定させてから判定に進む。
     //   従来は「正しくなるのをタイマー(_reflowSoon の決め打ち列)や _settleLoop の発火に
     //   任せて待つ」受け身の構造だった。そのため誤読がどの時点で起きたか次第で次の発火まで
@@ -1270,18 +1193,14 @@ if(isTouchDevice){
     //   無ければ何もしない＝通常のタップは素通りする。
     //   下準備で例外が出ると以降が丸ごと飛んで「タップが一切効かない」状態になりうる
     //   （PWA では console が見えず無症状に見える）ので、判定本体だけは必ず走らせる。
-    try{ _fixLog=_reconcile()||'-'; }catch(err){_tapErr=(err&&err.message)||'err';}
+    try{ _reconcile(); }catch(_){}
     // ★ ゲートより前に必ず通す。ゴール演出中は state='goal' で下の return に落ちるので、
     //   ここが後ろだと「演出中に指を離した」ことを取りこぼし、遷移後の最初のタップが死ぬ。
     _syncTouchIds(e);
-    if(!_ctrlStates.has(state)){_lastGate='state:'+state;return;}
-    if(_blocked()){_lastGate=_blockReason();return;}
-    _lastGate='pass';
+    if(!_ctrlStates.has(state))return;
+    if(_blocked())return;
     if(_hitTest(e))e.preventDefault();
   };
-  // ▼一時デバッグ: 登録回数を数える。ここが 1 以外なら二重登録（＝1タップが多重処理され、
-  //   consumed/keys の状態が壊れる）。現状このブロック自体が起動時 1 回しか通らない。
-  window.__onTouchRegs=(window.__onTouchRegs|0)+1;
   document.addEventListener('touchstart',_onTouch,{passive:false});
   document.addEventListener('touchmove',_onTouch,{passive:false});
   document.addEventListener('touchend',_onTouch,{passive:false});
@@ -1311,18 +1230,17 @@ if(isTouchDevice){
   //   → 直近の touchstart の位置と時刻だけを控える。毎回上書きするので居座る状態が存在せず、
   //     イベントを何回取りこぼしても次のタップは必ず素通りする。
   //   長押し / スワイプの除外だけは残す（誤爆防止）。identifier もフラグも使わない。
-  let _cTapX=0,_cTapY=0,_cTapT=0,_cReject='-'; // _cReject は一時デバッグ(どのガードで弾いたか)
+  let _cTapX=0,_cTapY=0,_cTapT=0;
   canvas.addEventListener('touchstart',e=>{
     const t=e.changedTouches&&e.changedTouches[0];if(!t)return;
     _cTapX=t.clientX;_cTapY=t.clientY;_cTapT=Date.now(); // 常に上書き＝詰まらない
   },{passive:true});
   canvas.addEventListener('touchend',e=>{
-    const t=e.changedTouches&&e.changedTouches[0];if(!t){_cReject='noTouch';return;}
-    if(_ctrlStates.has(state)){_cReject='state';return;} // ゲーム中はコントローラー側の担当
-    if(_blocked()){_cReject='blocked';return;}           // Cookie バナー等が出ている間は触らせない
-    if(Date.now()-_cTapT>700){_cReject='hold';return;}                            // 長押しは無視
-    if(Math.abs(t.clientX-_cTapX)>24||Math.abs(t.clientY-_cTapY)>24){_cReject='swipe';return;} // スワイプは無視
-    _cReject='pass';
+    const t=e.changedTouches&&e.changedTouches[0];if(!t)return;
+    if(_ctrlStates.has(state))return; // ゲーム中はコントローラー側の担当
+    if(_blocked())return;           // Cookie バナー等が出ている間は触らせない
+    if(Date.now()-_cTapT>700)return;                            // 長押しは無視
+    if(Math.abs(t.clientX-_cTapX)>24||Math.abs(t.clientY-_cTapY)>24)return; // スワイプは無視
     e.preventDefault();                 // 後続の合成 click を止めて二重発火を防ぐ
     _canvasActivate(t.clientX,t.clientY);
   },{passive:false});
@@ -1428,95 +1346,6 @@ if(isTouchDevice){
   // visualViewport の resize は回転完了後の確定値で飛ぶため、こちらを主軸にする。
   if(window.visualViewport)window.visualViewport.addEventListener('resize',_reflowSoon);
   window.addEventListener('resize',updateOrientation);   // 連続リサイズ用は軽い単発で十分
-  // ▼一時的な実機デバッグ表示（回転不具合の確認用。原因確定後に撤去する）。
-  //   「回転後、inner* だけが回転前の値のまま固まっていないか」を目視で確認するためのもの。
-  //   ort=実際の向き / in=innerWidth×Height / cl=documentElement.client* / vv=visualViewport
-  //   use=実際に採用した実測値 / set=向きと一致しているか / z=ゾーンの基準 / top=canvas上端
-  (function _initRotationDebug(){
-    const el=document.getElementById('dbgSafe');
-    if(!el)return;
-    const r=n=>Math.round(n);
-    // 画面を覆いうる要素。ここに挙げたものは毎 tick で computed display / pointer-events /
-    // z-index を実測する。display が none 以外のものだけを列挙するので、回転直後に何が
-    // 生きているかが一目で分かる。
-    const COVERS=['rotateOverlay','a2hsDim','a2hsBanner','dbgSafe','cookieBanner',
-                  'mypageOverlay','holOverlay','settings','loginModal','touchControls','nameOverlay'];
-    const ev=()=>window.__ev||{};
-    const tick=()=>{
-      try{
-        const c=document.querySelector('canvas'),cr=c?c.getBoundingClientRect():null;
-        const d=document.documentElement,vv=window.visualViewport;
-        const [uw,uh]=_viewport();
-        // ★ 決定的証拠: SETTINGS ボタンの中心に、いま実際に何が乗っているか。
-        //   イベントが来なくても毎 tick 取れるので「タップが届かない最中」の状態が見える。
-        //   elementFromPoint は pointer-events:none を無視するため、ここに canvas 以外が
-        //   出たら、その要素が指を受け止めている＝犯人。
-        //   settingsBtn はこのブロックより後方で宣言される const なので、初回同期実行時は
-        //   まだ TDZ。個別に try で囲み、確定するまでは (init) と出すだけにする。
-        let probe='-',probeXY='-';
-        try{
-          const cr2=_canvasRect(); // _canvasActivate と同じ補正済みの基準を使う
-          if(cr2&&cr2.width>0){
-            const cr=cr2;
-            const sx=cr.width/W,sy=cr.height/H;
-            const px=cr.left+(settingsBtn.x+settingsBtn.w/2)*sx;
-            const py=cr.top +(settingsBtn.y+settingsBtn.h/2)*sy;
-            probeXY=r(px)+','+r(py);
-            probe=window.__descEl(document.elementFromPoint(px,py));
-          }
-        }catch(_){probe='(init)';}
-        // 覆いうる要素のうち、いま display:none でないものだけを列挙
-        const live=[];
-        for(const id of COVERS){
-          const t=document.getElementById(id);if(!t)continue;
-          const cs=getComputedStyle(t);
-          if(cs.display==='none')continue;
-          live.push(id+'['+cs.display+','+(cs.pointerEvents==='none'?'pe0':'PE1')+',z'+cs.zIndex+']');
-        }
-        const E=ev();
-        // settings が「開いている(.open あり)」のか「display だけ漏れている」のかを併記する。
-        const _st=document.getElementById('settings');
-        const _stOpen=_st?_st.classList.contains('open'):false;
-        // canvas が本当に position:fixed / top:4px で効いているかを computed 値で見る。
-        const _ccs=c?getComputedStyle(c):null;
-        // ▼standalone とブラウザの差分。Safari では全ボタン 1 タップ、standalone だけ渋いので
-        //   両方でこの行を読み比べれば、座標系のどこがズレているかが直接分かる。
-        const _sa='sa:'+(window.navigator.standalone===true?'nav':'')+
-                  ((window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)?'+dm':'')+
-                  (window.__standalone?'':'(no)')+
-                  ' vvOff:'+(vv?r(vv.offsetLeft)+','+r(vv.offsetTop)+' pg:'+r(vv.pageLeft)+','+r(vv.pageTop):'-')+
-                  ' saR:'+(function(){try{return _SA_R;}catch(_){return '(init)';}})(); // 後方で宣言される const
-        el.innerHTML='<b>BUILD 0801p</b> <b>PROBE@'+probeXY+' &rarr; '+probe+'</b><br>'+
-          '<b>'+_sa+'</b><br>'+
-          '<b>xf:'+(window.__xf||'-')+'</b><br>'+
-          'rect '+(function(){try{
-            const R=b=>Math.round(b.x)+'-'+Math.round(b.x+b.w)+'/'+Math.round(b.y)+'-'+Math.round(b.y+b.h);
-            return 'set:'+R(settingsHit)+' mp:'+R(mpHit)+' hol:'+R(holBtn);
-          }catch(_){return '(init)';}})()+'<br>'+
-          '<b>cvPos:'+(_ccs?_ccs.position+' top:'+_ccs.top:'-')+
-          ' coarse:'+((window.matchMedia&&window.matchMedia('(pointer:coarse)').matches)?'1':'0')+'</b><br>'+
-          '<b>vhW:'+(window.__vhW|0)+' settling:'+((_settleRaf||_settleTimer)?'YES':'no')+
-          ' set.op:'+(_stOpen?'1':'0')+' oS:'+(window.__oS|0)+'</b><br>'+
-          '<b>tapEl:'+(window.__hitEl||'-')+' @'+(window.__hitXY||'-')+'</b><br>'+
-          'wTS:'+(E.wTS|0)+' dTS:'+(E.dTS|0)+' PD:'+(E.dPD|0)+' MD:'+(E.dMD|0)+
-          ' clk:'+(E.dClick|0)+' TC:'+(E.dTC|0)+' PC:'+(E.dPC|0)+'<br>'+
-          'raw:'+(window.__rawTaps|0)+' start:'+_tapStart+' all:'+_tapSeen+
-          ' gate:'+_lastGate+' hit:'+(window.__lastHit||'-')+(_tapErr?' ERR:'+_tapErr:'')+'<br>'+
-          'cover:'+(live.length?live.join(' '):'(none)')+'<br>'+
-          'body:['+(document.body.className||'-')+'] st:'+state+
-          ' blk:'+(_blocked()?_blockReason():'no')+' cTap:'+_cReject+' cons:'+_consumed.size+'<br>'+
-          'ort:'+(_orientLandscape()?'LAND':'PORT')+' set:'+(_viewportSettled()?'ok':'WAIT')+
-          ' vis:'+document.visibilityState+
-          ' in:'+window.innerWidth+'x'+window.innerHeight+
-          ' cl:'+(d?d.clientWidth+'x'+d.clientHeight:'-')+
-          ' vv:'+(vv?r(vv.width)+'x'+r(vv.height):'-')+'<br>'+
-          'use:'+uw+'x'+uh+' z:'+_zW+'x'+_zH+' vh:'+(getComputedStyle(d).getPropertyValue('--app-vh')||'unset').trim()+
-          ' cv:'+(cr?r(cr.left)+','+r(cr.top)+' '+r(cr.width)+'x'+r(cr.height):'-');
-      }catch(e){ el.innerHTML='<b>BUILD 0801p</b> ERR '+(e&&e.message||'err'); }
-    };
-    tick();
-    setInterval(tick,200);
-  })();
   // Add-to-home-screen hint: iOS Safari can't go fullscreen in-browser; guide users to A2HS.
   const _standalone = window.navigator.standalone===true || window.matchMedia('(display-mode: standalone)').matches;
   // PWA起動時のみ body.standalone を付与（PWA固有のCSSが必要になったとき用のフック）。
@@ -7244,37 +7073,31 @@ function _vvOff(){
 function _canvasRect(){
   const r=canvas.getBoundingClientRect();
   const [ox,oy]=_vvOff();
-  return {left:r.left+ox, top:r.top+oy, width:r.width, height:r.height,
-          src:(ox||oy)?('vv'+Math.round(ox)+','+Math.round(oy)):'rect'};
+  return {left:r.left+ox, top:r.top+oy, width:r.width, height:r.height};
 }
 function _canvasActivate(clientX,clientY){
   const rect=_canvasRect();
   const scaleX=W/rect.width,scaleY=H/rect.height;
   const cx=(clientX-rect.left)*scaleX,cy=(clientY-rect.top)*scaleY;
   // ▼一時デバッグ: 実際に使った基準と変換結果
-  window.__xf=rect.src+' '+Math.round(rect.left)+','+Math.round(rect.top)+' '+
-              Math.round(rect.width)+'x'+Math.round(rect.height)+
-              ' tap:'+Math.round(clientX)+','+Math.round(clientY)+
-              ' -> '+Math.round(cx)+','+Math.round(cy);
-  window.__lastHit='none'; // ▼一時デバッグ: どのボタンに当たったか
   if(state==='title'){
     // モード選択クリック
     function _inRegion(b){return cx>=b.x&&cx<=b.x+b.w&&cy>=b.y&&cy<=b.y+b.h;}
     // Touch: tapping a mode both selects AND starts (no keyboard Space on mobile). PC keeps select-only.
     const _cbUp=(()=>{const c=document.getElementById('cookieBanner');return !!(c&&c.style.display!=='none'&&!c.classList.contains('hidden'));})();
     const _tapStart=isTouchDevice&&!_cbUp; // don't start while the cookie banner is up
-    if(_inRegion(_titleNormalBtn)){_titleModeSel=0;gameMode='normal';window.__lastHit='normal';
+    if(_inRegion(_titleNormalBtn)){_titleModeSel=0;gameMode='normal';
       if(_tapStart){_retryStreak=0;resetRun();state='play';startBGM(getBGMTrack(1));}
     }
-    else if(_inRegion(_titleDeathBtn)){window.__lastHit='death';
+    else if(_inRegion(_titleDeathBtn)){
       if(deathModeUnlocked){_titleModeSel=1;gameMode='death';
         if(_tapStart){_retryStreak=0;resetRun();state='play';startBGM(getBGMTrack(1));}
       }
       else{floatMsgs.push({txt:'Clear all 100 floors to unlock.',x:W/2,y:H/2,life:3,color:'rgba(255,220,50,0.9)'});}
     }
     // 四隅はすべて _inRegion(矩形) に統一（描画が参照する矩形と同一のものを判定に使う）
-    if(_inRegion(settingsHit)){window.__lastHit='settings';openSettings();}   // 判定は拡張矩形、描画は settingsBtn
-    if(!testMode&&_inRegion(mpHit)){window.__lastHit='mypage';document.getElementById('mypageOverlay').style.display='block';document.getElementById('c').style.display='none';}
+    if(_inRegion(settingsHit)){openSettings();}   // 判定は拡張矩形、描画は settingsBtn
+    if(!testMode&&_inRegion(mpHit)){document.getElementById('mypageOverlay').style.display='block';document.getElementById('c').style.display='none';}
     // testMode: LOGIN button click (H/2+134 area)
     if(testMode&&!_currentUser&&cx>=W/2-200&&cx<=W/2+200&&cy>=H/2+122&&cy<=H/2+146){openLoginModal();}
     // ENTER YOUR NAME click (non-testMode, when no name set)
@@ -7283,7 +7106,7 @@ function _canvasActivate(clientX,clientY){
     }
     // Hall of Legends click (bottom-right area, disabled in testMode)
     // 旧: W-200/W-20/H-24/H-4 のハードコード。holBtn に統一して描画と判定を同じ矩形にした。
-    if(!testMode&&_inRegion(holBtn)){window.__lastHit='hol';if(_worldStatsCache){localStorage.setItem('neverend_world_stats_cache',JSON.stringify(_worldStatsCache));}document.getElementById('holOverlay').style.display='block';document.getElementById('c').style.display='none';}
+    if(!testMode&&_inRegion(holBtn)){if(_worldStatsCache){localStorage.setItem('neverend_world_stats_cache',JSON.stringify(_worldStatsCache));}document.getElementById('holOverlay').style.display='block';document.getElementById('c').style.display='none';}
   } else if(state==='testcomplete'){
     if(cx>=_tcBtn.x&&cx<=_tcBtn.x+_tcBtn.w&&cy>=_tcBtn.y&&cy<=_tcBtn.y+_tcBtn.h){state='title';}
   } else if(state==='mypage'){

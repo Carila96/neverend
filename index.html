@@ -1,4 +1,4 @@
-<!-- redeploy 2026-08-01 -->
+<!-- redeploy 2026-08-05 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1474,8 +1474,12 @@ if(isTouchDevice){
         const _stOpen=_st?_st.classList.contains('open'):false;
         // canvas が本当に position:fixed / top:4px で効いているかを computed 値で見る。
         const _ccs=c?getComputedStyle(c):null;
-        el.innerHTML='<b>BUILD 0801l</b> <b>PROBE@'+probeXY+' &rarr; '+probe+'</b><br>'+
+        el.innerHTML='<b>BUILD 0801n</b> <b>PROBE@'+probeXY+' &rarr; '+probe+'</b><br>'+
           '<b>xf:'+(window.__xf||'-')+'</b><br>'+
+          'rect '+(function(){try{
+            const R=b=>Math.round(b.x)+'-'+Math.round(b.x+b.w)+'/'+Math.round(b.y)+'-'+Math.round(b.y+b.h);
+            return 'set:'+R(settingsHit)+' mp:'+R(mpHit)+' hol:'+R(holBtn);
+          }catch(_){return '(init)';}})()+'<br>'+
           '<b>cvPos:'+(_ccs?_ccs.position+' top:'+_ccs.top:'-')+
           ' coarse:'+((window.matchMedia&&window.matchMedia('(pointer:coarse)').matches)?'1':'0')+'</b><br>'+
           '<b>vhW:'+(window.__vhW|0)+' settling:'+((_settleRaf||_settleTimer)?'YES':'no')+
@@ -1495,7 +1499,7 @@ if(isTouchDevice){
           ' vv:'+(vv?r(vv.width)+'x'+r(vv.height):'-')+'<br>'+
           'use:'+uw+'x'+uh+' z:'+_zW+'x'+_zH+' vh:'+(getComputedStyle(d).getPropertyValue('--app-vh')||'unset').trim()+
           ' cv:'+(cr?r(cr.left)+','+r(cr.top)+' '+r(cr.width)+'x'+r(cr.height):'-');
-      }catch(e){ el.innerHTML='<b>BUILD 0801g</b> ERR '+(e&&e.message||'err'); }
+      }catch(e){ el.innerHTML='<b>BUILD 0801n</b> ERR '+(e&&e.message||'err'); }
     };
     tick();
     setInterval(tick,200);

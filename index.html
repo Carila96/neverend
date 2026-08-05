@@ -144,6 +144,18 @@ body{
   font-family:'Courier New',monospace;font-size:11px;color:#888;
 }
 #cookieBanner.hidden{display:none!important;}
+/* ▼一時的な実機デバッグ表示（vvOff 補正の効きを数値で確認するため。確認後に撤去する）。
+   タッチ端末のみ。pointer-events:none 固定＝絶対にタップを奪わない。 */
+#dbgSafe{display:none;}
+body.touch #dbgSafe{
+  display:block;position:fixed;left:50%;transform:translateX(-50%);bottom:2px;z-index:9998;
+  pointer-events:none;background:rgba(0,0,0,0.82);color:#0f0;
+  font-family:'Share Tech Mono',monospace;font-size:9px;line-height:1.4;
+  padding:3px 8px;border:1px solid rgba(0,255,0,0.4);border-radius:4px;
+  white-space:pre;text-align:left;max-width:96vw;overflow:hidden;
+}
+#dbgSafe b{color:#ff0;}
+#dbgSafe i{color:#f66;font-style:normal;}
 /* Touch: 横向きだと画面が低くなり、bottom:0 の Accept/Decline が iOS のホームインジケータ帯
    (画面最下端 ~20px。OS がスワイプ用に押さえていてタップが届かない) に入ってしまう。
    縦向きは本文が折り返してバナーが高くなり、ボタンが帯の上に出るため押せていた。
@@ -366,6 +378,7 @@ body.touch.portrait #rotateOverlay{display:flex;}
   <button type="button" id="a2hsClose">CLOSE</button>
 </div>
 <div id="a2hsDim"></div>
+<div id="dbgSafe"></div>
 <div id="rotateOverlay">↻<br>デバイスを横にしてください<br>Please rotate your device</div>
 <div id="xShareBtn" onclick="shareDeathX()">𝕏 Share</div>
 <div id="mypageOverlay" style="display:none;position:fixed;inset:0;z-index:1000;background:#000;">
@@ -1346,6 +1359,34 @@ if(isTouchDevice){
   // visualViewport の resize は回転完了後の確定値で飛ぶため、こちらを主軸にする。
   if(window.visualViewport)window.visualViewport.addEventListener('resize',_reflowSoon);
   window.addEventListener('resize',updateOrientation);   // 連続リサイズ用は軽い単発で十分
+  // ▼一時的な実機デバッグ表示(BUILD 0801q)。vvOff 補正が実際にタップ座標をどう動かしたかを見る。
+  //   今回はロジックを一切変えず、_canvasRect / _canvasActivate の入出力を並べるだけ。
+  //   読み方:
+  //     adj      … _vvOff() が返した補正量。0,0 なら補正が効いていない／不要と判断されている
+  //     rawRect  … getBoundingClientRect の生値、fixRect … 補正後の基準（adj のぶん動くはず）
+  //     tap      … 指の生の clientX,clientY、cxcy … 最終的にヒット判定へ渡る canvas 内部座標
+  //     hit      … 実際に当たったボタン。none ならどの矩形にも入っていない
+  //   cxcy が下の矩形一覧のどれに入る／外れるかを直接比較できる。
+  (function _initTapDebug(){
+    const el=document.getElementById('dbgSafe');
+    if(!el)return;
+    const R=b=>Math.round(b.x)+'-'+Math.round(b.x+b.w)+'/'+Math.round(b.y)+'-'+Math.round(b.y+b.h);
+    const tick=()=>{
+      try{
+        const d=window.__dbg||{},vv=window.visualViewport;
+        const sa=(window.navigator.standalone===true?'nav':'')+
+                 ((window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)?'+dm':'')||'browser';
+        let rects='(init)';
+        try{ rects='set '+R(settingsHit)+'  mp '+R(mpHit)+'\nhol '+R(holBtn)+'  start '+R(_titleNormalBtn); }catch(_){}
+        el.innerHTML=
+          '<b>BUILD 0801q</b>  sa:'+sa+'  vvOff:'+(vv?Math.round(vv.offsetLeft)+','+Math.round(vv.offsetTop):'-')+'\n'+
+          '<b>adj:</b>'+(d.adj||'-')+'   raw '+(d.rawRect||'-')+'  fix '+(d.fixRect||'-')+'\n'+
+          '<b>tap:</b>'+(d.tap||'-')+'  <b>cxcy:</b>'+(d.cxcy||'-')+'  <i>hit:'+(d.hit||'-')+'</i>  n:'+(d.n|0)+'\n'+
+          rects;
+      }catch(e){ el.textContent='BUILD 0801q ERR '+(e&&e.message||'err'); }
+    };
+    tick(); setInterval(tick,200);
+  })();
   // Add-to-home-screen hint: iOS Safari can't go fullscreen in-browser; guide users to A2HS.
   const _standalone = window.navigator.standalone===true || window.matchMedia('(display-mode: standalone)').matches;
   // PWA起動時のみ body.standalone を付与（PWA固有のCSSが必要になったとき用のフック）。
@@ -7073,31 +7114,40 @@ function _vvOff(){
 function _canvasRect(){
   const r=canvas.getBoundingClientRect();
   const [ox,oy]=_vvOff();
+  // ▼一時計測(0801q): 補正が実際に何 px 動かしたかを記録する。ロジックは変えない。
+  window.__dbg=window.__dbg||{};
+  window.__dbg.rawRect=Math.round(r.left)+','+Math.round(r.top)+' '+Math.round(r.width)+'x'+Math.round(r.height);
+  window.__dbg.adj=Math.round(ox)+','+Math.round(oy);
+  window.__dbg.fixRect=Math.round(r.left+ox)+','+Math.round(r.top+oy);
   return {left:r.left+ox, top:r.top+oy, width:r.width, height:r.height};
 }
 function _canvasActivate(clientX,clientY){
   const rect=_canvasRect();
   const scaleX=W/rect.width,scaleY=H/rect.height;
   const cx=(clientX-rect.left)*scaleX,cy=(clientY-rect.top)*scaleY;
-  // ▼一時デバッグ: 実際に使った基準と変換結果
+  // ▼一時計測(0801q): 生の client 座標 → 補正後の基準 → canvas 内部座標、の全段を残す。
+  {const d=window.__dbg=window.__dbg||{};
+   d.tap=Math.round(clientX)+','+Math.round(clientY);
+   d.cxcy=Math.round(cx)+','+Math.round(cy);
+   d.hit='none'; d.n=(d.n|0)+1;}
   if(state==='title'){
     // モード選択クリック
     function _inRegion(b){return cx>=b.x&&cx<=b.x+b.w&&cy>=b.y&&cy<=b.y+b.h;}
     // Touch: tapping a mode both selects AND starts (no keyboard Space on mobile). PC keeps select-only.
     const _cbUp=(()=>{const c=document.getElementById('cookieBanner');return !!(c&&c.style.display!=='none'&&!c.classList.contains('hidden'));})();
     const _tapStart=isTouchDevice&&!_cbUp; // don't start while the cookie banner is up
-    if(_inRegion(_titleNormalBtn)){_titleModeSel=0;gameMode='normal';
+    if(_inRegion(_titleNormalBtn)){_titleModeSel=0;gameMode='normal';window.__dbg.hit='start';
       if(_tapStart){_retryStreak=0;resetRun();state='play';startBGM(getBGMTrack(1));}
     }
-    else if(_inRegion(_titleDeathBtn)){
+    else if(_inRegion(_titleDeathBtn)){window.__dbg.hit='death';
       if(deathModeUnlocked){_titleModeSel=1;gameMode='death';
         if(_tapStart){_retryStreak=0;resetRun();state='play';startBGM(getBGMTrack(1));}
       }
       else{floatMsgs.push({txt:'Clear all 100 floors to unlock.',x:W/2,y:H/2,life:3,color:'rgba(255,220,50,0.9)'});}
     }
     // 四隅はすべて _inRegion(矩形) に統一（描画が参照する矩形と同一のものを判定に使う）
-    if(_inRegion(settingsHit)){openSettings();}   // 判定は拡張矩形、描画は settingsBtn
-    if(!testMode&&_inRegion(mpHit)){document.getElementById('mypageOverlay').style.display='block';document.getElementById('c').style.display='none';}
+    if(_inRegion(settingsHit)){window.__dbg.hit='settings';openSettings();}   // 判定は拡張矩形、描画は settingsBtn
+    if(!testMode&&_inRegion(mpHit)){window.__dbg.hit='mypage';document.getElementById('mypageOverlay').style.display='block';document.getElementById('c').style.display='none';}
     // testMode: LOGIN button click (H/2+134 area)
     if(testMode&&!_currentUser&&cx>=W/2-200&&cx<=W/2+200&&cy>=H/2+122&&cy<=H/2+146){openLoginModal();}
     // ENTER YOUR NAME click (non-testMode, when no name set)
@@ -7106,7 +7156,7 @@ function _canvasActivate(clientX,clientY){
     }
     // Hall of Legends click (bottom-right area, disabled in testMode)
     // 旧: W-200/W-20/H-24/H-4 のハードコード。holBtn に統一して描画と判定を同じ矩形にした。
-    if(!testMode&&_inRegion(holBtn)){if(_worldStatsCache){localStorage.setItem('neverend_world_stats_cache',JSON.stringify(_worldStatsCache));}document.getElementById('holOverlay').style.display='block';document.getElementById('c').style.display='none';}
+    if(!testMode&&_inRegion(holBtn)){window.__dbg.hit='hol';if(_worldStatsCache){localStorage.setItem('neverend_world_stats_cache',JSON.stringify(_worldStatsCache));}document.getElementById('holOverlay').style.display='block';document.getElementById('c').style.display='none';}
   } else if(state==='testcomplete'){
     if(cx>=_tcBtn.x&&cx<=_tcBtn.x+_tcBtn.w&&cy>=_tcBtn.y&&cy<=_tcBtn.y+_tcBtn.h){state='title';}
   } else if(state==='mypage'){

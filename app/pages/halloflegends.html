@@ -338,5 +338,54 @@ function switchRankTab(mode){
   }
 })();
 </script>
+<script>
+/* ── モバイル: HTML要素のボタンを touchend から直接叩く ──────────────────────
+   このページは index.html から iframe で開かれる。iframe は別ドキュメントなので
+   親側の touchend 委譲は届かず、ここのボタン（BACK / CLOSE / 各操作）は
+   合成 click だけが頼りになっていた。モバイルの合成 click はレイアウトが動いている
+   最中などに落ちるため、「戻れない」「閉じられない」が場面によって発生する。
+   親と同じ規則をこのドキュメントにも入れて、1タップで必ず発火させる。
+   ・既存の onclick / click リスナーを element.click() でそのまま再利用する
+   ・preventDefault で後続の合成 click を止め、同一要素への trusted click を
+     短時間だけ捨てて二重発火を防ぐ
+   ・タッチ端末(coarse pointer)のみ登録。PC・通常ブラウザには一切影響しない
+   ・input/textarea/select、長押し、スクロール/スワイプは対象外
+   ・canvas は座標付き click を前提にした独自処理があるので除外
+     （element.click() は座標 0,0 の click になり壊れるため）        */
+(function(){
+  var coarse=!!(window.matchMedia&&window.matchMedia('(pointer:coarse)').matches);
+  if(!(('ontouchstart' in window||navigator.maxTouchPoints>0)&&coarse))return;
+  var SEL='button,[onclick],a[href],[role="button"]';
+  var sx=0,sy=0,st=0,lastEl=null,lastAt=0;
+  function pick(node){
+    for(var el=node,i=0; el&&el!==document.body&&i<6; el=el.parentElement,i++){
+      if(el.closest&&el.closest('canvas'))return null;
+      if(el.matches&&el.matches(SEL))return el;
+      try{ if(getComputedStyle(el).cursor==='pointer')return el; }catch(_){}
+    }
+    return null;
+  }
+  document.addEventListener('touchstart',function(e){
+    var t=e.changedTouches&&e.changedTouches[0];if(!t)return;
+    sx=t.clientX;sy=t.clientY;st=Date.now();
+  },{passive:true});
+  document.addEventListener('touchend',function(e){
+    var t=e.changedTouches&&e.changedTouches[0];if(!t)return;
+    if(e.target&&e.target.closest&&e.target.closest('input,textarea,select'))return;
+    if(Date.now()-st>700)return;
+    if(Math.abs(t.clientX-sx)>16||Math.abs(t.clientY-sy)>16)return;
+    var el=pick(e.target); if(!el||el.disabled)return;
+    e.preventDefault();
+    lastEl=el;lastAt=Date.now();
+    try{el.click();}catch(_){}
+  },{passive:false});
+  document.addEventListener('click',function(e){
+    if(!e.isTrusted||!lastEl)return;
+    if(Date.now()-lastAt<700&&(e.target===lastEl||(lastEl.contains&&lastEl.contains(e.target)))){
+      e.preventDefault();e.stopPropagation();
+    }
+  },true);
+})();
+</script>
 </body>
 </html>

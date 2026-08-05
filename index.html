@@ -1009,18 +1009,51 @@ if(isTouchDevice){
   // Pause (toggle) and Title (pause-menu back-to-title) are discrete single taps.
   bindBtn('btnPause','Escape'); // PC pause is Escape/f/F -> state='pause' (stops BGM); tap toggles pause/resume
   bindBtn('btnTitle','t');      // pause-menu "back to title" (PC uses the T key)
-  // ★ モーダルの閉じるボタンは HTML の onclick で動いている＝合成 click 頼み。
-  //   canvas のボタンで既に判明しているとおり、モバイルの合成 click はレイアウトの動きなどで
-  //   落ちることがあり、そのぶん「閉じるボタンが中々効かない」になる。canvas と同じく
-  //   touchend から直接叩く経路を足す。element.click() を呼ぶので既存の onclick をそのまま使う。
-  //   委譲なので要素の生成順に依存せず、対象は下の 2 クラスだけ。preventDefault で
-  //   後続の合成 click を止めるため二重発火しない。
-  document.addEventListener('touchend',e=>{
-    const t=e.target&&e.target.closest&&e.target.closest('.s-close,.lm-close');
-    if(!t)return;
-    e.preventDefault();
-    try{t.click();}catch(_){}
-  },{passive:false});
+  // ★★★ HTML要素のボタンは「例外なく」touchend から直接叩く。
+  //   モバイルの合成 click はレイアウトが動いている最中などに落ちる。onclick / click リスナー
+  //   だけに頼ったボタンは、そのぶん場面によって効いたり効かなかったりする＝症状が
+  //   コロコロ変わる原因。前版は .s-close/.lm-close の 2 つだけを個別に救っていたが、
+  //   同じ脆さが Cookie の Accept/Decline、ログイン系、A2HS の CLOSE、共有ボタン、
+  //   管理パネルなど全ての onclick ボタンに残っていた。ここで一括して塞ぐ。
+  //   ・既存の onclick / click リスナーを element.click() でそのまま再利用（処理を二重に持たない）
+  //   ・preventDefault で後続の合成 click を止め、さらに同一要素への trusted click を
+  //     短時間だけ捨てて二重発火を防ぐ
+  //   ・canvas と #touchControls / #btnPause / #btnTitle は各自の専用経路があるので除外
+  //     （canvas に element.click() を撃つと座標 0,0 の click になり壊れる）
+  //   ・input/textarea/select、長押し、スクロール/スワイプは対象外
+  {
+    const TAP_SEL='button,[onclick],a[href],[role="button"]';
+    const TAP_SKIP='#touchControls,#btnPause,#btnTitle,canvas';
+    let _tsx=0,_tsy=0,_tst=0,_tapEl=null,_tapAt=0;
+    const _pickTap=node=>{
+      for(let el=node,i=0; el&&el!==document.body&&i<6; el=el.parentElement,i++){
+        if(el.closest&&el.closest(TAP_SKIP))return null;
+        if(el.matches&&el.matches(TAP_SEL))return el;
+        try{ if(getComputedStyle(el).cursor==='pointer')return el; }catch(_){}
+      }
+      return null;
+    };
+    document.addEventListener('touchstart',e=>{
+      const t=e.changedTouches&&e.changedTouches[0];if(!t)return;
+      _tsx=t.clientX;_tsy=t.clientY;_tst=Date.now();
+    },{passive:true});
+    document.addEventListener('touchend',e=>{
+      const t=e.changedTouches&&e.changedTouches[0];if(!t)return;
+      if(e.target&&e.target.closest&&e.target.closest('input,textarea,select'))return;
+      if(Date.now()-_tst>700)return;                                     // 長押しは無視
+      if(Math.abs(t.clientX-_tsx)>16||Math.abs(t.clientY-_tsy)>16)return; // スクロール/スワイプは無視
+      const el=_pickTap(e.target); if(!el||el.disabled)return;
+      e.preventDefault();
+      _tapEl=el;_tapAt=Date.now();
+      try{el.click();}catch(_){}
+    },{passive:false});
+    document.addEventListener('click',e=>{
+      if(!e.isTrusted||!_tapEl)return;
+      if(Date.now()-_tapAt<700&&(e.target===_tapEl||(_tapEl.contains&&_tapEl.contains(e.target)))){
+        e.preventDefault();e.stopPropagation();
+      }
+    },true);
+  }
   // D-pad + jump: hit-test every active touch point each event so sliding a finger from one button to
   // another switches input instantly (old code only reacted to touchstart, so the first button stuck).
   // Multi-touch: e.touches is fully scanned, so hold a direction + jump with a second finger works.

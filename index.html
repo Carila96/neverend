@@ -984,7 +984,9 @@ if(isTouchDevice){
     const TAP_SEL='button,[onclick],a[href],[role="button"]';
     const TAP_SKIP='#touchControls,#btnPause,#btnTitle,canvas';
     let _tsx=0,_tsy=0,_tst=0,_tapEl=null,_tapAt=0;
-    const _pickTap=node=>{
+    // canvas 側の document ハンドラからも「これは HTML ボタンか」を問い合わせるので公開する
+    // （このブロックはただの {} なので、外からは直接参照できない）。
+    const _pickTap=window.__pickTap=node=>{
       for(let el=node,i=0; el&&el!==document.body&&i<6; el=el.parentElement,i++){
         if(el.closest&&el.closest(TAP_SKIP))return null;
         if(el.matches&&el.matches(TAP_SEL))return el;
@@ -1243,17 +1245,30 @@ if(isTouchDevice){
   //   → 直近の touchstart の位置と時刻だけを控える。毎回上書きするので居座る状態が存在せず、
   //     イベントを何回取りこぼしても次のタップは必ず素通りする。
   //   長押し / スワイプの除外だけは残す（誤爆防止）。identifier もフラグも使わない。
+  // ★★★ 受け口を canvas 要素から document へ移す。
+  //   実機の決定打: ボタンの「見た目の位置」をタップしても tap/cx/cy の数字が一切動かず、
+  //   少し下をタップすると動いて効く。数字が動かない＝そのタップの target が canvas では
+  //   なかった＝canvas 要素の当たり判定の箱が、実際に絵が出ている位置より下にある。
+  //   （standalone で getBoundingClientRect().top が CSS の top:4px と食い違い 41/63 を返す、
+  //     という以前の観測とも一致する。箱だけが下にあり、絵は上に描かれている。）
+  //   要素にリスナーを張っている限り、見た目を押したタップはハンドラに届かないので、
+  //   中の変換式をいくら直しても呼ばれない。これが一連の補正が全て空振りした理由。
+  //   → document で受け、canvas の「見えている矩形」に対して自前で内外判定する。
+  //     これで箱がどこにあろうとタップは必ず届く。
   let _cTapX=0,_cTapY=0,_cTapT=0;
-  canvas.addEventListener('touchstart',e=>{
+  document.addEventListener('touchstart',e=>{
     const t=e.changedTouches&&e.changedTouches[0];if(!t)return;
     _cTapX=t.clientX;_cTapY=t.clientY;_cTapT=Date.now(); // 常に上書き＝詰まらない
   },{passive:true});
-  canvas.addEventListener('touchend',e=>{
+  document.addEventListener('touchend',e=>{
     const t=e.changedTouches&&e.changedTouches[0];if(!t)return;
     if(_ctrlStates.has(state))return; // ゲーム中はコントローラー側の担当
     if(_blocked())return;           // Cookie バナー等が出ている間は触らせない
     if(Date.now()-_cTapT>700)return;                            // 長押しは無視
     if(Math.abs(t.clientX-_cTapX)>24||Math.abs(t.clientY-_cTapY)>24)return; // スワイプは無視
+    if(window.__pickTap&&window.__pickTap(e.target))return; // HTML ボタンは委譲側の担当（二重処理しない）
+    const r=_canvasRect();          // 見えている矩形
+    if(t.clientX<r.left||t.clientX>r.left+r.width||t.clientY<r.top||t.clientY>r.top+r.height)return;
     e.preventDefault();                 // 後続の合成 click を止めて二重発火を防ぐ
     _canvasActivate(t.clientX,t.clientY);
   },{passive:false});
@@ -1415,14 +1430,14 @@ if(isTouchDevice){
         try{ pr='set:'+probeBtn(settingsHit)+' mp:'+probeBtn(mpHit)+' hol:'+probeBtn(holBtn)+' st:'+probeBtn(_titleNormalBtn); }catch(_){}
         const NLc='\n';
         el.innerHTML=
-          '<b>BUILD 0801t</b> sa:'+sa+' t:'+((Date.now()-t0)/1000|0)+'s st:'+state+NLc+
+          '<b>BUILD 0801u</b> sa:'+sa+' t:'+((Date.now()-t0)/1000|0)+'s st:'+state+NLc+
           '<i>(a)前面</i> '+pr+NLc+
-          '<i>(b)発火</i> docTS:'+live.docTS+' cvTS:'+live.cvTS+' cvTE:'+live.cvTE+' delTE:'+live.delTE+NLc+
-          '<i>(c)ガード</i> '+guards()+NLc+
+          '<i>box</i> '+(d.boxTop!=null?d.boxTop:'-')+' <i>see</i> '+(d.seeTop!=null?d.seeTop:'-')+' <i>gap</i> '+(d.gap||'-')+NLc+
+          '<i>guard</i> '+guards()+'  docTS:'+live.docTS+' cvTE:'+live.cvTE+NLc+
           'tap '+(d.tap||'-')+' > '+(d.cxcy||'-')+' hit:'+(d.hit||'-')+' n:'+(d.n|0)+NLc+
           '<b>FAIL</b> '+lastFail+NLc+
           '<b>OK</b>   '+firstOK;
-      }catch(e){ el.textContent='BUILD 0801t ERR '+(e&&e.message||'err'); }
+      }catch(e){ el.textContent='BUILD 0801u ERR '+(e&&e.message||'err'); }
     };
     tick(); setInterval(tick,200);
   })();
@@ -7152,50 +7167,27 @@ const mpLogoutBtn={x:W-120,y:90,w:104,h:22};
 // 合成 click が落ちることがあるため、touchend からも同じ処理を呼べるよう関数に出した。
 // 座標は clientX/clientY（ビューポート基準）で受け取り、内部で canvas 座標へ変換する。
 // function 宣言なので巻き上げられ、より手前のタッチブロックからも参照できる。
-// ★★★ standalone の座標系ズレを「実測」で求める。
-//   visualViewport.offsetTop は standalone で 0 を返すことが分かったので使えない
-//   （実機 sa:nav なのに vv:0,0、その結果 adj:0,0 で補正が全く効いていなかった）。
-//   理論値に頼らず、両座標系を直接結ぶ物差しを使う:
-//     document.elementFromPoint(x,y) は clientX/clientY と同じ座標系で解釈される。
-//     つまり「elementFromPoint で canvas が現れ始める y」＝ タッチ座標系での canvas 上端。
-//     これを getBoundingClientRect().top と比べれば、両者の実オフセットがそのまま出る。
-//   canvas 中央の縦線を上から二分探索して境界を求める。ブラウザではこの差が 0 になるので
-//   補正量も 0 ＝ 挙動は 1px も変わらない。standalone でだけ非ゼロになる。
-//   探索はレイアウトが変わったときだけ（rect の署名が変わったとき）行い、結果を再利用する。
-let _calDx=0,_calDy=0,_calKey='',_calOK=false;
-function _probeCanvasTop(){
-  const r=canvas.getBoundingClientRect();
-  if(!(r.width>1&&r.height>1))return null;
-  const px=Math.round(r.left+r.width/2);
-  const isCv=y=>{const el=document.elementFromPoint(px,y);return !!el&&el.tagName==='CANVAS';};
-  const lim=Math.max(window.innerHeight||0,(document.documentElement&&document.documentElement.clientHeight)||0,600);
-  let lo=-1,hi=-1;
-  for(let y=0;y<=lim;y+=8){ if(isCv(y)){hi=y;break;} lo=y; }
-  if(hi<0)return null;                 // canvas が見つからない（何かが覆っている）→ 較正しない
-  let a=Math.max(0,lo),b=hi;
-  while(b-a>1){const m=(a+b)>>1; if(isCv(m))b=m; else a=m;}
-  return b;                            // タッチ座標系における canvas 上端
-}
-function _calibrate(r){
-  const key=Math.round(r.left)+','+Math.round(r.top)+','+Math.round(r.width)+','+Math.round(r.height);
-  if(key===_calKey)return;             // レイアウトが変わっていなければ再探索しない
-  const top=_probeCanvasTop();
-  _calKey=key;
-  if(top===null){_calOK=false;return;} // 覆われている間は前回の較正値を保持する
-  _calDy=top-r.top;
-  _calDx=0;                            // 水平は left:0;right:0;margin:0 auto で中央固定＝ズレない
-  _calOK=true;
-}
+// ★★★ canvas の「見えている矩形」を返す。レイアウトの箱ではない。
+//   standalone では getBoundingClientRect().top が CSS の top:4px と食い違う値(41/63)を返す。
+//   実機の決定打から、絵が出ているのは CSS どおりの位置で、下にずれているのは当たり判定の箱
+//   の方だと分かった（見た目を押すとタップがハンドラに届かず、下を押すと届く）。
+//   よって position:fixed のときは top を CSS の値で置き換える。幅・高さ・left は実測が
+//   正しい（横方向のズレは報告されていない）。
+//   ブラウザ・PC では canvas が static なのでこの分岐に入らず、従来と完全に同一。
 function _canvasRect(){
   const r=canvas.getBoundingClientRect();
-  try{_calibrate(r);}catch(_){}
-  const ox=_calDx,oy=_calDy;
-  // ▼一時計測(0801r): 補正が実際に何 px 動かしたかを記録する。
+  let cs=null; try{cs=getComputedStyle(canvas);}catch(_){}
+  let top=r.top, src='rect';
+  if(cs&&cs.position==='fixed'){
+    const t=parseFloat(cs.top);
+    if(isFinite(t)){ top=t; src='css'; }
+  }
+  // ▼一時計測: 箱と見た目のズレ量。これが standalone で非ゼロになるはず。
   window.__dbg=window.__dbg||{};
-  window.__dbg.rawRect=Math.round(r.left)+','+Math.round(r.top)+' '+Math.round(r.width)+'x'+Math.round(r.height);
-  window.__dbg.adj=Math.round(ox)+','+Math.round(oy)+(_calOK?'':'?');
-  window.__dbg.fixRect=Math.round(r.left+ox)+','+Math.round(r.top+oy);
-  return {left:r.left+ox, top:r.top+oy, width:r.width, height:r.height};
+  window.__dbg.boxTop=Math.round(r.top);
+  window.__dbg.seeTop=Math.round(top);
+  window.__dbg.gap=Math.round(r.top-top)+'('+src+')';
+  return {left:r.left, top:top, width:r.width, height:r.height};
 }
 function _canvasActivate(clientX,clientY){
   const rect=_canvasRect();

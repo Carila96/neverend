@@ -1359,62 +1359,70 @@ if(isTouchDevice){
   // visualViewport の resize は回転完了後の確定値で飛ぶため、こちらを主軸にする。
   if(window.visualViewport)window.visualViewport.addEventListener('resize',_reflowSoon);
   window.addEventListener('resize',updateOrientation);   // 連続リサイズ用は軽い単発で十分
-  // ▼一時的な実機デバッグ表示(BUILD 0801s)。
-  //   狙いは「ボタンが一斉に効き始める瞬間に何が変わるか」を捉えること。
-  //   これまでの補正が全て空振りだったのは、測っていた対象が間違っていたため:
-  //   elementFromPoint も getBoundingClientRect も同じ layout 空間を返すので、
-  //   両者を比べても常に一致（adj:0,0）し、指が触れている「合成された位置」との
-  //   ズレは原理的に検出できない。しかもポーズ(e.target)や iframe の戻る(onclick)は
-  //   座標計算を一切しないのに同じく効かない＝原因は座標変換ではなく、
-  //   ブラウザ自身のヒットテスト位置と表示位置の食い違い。
-  //   そこで、確定に関わりうる値を全て並べ、変化した瞬間に時刻を刻む。
-  //   chg: が「最後に何かが変わってから何秒経ったか」＝収束の瞬間。
-  (function _initConvergeDebug(){
+  // ▼一時的な実機デバッグ(BUILD 0801t)。今回は座標仮説を捨てて (a)前面を塞ぐ要素 /
+  //   (b)リスナー未登録 / (c)状態ガード のどれが全体を止めているかを切り分ける。
+  //   決め手は「効かなかった最後のタップ」と「初めて効いたタップ」の条件を並べて残すこと。
+  //   両者の差分がそのまま原因になる。固定的な座標ズレなら同じ場所は永遠に外れるはずで、
+  //   途中から効き始める以上、原因は時間で変わる何か＝上の3つのどれか。
+  (function _initCauseDebug(){
     const el=document.getElementById('dbgSafe');
     if(!el)return;
-    const R=b=>Math.round(b.x)+'-'+Math.round(b.x+b.w)+'/'+Math.round(b.y)+'-'+Math.round(b.y+b.h);
-    const t0=Date.now();
-    let lastSnap='',lastChangeAt=t0,lastChangeWhat='(init)';
-    const evLog=[];
-    const note=n=>{evLog.push(n+'@'+((Date.now()-t0)/1000).toFixed(1));if(evLog.length>6)evLog.shift();};
-    ['resize','orientationchange','pageshow','scroll','focus'].forEach(n=>window.addEventListener(n,()=>note(n),{passive:true}));
-    if(window.visualViewport){['resize','scroll'].forEach(n=>window.visualViewport.addEventListener(n,()=>note('vv'+n),{passive:true}));}
-    const snap=()=>{
-      const r=canvas.getBoundingClientRect(),d=document.documentElement,vv=window.visualViewport;
-      let cs='';try{cs=getComputedStyle(canvas).position+':'+getComputedStyle(canvas).top;}catch(_){}
-      return [Math.round(r.left),Math.round(r.top),Math.round(r.width),Math.round(r.height),
-              window.innerWidth,window.innerHeight,d?d.clientWidth:0,d?d.clientHeight:0,
-              vv?Math.round(vv.width):0,vv?Math.round(vv.height):0,
-              vv?Math.round(vv.offsetLeft):0,vv?Math.round(vv.offsetTop):0,
-              Math.round(window.scrollX||0),Math.round(window.scrollY||0),cs].join('|');
+    const t0=Date.now(), el2s=e=>!e?'null':(e.id?'#'+e.id:e.tagName.toLowerCase());
+    // (b) リスナーが生きているかを、実際に発火した回数で見る
+    const live={docTS:0,cvTS:0,cvTE:0,delTE:0};
+    document.addEventListener('touchstart',()=>live.docTS++,{passive:true,capture:true});
+    canvas.addEventListener('touchstart',()=>live.cvTS++,{passive:true});
+    canvas.addEventListener('touchend',()=>live.cvTE++,{passive:true});
+    document.addEventListener('touchend',()=>live.delTE++,{passive:true,capture:true});
+    window.__live=live;
+    // (a) 各ボタンの画面上位置に今なにが乗っているか（canvas 以外なら塞いでいる犯人）
+    const probeBtn=b=>{
+      try{
+        const r=canvas.getBoundingClientRect();
+        if(!(r.width>1))return '-';
+        const x=r.left+(b.x+b.w/2)*(r.width/W), y=r.top+(b.y+b.h/2)*(r.height/H);
+        return el2s(document.elementFromPoint(x,y));
+      }catch(_){return 'err';}
+    };
+    // (c) 今どのガードが立っているか
+    const guards=()=>{
+      const g=[];
+      try{ if(_cookieUp())g.push('cookie'); }catch(_){ }
+      try{ if(document.body.classList.contains('portrait'))g.push('portrait'); }catch(_){ }
+      try{ if(_blocked())g.push('BLOCKED'); }catch(_){ }
+      try{ if(typeof testMode!=='undefined'&&testMode)g.push('testMode'); }catch(_){ }
+      return g.join(',')||'none';
+    };
+    // 直近の失敗タップと最初の成功タップを保存する
+    let lastFail='-',firstOK='-',prevN=0;
+    const snapTap=()=>{
+      const d=window.__dbg||{};
+      return 't'+((Date.now()-t0)/1000).toFixed(1)+' '+(d.tap||'-')+'>'+(d.cxcy||'-')+
+             ' g['+guards()+'] mp:'+probeBtn(mpHit)+' L'+live.docTS+'/'+live.cvTE+'/'+live.delTE;
     };
     const tick=()=>{
       try{
-        const s=snap();
-        if(s!==lastSnap){
-          if(lastSnap){ // 何が変わったかを桁ごとに比べる
-            const a=lastSnap.split('|'),b=s.split('|');
-            const names=['rL','rT','rW','rH','iW','iH','cW','cH','vvW','vvH','vvOL','vvOT','sX','sY','pos'];
-            const diff=[];for(let i=0;i<b.length;i++)if(a[i]!==b[i])diff.push(names[i]+':'+a[i]+'>'+b[i]);
-            lastChangeWhat=diff.join(' ')||'?';
-          }
-          lastSnap=s;lastChangeAt=Date.now();
+        const d=window.__dbg||{};
+        if((d.n|0)!==prevN){                       // 新しいタップがあった
+          prevN=d.n|0;
+          const s=snapTap();
+          if(d.hit&&d.hit!=='none'){ if(firstOK==='-')firstOK=s; }
+          else lastFail=s;
         }
-        const v=s.split('|'),d=window.__dbg||{},vv=window.visualViewport;
         const sa=(window.navigator.standalone===true?'nav':'')+
                  ((window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)?'+dm':'')||'browser';
-        let rects='(init)';
-        try{ rects='mp '+R(mpHit)+'  hol '+R(holBtn); }catch(_){}
-        const NL='\n';
+        let pr='-';
+        try{ pr='set:'+probeBtn(settingsHit)+' mp:'+probeBtn(mpHit)+' hol:'+probeBtn(holBtn)+' st:'+probeBtn(_titleNormalBtn); }catch(_){}
+        const NLc='\n';
         el.innerHTML=
-          '<b>BUILD 0801s</b> sa:'+sa+' t:'+((Date.now()-t0)/1000|0)+'s  <i>chg:'+((Date.now()-lastChangeAt)/1000).toFixed(1)+'s前</i>'+NL+
-          'was '+lastChangeWhat.slice(0,72)+NL+
-          'rect '+v[0]+','+v[1]+' '+v[2]+'x'+v[3]+'  css '+v[14]+NL+
-          'in '+v[4]+'x'+v[5]+'  cl '+v[6]+'x'+v[7]+'  vv '+v[8]+'x'+v[9]+' off '+v[10]+','+v[11]+' sc '+v[12]+','+v[13]+NL+
-          '<b>tap</b> '+(d.tap||'-')+' <b>cxcy</b> '+(d.cxcy||'-')+' <i>hit:'+(d.hit||'-')+'</i> n:'+(d.n|0)+' adj:'+(d.adj||'-')+NL+
-          rects+NL+
-          'ev '+evLog.join(' ');
-      }catch(e){ el.textContent='BUILD 0801s ERR '+(e&&e.message||'err'); }
+          '<b>BUILD 0801t</b> sa:'+sa+' t:'+((Date.now()-t0)/1000|0)+'s st:'+state+NLc+
+          '<i>(a)前面</i> '+pr+NLc+
+          '<i>(b)発火</i> docTS:'+live.docTS+' cvTS:'+live.cvTS+' cvTE:'+live.cvTE+' delTE:'+live.delTE+NLc+
+          '<i>(c)ガード</i> '+guards()+NLc+
+          'tap '+(d.tap||'-')+' > '+(d.cxcy||'-')+' hit:'+(d.hit||'-')+' n:'+(d.n|0)+NLc+
+          '<b>FAIL</b> '+lastFail+NLc+
+          '<b>OK</b>   '+firstOK;
+      }catch(e){ el.textContent='BUILD 0801t ERR '+(e&&e.message||'err'); }
     };
     tick(); setInterval(tick,200);
   })();

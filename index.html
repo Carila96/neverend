@@ -1378,70 +1378,54 @@ if(isTouchDevice){
   // visualViewport の resize は回転完了後の確定値で飛ぶため、こちらを主軸にする。
   if(window.visualViewport)window.visualViewport.addEventListener('resize',_reflowSoon);
   window.addEventListener('resize',updateOrientation);   // 連続リサイズ用は軽い単発で十分
-  // ▼一時的な実機デバッグ(BUILD 0801t)。今回は座標仮説を捨てて (a)前面を塞ぐ要素 /
-  //   (b)リスナー未登録 / (c)状態ガード のどれが全体を止めているかを切り分ける。
-  //   決め手は「効かなかった最後のタップ」と「初めて効いたタップ」の条件を並べて残すこと。
-  //   両者の差分がそのまま原因になる。固定的な座標ズレなら同じ場所は永遠に外れるはずで、
-  //   途中から効き始める以上、原因は時間で変わる何か＝上の3つのどれか。
-  (function _initCauseDebug(){
+  // ▼方向A: 事実採取(BUILD 0801w)。修正はせず、効かない間に何が起きているかだけを記録する。
+  //   これまでの実装が効かない理由を、推測ではなくイベントの実データで確定させる。
+  //   ・全タップ系イベントを capture 段で拾い、種別/対象要素/座標を時系列で残す
+  //     → 効かない間にイベントが来ていないのか、来ているが握り潰されているのかが分かる
+  //   ・初めて効いた瞬間の直前直後で、フォーカス/可視性/アクティブ要素がどう変わるか
+  //     → iOS PWA が最初のジェスチャまで入力を抑制している等の挙動を捉える
+  //   ・同じ場所の連打と別の場所の連打で、効くまでのイベント数がどう違うか
+  (function _initEventLog(){
     const el=document.getElementById('dbgSafe');
     if(!el)return;
-    const t0=Date.now(), el2s=e=>!e?'null':(e.id?'#'+e.id:e.tagName.toLowerCase());
-    // (b) リスナーが生きているかを、実際に発火した回数で見る
-    const live={docTS:0,cvTS:0,cvTE:0,delTE:0};
-    document.addEventListener('touchstart',()=>live.docTS++,{passive:true,capture:true});
-    canvas.addEventListener('touchstart',()=>live.cvTS++,{passive:true});
-    canvas.addEventListener('touchend',()=>live.cvTE++,{passive:true});
-    document.addEventListener('touchend',()=>live.delTE++,{passive:true,capture:true});
-    window.__live=live;
-    // (a) 各ボタンの画面上位置に今なにが乗っているか（canvas 以外なら塞いでいる犯人）
-    const probeBtn=b=>{
-      try{
-        const r=canvas.getBoundingClientRect();
-        if(!(r.width>1))return '-';
-        const x=r.left+(b.x+b.w/2)*(r.width/W), y=r.top+(b.y+b.h/2)*(r.height/H);
-        return el2s(document.elementFromPoint(x,y));
-      }catch(_){return 'err';}
+    const t0=Date.now(), ts=()=>((Date.now()-t0)/1000).toFixed(1);
+    const nm=e=>!e?'-':(e.id?'#'+e.id:(e.tagName||'?').toLowerCase());
+    const log=[], cnt={};
+    let sameRun=0, lastX=-999, lastY=-999, firstOKAt=null, firstOKInfo='-';
+    const push=(k,ev)=>{
+      cnt[k]=(cnt[k]|0)+1;
+      const t=(ev.changedTouches&&ev.changedTouches[0])||ev;
+      const x=Math.round(t.clientX||0), y=Math.round(t.clientY||0);
+      if(k==='s'){
+        const near=Math.abs(x-lastX)<20&&Math.abs(y-lastY)<20;
+        sameRun=near?sameRun+1:1; lastX=x; lastY=y;
+      }
+      log.push(k+nm(ev.target)+'@'+x+','+y);
+      if(log.length>9)log.shift();
     };
-    // (c) 今どのガードが立っているか
-    const guards=()=>{
-      const g=[];
-      try{ if(_cookieUp())g.push('cookie'); }catch(_){ }
-      try{ if(document.body.classList.contains('portrait'))g.push('portrait'); }catch(_){ }
-      try{ if(_blocked())g.push('BLOCKED'); }catch(_){ }
-      try{ if(typeof testMode!=='undefined'&&testMode)g.push('testMode'); }catch(_){ }
-      return g.join(',')||'none';
-    };
-    // 直近の失敗タップと最初の成功タップを保存する
-    let lastFail='-',firstOK='-',prevN=0;
-    const snapTap=()=>{
-      const d=window.__dbg||{};
-      return 't'+((Date.now()-t0)/1000).toFixed(1)+' '+(d.tap||'-')+'>'+(d.cxcy||'-')+
-             ' g['+guards()+'] mp:'+probeBtn(mpHit)+' L'+live.docTS+'/'+live.cvTE+'/'+live.delTE;
-    };
+    const bind=(n,k)=>document.addEventListener(n,e=>push(k,e),{passive:true,capture:true});
+    bind('touchstart','s');bind('touchend','e');bind('touchcancel','x');
+    bind('pointerdown','P');bind('pointerup','U');bind('click','K');bind('mousedown','M');
     const tick=()=>{
       try{
         const d=window.__dbg||{};
-        if((d.n|0)!==prevN){                       // 新しいタップがあった
-          prevN=d.n|0;
-          const s=snapTap();
-          if(d.hit&&d.hit!=='none'){ if(firstOK==='-')firstOK=s; }
-          else lastFail=s;
+        if(firstOKAt===null&&d.hit&&d.hit!=='none'){
+          firstOKAt=ts();
+          firstOKInfo='t'+firstOKAt+' after '+(cnt.s|0)+'taps run'+sameRun;
         }
         const sa=(window.navigator.standalone===true?'nav':'')+
                  ((window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)?'+dm':'')||'browser';
-        let pr='-';
-        try{ pr='set:'+probeBtn(settingsHit)+' mp:'+probeBtn(mpHit)+' hol:'+probeBtn(holBtn)+' st:'+probeBtn(_titleNormalBtn); }catch(_){}
+        let foc='?';try{foc=document.hasFocus()?'1':'0';}catch(_){}
         const NLc='\n';
         el.innerHTML=
-          '<b>BUILD 0801v</b> sa:'+sa+' t:'+((Date.now()-t0)/1000|0)+'s st:'+state+NLc+
-          '<i>(a)前面</i> '+pr+NLc+
-          '<i>geom</i> '+(d.geom||'(未確定)')+NLc+
-          '<i>guard</i> '+guards()+'  docTS:'+live.docTS+' cvTE:'+live.cvTE+NLc+
+          '<b>BUILD 0801w</b> sa:'+sa+' st:'+state+' t:'+ts()+'s'+NLc+
+          'cnt s:'+(cnt.s|0)+' e:'+(cnt.e|0)+' x:'+(cnt.x|0)+' P:'+(cnt.P|0)+' U:'+(cnt.U|0)+' K:'+(cnt.K|0)+' M:'+(cnt.M|0)+NLc+
+          'foc:'+foc+' vis:'+document.visibilityState+' act:'+nm(document.activeElement)+' run:'+sameRun+NLc+
+          'geom '+(d.geom||'(未確定)')+NLc+
           'tap '+(d.tap||'-')+' > '+(d.cxcy||'-')+' hit:'+(d.hit||'-')+' n:'+(d.n|0)+NLc+
-          '<b>FAIL</b> '+lastFail+NLc+
-          '<b>OK</b>   '+firstOK;
-      }catch(e){ el.textContent='BUILD 0801v ERR '+(e&&e.message||'err'); }
+          '<b>1stOK</b> '+firstOKInfo+NLc+
+          log.join(NLc);
+      }catch(e){ el.textContent='BUILD 0801w ERR '+(e&&e.message||'err'); }
     };
     tick(); setInterval(tick,200);
   })();

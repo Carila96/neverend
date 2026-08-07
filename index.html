@@ -127,8 +127,10 @@ body.touch canvas{position:fixed;top:4px;left:0;right:0;margin:0 auto;}
    ═══════════════════════════════════════════════════════════════════════════ */
 #titleScreen{display:none;}
 #titleScreen.show{display:block;position:fixed;top:0;left:0;right:0;bottom:0;z-index:50;pointer-events:none;}
-/* 段階2 で本物のボタンとして触れるようにするフック。段階1では付けない（canvas のタップを奪わない）*/
-#titleScreen.show.live{pointer-events:auto;}
+/* 段階2: .live のときだけ本物のボタンとして触れる。
+   触れるようにするのは #titleStage（＝canvas と同じ 16:9 の枠）だけで、その外側の
+   レターボックス部分は素通しのまま。canvas が受けていた範囲を 1px も超えない。 */
+#titleScreen.show.live #titleStage{pointer-events:auto;}
 #titleStage{
   --tsw:min(100vw,177.78vh);      /* canvas の表示幅と同じ式 */
   --u:calc(var(--tsw)/1280);      /* canvas 内部 1px = CSS 何 px か */
@@ -154,11 +156,21 @@ body.touch #titleStage{--tsw:min(100vw, var(--app-vh,1dvh)*156.4464);position:fi
 #tsTower{position:absolute;left:0;top:0;width:calc(380*var(--u));height:calc(720*var(--u));
   opacity:0.55;mix-blend-mode:screen;pointer-events:none;image-rendering:pixelated;}
 
+/* ── <button> の見た目を消す共通リセット ────────────────────────────
+   .ts-t / .ts-box より前に置くこと。font-size と line-height はそちらが決める。 */
+.ts-btn{background:none;border:0;padding:0;margin:0;color:inherit;
+  font-family:"Courier New",monospace;
+  -webkit-appearance:none;appearance:none;border-radius:0;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+.ts-btn::-moz-focus-inner{border:0;padding:0;}
+
 /* ── 汎用テキスト行（fillText 相当）──────────────────────────────
    --fs: フォントサイズ(canvas px) / --by: ベースラインY(canvas px)
-   既定は textAlign:'center'（左右いっぱいに広げて中央寄せ＝canvas の中央基準と一致）  */
+   既定は textAlign:'center'（左右いっぱいに広げて中央寄せ＝canvas の中央基準と一致）
+   ★ pointer-events:none。文字行は画面幅いっぱいの箱なので、触れるままにすると
+     その下や近くのボタンへ向いた指を横から奪ってしまう。触れるのは .ts-box だけ。 */
 .ts-t{position:absolute;left:0;right:0;text-align:center;white-space:pre;
-  font-family:"Courier New",monospace;line-height:1;
+  font-family:"Courier New",monospace;line-height:1;pointer-events:none;
   font-size:calc(var(--fs)*var(--u));
   top:calc((var(--by) - var(--asc)*var(--fs))*var(--u));}
 /* textAlign:'left' 版: --lx が fillText の x */
@@ -177,8 +189,13 @@ body.touch #titleStage{--tsw:min(100vw, var(--app-vh,1dvh)*156.4464);position:fi
   font-family:"Courier New",monospace;font-size:calc(var(--fs)*var(--u));line-height:1;
   white-space:pre;text-align:center;background:none;border:0;color:inherit;
   -webkit-appearance:none;appearance:none;border-radius:0;cursor:pointer;
+  pointer-events:auto;   /* .ts-t を継いだ場合でも、箱だけは必ず触れる */
   -webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 .ts-box::-moz-focus-inner{border:0;padding:0;}
+/* 押した瞬間の手応え。canvas には無かったものだが、押せたかどうかが分からないと
+   「効いていない」のか「効いたが遅い」のかを実機で切り分けられないため入れる。
+   離した時点で元に戻るので、静止画としての見た目は現行と同一のまま。 */
+#titleScreen.live .ts-box:active{filter:brightness(1.6);}
 
 /* ── SETTINGS（左上）: settingsBtn {16,16,120,28} / base 19 / font 13 ── */
 #tsSettings{--bx:16;--by:35;--bs:19;--bw:120;--bh:28;--fs:13;
@@ -243,9 +260,14 @@ body:not(.touch) #tsStart{text-shadow:0 0 calc(14*var(--u)) rgba(255,255,255,0.8
   0%{opacity:.700}12.5%{opacity:.912}25%{opacity:1}37.5%{opacity:.912}
   50%{opacity:.700}62.5%{opacity:.488}75%{opacity:.400}87.5%{opacity:.488}100%{opacity:.700}}
 
-/* ── 'Playing as: NAME' 12px rgba(160,180,220,0.7) ── */
+/* ── 'Playing as: NAME' 12px rgba(160,180,220,0.7) ──
+   canvas 版では「名前未設定のとき H/2+104〜124 をタップすると名前入力が開く」という
+   描画物の無い判定があり、PC ではその帯が DEATH MODE の行と重なっていた。
+   HTML 版では、実際に名前が出ているこの行そのものを押せるようにする。
+   名前が設定済みのときは触れない（= 従来どおり何も起きない）。 */
 #tsName{--fs:12;--by:524;color:rgba(160,180,220,0.7);}
 body.touch #tsName{--fs:16;--by:556;}
+#titleStage.ts-noname #tsName{pointer-events:auto;cursor:pointer;}
 
 /* ── 下部の固定テキスト ── */
 #tsKeys{--fs:13;--by:684;color:rgba(100,120,160,0.6);}
@@ -313,8 +335,23 @@ body:not(.touch) #tsBestLabel{text-shadow:0 0 calc(8*var(--u)) rgba(255,60,40,0.
 #titleStage.ts-test.ts-named #tsTestBadgeName{display:block;}
 #tsTestLogin{--fs:13;--by:494;font-weight:bold;color:rgba(255,220,80,0.9);display:none;z-index:2;
   animation:tsPulseStart 3.1416s linear infinite;}
-#titleStage.ts-test #tsTestLogin{display:block;}
-#titleStage.ts-authed #tsTestLogin{color:rgba(80,255,150,0.9);font-weight:normal;animation:none;opacity:1;}
+#titleStage.ts-test #tsTestLogin{display:block;pointer-events:auto;cursor:pointer;}
+#titleStage.ts-authed #tsTestLogin{color:rgba(80,255,150,0.9);font-weight:normal;animation:none;opacity:1;
+  pointer-events:none;cursor:default;}
+
+/* ── 一時メッセージ（canvas の floatMsgs 相当）──────────────────────
+   HTML 版タイトルは canvas を覆うので、floatMsgs をそのまま出しても見えない。
+   タイトルで実際に使われるのは「未解放の DEATH MODE を選んだとき」の一言だけなので、
+   その1本を DOM 側に持つ。bold 20px / 中央 / (640,360)、1.2 秒かけて 30px 上がり
+   最後の 0.8 秒で消える、という canvas 側の動きをそのまま写している。 */
+#tsMsg{--fs:20;--by:360;font-weight:bold;color:rgba(255,220,50,0.9);opacity:0;display:none;}
+body:not(.touch) #tsMsg{text-shadow:0 0 calc(8*var(--u)) rgba(255,220,50,0.9);}
+#tsMsg.show{display:block;animation:tsMsgFloat 3s linear forwards;}
+@keyframes tsMsgFloat{
+  0%{opacity:1;transform:translateY(0)}
+  40%{opacity:1;transform:translateY(calc(-30*var(--u)))}
+  73.3%{opacity:1;transform:translateY(calc(-30*var(--u)))}
+  100%{opacity:0;transform:translateY(calc(-30*var(--u)))}}
 
 /* ── 比較モード BLINK: HTML 版を一定間隔で消しては出す ──────────────────
    ずれている要素だけがカクッと動いて見えるので、重ね表示より差分が分かりやすい
@@ -614,7 +651,8 @@ body.touch.portrait #rotateOverlay{display:flex;}
     <button type="button" id="tsNormal" class="ts-box">      NORMAL MODE</button>
     <button type="button" id="tsDeath"  class="ts-box">      ???</button>
     <button type="button" id="tsStart"  class="ts-box">[ SPACE ] START</button>
-    <div id="tsName" class="ts-t">Playing as: </div>
+    <button type="button" id="tsName" class="ts-btn ts-t">Playing as: </button>
+    <div id="tsMsg" class="ts-t"></div>
     <div id="tsKeys" class="ts-t">← →  MOVE    SPACE  JUMP    F / ESC  PAUSE</div>
     <div id="tsAdmin" class="ts-t">[ ADMIN MODE ON ]</div>
     <div id="tsTerms" class="ts-t">By playing you agree to our Terms of Service  |  damnrun.com/terms</div>
@@ -7420,6 +7458,11 @@ function _canvasActivate(clientX,clientY){
   const scaleX=W/rect.width,scaleY=H/rect.height;
   const cx=(clientX-rect.left)*scaleX,cy=(clientY-rect.top)*scaleY;
   if(state==='title'){
+    // 段階2: HTML 版タイトルが本番のときは、ここの座標判定を一切通さない。
+    // タイトルのボタンは #titleScreen の本物の <button> が受ける。
+    // （drawTitle() を呼んでいない＝_titleNormalBtn 等も更新されていないので、
+    //   仮にここへ来ても正しい判定にはならない。入口で断ち切っておく。）
+    if(_titleHtmlLive())return;
     // モード選択クリック
     function _inRegion(b){return cx>=b.x&&cx<=b.x+b.w&&cy>=b.y&&cy<=b.y+b.h;}
     // Touch: tapping a mode both selects AND starts (no keyboard Space on mobile). PC keeps select-only.
@@ -7636,8 +7679,10 @@ const _titleDom=(()=>{
   if(!root)return null;
   const $=id=>document.getElementById(id);
   return {root:root,stage:$('titleStage'),
-    normal:$('tsNormal'),death:$('tsDeath'),name:$('tsName'),
-    you:$('tsYourDeaths'),world:$('tsWorldDeaths'),hol:$('tsHol'),
+    settings:$('tsSettings'),mypage:$('tsMypage'),hol:$('tsHol'),
+    normal:$('tsNormal'),death:$('tsDeath'),start:$('tsStart'),
+    name:$('tsName'),msg:$('tsMsg'),
+    you:$('tsYourDeaths'),world:$('tsWorldDeaths'),
     best:$('tsBest'),bestLabel:$('tsBestLabel'),bestLine:$('tsBestLine'),
     badgeName:$('tsTestBadgeName'),login:$('tsTestLogin')};
 })();
@@ -7666,6 +7711,7 @@ function syncTitleDom(){
   _tsClass(D.death ,'locked',!dmu);
   // ── Playing as / 累計デス ──
   _tsText(D.name,'Playing as: '+_getDisplayName());
+  _tsClass(S,'ts-noname',!_getPlayerName());   // 名前未設定のときだけこの行を押せる
   const td=getStat('totalDeaths'),dmd=getStat('deathModeDeaths',0);
   _tsText(D.you,'YOUR DEATHS: '+(td>0?td.toLocaleString():'0')+
     (dmu?'  (Death Mode: '+Number(dmd).toLocaleString()+')':''));
@@ -7704,13 +7750,19 @@ function syncTitleDom(){
   }
 }
 // ── 表示モード ────────────────────────────────────────────────
-//   0 OFF  … 完全非表示。従来と 1px も変わらない（既定）
-//   1 HTML … HTML 版を不透明で前面に出す。canvas タイトルは下に隠れる
-//   2 XRAY … 背景を透過して canvas に重ねる。ずれていれば文字が二重に見える
-//   3 BLINK… HTML 版を 0.8 秒ごとに出し入れする。ずれた要素だけが動いて見える
-// pointer-events は付けないので、どのモードでも canvas のタップ判定は従来のまま。
-let _titleHtmlMode=0;
+//   0 OFF  … HTML 版を出さず canvas の drawTitle() を描く。段階1以前と完全に同じ挙動。
+//             タイトルのタップは従来どおり _canvasActivate の座標判定を通る。
+//   1 HTML … 【段階2の既定】HTML 版が本番。canvas には背景色だけを塗り、その上に不透明の
+//             #titleScreen を出す。ボタンは本物の <button> で、座標判定は一切通らない。
+//   2 XRAY … 段階1の確認用。canvas の drawTitle() を描いたうえに透過で重ねる。
+//   3 BLINK… 同上。0.8 秒ごとに出し入れして差分を見る。
+// 2/3 は「見るため」のモードなので、タップは従来どおり canvas 側が受ける（live を付けない）。
+let _titleHtmlMode=1;
 const _TS_MODE_NAME=['OFF','HTML','XRAY','BLINK'];
+// HTML 版が本番として動いている＝座標判定を使わない、を表す唯一の条件。
+// drawTitle() を止めるかどうかも、_canvasActivate のタイトル分岐を殺すかどうかも、
+// ボタンを触れるようにするかどうかも、全部この 1 つから決まる（判断が分かれない）。
+function _titleHtmlLive(){return _titleHtmlMode===1;}
 window.__titleHtml=function(m){
   _titleHtmlMode=((m|0)%4+4)%4;
   if(!_titleDom)return;
@@ -7724,6 +7776,97 @@ window.__titleHtml=function(m){
   // 値の反映は loop() の毎フレーム呼び出しに任せる。ここで呼ぶと、この行より後ろで
   // let 宣言される変数（_currentUser など）を初期化前に読んでしまう。
 };
+
+// ═══ タイトルの操作（キーボードもボタンも必ずここを通る）═══════════════════
+// 挙動が「キー用」と「タップ用」に分かれていると必ず片方だけ直る。入口を 1 本にする。
+// ここに書いてある処理は、いずれも canvas 版の _canvasActivate / update() から
+// そのまま移してきたもので、条件も順序も変えていない。
+function _titleCookieBlocking(){
+  // 同意バナーが出ている間は開始しない。Accept がジャンプゾーンと重なるため、
+  // Accept を狙った指でゲームが始まってしまうのを防ぐ（canvas 版と同じ条件）。
+  const c=document.getElementById('cookieBanner');
+  return !!(isTouchDevice&&c&&c.style.display!=='none'&&!c.classList.contains('hidden'));
+}
+// タイトルの一言メッセージ。canvas の floatMsgs は HTML 版に覆われて見えないので、
+// HTML が本番のときだけ DOM 側に出す。それ以外は従来どおり floatMsgs に積む。
+function _titleMsg(txt,color){
+  if(_titleHtmlLive()&&_titleDom&&_titleDom.msg){
+    const el=_titleDom.msg;
+    el.textContent=txt;
+    el.classList.remove('show');
+    void el.offsetWidth;            // 連続で押されても毎回アニメを頭から流す
+    el.classList.add('show');
+    clearTimeout(el.__t2);
+    el.__t2=setTimeout(()=>el.classList.remove('show'),3000);
+    return;
+  }
+  floatMsgs.push({txt:txt,x:W/2,y:H/2,life:3,color:color||'rgba(255,220,50,0.9)'});
+}
+function _titleSelect(i){
+  if(state!=='title')return;
+  _titleModeSel=i;
+  // gameMode は解放済みのときだけ death にする（update() のタイトル分岐と同じ式）
+  gameMode=(deathModeUnlocked&&i===1)?'death':'normal';
+  syncTitleDom();
+}
+function _titleStart(){
+  if(state!=='title')return;
+  if(_titleCookieBlocking())return;
+  if(_titleModeSel===1&&!deathModeUnlocked){
+    _titleMsg('Clear all 100 floors to unlock.');
+    return;
+  }
+  gameMode=(_titleModeSel===1)?'death':'normal';
+  _retryStreak=0;resetRun();state='play';startBGM(getBGMTrack(1));
+}
+function _titleOpenMypage(){
+  document.getElementById('mypageOverlay').style.display='block';
+  document.getElementById('c').style.display='none';
+}
+function _titleOpenHol(){
+  if(testMode)return;   // testMode では canvas 版も Coming Soon で押せなかった
+  if(_worldStatsCache)localStorage.setItem('neverend_world_stats_cache',JSON.stringify(_worldStatsCache));
+  document.getElementById('holOverlay').style.display='block';
+  document.getElementById('c').style.display='none';
+}
+function _titleOpenName(){
+  const ov=document.getElementById('nameOverlay');
+  if(!ov)return;
+  ov.classList.add('show');
+  setTimeout(()=>{const f=document.getElementById('nameInputField');if(f)f.focus();},50);
+}
+// ── ボタン 1 つを処理に繋ぐ ────────────────────────────────────
+// click だけに頼らない。iOS は条件によって合成 click を落とすことがあり、それが
+// 「何度か押すと急に効く」の正体だったため。pointerup でも同じ処理を呼び、
+// 二重発火は直前の実行時刻で抑える（先に来た方が勝ち、あとの片方は捨てる）。
+// pointerdown を同じ要素で受けていなければ pointerup は無視するので、
+// 別の場所から指を滑らせてきた場合は反応しない＝誤爆しない。
+function _tsBind(el,fn){
+  if(!el)return;
+  let armed=false,last=0;
+  const fire=()=>{const n=Date.now();if(n-last<400)return;last=n;fn();};
+  el.addEventListener('pointerdown',()=>{armed=true;});
+  el.addEventListener('pointercancel',()=>{armed=false;});
+  el.addEventListener('pointerleave',()=>{armed=false;});
+  el.addEventListener('pointerup',e=>{if(!armed)return;armed=false;if(e.button>0)return;fire();});
+  el.addEventListener('click',fire);
+}
+if(_titleDom){
+  const D=_titleDom;
+  _tsBind(D.settings,()=>openSettings());
+  _tsBind(D.mypage  ,()=>_titleOpenMypage());
+  _tsBind(D.hol     ,()=>_titleOpenHol());
+  // モード行のタップ。タッチでは「選ぶ＝始める」（キーボードの SPACE が無いため）。
+  // PC はクリックで選ぶだけ。どちらも canvas 版とまったく同じ挙動。
+  _tsBind(D.normal,()=>{_titleSelect(0);if(isTouchDevice)_titleStart();});
+  _tsBind(D.death ,()=>{
+    if(!deathModeUnlocked){_titleMsg('Clear all 100 floors to unlock.');return;}
+    _titleSelect(1);if(isTouchDevice)_titleStart();
+  });
+  _tsBind(D.start ,()=>_titleStart());
+  _tsBind(D.name  ,()=>{if(!_getPlayerName())_titleOpenName();});
+  _tsBind(D.login ,()=>{if(testMode&&!_currentUser)openLoginModal();});
+}
 
 // ═══ 見た目比較ツールバー（段階1 の確認専用）═══════════════════════════
 // PWA はホーム画面から素の URL で起動するので ?htmltitle= を渡せない。
@@ -7753,7 +7896,8 @@ if(_tsCmp){
     _tsPvSel=(_tsPvSel===null)?0:(_tsPvSel===0?1:null);
     _tsCmp.sel.textContent='SEL:'+(_tsPvSel===null?'real':(_tsPvSel===0?'NORMAL':'DEATH'));
   });
-  _tsCmp.close.addEventListener('click',()=>{window.__titleHtml(0);_tsPvDM=null;_tsPvSel=null;
+  // × は比較をやめて本番（HTML 版）に戻す。canvas 版に戻すのは ?canvastitle=1 だけ。
+  _tsCmp.close.addEventListener('click',()=>{window.__titleHtml(1);_tsPvDM=null;_tsPvSel=null;
     _tsCmp.dm.textContent='DM:real';_tsCmp.sel.textContent='SEL:real';_tsCmpOpen(false);});
   // ── 上端中央 3 連タップで開く ──
   (function(){
@@ -7782,17 +7926,23 @@ if(_tsCmp){
       dx:s.left-c.left, dy:s.top-c.top, dw:s.width-c.width, dh:s.height-c.height};
   };
 }
-// 起動時の復元。URL パラメータが最優先、無ければ前回の選択を引き継ぐ。
+// 起動時の決定。段階2 からは HTML 版が既定で、canvas 版は緊急退避としてだけ残す。
 (function(){
+  // ★ 何かおかしくなったときの戻し方: ?canvastitle=1 を付けると段階1以前の
+  //   canvas 描画＋座標判定に丸ごと戻る（drawTitle() を消していないのはこのため）。
+  if(_urlParams.get('canvastitle')==='1'){window.__titleHtml(0);return;}
   const q=_urlParams.get('htmltitle');
-  // ?htmltitle=0 は「全部やめて元に戻す」。PWA で localStorage に残った状態を消すのにも使う。
-  if(q==='0'){window.__titleHtml(0);_tsPvDM=null;_tsPvSel=null;_tsCmpOpen(false);return;}
-  if(q!==null&&/^[1-3]$/.test(q)){window.__titleHtml(+q);_tsCmpOpen(true);return;}
+  if(q!==null&&/^[0-3]$/.test(q)){window.__titleHtml(+q);if(+q!==1)_tsCmpOpen(true);return;}
+  // 前回ツールバーで比較モードにしたまま終わっていたら、その状態のまま開く。
   try{
-    const m=localStorage.getItem('neverend_htmltitle');
-    if(m&&/^[0-3]$/.test(m))window.__titleHtml(+m);
-    if(localStorage.getItem('neverend_htmltitle_bar')==='1')_tsCmpOpen(true);
+    if(localStorage.getItem('neverend_htmltitle_bar')==='1'){
+      const m=localStorage.getItem('neverend_htmltitle');
+      window.__titleHtml((m&&/^[0-3]$/.test(m))?+m:1);
+      _tsCmpOpen(true);
+      return;
+    }
   }catch(_){}
+  window.__titleHtml(1);   // 既定: HTML 版が本番
 })();
 
 // ======== UPDATE ========
@@ -8382,24 +8532,13 @@ function update(dt){
     if(keys['t']&&!prevKeys['t']){state='title';}
   } else if(state==='title'){
     // モード選択（↑↓／←→で切替、未解放でも???へカーソル移動可。モバイルは左右ボタンで選択可）
-    if((keys['ArrowUp']&&!prevKeys['ArrowUp'])||(keys['ArrowLeft']&&!prevKeys['ArrowLeft']))_titleModeSel=0;
-    if((keys['ArrowDown']&&!prevKeys['ArrowDown'])||(keys['ArrowRight']&&!prevKeys['ArrowRight']))_titleModeSel=1;
+    // ★ キーボードもボタンも _titleSelect / _titleStart を通す。条件を 2 箇所に書くと
+    //   必ず片方だけ直る。中身は従来ここに直書きしていたものと同一。
+    if((keys['ArrowUp']&&!prevKeys['ArrowUp'])||(keys['ArrowLeft']&&!prevKeys['ArrowLeft']))_titleSelect(0);
+    if((keys['ArrowDown']&&!prevKeys['ArrowDown'])||(keys['ArrowRight']&&!prevKeys['ArrowRight']))_titleSelect(1);
     // gameMode は解放済みのときだけ death にする
     gameMode=(deathModeUnlocked&&_titleModeSel===1)?'death':'normal';
-    if(keys[' ']&&!prevKeys[' ']){
-      // On touch, don't start while the cookie banner is up: its Accept overlaps the jump zone, so a tap
-      // meant for Accept must not launch the game. (Second layer of defense alongside _blocked().)
-      const _cb=document.getElementById('cookieBanner');
-      const _cookieBlocking=isTouchDevice&&_cb&&_cb.style.display!=='none'&&!_cb.classList.contains('hidden');
-      if(_cookieBlocking){/* consent banner up: ignore start */}
-      else if(_titleModeSel===1&&!deathModeUnlocked){
-        // ???選択中（未解放）：ヒント表示のみ、ゲーム開始しない
-        floatMsgs.push({txt:'Clear all 100 floors to unlock.',x:W/2,y:H/2,life:3,color:'rgba(255,220,50,0.9)'});
-      }else{
-        gameMode=(_titleModeSel===1)?'death':'normal';
-        _retryStreak=0;resetRun();state='play';startBGM(getBGMTrack(1));
-      }
-    }
+    if(keys[' ']&&!prevKeys[' '])_titleStart();
   } else if(state==='dying'){
     // 死亡演出中：ゲーム画面のまま、DAMNだけ表示
     if(damnTimer>0)damnTimer-=dt;else damnEffect=null;
@@ -8876,8 +9015,14 @@ function loop(ts){
   // Show on-screen controller only in states that consume it — MUST match _ctrlStates (play/pause/dead/ending/memo);
   // hidden on title so canvas taps (NORMAL/DEATH/MY PAGE/HoL) aren't fought over.
   document.body.classList.toggle('ctrls', state==='play'||state==='pause'||state==='dead'||state==='ending'||state==='memo');
-  // 段階1: HTML 版タイトルのプレビューと比較ツールバーは title 以外の状態では必ず引っ込める
-  if(_titleHtmlMode>0&&_titleDom)_titleDom.root.classList.toggle('show',state==='title');
+  // HTML 版タイトルは title のときだけ出す。それ以外の state では必ず引っ込める
+  // （play 中に前面へ残ると、透明でもゲームのタップを全部吸ってしまう）。
+  if(_titleDom){
+    const onTitle=(state==='title');
+    if(_titleHtmlMode>0)_titleDom.root.classList.toggle('show',onTitle);
+    // live = 本物のボタンとして触れる状態。HTML が本番のときだけ、かつ title のときだけ。
+    _titleDom.root.classList.toggle('live',onTitle&&_titleHtmlLive());
+  }
   if(_tsCmp){const v=(state==='title')?'':'hidden';if(_tsCmp.el.style.visibility!==v)_tsCmp.el.style.visibility=v;}
   // Slow motion after death
   if(slowTimer>0){slowTimer=Math.max(0,slowTimer-dt);dt*=0.15;}
@@ -8886,8 +9031,13 @@ function loop(ts){
     ctx.save();
     ctx.translate(Math.random()*6-3,Math.random()*4-2);
   }
-  if(state==='title'){drawTitle();drawFloatMsgs();
-    // 段階1: HTML 版タイトルを表示中のときだけ、動的な値を DOM に反映する（既定は無効）
+  if(state==='title'){
+    // HTML 版が本番のときは canvas に背景色だけを塗る。drawTitle() は呼ばない。
+    // 塗るのをやめないのは、HTML の箱の外側（16:9 に収まらない余白）に前フレームの
+    // ゲーム画面が残らないようにするため。色は HTML 側の背景と同じ値になる。
+    if(_titleHtmlLive()){drawBg(true);ctx.fillStyle='rgba(0,0,0,0.35)';ctx.fillRect(0,0,W,H);}
+    else drawTitle();
+    drawFloatMsgs();
     if(_titleHtmlMode>0)syncTitleDom();
   }
   else if(state==='mypage'){drawMyPage();}

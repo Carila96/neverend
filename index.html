@@ -119,11 +119,24 @@ body.touch canvas{position:fixed;top:4px;left:0;right:0;margin:0 auto;}
    ▼押せる範囲 = 見える範囲
    各ボタンは <button> 一つで、文字はその要素のテキスト、余白は padding。
    箱と中身が同じ要素なので、どこに置かれても両者がずれることはあり得ない。
+
+   ▼板は指を受けない / 中身は板にぶら下がらない（0801z2 で直した2点）
+   (1) #titleScreen は画面全面を覆う板なので、ここに pointer-events:auto を付けると
+       中のボタンの外側を押した指を全部この板が受け止める。実機で ts/te がどのボタンを
+       押しても #titleScreen になっていたのはこれ。板は常に pointer-events:none にし、
+       auto にするのは末端の <button> だけ。
+   (2) 中身は position:absolute で「板の中の位置」だった。板が standalone で縦に
+       あふれると、bottom 基準の要素（HALL OF LEGENDS）は板の下端＝画面の外へ出る。
+       → 全て position:fixed にして viewport に直接ぶら下げた。板の大きさは無関係になり、
+         canvas#c{position:fixed;top:4px} と同じ、実機で正しく置けている仕組みに乗る。
+       さらに中央の縦積みは「上端からの距離」だけで置く。高さを使わないので、
+       画面高が誤って報告されても縦にずれない・あふれない。
    ═══════════════════════════════════════════════════════════════════════════ */
 #titleScreen{display:none;}
 #titleScreen.show{
   display:block;position:fixed;top:0;left:0;right:0;bottom:0;z-index:50;
-  pointer-events:none;overflow:hidden;
+  /* ★ ここは常に none。.live でも auto にしない（板が指を飲む唯一の経路を塞ぐ）*/
+  pointer-events:none;
   background:rgb(3,3,5);
   font-family:"Courier New",monospace;letter-spacing:0;
   /* 文字の基準。横向きでは高さが短辺なので vh 側が効く。ワイドな PC で
@@ -146,18 +159,16 @@ body.touch canvas{position:fixed;top:4px;left:0;right:0;margin:0 auto;}
 @media (display-mode:standalone) and (pointer:coarse){
   #titleScreen.show{--er:7vw;}
 }
-/* 触れるのは .live のときだけ。ボタン以外は下の pointer-events:none で素通し */
-#titleScreen.show.live{pointer-events:auto;}
-
 /* 塔（左側の帯）。装飾なので絶対に指を受けない */
-#tsTower{position:absolute;left:0;top:0;width:30%;height:100%;
+#tsTower{position:fixed;left:0;top:0;width:30%;height:100%;
   opacity:0.5;mix-blend-mode:screen;pointer-events:none;
   object-fit:fill;image-rendering:pixelated;}
 
 /* ── ボタン共通 ────────────────────────────────────────────────
-   見た目の箱＝押せる箱。padding が指の余裕をそのまま作る。 */
+   見た目の箱＝押せる箱。padding が指の余裕をそのまま作る。
+   position:fixed = viewport に直接ぶら下がる。親(#titleScreen)の大きさに関係しない。 */
 .ts-btn{
-  position:absolute;margin:0;background:none;border:0;color:inherit;
+  position:fixed;margin:0;background:none;border:0;color:inherit;
   font-family:"Courier New",monospace;font-size:var(--f);line-height:1.1;
   white-space:nowrap;text-align:center;cursor:pointer;pointer-events:auto;
   -webkit-appearance:none;appearance:none;border-radius:0;
@@ -167,7 +178,7 @@ body.touch canvas{position:fixed;top:4px;left:0;right:0;margin:0 auto;}
 .ts-btn::-moz-focus-inner{border:0;padding:0;}
 #titleScreen.live .ts-btn:active{filter:brightness(1.7);}
 /* 文字だけの行。位置を占めるだけで指は一切受けない */
-.ts-txt{position:absolute;pointer-events:none;font-family:"Courier New",monospace;
+.ts-txt{position:fixed;pointer-events:none;font-family:"Courier New",monospace;
   line-height:1.2;white-space:nowrap;}
 
 /* ── 四隅 ─────────────────────────────────────────────────── */
@@ -186,11 +197,14 @@ body.touch canvas{position:fixed;top:4px;left:0;right:0;margin:0 auto;}
 #tsWorldDeaths{left:var(--ex);bottom:var(--ey);
   font-size:var(--f);color:rgba(220,120,120,0.85);}
 
-/* ── 中央の縦積み ──────────────────────────────────────────── */
-#tsCenter{position:absolute;left:0;right:0;top:0;bottom:0;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
+/* ── 中央の縦積み ────────────────────────────────────────────
+   ★ 上端からの距離だけで置く。height も bottom も justify-content:center も使わない。
+     画面の高さが誤って報告されても、この積み木は上端に貼り付いたまま動かない。
+     （高さを使うと、その誤差の分だけ全部が下へずれ、下端の要素は画面外へ出る） */
+#tsCenter{position:fixed;left:0;right:0;top:6vh;
+  display:flex;flex-direction:column;align-items:center;
   gap:0.8vh;pointer-events:none;padding:0 2vw;}
-#tsCenter>*{position:static;}      /* .ts-btn の absolute を flex の流れに戻す */
+#tsCenter>*{position:static;}      /* .ts-btn の fixed を flex の流れに戻す */
 #tsLogo{font-weight:bold;font-size:calc(var(--f)*var(--logo));line-height:1;
   letter-spacing:0;white-space:nowrap;margin-bottom:0.6vh;}
 #tsLogoN{color:#fff;}
@@ -228,7 +242,7 @@ body:not(.touch) #tsStart{text-shadow:0 0 0.5em rgba(255,255,255,0.85);}
 #titleScreen.ts-noname #tsName{cursor:pointer;pointer-events:auto;}
 
 /* 未解放の DEATH MODE を選んだときの一言。canvas の floatMsgs 相当 */
-#tsMsg{position:absolute;left:0;right:0;top:38%;text-align:center;
+#tsMsg{position:fixed;left:0;right:0;top:40vh;text-align:center;
   font-weight:bold;font-size:calc(var(--f)*1.2);color:rgba(255,220,50,0.95);
   pointer-events:none;opacity:0;display:none;}
 #tsMsg.show{display:block;animation:tsMsgFloat 3s linear forwards;}
@@ -238,7 +252,7 @@ body:not(.touch) #tsStart{text-shadow:0 0 0.5em rgba(255,255,255,0.85);}
   100%{opacity:0;transform:translateY(-4vh)}}
 
 /* ── 画面下中央の案内 ───────────────────────────────────────── */
-#tsFoot{position:absolute;left:0;right:0;bottom:0.4vh;text-align:center;
+#tsFoot{position:fixed;left:0;right:0;bottom:0.4vh;text-align:center;
   pointer-events:none;}
 #tsKeys{font-size:calc(var(--f)*0.9);color:rgba(100,120,160,0.6);}
 #tsTerms{font-size:calc(var(--f)*0.78);color:rgba(120,120,150,0.6);}
@@ -255,7 +269,7 @@ body:not(.touch) #tsStart{text-shadow:0 0 0.5em rgba(255,255,255,0.85);}
    縦位置だけは「何階まで登ったか」というゲームの値で決まるので JS が --my(%) を入れる。
    これはレイアウトの較正値ではなくゲームデータで、しかもボタンではないので、
    値がどうなろうとタップの当たり判定には一切影響しない。 */
-#tsBest{position:absolute;left:0;top:0;width:30%;height:100%;
+#tsBest{position:fixed;left:0;top:0;width:30%;height:100%;
   pointer-events:none;display:none;--my:92%;}
 #titleScreen.ts-best #tsBest{display:block;}
 #tsBestLabel{position:absolute;right:8%;top:var(--my);transform:translateY(-50%);
@@ -268,7 +282,7 @@ body:not(.touch) #tsBestLabel{text-shadow:0 0 0.5em rgba(255,60,40,0.8);}
   50%{opacity:.600}62.5%{opacity:.317}75%{opacity:.200}87.5%{opacity:.317}100%{opacity:.600}}
 
 /* ── TEST PLAY MODE（管理者用）─────────────────────────────── */
-#tsTestBadge{position:absolute;left:50%;transform:translateX(-50%);top:0;
+#tsTestBadge{position:fixed;left:50%;transform:translateX(-50%);top:0;
   padding:0.4vh 2vw;background:rgba(220,40,40,0.95);color:#fff;text-align:center;
   font-size:calc(var(--f)*0.95);font-weight:bold;pointer-events:none;display:none;}
 #titleScreen.ts-test #tsTestBadge{display:block;}
@@ -7805,7 +7819,7 @@ if(_titleDom){
     if(state!=='title'){box.style.display='none';return;}
     box.style.display='block';
     try{
-      const L=['BUILD 0801z  n:'+(window.__tsFireN|0)+'  '+(window.__standalone?'PWA':'BRW')];
+      const L=['BUILD 0801z2 n:'+(window.__tsFireN|0)+'  '+(window.__standalone?'PWA':'BRW')];
       for(const [tag,get] of targets){
         const el=get();
         if(!el){L.push(tag+' (無し)');continue;}
@@ -7829,7 +7843,7 @@ if(_titleDom){
       L.push('ts:'+ts+'  te:'+te);
       L.push('ck:'+ck+'  fire:'+(window.__tsFire||'-'));
       box.textContent=L.join('\n');
-    }catch(e){box.textContent='0801z ERR '+(e&&e.message||'err');}
+    }catch(e){box.textContent='0801z2 ERR '+(e&&e.message||'err');}
   },400);
 })();
 

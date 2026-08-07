@@ -315,6 +315,35 @@ body:not(.touch) #tsBestLabel{text-shadow:0 0 calc(8*var(--u)) rgba(255,60,40,0.
   animation:tsPulseStart 3.1416s linear infinite;}
 #titleStage.ts-test #tsTestLogin{display:block;}
 #titleStage.ts-authed #tsTestLogin{color:rgba(80,255,150,0.9);font-weight:normal;animation:none;opacity:1;}
+
+/* ── 比較モード BLINK: HTML 版を一定間隔で消しては出す ──────────────────
+   ずれている要素だけがカクッと動いて見えるので、重ね表示より差分が分かりやすい
+   （天文写真のブリンクコンパレータと同じ原理）。背景ごと点滅させるので、
+   消えている間は下の canvas タイトルがそのまま見える。 */
+#titleScreen.show.ts-blink{animation:tsBlinkCmp 1.6s steps(1,end) infinite;}
+@keyframes tsBlinkCmp{0%{opacity:1}50%{opacity:0}100%{opacity:1}}
+
+/* ── 比較用ツールバー（段階1 の目視確認専用）──────────────────────────
+   PWA はホーム画面から固定 URL で起動するので ?htmltitle= を付けられない。
+   実機で切り替えられる手段が要るため、画面上に出す。
+   既定は非表示。ブラウザは ?htmltitle=、PWA は「上端中央を素早く3回タップ」で開く。
+   位置は上端中央。iOS standalone でタップを吸われるのは画面の左右端なので、
+   中央に寄せてある。タイトルの描画物とも重ならない領域。 */
+#tsCmp{display:none;}
+#tsCmp.open{display:block;position:fixed;left:50%;transform:translateX(-50%);
+  top:calc(4px + env(safe-area-inset-top,0px));z-index:9000;
+  font-family:"Courier New",monospace;text-align:center;}
+#tsCmpRow{display:flex;gap:6px;justify-content:center;}
+#tsCmp button{min-height:42px;min-width:42px;padding:0 10px;background:rgba(0,0,0,0.88);
+  color:#0f0;border:1px solid rgba(0,255,0,0.5);border-radius:4px;
+  font-family:inherit;font-size:12px;letter-spacing:1px;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  -webkit-appearance:none;appearance:none;}
+#tsCmp button:active{background:rgba(0,90,0,0.92);}
+#tsCmpInfo{margin-top:3px;background:rgba(0,0,0,0.84);color:#ff0;
+  border:1px solid rgba(255,255,0,0.35);border-radius:3px;
+  font-size:10px;line-height:1.4;padding:2px 6px;white-space:pre;text-align:left;}
+#tsCmpInfo b{color:#f66;font-weight:normal;}
 /* PWA(standalone)向けの canvas ずらし補正はすべて撤回済み。canvas を下げると Cookie 同意バナーの
    Accept が押せなくなり、下段UI・ゲーム画面もまとめてずれたため。canvas は上寄せ・全高のまま
    y 方向に 1px も動かさない（コントローラーを持つ指で画面が隠れないための仕様）。
@@ -615,6 +644,17 @@ body.touch.portrait #rotateOverlay{display:flex;}
     <div id="tsTestBadge"><span id="tsTestBadgeTxt" class="ts-t">TEST PLAY MODE</span><span id="tsTestBadgeName" class="ts-t"></span></div>
     <div id="tsTestLogin" class="ts-t">[ LOGIN ] to leave your name in the credits</div>
   </div>
+</div>
+<!-- 段階1 の見た目確認用ツールバー。既定は非表示。
+     ブラウザ: ?htmltitle=1/2/3   PWA: タイトル画面で上端中央を素早く3回タップ -->
+<div id="tsCmp" aria-hidden="true">
+  <div id="tsCmpRow">
+    <button type="button" id="tsCmpView">VIEW:OFF</button>
+    <button type="button" id="tsCmpDm">DM:real</button>
+    <button type="button" id="tsCmpSel">SEL:real</button>
+    <button type="button" id="tsCmpClose">×</button>
+  </div>
+  <div id="tsCmpInfo">-</div>
 </div>
 <div id="touchControls" aria-hidden="true">
   <div id="lrRow">
@@ -7684,21 +7724,28 @@ if(_titleDom)_titleDom.stage.style.setProperty('--sa',String(_SA_R));
 // textContent は変わったときだけ書く（毎フレーム呼ばれるのでレイアウトを無駄に走らせない）
 function _tsText(el,txt){if(el&&el.__t!==txt){el.__t=txt;el.textContent=txt;}}
 function _tsClass(el,cls,on){if(el)el.classList.toggle(cls,!!on);}
+// 比較用の「見た目だけ」の上書き。null なら実際の値をそのまま使う。
+// セーブデータにも gameMode にも触れないので、解放していない状態で DEATH MODE の
+// 見た目を確認しても、ゲーム側の状態は何も変わらない。
+let _tsPvDM=null;    // null=実際の deathModeUnlocked / true=解放済み / false=未解放
+let _tsPvSel=null;   // null=実際の _titleModeSel / 0=NORMAL / 1=DEATH
 function syncTitleDom(){
   const D=_titleDom;if(!D)return;
   const S=D.stage;
+  const dmu=(_tsPvDM===null)?deathModeUnlocked:_tsPvDM;
+  const msel=(_tsPvSel===null)?_titleModeSel:_tsPvSel;
   // ── モード選択（▶ の有無で文字列そのものが変わるのは canvas と同じ）──
-  const nSel=_titleModeSel===0,dSel=_titleModeSel===1;
+  const nSel=msel===0,dSel=msel===1;
   _tsText(D.normal,(nSel?'▶  ':'      ')+'NORMAL MODE');
-  _tsText(D.death ,(dSel?'▶  ':'      ')+(deathModeUnlocked?'DEATH MODE':'???'));
+  _tsText(D.death ,(dSel?'▶  ':'      ')+(dmu?'DEATH MODE':'???'));
   _tsClass(D.normal,'sel',nSel);
   _tsClass(D.death ,'sel',dSel);
-  _tsClass(D.death ,'locked',!deathModeUnlocked);
+  _tsClass(D.death ,'locked',!dmu);
   // ── Playing as / 累計デス ──
   _tsText(D.name,'Playing as: '+_getDisplayName());
   const td=getStat('totalDeaths'),dmd=getStat('deathModeDeaths',0);
   _tsText(D.you,'YOUR DEATHS: '+(td>0?td.toLocaleString():'0')+
-    (deathModeUnlocked?'  (Death Mode: '+Number(dmd).toLocaleString()+')':''));
+    (dmu?'  (Death Mode: '+Number(dmd).toLocaleString()+')':''));
   _tsText(D.world,'WORLD DEATHS: '+Number(worldDeaths||0).toLocaleString());
   _tsText(D.hol,testMode?'[ HALL OF LEGENDS ] Coming Soon':'[ HALL OF LEGENDS ]');
   // ── 各種フラグ ──
@@ -7724,7 +7771,7 @@ function syncTitleDom(){
   // ── 到達階層マーカー（塔の左の ▶ BEST: NF）──
   // canvas: markerY = 650 - (bestFloor/100)*600、ラベル右端 x=138、点線は x=144-labelW-12 まで。
   // labelW は Courier New bold 11px の字送り 0.6em = 6.6px/字 で出す（measureText と同値）。
-  const bestFloor=(deathModeUnlocked?getStat('deathBestStage',0):getStat('normalBestStage',0))||getStat('bestStage',0)||0;
+  const bestFloor=(dmu?getStat('deathBestStage',0):getStat('normalBestStage',0))||getStat('bestStage',0)||0;
   _tsClass(S,'ts-best',bestFloor>0);
   if(bestFloor>0){
     const label='BEST: '+bestFloor+'F';
@@ -7733,17 +7780,106 @@ function syncTitleDom(){
     D.bestLine.style.setProperty('--lw',String(label.length*6.6));
   }
 }
-// 表示切替。段階1 は URL パラメータで手動確認するだけ（既定は完全非表示＝従来と同一）。
-let _titleHtmlMode=0;   // 0=off / 1=単体表示 / 2=canvas に重ねる（背景透過）
+// ── 表示モード ────────────────────────────────────────────────
+//   0 OFF  … 完全非表示。従来と 1px も変わらない（既定）
+//   1 HTML … HTML 版を不透明で前面に出す。canvas タイトルは下に隠れる
+//   2 XRAY … 背景を透過して canvas に重ねる。ずれていれば文字が二重に見える
+//   3 BLINK… HTML 版を 0.8 秒ごとに出し入れする。ずれた要素だけが動いて見える
+// pointer-events は付けないので、どのモードでも canvas のタップ判定は従来のまま。
+let _titleHtmlMode=0;
+const _TS_MODE_NAME=['OFF','HTML','XRAY','BLINK'];
 window.__titleHtml=function(m){
-  _titleHtmlMode=m|0;
+  _titleHtmlMode=((m|0)%4+4)%4;
   if(!_titleDom)return;
   _titleDom.root.classList.toggle('show',_titleHtmlMode>0);
   _titleDom.stage.classList.toggle('ts-xray',_titleHtmlMode===2);
+  _titleDom.root.classList.toggle('ts-blink',_titleHtmlMode===3);
+  // PWA は再起動のたびに素の URL に戻るので、選んだモードは残しておく
+  try{localStorage.setItem('neverend_htmltitle',String(_titleHtmlMode));}catch(_){}
+  const b=document.getElementById('tsCmpView');
+  if(b)b.textContent='VIEW:'+_TS_MODE_NAME[_titleHtmlMode];
   // 値の反映は loop() の毎フレーム呼び出しに任せる。ここで呼ぶと、この行より後ろで
   // let 宣言される変数（_currentUser など）を初期化前に読んでしまう。
 };
-(function(){const q=_urlParams.get('htmltitle');if(q==='1'||q==='2')window.__titleHtml(+q);})();
+
+// ═══ 見た目比較ツールバー（段階1 の確認専用）═══════════════════════════
+// PWA はホーム画面から素の URL で起動するので ?htmltitle= を渡せない。
+// 実機で切り替える手段として、画面に出せるツールバーを用意する。
+// 開き方: ブラウザ=?htmltitle=1..3 / どちらでも「タイトル画面で上端中央を素早く3回タップ」。
+// ★ 検出は document の pointerup を capture で覗くだけで、preventDefault も
+//    stopPropagation もしない。既存のタップ処理には一切干渉しない。
+const _tsCmp=(()=>{
+  const el=document.getElementById('tsCmp');
+  if(!el)return null;
+  const $=id=>document.getElementById(id);
+  return {el:el,view:$('tsCmpView'),dm:$('tsCmpDm'),sel:$('tsCmpSel'),close:$('tsCmpClose'),info:$('tsCmpInfo')};
+})();
+function _tsCmpOpen(on){
+  if(!_tsCmp)return;
+  _tsCmp.el.classList.toggle('open',!!on);
+  try{localStorage.setItem('neverend_htmltitle_bar',on?'1':'0');}catch(_){}
+  if(on&&_titleHtmlMode===0)window.__titleHtml(1);   // 開いたら何か見えている方が親切
+}
+if(_tsCmp){
+  _tsCmp.view.addEventListener('click',()=>window.__titleHtml(_titleHtmlMode+1));
+  _tsCmp.dm.addEventListener('click',()=>{
+    _tsPvDM=(_tsPvDM===null)?true:(_tsPvDM===true?false:null);
+    _tsCmp.dm.textContent='DM:'+(_tsPvDM===null?'real':(_tsPvDM?'unlocked':'locked'));
+  });
+  _tsCmp.sel.addEventListener('click',()=>{
+    _tsPvSel=(_tsPvSel===null)?0:(_tsPvSel===0?1:null);
+    _tsCmp.sel.textContent='SEL:'+(_tsPvSel===null?'real':(_tsPvSel===0?'NORMAL':'DEATH'));
+  });
+  _tsCmp.close.addEventListener('click',()=>{window.__titleHtml(0);_tsPvDM=null;_tsPvSel=null;
+    _tsCmp.dm.textContent='DM:real';_tsCmp.sel.textContent='SEL:real';_tsCmpOpen(false);});
+  // ── 上端中央 3 連タップで開く ──
+  (function(){
+    let n=0,t0=0;
+    const bump=(x,y)=>{
+      if(state!=='title'||_tsCmp.el.classList.contains('open'))return;
+      const vw=window.innerWidth||1,vh=window.innerHeight||1;
+      if(!(y<vh*0.10&&Math.abs(x-vw/2)<vw*0.18)){n=0;return;}
+      const now=Date.now();
+      if(now-t0>1200)n=0;
+      t0=now;n++;
+      if(n>=3){n=0;_tsCmpOpen(true);}
+    };
+    if(window.PointerEvent){
+      document.addEventListener('pointerup',e=>bump(e.clientX,e.clientY),true);
+    }else{
+      document.addEventListener('touchend',e=>{const t=e.changedTouches&&e.changedTouches[0];if(t)bump(t.clientX,t.clientY);},true);
+      document.addEventListener('click',e=>{if(e.detail)bump(e.clientX,e.clientY);},true);
+    }
+  })();
+  // ── 実測の読み出し（canvas と #titleStage が本当に重なっているかの確認用）──
+  // ここで測った値はどこにも使わない。表示するだけなので、値が揺れても何も壊れない。
+  setInterval(()=>{
+    if(!_tsCmp.el.classList.contains('open'))return;
+    try{
+      const c=canvas.getBoundingClientRect(),s=_titleDom.stage.getBoundingClientRect();
+      const r=v=>Math.round(v*10)/10;
+      const off=Math.max(Math.abs(c.left-s.left),Math.abs(c.top-s.top),
+                         Math.abs(c.width-s.width),Math.abs(c.height-s.height));
+      _tsCmp.info.innerHTML=
+        'K'+_UI_K+' sa'+_SA_R+' u'+r(s.width/1280)+' '+(window.__standalone?'PWA':'BROWSER')+'\n'+
+        'cv '+r(c.left)+','+r(c.top)+' '+r(c.width)+'x'+r(c.height)+'\n'+
+        'st '+r(s.left)+','+r(s.top)+' '+r(s.width)+'x'+r(s.height)+
+        (off>1?'  <b>ZURE '+r(off)+'px</b>':'  OK');
+    }catch(_){}
+  },250);
+}
+// 起動時の復元。URL パラメータが最優先、無ければ前回の選択を引き継ぐ。
+(function(){
+  const q=_urlParams.get('htmltitle');
+  // ?htmltitle=0 は「全部やめて元に戻す」。PWA で localStorage に残った状態を消すのにも使う。
+  if(q==='0'){window.__titleHtml(0);_tsPvDM=null;_tsPvSel=null;_tsCmpOpen(false);return;}
+  if(q!==null&&/^[1-3]$/.test(q)){window.__titleHtml(+q);_tsCmpOpen(true);return;}
+  try{
+    const m=localStorage.getItem('neverend_htmltitle');
+    if(m&&/^[0-3]$/.test(m))window.__titleHtml(+m);
+    if(localStorage.getItem('neverend_htmltitle_bar')==='1')_tsCmpOpen(true);
+  }catch(_){}
+})();
 
 // ======== UPDATE ========
 function update(dt){
@@ -8826,8 +8962,9 @@ function loop(ts){
   // Show on-screen controller only in states that consume it — MUST match _ctrlStates (play/pause/dead/ending/memo);
   // hidden on title so canvas taps (NORMAL/DEATH/MY PAGE/HoL) aren't fought over.
   document.body.classList.toggle('ctrls', state==='play'||state==='pause'||state==='dead'||state==='ending'||state==='memo');
-  // 段階1: HTML 版タイトルのプレビューは title 以外の状態では必ず引っ込める
+  // 段階1: HTML 版タイトルのプレビューと比較ツールバーは title 以外の状態では必ず引っ込める
   if(_titleHtmlMode>0&&_titleDom)_titleDom.root.classList.toggle('show',state==='title');
+  if(_tsCmp){const v=(state==='title')?'':'hidden';if(_tsCmp.el.style.visibility!==v)_tsCmp.el.style.visibility=v;}
   // Slow motion after death
   if(slowTimer>0){slowTimer=Math.max(0,slowTimer-dt);dt*=0.15;}
   // Screen shake

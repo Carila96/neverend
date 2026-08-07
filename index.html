@@ -95,294 +95,191 @@ body.touch canvas{position:fixed;top:4px;left:0;right:0;margin:0 auto;}
   body{align-items:flex-start;min-height:0;}
   canvas#c{position:fixed;top:4px;left:0;right:0;margin:0 auto;}
 }
+
 /* ═══════════════════════════════════════════════════════════════════════════
-   HTML 版タイトル画面（段階1: 見た目の再現のみ。既定は display:none）
+   タイトル画面（HTML）
    ───────────────────────────────────────────────────────────────────────────
-   目的: タイトルのボタンを canvas の座標判定から解放して本物の <button> にする。
-   ここでは「canvas の drawTitle() が描いている絵を HTML/CSS で 1px 単位で写す」ことだけを行う。
+   ▼この版で捨てたもの
+   前の版は canvas の絵に 1px 単位で合わせるため、1280x720 の構図座標を
+   「枠の幅 / 1280」という係数(--u)で CSS px に換算していた。その枠の高さは
+   viewport から計算していたので、計算が実画面と食い違った瞬間に枠ごと画面から
+   はみ出し、中のボタンは全部ずれた位置に置かれる。実機では枠が縦にあふれ、
+   HALL OF LEGENDS は画面外、START の位置を押すと枠そのものが反応していた。
+   ＝見えている絵は canvas が描いたもの、押せる箱は別計算、という最悪の形。
 
-   ▼座標系
-   drawTitle() は 1280x720 の canvas 内部座標で描いている。そこで #titleStage を
-   canvas と同じ位置・同じ大きさに置き、canvas 内部 1px = CSS 何 px かを --u に入れる。
-   以降すべての位置・サイズ・フォントは calc(N * var(--u)) で書ける＝canvas の数値をそのまま持ち込める。
+   ▼この版の方針
+   換算をやめる。基準になる中間の箱を持たない。#titleScreen は viewport そのもの
+   (position:fixed; 上下左右 0)で、中身は全て viewport に対して直接置く。
+     ・四隅   … top/left/right/bottom を vw/vh で直接指定
+     ・中央   … flex の縦積み
+     ・文字   … min(vw,vh) 基準の 1 つの単位 --f から相対で決める
+   1280x720 も、係数も、canvas の寸法も、JS が書く変数も出てこない。
+   はみ出しようがない＝ボタンが画面外へ行く経路が構造的に無い。
 
-   ▼位置決めは 100% ブラウザ任せ。JS が書いた値を一切読まない
-   この枠は「canvas に合わせる」ためのものではない。canvas のタイトル描画はもう止めて
-   いるので、合わせる相手はいない。画面に対して正しい位置に居ればそれでよい。
-     幅   = min(100vw, 156.4464dvh)  … 16:9 を viewport に収める、それだけ
-     高さ = 幅 * 0.5625
-     縦位置 = touch は top:4px 固定 / PC は margin:auto で中央
-   使っているのは vw と dvh だけ＝ブラウザが自分で維持する単位。
-   ★ 以前はここで --app-vh（JS が innerHeight から書く変数）を使い、canvas の
-     max-height と同じ式を書き写していた。同じ絵を出すには都合が良かったが、
-     「JS が値を書き直すまで枠の大きさが決まらない」という依存が残る。それは
-     再計算に依存しない配置という目的そのものに反するので、dvh に置き換えた。
-     値は同じ（--app-vh は innerHeight/100 = 1dvh 相当）なので見た目は変わらない。
-
-   ▼ボタンの当たり判定について
-   各ボタンは <button> そのもので、見えている文字とタップを受ける箱は同一要素。
-   枠がどこにあろうと、押せる範囲＝見えている範囲であることは要素が 1 つである以上
-   構造的に保証される。座標変換もヒットテストも一切書いていない。
-
-   ▼ベースライン合わせ
-   canvas の fillText(y) の y は「ベースライン」。CSS のテキストは「行ボックスの上端」基準。
-   Courier New は ascent 1705/2048 = 0.8325em、descent 615/2048 = 0.3003em。
-   line-height:1 のとき half-leading = (1 - 1.1328)/2 = -0.0664em なので
-     行ボックス上端 → ベースライン = 0.8325 - 0.0664 = 0.766em
-   よって top = (ベースラインY - 0.766 * フォントサイズ) * --u で canvas と同じ位置に乗る。
-   この 0.766 は --asc として外に出してあるので、実機で 1px ずれていたらここだけ触れば直る。
-
-   ▼グロー(影)
-   タッチ端末では ctx.shadowBlur を無効化している（body.touch のとき canvas に影は一切出ない）。
-   そのため text-shadow も body:not(.touch) のときだけ付ける。PC だけ光る、で現行と一致する。
+   ▼押せる範囲 = 見える範囲
+   各ボタンは <button> 一つで、文字はその要素のテキスト、余白は padding。
+   箱と中身が同じ要素なので、どこに置かれても両者がずれることはあり得ない。
    ═══════════════════════════════════════════════════════════════════════════ */
 #titleScreen{display:none;}
-#titleScreen.show{display:block;position:fixed;top:0;left:0;right:0;bottom:0;z-index:50;pointer-events:none;}
-/* 段階2: .live のときだけ本物のボタンとして触れる。
-   触れるようにするのは #titleStage（＝canvas と同じ 16:9 の枠）だけで、その外側の
-   レターボックス部分は素通しのまま。canvas が受けていた範囲を 1px も超えない。 */
-#titleScreen.show.live #titleStage{pointer-events:auto;}
-#titleStage{
-  /* PC: 16:9 を viewport に収める。vw と dvh だけ＝ブラウザが維持する単位のみ */
-  --tsw:min(100vw,177.78dvh);
-  --u:calc(var(--tsw)/1280);      /* 構図 1px = CSS 何 px か */
-  --asc:0.766;                    /* 行ボックス上端→ベースライン (Courier New, line-height:1) */
-  --sa:0;                         /* 右端 UI の内寄せ量。下の media query だけが 48 にする */
-  position:fixed;left:0;right:0;top:0;bottom:0;margin:auto;
-  width:var(--tsw);height:calc(var(--tsw)*0.5625);
-  overflow:hidden;
+#titleScreen.show{
+  display:block;position:fixed;top:0;left:0;right:0;bottom:0;z-index:50;
+  pointer-events:none;overflow:hidden;
   background:rgb(3,3,5);
-  font-family:"Courier New",monospace;letter-spacing:0;font-weight:normal;
-  -webkit-font-smoothing:auto;
+  font-family:"Courier New",monospace;letter-spacing:0;
+  /* 文字の基準。横向きでは高さが短辺なので vh 側が効く。ワイドな PC で
+     大きくなりすぎないよう vw 側でも頭を抑えるだけの、ごく普通の指定。 */
+  --f:min(1.02vw, 1.81vh);
+  --logo:7.6;              /* ロゴだけ倍率が違うので分けて持つ */
+  /* 画面端からの余白 */
+  --ex:2.4vw;
+  --ey:2.4vh;
+  --er:2.4vw;              /* 右端だけ別に持つ（PWA で広げる） */
 }
+/* スマホは画面が小さいぶん文字を相対的に大きくする（canvas 版の _UI_K=1.7 と同じ意図）。
+   media query なので JS のクラス付与を待たない。 */
+@media (pointer:coarse){
+  #titleScreen.show{--f:min(1.7vw, 2.6vh);--logo:4.8;}
+}
+/* PWA(standalone) は画面の左右端に iOS のシステムジェスチャ帯があり、そこに触れた指は
+   OS に取られてアプリまで届かない。右端に接する MY PAGE / HALL OF LEGENDS を内側へ寄せる。
+   #btnPause が既に使っているのと同じ media query。JS は関与しない。 */
+@media (display-mode:standalone) and (pointer:coarse){
+  #titleScreen.show{--er:7vw;}
+}
+/* 触れるのは .live のときだけ。ボタン以外は下の pointer-events:none で素通し */
+#titleScreen.show.live{pointer-events:auto;}
 
-/* ── 塔画像: drawImage(towerImg,0,0,380,720) / globalAlpha .55 / composite 'screen' ── */
-#tsTower{position:absolute;left:0;top:0;width:calc(380*var(--u));height:calc(720*var(--u));
-  opacity:0.55;mix-blend-mode:screen;pointer-events:none;image-rendering:pixelated;}
+/* 塔（左側の帯）。装飾なので絶対に指を受けない */
+#tsTower{position:absolute;left:0;top:0;width:30%;height:100%;
+  opacity:0.5;mix-blend-mode:screen;pointer-events:none;
+  object-fit:fill;image-rendering:pixelated;}
 
-/* ── <button> の見た目を消す共通リセット ────────────────────────────
-   .ts-t / .ts-box より前に置くこと。font-size と line-height はそちらが決める。 */
-.ts-btn{background:none;border:0;padding:0;margin:0;color:inherit;
-  font-family:"Courier New",monospace;
-  -webkit-appearance:none;appearance:none;border-radius:0;cursor:pointer;
-  -webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+/* ── ボタン共通 ────────────────────────────────────────────────
+   見た目の箱＝押せる箱。padding が指の余裕をそのまま作る。 */
+.ts-btn{
+  position:absolute;margin:0;background:none;border:0;color:inherit;
+  font-family:"Courier New",monospace;font-size:var(--f);line-height:1.1;
+  white-space:nowrap;text-align:center;cursor:pointer;pointer-events:auto;
+  -webkit-appearance:none;appearance:none;border-radius:0;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  padding:1.4vh 1.8vw;                      /* 44px 相当の指の当たりを確保 */
+}
 .ts-btn::-moz-focus-inner{border:0;padding:0;}
+#titleScreen.live .ts-btn:active{filter:brightness(1.7);}
+/* 文字だけの行。位置を占めるだけで指は一切受けない */
+.ts-txt{position:absolute;pointer-events:none;font-family:"Courier New",monospace;
+  line-height:1.2;white-space:nowrap;}
 
-/* ── 汎用テキスト行（fillText 相当）──────────────────────────────
-   --fs: フォントサイズ(canvas px) / --by: ベースラインY(canvas px)
-   既定は textAlign:'center'（左右いっぱいに広げて中央寄せ＝canvas の中央基準と一致）
-   ★ pointer-events:none。文字行は画面幅いっぱいの箱なので、触れるままにすると
-     その下や近くのボタンへ向いた指を横から奪ってしまう。触れるのは .ts-box だけ。 */
-.ts-t{position:absolute;left:0;right:0;text-align:center;white-space:pre;
-  font-family:"Courier New",monospace;line-height:1;pointer-events:none;
-  font-size:calc(var(--fs)*var(--u));
-  top:calc((var(--by) - var(--asc)*var(--fs))*var(--u));}
-/* textAlign:'left' 版: --lx が fillText の x */
-.ts-l{left:calc(var(--lx)*var(--u));right:auto;text-align:left;}
-/* textAlign:'right' 版: --rx が fillText の x（右端）*/
-.ts-r{left:auto;right:calc((1280 - var(--rx))*var(--u));text-align:right;}
+/* ── 四隅 ─────────────────────────────────────────────────── */
+#tsSettings{top:var(--ey);left:var(--ex);
+  background:rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.7);
+  color:rgba(255,255,255,0.9);letter-spacing:0.05em;}
+#tsMypage{top:var(--ey);right:var(--er);
+  background:rgba(0,0,0,0.6);border:1px solid rgba(255,220,50,0.8);
+  color:rgba(255,220,50,1);letter-spacing:0.05em;}
+#titleScreen.ts-test #tsMypage{display:none;}
+#tsHol{bottom:var(--ey);right:var(--er);color:rgba(100,140,200,0.9);}
+#titleScreen.ts-test #tsHol{color:rgba(80,80,100,0.6);}
+/* 左下の 2 行。四隅ボタンと同じ余白に揃える */
+#tsYourDeaths{left:var(--ex);bottom:calc(var(--ey) + 2.6vh);
+  font-size:var(--f);color:rgba(255,100,100,0.85);}
+#tsWorldDeaths{left:var(--ex);bottom:var(--ey);
+  font-size:var(--f);color:rgba(220,120,120,0.85);}
 
-/* ── 枠つき／当たり判定つきの要素（fillRect+strokeRect+fillText 相当）──────────
-   --bx,--by,--bw,--bh は canvas 側の矩形そのまま。--bs は矩形上端からベースラインまで。
-   canvas 側も「描画矩形＝判定矩形」だったので、その矩形をそのまま DOM の箱にしている。 */
-.ts-box{position:absolute;display:block;box-sizing:border-box;
-  left:calc(var(--bx)*var(--u));
-  top:calc((var(--by) - var(--bs))*var(--u));
-  width:calc(var(--bw)*var(--u));height:calc(var(--bh)*var(--u));
-  padding:calc((var(--bs) - var(--asc)*var(--fs))*var(--u)) 0 0 0;
-  font-family:"Courier New",monospace;font-size:calc(var(--fs)*var(--u));line-height:1;
-  white-space:pre;text-align:center;background:none;border:0;color:inherit;
-  -webkit-appearance:none;appearance:none;border-radius:0;cursor:pointer;
-  pointer-events:auto;   /* .ts-t を継いだ場合でも、箱だけは必ず触れる */
-  -webkit-tap-highlight-color:transparent;touch-action:manipulation;}
-.ts-box::-moz-focus-inner{border:0;padding:0;}
-/* 押した瞬間の手応え。canvas には無かったものだが、押せたかどうかが分からないと
-   「効いていない」のか「効いたが遅い」のかを実機で切り分けられないため入れる。
-   離した時点で元に戻るので、静止画としての見た目は現行と同一のまま。 */
-#titleScreen.live .ts-box:active{filter:brightness(1.6);}
+/* ── 中央の縦積み ──────────────────────────────────────────── */
+#tsCenter{position:absolute;left:0;right:0;top:0;bottom:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:0.8vh;pointer-events:none;padding:0 2vw;}
+#tsCenter>*{position:static;}      /* .ts-btn の absolute を flex の流れに戻す */
+#tsLogo{font-weight:bold;font-size:calc(var(--f)*var(--logo));line-height:1;
+  letter-spacing:0;white-space:nowrap;margin-bottom:0.6vh;}
+#tsLogoN{color:#fff;}
+#tsLogoE{color:#e74c3c;}
+body:not(.touch) #tsLogoN{text-shadow:0 0 0.45em rgba(255,255,255,0.85);}
+body:not(.touch) #tsLogoE{text-shadow:0 0 0.45em rgba(255,50,50,0.9);}
+#tsTag{font-weight:bold;font-size:calc(var(--f)*1.3);color:rgba(160,185,255,0.75);
+  pointer-events:none;white-space:nowrap;}
+body:not(.touch) #tsTag{text-shadow:0 0 0.5em rgba(160,185,255,0.6);}
+#tsSub{font-size:calc(var(--f)*0.92);color:rgba(140,140,160,0.5);
+  pointer-events:none;white-space:nowrap;margin-bottom:1.2vh;}
 
-/* ── SETTINGS（左上）: settingsBtn {16,16,120,28} / base 19 / font 13 ── */
-#tsSettings{--bx:16;--by:35;--bs:19;--bw:120;--bh:28;--fs:13;
-  background:rgba(0,0,0,0.7);border:calc(1.5*var(--u)) solid rgba(255,255,255,0.7);
-  color:rgba(255,255,255,0.9);}
-
-/* ── [ MY PAGE ]（右上）: mpBtn {W-16-_SA_R-104, 12, 104, 28} / base 19 / font 13 ── */
-#tsMypage{--bx:calc(1160 - var(--sa));--by:31;--bs:19;--bw:104;--bh:28;--fs:13;
-  background:rgba(0,0,0,0.6);border:calc(1.5*var(--u)) solid rgba(255,220,50,0.8);
-  color:rgba(255,220,50,1);}
-/* testMode では canvas 側も描いていないので消す */
-#titleStage.ts-test #tsMypage{display:none;}
-
-/* ── neverEND ロゴ: bold 100px、'never' x=395 / 'END' x=705、ベースライン H/2-30=330 ──
-   Courier New の字送りは 0.6em なので 'never'(5字)=300px, gap 10px, 'END'(3字)=180px、
-   合計 490px。sx = 640 - 245 = 395。canvas の measureText と同じ値になる。 */
-#tsLogoN,#tsLogoE{--fs:100;--by:330;font-weight:bold;}
-#tsLogoN{--lx:395;color:#fff;}
-#tsLogoE{--lx:705;color:#e74c3c;}
-body:not(.touch) #tsLogoN{text-shadow:0 0 calc(28*var(--u)) rgba(255,255,255,0.9);}
-body:not(.touch) #tsLogoE{text-shadow:0 0 calc(28*var(--u)) rgba(255,50,50,0.9);}
-
-/* ── '30 seconds to live. Forever.' neonText(center, 20px, blur 8) ── */
-#tsTag{--fs:20;--by:384;font-weight:bold;color:rgba(160,185,255,0.75);}
-body:not(.touch) #tsTag{text-shadow:0 0 calc(8*var(--u)) rgba(160,185,255,0.75);}
-
-/* ── 'How far can you get up the tower?' 14px rgba(140,140,160,0.4) ── */
-#tsSub{--fs:14;--by:410;color:rgba(140,140,160,0.4);}
-
-/* ── モード選択 ─────────────────────────────────────────────
-   canvas: 中央 W/2、判定矩形 {x:W/2-150, y:Y-rowH+6, w:300, h:rowH}。
-   矩形上端からベースラインまで = rowH-6（PC 18 / touch 28）＝ --bs。
-   ▶ の有無で文字数が変わり中央寄せの位置がずれるのも canvas と同じ（文字列ごと入れる）。 */
-#tsNormal,#tsDeath{--bx:490;--bw:300;--bh:24;--bs:18;--fs:18;font-weight:bold;}
-#tsNormal{--by:438;}
-#tsDeath{--by:464;}
-#tsNormal{color:rgba(150,160,190,0.4);}
+/* モード行。▶ は ::before で場所を常に確保するので、選択が動いても行が跳ねない */
+.ts-mode{font-weight:bold;font-size:calc(var(--f)*1.2);letter-spacing:0.08em;
+  padding:0.9vh 2vw;}
+.ts-mode::before{content:'\25B6';opacity:0;margin-right:0.7em;}
+.ts-mode.sel::before{opacity:1;}
+#tsNormal{color:rgba(150,160,190,0.45);}
 #tsNormal.sel{color:rgba(255,255,255,0.95);}
-body:not(.touch) #tsNormal.sel{text-shadow:0 0 calc(10*var(--u)) rgba(180,200,255,0.8);}
-#tsDeath{color:rgba(150,110,110,0.5);}                     /* 解放済み・非選択 */
-#tsDeath.sel{color:rgba(255,90,70,0.95);}                  /* 解放済み・選択 */
-body:not(.touch) #tsDeath.sel{text-shadow:0 0 calc(10*var(--u)) rgba(255,60,40,0.8);}
-#tsDeath.locked{color:rgba(110,110,130,0.4);text-shadow:none;}
+body:not(.touch) #tsNormal.sel{text-shadow:0 0 0.5em rgba(180,200,255,0.8);}
+#tsDeath{color:rgba(150,110,110,0.55);}
+#tsDeath.sel{color:rgba(255,90,70,0.95);}
+body:not(.touch) #tsDeath.sel{text-shadow:0 0 0.5em rgba(255,60,40,0.8);}
+#tsDeath.locked{color:rgba(110,110,130,0.45);text-shadow:none;}
 #tsDeath.locked.sel{color:rgba(170,170,190,0.7);text-shadow:none;}
 
-/* ── [ SPACE ] START: neonText(center, 22px, blur 14) + 明滅 pulse=sin(t*2)*.3+.7 ──
-   canvas 側に矩形は無いテキストだが、本物のボタンにするため中央 400px 幅の箱を与える。
-   箱の高さは文字が収まる最小限（上下の DEATH MODE / Playing as と重ならない値）。
-   --bs = h/2 + 0.35*fs（四隅ボタンと同じ「見た目中央」の式）で箱内のベースラインを出す。 */
-#tsStart{--bx:440;--bw:400;--bh:36;--bs:25.7;--by:500;--fs:22;font-weight:bold;
-  color:#fff;animation:tsPulseStart 3.1416s linear infinite;}
-body:not(.touch) #tsStart{text-shadow:0 0 calc(14*var(--u)) rgba(255,255,255,0.85);}
-@keyframes tsPulseStart{  /* sin(t*2)*.3+.7 → 0.4〜1.0、周期 π 秒 */
+#tsStart{font-weight:bold;font-size:calc(var(--f)*1.45);letter-spacing:0.06em;
+  color:#fff;margin-top:1.2vh;animation:tsPulseStart 3.1416s linear infinite;}
+body:not(.touch) #tsStart{text-shadow:0 0 0.5em rgba(255,255,255,0.85);}
+@keyframes tsPulseStart{
   0%{opacity:.700}12.5%{opacity:.912}25%{opacity:1}37.5%{opacity:.912}
   50%{opacity:.700}62.5%{opacity:.488}75%{opacity:.400}87.5%{opacity:.488}100%{opacity:.700}}
+#tsName{font-size:calc(var(--f)*0.95);color:rgba(160,180,220,0.7);
+  padding:0.8vh 1.5vw;cursor:default;pointer-events:none;}
+#titleScreen.ts-noname #tsName{cursor:pointer;pointer-events:auto;}
 
-/* ── 'Playing as: NAME' 12px rgba(160,180,220,0.7) ──
-   canvas 版では「名前未設定のとき H/2+104〜124 をタップすると名前入力が開く」という
-   描画物の無い判定があり、PC ではその帯が DEATH MODE の行と重なっていた。
-   HTML 版では、実際に名前が出ているこの行そのものを押せるようにする。
-   名前が設定済みのときは触れない（= 従来どおり何も起きない）。 */
-#tsName{--fs:12;--by:524;color:rgba(160,180,220,0.7);}
-#titleStage.ts-noname #tsName{pointer-events:auto;cursor:pointer;}
-
-/* ── 下部の固定テキスト ── */
-#tsKeys{--fs:13;--by:684;color:rgba(100,120,160,0.6);}
-#tsAdmin{--fs:10;--by:704;font-weight:bold;color:rgba(255,220,50,0.5);display:none;}
-body:not(.touch) #tsAdmin{text-shadow:0 0 calc(4*var(--u)) rgba(255,220,50,0.5);}
-#titleStage.ts-admin #tsAdmin{display:block;}
-#tsTerms{--fs:11;--by:714;color:rgba(120,120,150,0.6);}
-
-/* ── 左下 YOUR DEATHS / WORLD DEATHS: font 12*_UI_K、x=20K、y=H-30K / H-14K ── */
-#tsYourDeaths{--fs:12;--lx:20;--by:690;color:rgba(255,100,100,0.8);}
-#tsWorldDeaths{--fs:12;--lx:20;--by:706;color:rgba(220,120,120,0.8);}
-
-/* ── 右下 [ HALL OF LEGENDS ]: holBtn {W-20K-_SA_R-w, H-14K-base, w, h} ──
-   テキストは textAlign:'right' で右端 = holBtn.x+holBtn.w。箱の右端と一致させる。 */
-#tsHol{--bx:calc(1080 - var(--sa));--by:706;--bs:10;--bw:180;--bh:20;--fs:12;
-  text-align:right;color:rgba(100,140,200,0.8);}
-#titleStage.ts-test #tsHol{color:rgba(80,80,100,0.5);}
-
-/* ── HARD / RETRO バッジ: neonText(left, 10px, blur 4) ── */
-#tsHard,#tsRetro{--fs:10;--by:672;font-weight:bold;display:none;}
-#tsHard{--lx:160;color:rgba(255,80,60,0.6);}
-#tsRetro{--lx:1120;color:rgba(100,255,120,0.6);}
-body:not(.touch) #tsHard{text-shadow:0 0 calc(4*var(--u)) rgba(255,80,60,0.6);}
-body:not(.touch) #tsRetro{text-shadow:0 0 calc(4*var(--u)) rgba(100,255,120,0.6);}
-#titleStage.ts-hard #tsHard{display:block;}
-#titleStage.ts-retro #tsRetro{display:block;}
-
-/* ── 到達階層マーカー（塔の左）: pulse = sin(t*2.5)*0.4+0.6 → 0.2〜1.0、周期 2.513s ──
-   ▶ は (158,y)-(144,y-6)-(144,y+6) の三角形。CSS の border 三角形で同じ形になる。
-   markerY は到達階層で変わるので JS が --my に入れる。 */
-#tsBest{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;
-  --my:650;}
-#titleStage.ts-best #tsBest{display:block;}
-#tsBestTri{position:absolute;width:0;height:0;
-  left:calc(144*var(--u));top:calc((var(--my) - 6)*var(--u));
-  border-top:calc(6*var(--u)) solid transparent;
-  border-bottom:calc(6*var(--u)) solid transparent;
-  border-left:calc(14*var(--u)) solid rgb(255,60,40);
-  animation:tsPulseBest 2.5133s linear infinite;}
-body:not(.touch) #tsBestTri{filter:drop-shadow(0 0 calc(12*var(--u)) rgba(255,60,40,0.9));}
-#tsBestLabel{--fs:11;--rx:138;--by:calc(var(--my) + 4);font-weight:bold;color:rgb(255,80,60);
-  animation:tsPulseBest 2.5133s linear infinite;}
-body:not(.touch) #tsBestLabel{text-shadow:0 0 calc(8*var(--u)) rgba(255,60,40,0.8);}
-#tsBestLine{position:absolute;height:0;--lw:60;
-  right:calc(1144*var(--u));                       /* 右端 x=136 → 1280-136 */
-  left:calc((132 - var(--lw))*var(--u));           /* 左端 x=144-labelW-12。--lw は JS が入れる */
-  top:calc(var(--my)*var(--u));
-  border-top:calc(1*var(--u)) dashed rgba(255,60,40,0.5);
-  animation:tsPulseBest 2.5133s linear infinite;}
-@keyframes tsPulseBest{ /* sin(t*2.5)*0.4+0.6 → 0.2〜1.0 */
-  0%{opacity:.600}12.5%{opacity:.883}25%{opacity:1}37.5%{opacity:.883}
-  50%{opacity:.600}62.5%{opacity:.317}75%{opacity:.200}87.5%{opacity:.317}100%{opacity:.600}}
-
-/* ── TEST PLAY MODE バッジとログイン誘導（testMode のときだけ）── */
-#tsTestBadge{position:absolute;left:calc(510*var(--u));top:calc(4*var(--u));
-  width:calc(260*var(--u));height:calc(24*var(--u));background:rgba(220,40,40,0.95);display:none;}
-#titleStage.ts-test #tsTestBadge{display:block;}
-#titleStage.ts-test.ts-named #tsTestBadge{height:calc(44*var(--u));}
-/* バッジ内の 2 行は #tsTestBadge(top:4) 基準になるので canvas のベースライン 20/36 から 4 を引く */
-#tsTestBadgeTxt{--fs:13;--by:16;font-weight:bold;color:#fff;}
-#tsTestBadgeName{--fs:11;--by:32;color:rgba(255,255,255,0.85);display:none;}
-#titleStage.ts-test.ts-named #tsTestBadgeName{display:block;}
-#tsTestLogin{--fs:13;--by:494;font-weight:bold;color:rgba(255,220,80,0.9);display:none;z-index:2;
-  animation:tsPulseStart 3.1416s linear infinite;}
-#titleStage.ts-test #tsTestLogin{display:block;pointer-events:auto;cursor:pointer;}
-#titleStage.ts-authed #tsTestLogin{color:rgba(80,255,150,0.9);font-weight:normal;animation:none;opacity:1;
-  pointer-events:none;cursor:default;}
-
-/* ── 一時メッセージ（canvas の floatMsgs 相当）──────────────────────
-   HTML 版タイトルは canvas を覆うので、floatMsgs をそのまま出しても見えない。
-   タイトルで実際に使われるのは「未解放の DEATH MODE を選んだとき」の一言だけなので、
-   その1本を DOM 側に持つ。bold 20px / 中央 / (640,360)、1.2 秒かけて 30px 上がり
-   最後の 0.8 秒で消える、という canvas 側の動きをそのまま写している。 */
-#tsMsg{--fs:20;--by:360;font-weight:bold;color:rgba(255,220,50,0.9);opacity:0;display:none;}
-body:not(.touch) #tsMsg{text-shadow:0 0 calc(8*var(--u)) rgba(255,220,50,0.9);}
+/* 未解放の DEATH MODE を選んだときの一言。canvas の floatMsgs 相当 */
+#tsMsg{position:absolute;left:0;right:0;top:38%;text-align:center;
+  font-weight:bold;font-size:calc(var(--f)*1.2);color:rgba(255,220,50,0.95);
+  pointer-events:none;opacity:0;display:none;}
 #tsMsg.show{display:block;animation:tsMsgFloat 3s linear forwards;}
 @keyframes tsMsgFloat{
   0%{opacity:1;transform:translateY(0)}
-  40%{opacity:1;transform:translateY(calc(-30*var(--u)))}
-  73.3%{opacity:1;transform:translateY(calc(-30*var(--u)))}
-  100%{opacity:0;transform:translateY(calc(-30*var(--u)))}}
+  40%,73%{opacity:1;transform:translateY(-4vh)}
+  100%{opacity:0;transform:translateY(-4vh)}}
 
-/* ═══ タッチ端末の構図（文字が大きい版）═══════════════════════════════════
-   ★ 判定を body.touch から @media (pointer:coarse) に移した。
-     body.touch は JS が付けるクラスで、iOS PWA のコールドスタートでは
-     付くのが遅れる／一度の誤読で付かないことが実際に起きている。
-     クラスが付くまでの間だけ PC 用の構図で描かれ、付いた瞬間に全部が飛ぶ＝
-     「見えている位置」と「さっき押した位置」が食い違う原因になる。
-     media query はブラウザ自身が評価するので、そういう瞬間が原理的に無い。
-     isTouchDevice の判定条件も (pointer:coarse) を必須にしているので、
-     この media query は body.touch の上位集合＝マウス端末には一切当たらない。
-   ここに書いてあるのは全て「構図の中での位置と大きさ」だけ。基底の規則と
-   同じ詳細度なので、必ず基底より後ろに置くこと（この位置）。 */
-@media (pointer:coarse){
-  #titleStage{
-    --tsw:min(100vw,156.4464dvh);   /* = 88dvh 相当の高さに 16:9。JS の変数は使わない */
-    position:fixed;top:4px;bottom:auto;left:0;right:0;margin:0 auto;
-  }
-  #tsSettings{--by:44;--bs:28;--bw:136;--bh:40;--fs:22.1;}
-  #tsMypage{--bx:calc(1088 - var(--sa));--by:40;--bs:28;--bw:176;--bh:40;--fs:22.1;}
-  #tsTag{--fs:26;--by:376;}
-  #tsSub{--fs:18;--by:404;}
-  #tsNormal,#tsDeath{--bh:34;--bs:28;--fs:24;}
-  #tsNormal{--by:444;}
-  #tsDeath{--by:484;}
-  #tsStart{--bh:46;--bs:33.15;--by:526;--fs:29;}
-  #tsName{--fs:16;--by:556;}
-  #tsYourDeaths{--fs:20.4;--lx:34;--by:669;}
-  #tsWorldDeaths{--fs:20.4;--lx:34;--by:696.2;}
-  #tsHol{--bx:calc(996 - var(--sa));--by:696.2;--bs:25;--bw:250;--bh:36;--fs:20.4;}
-}
-/* PWA(standalone) では画面の左右端に iOS のシステムジェスチャ帯があり、そこに触れた指は
-   OS に取られてアプリまで届かない。右端に接する MY PAGE / HALL OF LEGENDS だけを内側へ寄せる。
-   ★ この値は以前 JS が --sa に書き込んでいた（_SA_R）。起動時に一度決まる定数とはいえ、
-     位置決めに JS の書き込みを 1 つでも残すと「まだ JS 待ちの配置」であり続けるので、
-     #btnPause が既にやっているのと同じ media query に置き換えた。これでタイトルの位置は
-     どこも JS を経由しない。数値も条件も従来と同一なので見た目は変わらない。 */
-@media (display-mode:standalone) and (pointer:coarse){
-  #titleStage{--sa:48;}
-}
+/* ── 画面下中央の案内 ───────────────────────────────────────── */
+#tsFoot{position:absolute;left:0;right:0;bottom:0.4vh;text-align:center;
+  pointer-events:none;}
+#tsKeys{font-size:calc(var(--f)*0.9);color:rgba(100,120,160,0.6);}
+#tsTerms{font-size:calc(var(--f)*0.78);color:rgba(120,120,150,0.6);}
+#tsAdmin{font-size:calc(var(--f)*0.8);font-weight:bold;color:rgba(255,220,50,0.6);display:none;}
+#titleScreen.ts-admin #tsAdmin{display:block;}
+#tsHard,#tsRetro{font-size:calc(var(--f)*0.8);font-weight:bold;
+  bottom:calc(var(--ey) + 5.6vh);display:none;}
+#tsHard{left:var(--ex);color:rgba(255,80,60,0.7);}
+#tsRetro{right:var(--er);color:rgba(100,255,120,0.7);}
+#titleScreen.ts-hard #tsHard{display:block;}
+#titleScreen.ts-retro #tsRetro{display:block;}
+
+/* ── 到達階層マーカー（塔の上の ▶ BEST: NF）───────────────────
+   縦位置だけは「何階まで登ったか」というゲームの値で決まるので JS が --my(%) を入れる。
+   これはレイアウトの較正値ではなくゲームデータで、しかもボタンではないので、
+   値がどうなろうとタップの当たり判定には一切影響しない。 */
+#tsBest{position:absolute;left:0;top:0;width:30%;height:100%;
+  pointer-events:none;display:none;--my:92%;}
+#titleScreen.ts-best #tsBest{display:block;}
+#tsBestLabel{position:absolute;right:8%;top:var(--my);transform:translateY(-50%);
+  font-weight:bold;font-size:calc(var(--f)*0.85);color:rgb(255,80,60);
+  white-space:nowrap;animation:tsPulseBest 2.5133s linear infinite;}
+#tsBestLabel::after{content:'\25B6';margin-left:0.4em;}
+body:not(.touch) #tsBestLabel{text-shadow:0 0 0.5em rgba(255,60,40,0.8);}
+@keyframes tsPulseBest{
+  0%{opacity:.600}12.5%{opacity:.883}25%{opacity:1}37.5%{opacity:.883}
+  50%{opacity:.600}62.5%{opacity:.317}75%{opacity:.200}87.5%{opacity:.317}100%{opacity:.600}}
+
+/* ── TEST PLAY MODE（管理者用）─────────────────────────────── */
+#tsTestBadge{position:absolute;left:50%;transform:translateX(-50%);top:0;
+  padding:0.4vh 2vw;background:rgba(220,40,40,0.95);color:#fff;text-align:center;
+  font-size:calc(var(--f)*0.95);font-weight:bold;pointer-events:none;display:none;}
+#titleScreen.ts-test #tsTestBadge{display:block;}
+#tsTestBadgeName{display:none;font-weight:normal;font-size:0.85em;
+  color:rgba(255,255,255,0.85);}
+#titleScreen.ts-test.ts-named #tsTestBadgeName{display:block;}
+#tsTestLogin{font-size:calc(var(--f)*0.95);font-weight:bold;
+  color:rgba(255,220,80,0.9);display:none;}
+#titleScreen.ts-test #tsTestLogin{display:block;pointer-events:auto;cursor:pointer;}
+#titleScreen.ts-authed #tsTestLogin{color:rgba(80,255,150,0.9);font-weight:normal;
+  pointer-events:none;cursor:default;}
 
 /* PWA(standalone)向けの canvas ずらし補正はすべて撤回済み。canvas を下げると Cookie 同意バナーの
    Accept が押せなくなり、下段UI・ゲーム画面もまとめてずれたため。canvas は上寄せ・全高のまま
@@ -645,34 +542,34 @@ body.touch.portrait #rotateOverlay{display:flex;}
      canvas の実測値も一切読まない。見えている文字とタップを受ける箱は同一要素。
      canvas 版の描画に戻したいときだけ ?canvastitle=1 -->
 <div id="titleScreen" aria-hidden="true">
-  <div id="titleStage">
-    <img id="tsTower" src="/public/tower.png" alt="" draggable="false">
-    <div id="tsBest">
-      <span id="tsBestLabel" class="ts-t ts-r"></span>
-      <i id="tsBestLine"></i>
-      <b id="tsBestTri"></b>
-    </div>
-    <span id="tsLogoN" class="ts-t ts-l">never</span><span id="tsLogoE" class="ts-t ts-l">END</span>
-    <div id="tsTag" class="ts-t">30 seconds to live. Forever.</div>
-    <div id="tsSub" class="ts-t">How far can you get up the tower?</div>
-    <button type="button" id="tsNormal" class="ts-box">      NORMAL MODE</button>
-    <button type="button" id="tsDeath"  class="ts-box">      ???</button>
-    <button type="button" id="tsStart"  class="ts-box">[ SPACE ] START</button>
-    <button type="button" id="tsName" class="ts-btn ts-t">Playing as: </button>
-    <div id="tsMsg" class="ts-t"></div>
-    <div id="tsKeys" class="ts-t">← →  MOVE    SPACE  JUMP    F / ESC  PAUSE</div>
-    <div id="tsAdmin" class="ts-t">[ ADMIN MODE ON ]</div>
-    <div id="tsTerms" class="ts-t">By playing you agree to our Terms of Service  |  damnrun.com/terms</div>
-    <div id="tsYourDeaths"  class="ts-t ts-l">YOUR DEATHS: 0</div>
-    <div id="tsWorldDeaths" class="ts-t ts-l">WORLD DEATHS: 0</div>
-    <div id="tsHard"  class="ts-t ts-l">HARD MODE ON</div>
-    <div id="tsRetro" class="ts-t ts-l">RETRO MODE ON</div>
-    <button type="button" id="tsSettings" class="ts-box">SETTINGS</button>
-    <button type="button" id="tsMypage"   class="ts-box">[ MY PAGE ]</button>
-    <button type="button" id="tsHol"      class="ts-box">[ HALL OF LEGENDS ]</button>
-    <div id="tsTestBadge"><span id="tsTestBadgeTxt" class="ts-t">TEST PLAY MODE</span><span id="tsTestBadgeName" class="ts-t"></span></div>
-    <div id="tsTestLogin" class="ts-t">[ LOGIN ] to leave your name in the credits</div>
+  <img id="tsTower" src="/public/tower.png" alt="" draggable="false">
+  <div id="tsBest"><span id="tsBestLabel"></span></div>
+  <!-- 四隅。viewport の角からの距離で直接置く -->
+  <button type="button" id="tsSettings" class="ts-btn">SETTINGS</button>
+  <button type="button" id="tsMypage"   class="ts-btn">[ MY PAGE ]</button>
+  <button type="button" id="tsHol"      class="ts-btn">[ HALL OF LEGENDS ]</button>
+  <div id="tsYourDeaths"  class="ts-txt">YOUR DEATHS: 0</div>
+  <div id="tsWorldDeaths" class="ts-txt">WORLD DEATHS: 0</div>
+  <div id="tsHard"  class="ts-txt">HARD MODE ON</div>
+  <div id="tsRetro" class="ts-txt">RETRO MODE ON</div>
+  <!-- 中央。flex の縦積み -->
+  <div id="tsCenter">
+    <div id="tsLogo"><span id="tsLogoN">never</span><span id="tsLogoE">END</span></div>
+    <div id="tsTag">30 seconds to live. Forever.</div>
+    <div id="tsSub">How far can you get up the tower?</div>
+    <button type="button" id="tsNormal" class="ts-btn ts-mode">NORMAL MODE</button>
+    <button type="button" id="tsDeath"  class="ts-btn ts-mode">???</button>
+    <button type="button" id="tsStart"  class="ts-btn">[ SPACE ] START</button>
+    <button type="button" id="tsName"   class="ts-btn">Playing as: </button>
+    <div id="tsTestLogin">[ LOGIN ] to leave your name in the credits</div>
   </div>
+  <div id="tsMsg"></div>
+  <div id="tsFoot">
+    <div id="tsAdmin">[ ADMIN MODE ON ]</div>
+    <div id="tsKeys">← →  MOVE    SPACE  JUMP    F / ESC  PAUSE</div>
+    <div id="tsTerms">By playing you agree to our Terms of Service  |  damnrun.com/terms</div>
+  </div>
+  <div id="tsTestBadge">TEST PLAY MODE<span id="tsTestBadgeName"></span></div>
 </div>
 <div id="touchControls" aria-hidden="true">
   <div id="lrRow">
@@ -7672,29 +7569,29 @@ const _titleDom=(()=>{
   const root=document.getElementById('titleScreen');
   if(!root)return null;
   const $=id=>document.getElementById(id);
-  return {root:root,stage:$('titleStage'),
+  return {root:root,
     settings:$('tsSettings'),mypage:$('tsMypage'),hol:$('tsHol'),
     normal:$('tsNormal'),death:$('tsDeath'),start:$('tsStart'),
     name:$('tsName'),msg:$('tsMsg'),
     you:$('tsYourDeaths'),world:$('tsWorldDeaths'),
-    best:$('tsBest'),bestLabel:$('tsBestLabel'),bestLine:$('tsBestLine'),
+    best:$('tsBest'),bestLabel:$('tsBestLabel'),
     badgeName:$('tsTestBadgeName'),login:$('tsTestLogin')};
 })();
-// ★ ここで --sa（右端の内寄せ量）を JS から書いていたのをやめた。CSS の
-//   @media (display-mode:standalone) and (pointer:coarse) が同じことをする。
-//   タイトルの位置決めに JS が関与する箇所はこれで 1 つも無くなった。
+// ★ JS は文字と状態クラスしか触らない。位置・大きさに関わる style / CSS 変数は
+//   一切書かない（--sa も --u も廃止済み）。配置は CSS と media query だけで決まる。
 // textContent は変わったときだけ書く（毎フレーム呼ばれるのでレイアウトを無駄に走らせない）
 function _tsText(el,txt){if(el&&el.__t!==txt){el.__t=txt;el.textContent=txt;}}
 function _tsClass(el,cls,on){if(el)el.classList.toggle(cls,!!on);}
 function syncTitleDom(){
   const D=_titleDom;if(!D)return;
-  const S=D.stage;
+  const S=D.root;                 // 状態クラスは #titleScreen に付ける
   const dmu=deathModeUnlocked;
   const msel=_titleModeSel;
-  // ── モード選択（▶ の有無で文字列そのものが変わるのは canvas と同じ）──
+  // ── モード選択。▶ は CSS の ::before が常に場所を確保しているので、
+  //    選択が動いても行の幅が変わらない（文字列に ▶ を混ぜない）。
   const nSel=msel===0,dSel=msel===1;
-  _tsText(D.normal,(nSel?'▶  ':'      ')+'NORMAL MODE');
-  _tsText(D.death ,(dSel?'▶  ':'      ')+(dmu?'DEATH MODE':'???'));
+  _tsText(D.normal,'NORMAL MODE');
+  _tsText(D.death ,dmu?'DEATH MODE':'???');
   _tsClass(D.normal,'sel',nSel);
   _tsClass(D.death ,'sel',dSel);
   _tsClass(D.death ,'locked',!dmu);
@@ -7726,16 +7623,16 @@ function syncTitleDom(){
       _tsText(D.login,'[ LOGIN ] to leave your name in the credits');
     }
   }
-  // ── 到達階層マーカー（塔の左の ▶ BEST: NF）──
-  // canvas: markerY = 650 - (bestFloor/100)*600、ラベル右端 x=138、点線は x=144-labelW-12 まで。
-  // labelW は Courier New bold 11px の字送り 0.6em = 6.6px/字 で出す（measureText と同値）。
+  // ── 到達階層マーカー ──
+  // 100 階のうち何階まで登ったかを、塔の帯の中の縦位置(%)にする。
+  // これはゲームの値であってレイアウトの較正値ではない。しかも #tsBest は
+  // pointer-events:none の飾りなので、値が何であれタップ判定には影響しない。
   const bestFloor=(dmu?getStat('deathBestStage',0):getStat('normalBestStage',0))||getStat('bestStage',0)||0;
   _tsClass(S,'ts-best',bestFloor>0);
   if(bestFloor>0){
-    const label='BEST: '+bestFloor+'F';
-    _tsText(D.bestLabel,label);
-    D.best.style.setProperty('--my',String(650-(bestFloor/100)*600));
-    D.bestLine.style.setProperty('--lw',String(label.length*6.6));
+    _tsText(D.bestLabel,'BEST: '+bestFloor+'F');
+    const pct=Math.max(4,Math.min(96,92-(bestFloor/100)*84));  // 下=1階 / 上=100階
+    if(D.best.__my!==pct){D.best.__my=pct;D.best.style.setProperty('--my',pct+'%');}
   }
 }
 // ── HTML 版タイトルが本番かどうか ──────────────────────────────
@@ -7908,7 +7805,7 @@ if(_titleDom){
     if(state!=='title'){box.style.display='none';return;}
     box.style.display='block';
     try{
-      const L=['BUILD 0801y  n:'+(window.__tsFireN|0)+'  '+(window.__standalone?'PWA':'BRW')];
+      const L=['BUILD 0801z  n:'+(window.__tsFireN|0)+'  '+(window.__standalone?'PWA':'BRW')];
       for(const [tag,get] of targets){
         const el=get();
         if(!el){L.push(tag+' (無し)');continue;}
@@ -7919,37 +7816,22 @@ if(_titleDom){
         const ok=!!hit&&(hit===el||el.contains(hit));
         if(!ok)ngCount[tag]=(ngCount[tag]|0)+1;
         L.push(tag+' '+(ok?'OK ':'NG ')+nm(hit)+
-               (ok?'':'  x'+(ngCount[tag]|0))+
-               (r.bottom>window.innerHeight||r.top<0?'  画面外':''));
+               (ok?'':' @'+Math.round(x)+','+Math.round(y)+' x'+(ngCount[tag]|0))+
+               (r.bottom>window.innerHeight||r.top<0||r.right>window.innerWidth||r.left<0?' 画面外':''));
       }
-      const scr=document.getElementById('titleScreen'),stg=document.getElementById('titleStage'),
+      const scr=document.getElementById('titleScreen'),
             btn=document.getElementById('tsSettings'),cb=document.getElementById('cookieBanner');
-      L.push('pe scr:'+pe(scr)+' stg:'+pe(stg)+' btn:'+pe(btn));
-      L.push('z  scr:'+zi(scr)+'  cls:'+(scr?scr.className:'-'));
-      // 「STARTの下を押すと効く」の実測。sta = ボタンの箱、txt = 文字が実際に占める行。
-      // この2つは同じ要素なので、箱の中で文字がどこに乗っているかがそのまま出る。
-      {const b=document.getElementById('tsStart');
-       if(b){const r=b.getBoundingClientRect(),cs=getComputedStyle(b),
-             pt=parseFloat(cs.paddingTop)||0,fs=parseFloat(cs.fontSize)||0;
-         L.push('sta '+Math.round(r.top)+'-'+Math.round(r.bottom)+
-                ' 字'+Math.round(r.top+pt)+'-'+Math.round(r.top+pt+fs));}}
-      {const s=stg.getBoundingClientRect();
-       L.push('stg '+Math.round(s.left)+','+Math.round(s.top)+' '+
-              Math.round(s.width)+'x'+Math.round(s.height)+' vh'+window.innerHeight);}
+      L.push('pe scr:'+pe(scr)+' btn:'+pe(btn)+' z'+zi(scr));
+      L.push('cls '+(scr?scr.className:'-'));
+      L.push('vp '+window.innerWidth+'x'+window.innerHeight);
       if(cb){const cr=cb.getBoundingClientRect();
-        L.push('cb '+getComputedStyle(cb).display+' y'+Math.round(cr.top)+'-'+Math.round(cr.bottom)+
-               ' vh'+window.innerHeight);}
+        L.push('cb '+getComputedStyle(cb).display+' y'+Math.round(cr.top)+'-'+Math.round(cr.bottom));}
       L.push('ts:'+ts+'  te:'+te);
       L.push('ck:'+ck+'  fire:'+(window.__tsFire||'-'));
       box.textContent=L.join('\n');
-    }catch(e){box.textContent='0801y ERR '+(e&&e.message||'err');}
+    }catch(e){box.textContent='0801z ERR '+(e&&e.message||'err');}
   },400);
 })();
-// #titleStage が画面のどこに居るかは、必要なときだけコンソールで見る（表示はしない）。
-window.__tsGeom=()=>{
-  const s=document.getElementById('titleStage').getBoundingClientRect();
-  return {stage:s, vw:window.innerWidth, vh:window.innerHeight};
-};
 
 // ======== UPDATE ========
 function update(dt){

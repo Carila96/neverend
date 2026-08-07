@@ -7844,12 +7844,17 @@ function _titleOpenName(){
 function _tsBind(el,fn){
   if(!el)return;
   let armed=false,last=0;
-  const fire=()=>{const n=Date.now();if(n-last<400)return;last=n;fn();};
+  const fire=src=>{
+    const n=Date.now();if(n-last<400)return;last=n;
+    window.__tsFire=(el.id||'?')+':'+src;                    // ▼0801y 調査用（表示のみ）
+    window.__tsFireN=(window.__tsFireN|0)+1;
+    fn();
+  };
   el.addEventListener('pointerdown',()=>{armed=true;});
   el.addEventListener('pointercancel',()=>{armed=false;});
   el.addEventListener('pointerleave',()=>{armed=false;});
-  el.addEventListener('pointerup',e=>{if(!armed)return;armed=false;if(e.button>0)return;fire();});
-  el.addEventListener('click',fire);
+  el.addEventListener('pointerup',e=>{if(!armed)return;armed=false;if(e.button>0)return;fire('p');});
+  el.addEventListener('click',()=>fire('c'));
 }
 if(_titleDom){
   const D=_titleDom;
@@ -7867,6 +7872,96 @@ if(_titleDom){
   _tsBind(D.name  ,()=>{if(!_getPlayerName())_titleOpenName();});
   _tsBind(D.login ,()=>{if(testMode&&!_currentUser)openLoginModal();});
 }
+
+// ╔═══════════════════════════════════════════════════════════════════════════╗
+// ║ BUILD 0801y ─ 一時調査。効かない間、ボタンの前に何が居るのかを名指しする。 ║
+// ╚═══════════════════════════════════════════════════════════════════════════╝
+// 座標変換もヒットテストも自前ではやらない。ブラウザ自身に
+//   「この画面座標にある最前面の要素は何か」
+// を document.elementFromPoint() で聞き、返ってきた要素の名前をそのまま出す。
+// 押したい <button> が返れば、その座標は確かにボタンのもの＝原因は被さりではない。
+// 別の要素が返れば、それが指を横取りしている犯人で、名前がそのまま画面に出る。
+//
+// 併せて、実際のタップが要素に届いているかも記録する:
+//   ts/te … touchstart / touchend が実際に当たった要素
+//   ck    … その後 click イベントが発生した要素
+//   fire  … _tsBind のハンドラが動いたか（:p=pointerup 経由 / :c=click 経由）
+// 「efp はボタンを返しているのに te が別要素」なら、被さりではなくイベント経路の問題。
+// 「efp が別要素」なら被さり。この 2 つを 1 画面で切り分けるための表示。
+//
+// この板は pointer-events:none 固定・タッチ端末のみ・タイトル画面のときだけ更新する。
+// 調査が終わったらこのブロックごと削除する（他のコードから参照されていない）。
+(function _probe0801y(){
+  if(!isTouchDevice)return;                       // PC は現状でも 1 タップで効くので対象外
+  const box=document.createElement('div');
+  box.id='probe0801y';
+  box.style.cssText='position:fixed;left:3px;top:74px;z-index:9998;pointer-events:none;'+
+    'background:rgba(0,0,0,0.86);border:1px solid rgba(0,255,0,0.45);border-radius:4px;'+
+    'padding:3px 6px;color:#0f0;font-family:monospace;font-size:9px;line-height:1.35;'+
+    'white-space:pre;text-align:left;max-width:62vw;overflow:hidden;';
+  document.body.appendChild(box);
+
+  // 要素を短い名前にする。id があれば id、無ければ tag.class の先頭 1 つ。
+  const nm=e=>{
+    if(!e)return '(null)';
+    if(e.id)return '#'+e.id;
+    const c=(e.className&&e.className.baseVal!==undefined?e.className.baseVal:e.className)||'';
+    const c1=String(c).trim().split(/\s+/)[0];
+    return (e.tagName||'?').toLowerCase()+(c1?'.'+c1:'');
+  };
+  // 調べる対象。cookie の 2 つは querySelector で毎回引き直す（バナーは出たり消えたりする）。
+  const targets=[
+    ['SET',()=>document.getElementById('tsSettings')],
+    ['MYP',()=>document.getElementById('tsMypage')],
+    ['HOL',()=>document.getElementById('tsHol')],
+    ['NRM',()=>document.getElementById('tsNormal')],
+    ['DTH',()=>document.getElementById('tsDeath')],
+    ['STA',()=>document.getElementById('tsStart')],
+    ['CK+',()=>document.querySelector('.cookie-accept')],
+    ['CK-',()=>document.querySelector('.cookie-decline')],
+  ];
+  const ngCount={};                               // 何回 NG だったか（効き出した瞬間に止まる）
+
+  // 実タップの記録。capture 段で見るだけ。preventDefault も stopPropagation もしない。
+  let ts='-',te='-',ck='-';
+  document.addEventListener('touchstart',e=>{const t=e.target;ts=nm(t);},true);
+  document.addEventListener('touchend'  ,e=>{const t=e.target;te=nm(t);},true);
+  document.addEventListener('click'     ,e=>{ck=nm(e.target)+(e.isTrusted?'':'*');},true);
+
+  const pe=el=>{try{return getComputedStyle(el).pointerEvents;}catch(_){return '?';}};
+  const zi=el=>{try{return getComputedStyle(el).zIndex;}catch(_){return '?';}};
+
+  setInterval(()=>{
+    if(state!=='title'){box.style.display='none';return;}
+    box.style.display='block';
+    try{
+      const L=['BUILD 0801y  n:'+(window.__tsFireN|0)+'  '+(window.__standalone?'PWA':'BRW')];
+      for(const [tag,get] of targets){
+        const el=get();
+        if(!el){L.push(tag+' (無し)');continue;}
+        const r=el.getBoundingClientRect();
+        if(!(r.width>0&&r.height>0)){L.push(tag+' 非表示');continue;}
+        const x=r.left+r.width/2, y=r.top+r.height/2;
+        const hit=document.elementFromPoint(x,y);
+        const ok=!!hit&&(hit===el||el.contains(hit));
+        if(!ok)ngCount[tag]=(ngCount[tag]|0)+1;
+        L.push(tag+' '+(ok?'OK ':'NG ')+nm(hit)+
+               (ok?'':'  x'+(ngCount[tag]|0))+
+               (r.bottom>window.innerHeight||r.top<0?'  画面外':''));
+      }
+      const scr=document.getElementById('titleScreen'),stg=document.getElementById('titleStage'),
+            btn=document.getElementById('tsSettings'),cb=document.getElementById('cookieBanner');
+      L.push('pe scr:'+pe(scr)+' stg:'+pe(stg)+' btn:'+pe(btn));
+      L.push('z  scr:'+zi(scr)+'  cls:'+(scr?scr.className:'-'));
+      if(cb){const cr=cb.getBoundingClientRect();
+        L.push('cb '+getComputedStyle(cb).display+' y'+Math.round(cr.top)+'-'+Math.round(cr.bottom)+
+               ' vh'+window.innerHeight);}
+      L.push('ts:'+ts+'  te:'+te);
+      L.push('ck:'+ck+'  fire:'+(window.__tsFire||'-'));
+      box.textContent=L.join('\n');
+    }catch(e){box.textContent='0801y ERR '+(e&&e.message||'err');}
+  },400);
+})();
 
 // ═══ 見た目比較ツールバー（段階1 の確認専用）═══════════════════════════
 // PWA はホーム画面から素の URL で起動するので ?htmltitle= を渡せない。

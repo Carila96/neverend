@@ -95,6 +95,16 @@ body.touch canvas{position:fixed;top:4px;left:0;right:0;margin:0 auto;}
   body{align-items:flex-start;min-height:0;}
   canvas#c{position:fixed;top:4px;left:0;right:0;margin:0 auto;}
 }
+/* ★★★ タイトル中だけ canvas をタップの対象から外す。
+   canvas は #titleScreen(z-index:50) の下に居るが、HTML のボタン以外の場所
+   —— ロゴの周り、余白、板そのもの —— は全部 pointer-events:none なので、
+   そこを押した指は canvas まで抜けて canvas の click ハンドラに入っていた。
+   実機の ck:#c がまさにそれ。canvas は絵も出していないのにタップだけ拾い続けていた。
+   pointer-events:none にすればブラウザがヒットテストの対象から外すので、
+   タイトルのタップは HTML のボタンか、どこでもない場所（＝何も起きない）になる。
+   クラスが付くのは state==='title' かつ HTML タイトルが本番のときだけ。
+   play/pause/dead/ending/memo では付かない＝ゲーム本編の canvas タップは従来どおり。 */
+body.titletap canvas#c{pointer-events:none;}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    タイトル画面（HTML）
@@ -1483,6 +1493,14 @@ if(isTouchDevice){
   },{passive:true});
   document.addEventListener('touchend',e=>{
     const t=e.changedTouches&&e.changedTouches[0];if(!t)return;
+    // ★★★ タイトルは HTML のボタンが全部処理する。canvas はこの画面では一切タップを見ない。
+    //   ここを塞ぐまで、タイトルのタップは必ずこのリスナーを通っていた。中の
+    //   _canvasActivate() は入口で return するので「何も起きない」だけに見えるが、
+    //   その手前の e.preventDefault() が後続の合成 click を殺してしまう。
+    //   HTML ボタンの pointerup が何かの拍子に落ちた回は click が最後の望みなのに、
+    //   それをこの行が消していた＝押しても効かない回が残り続けた真因。
+    //   描画を止めただけでは足りず、タップ経路もここで止める必要がある。
+    if(state==='title'&&_titleHtmlLive())return;
     if(_ctrlStates.has(state))return; // ゲーム中はコントローラー側の担当
     if(_blocked())return;           // Cookie バナー等が出ている間は触らせない
     if(Date.now()-_cTapT>700)return;                            // 長押しは無視
@@ -7819,7 +7837,7 @@ if(_titleDom){
     if(state!=='title'){box.style.display='none';return;}
     box.style.display='block';
     try{
-      const L=['BUILD 0801z2 n:'+(window.__tsFireN|0)+'  '+(window.__standalone?'PWA':'BRW')];
+      const L=['BUILD 0801z3 n:'+(window.__tsFireN|0)+'  '+(window.__standalone?'PWA':'BRW')];
       for(const [tag,get] of targets){
         const el=get();
         if(!el){L.push(tag+' (無し)');continue;}
@@ -7843,7 +7861,7 @@ if(_titleDom){
       L.push('ts:'+ts+'  te:'+te);
       L.push('ck:'+ck+'  fire:'+(window.__tsFire||'-'));
       box.textContent=L.join('\n');
-    }catch(e){box.textContent='0801z2 ERR '+(e&&e.message||'err');}
+    }catch(e){box.textContent='0801z3 ERR '+(e&&e.message||'err');}
   },400);
 })();
 
@@ -8925,6 +8943,9 @@ function loop(ts){
     // live = 本物のボタンとして触れる状態。title のときだけ。
     _titleDom.root.classList.toggle('live',onTitle);
   }
+  // タイトル中だけ canvas をタップの対象から外す（body.titletap canvas#c{pointer-events:none}）。
+  // ゲーム本編の状態では付かないので、canvas のタップは従来どおり。
+  document.body.classList.toggle('titletap', state==='title'&&_titleHtmlLive());
   // Slow motion after death
   if(slowTimer>0){slowTimer=Math.max(0,slowTimer-dt);dt*=0.15;}
   // Screen shake

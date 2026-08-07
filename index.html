@@ -1,4 +1,4 @@
-<!-- redeploy 2026-08-05 -->
+<!-- redeploy 2026-08-07 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -340,10 +340,6 @@ body:not(.touch) #tsBestLabel{text-shadow:0 0 calc(8*var(--u)) rgba(255,60,40,0.
   -webkit-tap-highlight-color:transparent;touch-action:manipulation;
   -webkit-appearance:none;appearance:none;}
 #tsCmp button:active{background:rgba(0,90,0,0.92);}
-#tsCmpInfo{margin-top:3px;background:rgba(0,0,0,0.84);color:#ff0;
-  border:1px solid rgba(255,255,0,0.35);border-radius:3px;
-  font-size:10px;line-height:1.4;padding:2px 6px;white-space:pre;text-align:left;}
-#tsCmpInfo b{color:#f66;font-weight:normal;}
 /* PWA(standalone)向けの canvas ずらし補正はすべて撤回済み。canvas を下げると Cookie 同意バナーの
    Accept が押せなくなり、下段UI・ゲーム画面もまとめてずれたため。canvas は上寄せ・全高のまま
    y 方向に 1px も動かさない（コントローラーを持つ指で画面が隠れないための仕様）。
@@ -393,18 +389,6 @@ body{
   font-family:'Courier New',monospace;font-size:11px;color:#888;
 }
 #cookieBanner.hidden{display:none!important;}
-/* ▼一時的な実機デバッグ表示（vvOff 補正の効きを数値で確認するため。確認後に撤去する）。
-   タッチ端末のみ。pointer-events:none 固定＝絶対にタップを奪わない。 */
-#dbgSafe{display:none;}
-body.touch #dbgSafe{
-  display:block;position:fixed;left:50%;transform:translateX(-50%);bottom:2px;z-index:9998;
-  pointer-events:none;background:rgba(0,0,0,0.82);color:#0f0;
-  font-family:'Share Tech Mono',monospace;font-size:9px;line-height:1.4;
-  padding:3px 8px;border:1px solid rgba(0,255,0,0.4);border-radius:4px;
-  white-space:pre;text-align:left;max-width:96vw;overflow:hidden;
-}
-#dbgSafe b{color:#ff0;}
-#dbgSafe i{color:#f66;font-style:normal;}
 /* Touch: 横向きだと画面が低くなり、bottom:0 の Accept/Decline が iOS のホームインジケータ帯
    (画面最下端 ~20px。OS がスワイプ用に押さえていてタップが届かない) に入ってしまう。
    縦向きは本文が折り返してバナーが高くなり、ボタンが帯の上に出るため押せていた。
@@ -654,7 +638,6 @@ body.touch.portrait #rotateOverlay{display:flex;}
     <button type="button" id="tsCmpSel">SEL:real</button>
     <button type="button" id="tsCmpClose">×</button>
   </div>
-  <div id="tsCmpInfo">-</div>
 </div>
 <div id="touchControls" aria-hidden="true">
   <div id="lrRow">
@@ -671,7 +654,6 @@ body.touch.portrait #rotateOverlay{display:flex;}
   <button type="button" id="a2hsClose">CLOSE</button>
 </div>
 <div id="a2hsDim"></div>
-<div id="dbgSafe"></div>
 <div id="rotateOverlay">↻<br>デバイスを横にしてください<br>Please rotate your device</div>
 <div id="xShareBtn" onclick="shareDeathX()">𝕏 Share</div>
 <div id="mypageOverlay" style="display:none;position:fixed;inset:0;z-index:1000;background:#000;">
@@ -1671,57 +1653,6 @@ if(isTouchDevice){
   // visualViewport の resize は回転完了後の確定値で飛ぶため、こちらを主軸にする。
   if(window.visualViewport)window.visualViewport.addEventListener('resize',_reflowSoon);
   window.addEventListener('resize',updateOrientation);   // 連続リサイズ用は軽い単発で十分
-  // ▼方向A: 事実採取(BUILD 0801x)。修正はせず、効かない間に何が起きているかだけを記録する。
-  //   これまでの実装が効かない理由を、推測ではなくイベントの実データで確定させる。
-  //   ・全タップ系イベントを capture 段で拾い、種別/対象要素/座標を時系列で残す
-  //     → 効かない間にイベントが来ていないのか、来ているが握り潰されているのかが分かる
-  //   ・初めて効いた瞬間の直前直後で、フォーカス/可視性/アクティブ要素がどう変わるか
-  //     → iOS PWA が最初のジェスチャまで入力を抑制している等の挙動を捉える
-  //   ・同じ場所の連打と別の場所の連打で、効くまでのイベント数がどう違うか
-  (function _initEventLog(){
-    const el=document.getElementById('dbgSafe');
-    if(!el)return;
-    const t0=Date.now(), ts=()=>((Date.now()-t0)/1000).toFixed(1);
-    const nm=e=>!e?'-':(e.id?'#'+e.id:(e.tagName||'?').toLowerCase());
-    const log=[], cnt={};
-    let sameRun=0, lastX=-999, lastY=-999, firstOKAt=null, firstOKInfo='-';
-    const push=(k,ev)=>{
-      cnt[k]=(cnt[k]|0)+1;
-      const t=(ev.changedTouches&&ev.changedTouches[0])||ev;
-      const x=Math.round(t.clientX||0), y=Math.round(t.clientY||0);
-      if(k==='s'){
-        const near=Math.abs(x-lastX)<20&&Math.abs(y-lastY)<20;
-        sameRun=near?sameRun+1:1; lastX=x; lastY=y;
-      }
-      log.push(k+nm(ev.target)+'@'+x+','+y);
-      if(log.length>9)log.shift();
-    };
-    const bind=(n,k)=>document.addEventListener(n,e=>push(k,e),{passive:true,capture:true});
-    bind('touchstart','s');bind('touchend','e');bind('touchcancel','x');
-    bind('pointerdown','P');bind('pointerup','U');bind('click','K');bind('mousedown','M');
-    const tick=()=>{
-      try{
-        const d=window.__dbg||{};
-        if(firstOKAt===null&&d.hit&&d.hit!=='none'){
-          firstOKAt=ts();
-          firstOKInfo='t'+firstOKAt+' after '+(cnt.s|0)+'taps run'+sameRun;
-        }
-        const sa=(window.navigator.standalone===true?'nav':'')+
-                 ((window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)?'+dm':'')||'browser';
-        let foc='?';try{foc=document.hasFocus()?'1':'0';}catch(_){}
-        const NLc='\n';
-        el.innerHTML=
-          '<b>BUILD 0801x</b> sa:'+sa+' st:'+state+' t:'+ts()+'s'+NLc+
-          'cnt s:'+(cnt.s|0)+' e:'+(cnt.e|0)+' x:'+(cnt.x|0)+' P:'+(cnt.P|0)+' U:'+(cnt.U|0)+' K:'+(cnt.K|0)+' M:'+(cnt.M|0)+NLc+
-          'foc:'+foc+' vis:'+document.visibilityState+' act:'+nm(document.activeElement)+' run:'+sameRun+NLc+
-          'geom '+(d.geom||'(未確定)')+NLc+
-          'tap '+(d.tap||'-')+' > '+(d.cxcy||'-')+' hit:'+(d.hit||'-')+' n:'+(d.n|0)+NLc+
-          '<b>1stOK</b> '+firstOKInfo+NLc+
-          log.join(NLc);
-      }catch(e){ el.textContent='BUILD 0801x ERR '+(e&&e.message||'err'); }
-    };
-    tick(); setInterval(tick,200);
-  })();
   // Add-to-home-screen hint: iOS Safari can't go fullscreen in-browser; guide users to A2HS.
   const _standalone = window.navigator.standalone===true || window.matchMedia('(display-mode: standalone)').matches;
   // PWA起動時のみ body.standalone を付与（PWA固有のCSSが必要になったとき用のフック）。
@@ -7472,9 +7403,6 @@ function _freezeGeom(){
   try{ const cs=getComputedStyle(canvas);
        if(cs.position==='fixed'){const t=parseFloat(cs.top); if(isFinite(t))top=t;} }catch(_){}
   _geom={left:r.left, top:top, width:r.width, height:r.height};
-  window.__dbg=window.__dbg||{};
-  window.__dbg.geom=Math.round(r.left)+','+Math.round(top)+' '+Math.round(r.width)+'x'+Math.round(r.height)+
-                    ' (box.top '+Math.round(r.top)+')';
 }
 // 変換に使う矩形。確定後は固定値、未確定の間だけ実測にフォールバックする
 // （ブラウザは即座に正しい値を返すので、フォールバック中でも従来どおり動く）。
@@ -7491,29 +7419,24 @@ function _canvasActivate(clientX,clientY){
   const rect=_canvasRect();
   const scaleX=W/rect.width,scaleY=H/rect.height;
   const cx=(clientX-rect.left)*scaleX,cy=(clientY-rect.top)*scaleY;
-  // ▼一時計測(0801q): 生の client 座標 → 補正後の基準 → canvas 内部座標、の全段を残す。
-  {const d=window.__dbg=window.__dbg||{};
-   d.tap=Math.round(clientX)+','+Math.round(clientY);
-   d.cxcy=Math.round(cx)+','+Math.round(cy);
-   d.hit='none'; d.n=(d.n|0)+1;}
   if(state==='title'){
     // モード選択クリック
     function _inRegion(b){return cx>=b.x&&cx<=b.x+b.w&&cy>=b.y&&cy<=b.y+b.h;}
     // Touch: tapping a mode both selects AND starts (no keyboard Space on mobile). PC keeps select-only.
     const _cbUp=(()=>{const c=document.getElementById('cookieBanner');return !!(c&&c.style.display!=='none'&&!c.classList.contains('hidden'));})();
     const _tapStart=isTouchDevice&&!_cbUp; // don't start while the cookie banner is up
-    if(_inRegion(_titleNormalBtn)){_titleModeSel=0;gameMode='normal';window.__dbg.hit='start';
+    if(_inRegion(_titleNormalBtn)){_titleModeSel=0;gameMode='normal';
       if(_tapStart){_retryStreak=0;resetRun();state='play';startBGM(getBGMTrack(1));}
     }
-    else if(_inRegion(_titleDeathBtn)){window.__dbg.hit='death';
+    else if(_inRegion(_titleDeathBtn)){
       if(deathModeUnlocked){_titleModeSel=1;gameMode='death';
         if(_tapStart){_retryStreak=0;resetRun();state='play';startBGM(getBGMTrack(1));}
       }
       else{floatMsgs.push({txt:'Clear all 100 floors to unlock.',x:W/2,y:H/2,life:3,color:'rgba(255,220,50,0.9)'});}
     }
     // 四隅はすべて _inRegion(矩形) に統一（描画が参照する矩形と同一のものを判定に使う）
-    if(_inRegion(settingsHit)){window.__dbg.hit='settings';openSettings();}   // 判定は拡張矩形、描画は settingsBtn
-    if(!testMode&&_inRegion(mpHit)){window.__dbg.hit='mypage';document.getElementById('mypageOverlay').style.display='block';document.getElementById('c').style.display='none';}
+    if(_inRegion(settingsHit)){openSettings();}   // 判定は拡張矩形、描画は settingsBtn
+    if(!testMode&&_inRegion(mpHit)){document.getElementById('mypageOverlay').style.display='block';document.getElementById('c').style.display='none';}
     // testMode: LOGIN button click (H/2+134 area)
     if(testMode&&!_currentUser&&cx>=W/2-200&&cx<=W/2+200&&cy>=H/2+122&&cy<=H/2+146){openLoginModal();}
     // ENTER YOUR NAME click (non-testMode, when no name set)
@@ -7522,7 +7445,7 @@ function _canvasActivate(clientX,clientY){
     }
     // Hall of Legends click (bottom-right area, disabled in testMode)
     // 旧: W-200/W-20/H-24/H-4 のハードコード。holBtn に統一して描画と判定を同じ矩形にした。
-    if(!testMode&&_inRegion(holBtn)){window.__dbg.hit='hol';if(_worldStatsCache){localStorage.setItem('neverend_world_stats_cache',JSON.stringify(_worldStatsCache));}document.getElementById('holOverlay').style.display='block';document.getElementById('c').style.display='none';}
+    if(!testMode&&_inRegion(holBtn)){if(_worldStatsCache){localStorage.setItem('neverend_world_stats_cache',JSON.stringify(_worldStatsCache));}document.getElementById('holOverlay').style.display='block';document.getElementById('c').style.display='none';}
   } else if(state==='testcomplete'){
     if(cx>=_tcBtn.x&&cx<=_tcBtn.x+_tcBtn.w&&cy>=_tcBtn.y&&cy<=_tcBtn.y+_tcBtn.h){state='title';}
   } else if(state==='mypage'){
@@ -7812,7 +7735,7 @@ const _tsCmp=(()=>{
   const el=document.getElementById('tsCmp');
   if(!el)return null;
   const $=id=>document.getElementById(id);
-  return {el:el,view:$('tsCmpView'),dm:$('tsCmpDm'),sel:$('tsCmpSel'),close:$('tsCmpClose'),info:$('tsCmpInfo')};
+  return {el:el,view:$('tsCmpView'),dm:$('tsCmpDm'),sel:$('tsCmpSel'),close:$('tsCmpClose')};
 })();
 function _tsCmpOpen(on){
   if(!_tsCmp)return;
@@ -7851,22 +7774,13 @@ if(_tsCmp){
       document.addEventListener('click',e=>{if(e.detail)bump(e.clientX,e.clientY);},true);
     }
   })();
-  // ── 実測の読み出し（canvas と #titleStage が本当に重なっているかの確認用）──
-  // ここで測った値はどこにも使わない。表示するだけなので、値が揺れても何も壊れない。
-  setInterval(()=>{
-    if(!_tsCmp.el.classList.contains('open'))return;
-    try{
-      const c=canvas.getBoundingClientRect(),s=_titleDom.stage.getBoundingClientRect();
-      const r=v=>Math.round(v*10)/10;
-      const off=Math.max(Math.abs(c.left-s.left),Math.abs(c.top-s.top),
-                         Math.abs(c.width-s.width),Math.abs(c.height-s.height));
-      _tsCmp.info.innerHTML=
-        'K'+_UI_K+' sa'+_SA_R+' u'+r(s.width/1280)+' '+(window.__standalone?'PWA':'BROWSER')+'\n'+
-        'cv '+r(c.left)+','+r(c.top)+' '+r(c.width)+'x'+r(c.height)+'\n'+
-        'st '+r(s.left)+','+r(s.top)+' '+r(s.width)+'x'+r(s.height)+
-        (off>1?'  <b>ZURE '+r(off)+'px</b>':'  OK');
-    }catch(_){}
-  },250);
+  // canvas と #titleStage が本当に重なっているかは、必要なときだけコンソールで見る。
+  // 画面には出さない（見た目の比較の邪魔になるため）。
+  window.__tsGeom=()=>{
+    const c=canvas.getBoundingClientRect(),s=_titleDom.stage.getBoundingClientRect();
+    return {canvas:c,stage:s,
+      dx:s.left-c.left, dy:s.top-c.top, dw:s.width-c.width, dh:s.height-c.height};
+  };
 }
 // 起動時の復元。URL パラメータが最優先、無ければ前回の選択を引き継ぐ。
 (function(){

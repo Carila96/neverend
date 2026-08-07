@@ -106,12 +106,23 @@ body.touch canvas{position:fixed;top:4px;left:0;right:0;margin:0 auto;}
    canvas と同じ位置・同じ大きさに置き、canvas 内部 1px = CSS 何 px かを --u に入れる。
    以降すべての位置・サイズ・フォントは calc(N * var(--u)) で書ける＝canvas の数値をそのまま持ち込める。
 
-   ▼--u は JS の実測を一切使わない
-   canvas の表示幅は CSS だけで決まっている:
-     PC   : width:100vw / max-width:177.78vh          → min(100vw, 177.78vh)
-     touch: max-width:calc(var(--mobile-canvas-scale)*1.7778) = --app-vh*88*1.7778
-   まったく同じ式を min() で書き下しているので、getBoundingClientRect() のような
-   「時間で変わる値」に依存しない。iOS standalone がいつ再レイアウトしても結果が変わらない。
+   ▼位置決めは 100% ブラウザ任せ。JS が書いた値を一切読まない
+   この枠は「canvas に合わせる」ためのものではない。canvas のタイトル描画はもう止めて
+   いるので、合わせる相手はいない。画面に対して正しい位置に居ればそれでよい。
+     幅   = min(100vw, 156.4464dvh)  … 16:9 を viewport に収める、それだけ
+     高さ = 幅 * 0.5625
+     縦位置 = touch は top:4px 固定 / PC は margin:auto で中央
+   使っているのは vw と dvh だけ＝ブラウザが自分で維持する単位。
+   ★ 以前はここで --app-vh（JS が innerHeight から書く変数）を使い、canvas の
+     max-height と同じ式を書き写していた。同じ絵を出すには都合が良かったが、
+     「JS が値を書き直すまで枠の大きさが決まらない」という依存が残る。それは
+     再計算に依存しない配置という目的そのものに反するので、dvh に置き換えた。
+     値は同じ（--app-vh は innerHeight/100 = 1dvh 相当）なので見た目は変わらない。
+
+   ▼ボタンの当たり判定について
+   各ボタンは <button> そのもので、見えている文字とタップを受ける箱は同一要素。
+   枠がどこにあろうと、押せる範囲＝見えている範囲であることは要素が 1 つである以上
+   構造的に保証される。座標変換もヒットテストも一切書いていない。
 
    ▼ベースライン合わせ
    canvas の fillText(y) の y は「ベースライン」。CSS のテキストは「行ボックスの上端」基準。
@@ -132,24 +143,17 @@ body.touch canvas{position:fixed;top:4px;left:0;right:0;margin:0 auto;}
    レターボックス部分は素通しのまま。canvas が受けていた範囲を 1px も超えない。 */
 #titleScreen.show.live #titleStage{pointer-events:auto;}
 #titleStage{
-  --tsw:min(100vw,177.78vh);      /* canvas の表示幅と同じ式 */
-  --u:calc(var(--tsw)/1280);      /* canvas 内部 1px = CSS 何 px か */
+  /* PC: 16:9 を viewport に収める。vw と dvh だけ＝ブラウザが維持する単位のみ */
+  --tsw:min(100vw,177.78dvh);
+  --u:calc(var(--tsw)/1280);      /* 構図 1px = CSS 何 px か */
   --asc:0.766;                    /* 行ボックス上端→ベースライン (Courier New, line-height:1) */
-  --sa:0;                         /* _SA_R: standalone(PWA)+touch のとき JS が 48 を入れる */
+  --sa:0;                         /* 右端 UI の内寄せ量。下の media query だけが 48 にする */
   position:fixed;left:0;right:0;top:0;bottom:0;margin:auto;
   width:var(--tsw);height:calc(var(--tsw)*0.5625);
   overflow:hidden;
-  /* drawBg(true) の #050508 に rgba(0,0,0,0.35) を重ねた結果と同じ色 */
   background:rgb(3,3,5);
   font-family:"Courier New",monospace;letter-spacing:0;font-weight:normal;
   -webkit-font-smoothing:auto;
-}
-/* canvas に重ねて差分を見るための透過モード（?htmltitle=2）。背景だけ消す */
-#titleStage.ts-xray{background:transparent;}
-/* touch: canvas と同じく viewport に直接ピン留め＋幅の式を --app-vh 基準に切り替える */
-body.touch #titleStage{--tsw:min(100vw, var(--app-vh,1dvh)*156.4464);position:fixed;top:4px;bottom:auto;left:0;right:0;margin:0 auto;}
-@media (pointer:coarse){
-  #titleStage{--tsw:min(100vw, var(--app-vh,1dvh)*156.4464);position:fixed;top:4px;bottom:auto;left:0;right:0;margin:0 auto;}
 }
 
 /* ── 塔画像: drawImage(towerImg,0,0,380,720) / globalAlpha .55 / composite 'screen' ── */
@@ -201,13 +205,11 @@ body.touch #titleStage{--tsw:min(100vw, var(--app-vh,1dvh)*156.4464);position:fi
 #tsSettings{--bx:16;--by:35;--bs:19;--bw:120;--bh:28;--fs:13;
   background:rgba(0,0,0,0.7);border:calc(1.5*var(--u)) solid rgba(255,255,255,0.7);
   color:rgba(255,255,255,0.9);}
-body.touch #tsSettings{--by:44;--bs:28;--bw:136;--bh:40;--fs:22.1;}
 
 /* ── [ MY PAGE ]（右上）: mpBtn {W-16-_SA_R-104, 12, 104, 28} / base 19 / font 13 ── */
 #tsMypage{--bx:calc(1160 - var(--sa));--by:31;--bs:19;--bw:104;--bh:28;--fs:13;
   background:rgba(0,0,0,0.6);border:calc(1.5*var(--u)) solid rgba(255,220,50,0.8);
   color:rgba(255,220,50,1);}
-body.touch #tsMypage{--bx:calc(1088 - var(--sa));--by:40;--bs:28;--bw:176;--bh:40;--fs:22.1;}
 /* testMode では canvas 側も描いていないので消す */
 #titleStage.ts-test #tsMypage{display:none;}
 
@@ -222,12 +224,10 @@ body:not(.touch) #tsLogoE{text-shadow:0 0 calc(28*var(--u)) rgba(255,50,50,0.9);
 
 /* ── '30 seconds to live. Forever.' neonText(center, 20px, blur 8) ── */
 #tsTag{--fs:20;--by:384;font-weight:bold;color:rgba(160,185,255,0.75);}
-body.touch #tsTag{--fs:26;--by:376;}
 body:not(.touch) #tsTag{text-shadow:0 0 calc(8*var(--u)) rgba(160,185,255,0.75);}
 
 /* ── 'How far can you get up the tower?' 14px rgba(140,140,160,0.4) ── */
 #tsSub{--fs:14;--by:410;color:rgba(140,140,160,0.4);}
-body.touch #tsSub{--fs:18;--by:404;}
 
 /* ── モード選択 ─────────────────────────────────────────────
    canvas: 中央 W/2、判定矩形 {x:W/2-150, y:Y-rowH+6, w:300, h:rowH}。
@@ -236,9 +236,6 @@ body.touch #tsSub{--fs:18;--by:404;}
 #tsNormal,#tsDeath{--bx:490;--bw:300;--bh:24;--bs:18;--fs:18;font-weight:bold;}
 #tsNormal{--by:438;}
 #tsDeath{--by:464;}
-body.touch #tsNormal,body.touch #tsDeath{--bh:34;--bs:28;--fs:24;}
-body.touch #tsNormal{--by:444;}
-body.touch #tsDeath{--by:484;}
 #tsNormal{color:rgba(150,160,190,0.4);}
 #tsNormal.sel{color:rgba(255,255,255,0.95);}
 body:not(.touch) #tsNormal.sel{text-shadow:0 0 calc(10*var(--u)) rgba(180,200,255,0.8);}
@@ -254,7 +251,6 @@ body:not(.touch) #tsDeath.sel{text-shadow:0 0 calc(10*var(--u)) rgba(255,60,40,0
    --bs = h/2 + 0.35*fs（四隅ボタンと同じ「見た目中央」の式）で箱内のベースラインを出す。 */
 #tsStart{--bx:440;--bw:400;--bh:36;--bs:25.7;--by:500;--fs:22;font-weight:bold;
   color:#fff;animation:tsPulseStart 3.1416s linear infinite;}
-body.touch #tsStart{--bh:46;--bs:33.15;--by:526;--fs:29;}
 body:not(.touch) #tsStart{text-shadow:0 0 calc(14*var(--u)) rgba(255,255,255,0.85);}
 @keyframes tsPulseStart{  /* sin(t*2)*.3+.7 → 0.4〜1.0、周期 π 秒 */
   0%{opacity:.700}12.5%{opacity:.912}25%{opacity:1}37.5%{opacity:.912}
@@ -266,7 +262,6 @@ body:not(.touch) #tsStart{text-shadow:0 0 calc(14*var(--u)) rgba(255,255,255,0.8
    HTML 版では、実際に名前が出ているこの行そのものを押せるようにする。
    名前が設定済みのときは触れない（= 従来どおり何も起きない）。 */
 #tsName{--fs:12;--by:524;color:rgba(160,180,220,0.7);}
-body.touch #tsName{--fs:16;--by:556;}
 #titleStage.ts-noname #tsName{pointer-events:auto;cursor:pointer;}
 
 /* ── 下部の固定テキスト ── */
@@ -279,14 +274,11 @@ body:not(.touch) #tsAdmin{text-shadow:0 0 calc(4*var(--u)) rgba(255,220,50,0.5);
 /* ── 左下 YOUR DEATHS / WORLD DEATHS: font 12*_UI_K、x=20K、y=H-30K / H-14K ── */
 #tsYourDeaths{--fs:12;--lx:20;--by:690;color:rgba(255,100,100,0.8);}
 #tsWorldDeaths{--fs:12;--lx:20;--by:706;color:rgba(220,120,120,0.8);}
-body.touch #tsYourDeaths{--fs:20.4;--lx:34;--by:669;}
-body.touch #tsWorldDeaths{--fs:20.4;--lx:34;--by:696.2;}
 
 /* ── 右下 [ HALL OF LEGENDS ]: holBtn {W-20K-_SA_R-w, H-14K-base, w, h} ──
    テキストは textAlign:'right' で右端 = holBtn.x+holBtn.w。箱の右端と一致させる。 */
 #tsHol{--bx:calc(1080 - var(--sa));--by:706;--bs:10;--bw:180;--bh:20;--fs:12;
   text-align:right;color:rgba(100,140,200,0.8);}
-body.touch #tsHol{--bx:calc(996 - var(--sa));--by:696.2;--bs:25;--bw:250;--bh:36;--fs:20.4;}
 #titleStage.ts-test #tsHol{color:rgba(80,80,100,0.5);}
 
 /* ── HARD / RETRO バッジ: neonText(left, 10px, blur 4) ── */
@@ -353,30 +345,45 @@ body:not(.touch) #tsMsg{text-shadow:0 0 calc(8*var(--u)) rgba(255,220,50,0.9);}
   73.3%{opacity:1;transform:translateY(calc(-30*var(--u)))}
   100%{opacity:0;transform:translateY(calc(-30*var(--u)))}}
 
-/* ── 比較モード BLINK: HTML 版を一定間隔で消しては出す ──────────────────
-   ずれている要素だけがカクッと動いて見えるので、重ね表示より差分が分かりやすい
-   （天文写真のブリンクコンパレータと同じ原理）。背景ごと点滅させるので、
-   消えている間は下の canvas タイトルがそのまま見える。 */
-#titleScreen.show.ts-blink{animation:tsBlinkCmp 1.6s steps(1,end) infinite;}
-@keyframes tsBlinkCmp{0%{opacity:1}50%{opacity:0}100%{opacity:1}}
+/* ═══ タッチ端末の構図（文字が大きい版）═══════════════════════════════════
+   ★ 判定を body.touch から @media (pointer:coarse) に移した。
+     body.touch は JS が付けるクラスで、iOS PWA のコールドスタートでは
+     付くのが遅れる／一度の誤読で付かないことが実際に起きている。
+     クラスが付くまでの間だけ PC 用の構図で描かれ、付いた瞬間に全部が飛ぶ＝
+     「見えている位置」と「さっき押した位置」が食い違う原因になる。
+     media query はブラウザ自身が評価するので、そういう瞬間が原理的に無い。
+     isTouchDevice の判定条件も (pointer:coarse) を必須にしているので、
+     この media query は body.touch の上位集合＝マウス端末には一切当たらない。
+   ここに書いてあるのは全て「構図の中での位置と大きさ」だけ。基底の規則と
+   同じ詳細度なので、必ず基底より後ろに置くこと（この位置）。 */
+@media (pointer:coarse){
+  #titleStage{
+    --tsw:min(100vw,156.4464dvh);   /* = 88dvh 相当の高さに 16:9。JS の変数は使わない */
+    position:fixed;top:4px;bottom:auto;left:0;right:0;margin:0 auto;
+  }
+  #tsSettings{--by:44;--bs:28;--bw:136;--bh:40;--fs:22.1;}
+  #tsMypage{--bx:calc(1088 - var(--sa));--by:40;--bs:28;--bw:176;--bh:40;--fs:22.1;}
+  #tsTag{--fs:26;--by:376;}
+  #tsSub{--fs:18;--by:404;}
+  #tsNormal,#tsDeath{--bh:34;--bs:28;--fs:24;}
+  #tsNormal{--by:444;}
+  #tsDeath{--by:484;}
+  #tsStart{--bh:46;--bs:33.15;--by:526;--fs:29;}
+  #tsName{--fs:16;--by:556;}
+  #tsYourDeaths{--fs:20.4;--lx:34;--by:669;}
+  #tsWorldDeaths{--fs:20.4;--lx:34;--by:696.2;}
+  #tsHol{--bx:calc(996 - var(--sa));--by:696.2;--bs:25;--bw:250;--bh:36;--fs:20.4;}
+}
+/* PWA(standalone) では画面の左右端に iOS のシステムジェスチャ帯があり、そこに触れた指は
+   OS に取られてアプリまで届かない。右端に接する MY PAGE / HALL OF LEGENDS だけを内側へ寄せる。
+   ★ この値は以前 JS が --sa に書き込んでいた（_SA_R）。起動時に一度決まる定数とはいえ、
+     位置決めに JS の書き込みを 1 つでも残すと「まだ JS 待ちの配置」であり続けるので、
+     #btnPause が既にやっているのと同じ media query に置き換えた。これでタイトルの位置は
+     どこも JS を経由しない。数値も条件も従来と同一なので見た目は変わらない。 */
+@media (display-mode:standalone) and (pointer:coarse){
+  #titleStage{--sa:48;}
+}
 
-/* ── 比較用ツールバー（段階1 の目視確認専用）──────────────────────────
-   PWA はホーム画面から固定 URL で起動するので ?htmltitle= を付けられない。
-   実機で切り替えられる手段が要るため、画面上に出す。
-   既定は非表示。ブラウザは ?htmltitle=、PWA は「上端中央を素早く3回タップ」で開く。
-   位置は上端中央。iOS standalone でタップを吸われるのは画面の左右端なので、
-   中央に寄せてある。タイトルの描画物とも重ならない領域。 */
-#tsCmp{display:none;}
-#tsCmp.open{display:block;position:fixed;left:50%;transform:translateX(-50%);
-  top:calc(4px + env(safe-area-inset-top,0px));z-index:9000;
-  font-family:"Courier New",monospace;text-align:center;}
-#tsCmpRow{display:flex;gap:6px;justify-content:center;}
-#tsCmp button{min-height:42px;min-width:42px;padding:0 10px;background:rgba(0,0,0,0.88);
-  color:#0f0;border:1px solid rgba(0,255,0,0.5);border-radius:4px;
-  font-family:inherit;font-size:12px;letter-spacing:1px;cursor:pointer;
-  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
-  -webkit-appearance:none;appearance:none;}
-#tsCmp button:active{background:rgba(0,90,0,0.92);}
 /* PWA(standalone)向けの canvas ずらし補正はすべて撤回済み。canvas を下げると Cookie 同意バナーの
    Accept が押せなくなり、下段UI・ゲーム画面もまとめてずれたため。canvas は上寄せ・全高のまま
    y 方向に 1px も動かさない（コントローラーを持つ指で画面が隠れないための仕様）。
@@ -633,10 +640,10 @@ body.touch.portrait #rotateOverlay{display:flex;}
 })();
 </script>
 <canvas id="c" width="1280" height="720"></canvas>
-<!-- ═══ HTML 版タイトル画面（段階1: 見た目の再現。既定は非表示。?htmltitle=1 で表示） ═══
-     drawTitle() が canvas に描いている要素を 1:1 で HTML 化したもの。
-     数値は全て canvas 内部座標(1280x720)のまま。CSS の --u が実表示スケールへ変換する。
-     段階1では pointer-events:none なので canvas のタップ判定には一切影響しない。 -->
+<!-- ═══ タイトル画面（本番）═══════════════════════════════════════════════
+     ボタンは全て本物の <button>。位置は CSS だけで決まり、JS が書いた値も
+     canvas の実測値も一切読まない。見えている文字とタップを受ける箱は同一要素。
+     canvas 版の描画に戻したいときだけ ?canvastitle=1 -->
 <div id="titleScreen" aria-hidden="true">
   <div id="titleStage">
     <img id="tsTower" src="/public/tower.png" alt="" draggable="false">
@@ -665,16 +672,6 @@ body.touch.portrait #rotateOverlay{display:flex;}
     <button type="button" id="tsHol"      class="ts-box">[ HALL OF LEGENDS ]</button>
     <div id="tsTestBadge"><span id="tsTestBadgeTxt" class="ts-t">TEST PLAY MODE</span><span id="tsTestBadgeName" class="ts-t"></span></div>
     <div id="tsTestLogin" class="ts-t">[ LOGIN ] to leave your name in the credits</div>
-  </div>
-</div>
-<!-- 段階1 の見た目確認用ツールバー。既定は非表示。
-     ブラウザ: ?htmltitle=1/2/3   PWA: タイトル画面で上端中央を素早く3回タップ -->
-<div id="tsCmp" aria-hidden="true">
-  <div id="tsCmpRow">
-    <button type="button" id="tsCmpView">VIEW:OFF</button>
-    <button type="button" id="tsCmpDm">DM:real</button>
-    <button type="button" id="tsCmpSel">SEL:real</button>
-    <button type="button" id="tsCmpClose">×</button>
   </div>
 </div>
 <div id="touchControls" aria-hidden="true">
@@ -7670,9 +7667,6 @@ function drawTitle(){
 // ───────────────────────────────────────────────────────────────────────────
 // drawTitle() が毎フレーム canvas に描いている「状態で変わる部分」を DOM 側へ写す。
 // 静的な文言・座標・色は全て CSS 側に持たせてあるので、ここは値の差し替えだけを行う。
-// 段階1 では既定で非表示。?htmltitle=1 で単体表示、?htmltitle=2 で canvas に重ねて表示
-// （背景を透過にするので、ズレていれば文字が二重に見える＝差分がそのまま目視できる）。
-// pointer-events は付けないので、この段階では canvas のタップ判定に一切影響しない。
 // ═══════════════════════════════════════════════════════════════════════════
 const _titleDom=(()=>{
   const root=document.getElementById('titleScreen');
@@ -7686,22 +7680,17 @@ const _titleDom=(()=>{
     best:$('tsBest'),bestLabel:$('tsBestLabel'),bestLine:$('tsBestLine'),
     badgeName:$('tsTestBadgeName'),login:$('tsTestLogin')};
 })();
-// _SA_R（standalone+touch のときだけ右端 UI を内側へ寄せる量）を CSS 側へ渡す。
-// これは起動時に一度決まる定数で、時間で変わる値ではない。
-if(_titleDom)_titleDom.stage.style.setProperty('--sa',String(_SA_R));
+// ★ ここで --sa（右端の内寄せ量）を JS から書いていたのをやめた。CSS の
+//   @media (display-mode:standalone) and (pointer:coarse) が同じことをする。
+//   タイトルの位置決めに JS が関与する箇所はこれで 1 つも無くなった。
 // textContent は変わったときだけ書く（毎フレーム呼ばれるのでレイアウトを無駄に走らせない）
 function _tsText(el,txt){if(el&&el.__t!==txt){el.__t=txt;el.textContent=txt;}}
 function _tsClass(el,cls,on){if(el)el.classList.toggle(cls,!!on);}
-// 比較用の「見た目だけ」の上書き。null なら実際の値をそのまま使う。
-// セーブデータにも gameMode にも触れないので、解放していない状態で DEATH MODE の
-// 見た目を確認しても、ゲーム側の状態は何も変わらない。
-let _tsPvDM=null;    // null=実際の deathModeUnlocked / true=解放済み / false=未解放
-let _tsPvSel=null;   // null=実際の _titleModeSel / 0=NORMAL / 1=DEATH
 function syncTitleDom(){
   const D=_titleDom;if(!D)return;
   const S=D.stage;
-  const dmu=(_tsPvDM===null)?deathModeUnlocked:_tsPvDM;
-  const msel=(_tsPvSel===null)?_titleModeSel:_tsPvSel;
+  const dmu=deathModeUnlocked;
+  const msel=_titleModeSel;
   // ── モード選択（▶ の有無で文字列そのものが変わるのは canvas と同じ）──
   const nSel=msel===0,dSel=msel===1;
   _tsText(D.normal,(nSel?'▶  ':'      ')+'NORMAL MODE');
@@ -7749,33 +7738,17 @@ function syncTitleDom(){
     D.bestLine.style.setProperty('--lw',String(label.length*6.6));
   }
 }
-// ── 表示モード ────────────────────────────────────────────────
-//   0 OFF  … HTML 版を出さず canvas の drawTitle() を描く。段階1以前と完全に同じ挙動。
-//             タイトルのタップは従来どおり _canvasActivate の座標判定を通る。
-//   1 HTML … 【段階2の既定】HTML 版が本番。canvas には背景色だけを塗り、その上に不透明の
-//             #titleScreen を出す。ボタンは本物の <button> で、座標判定は一切通らない。
-//   2 XRAY … 段階1の確認用。canvas の drawTitle() を描いたうえに透過で重ねる。
-//   3 BLINK… 同上。0.8 秒ごとに出し入れして差分を見る。
-// 2/3 は「見るため」のモードなので、タップは従来どおり canvas 側が受ける（live を付けない）。
-let _titleHtmlMode=1;
-const _TS_MODE_NAME=['OFF','HTML','XRAY','BLINK'];
-// HTML 版が本番として動いている＝座標判定を使わない、を表す唯一の条件。
-// drawTitle() を止めるかどうかも、_canvasActivate のタイトル分岐を殺すかどうかも、
-// ボタンを触れるようにするかどうかも、全部この 1 つから決まる（判断が分かれない）。
-function _titleHtmlLive(){return _titleHtmlMode===1;}
-window.__titleHtml=function(m){
-  _titleHtmlMode=((m|0)%4+4)%4;
-  if(!_titleDom)return;
-  _titleDom.root.classList.toggle('show',_titleHtmlMode>0);
-  _titleDom.stage.classList.toggle('ts-xray',_titleHtmlMode===2);
-  _titleDom.root.classList.toggle('ts-blink',_titleHtmlMode===3);
-  // PWA は再起動のたびに素の URL に戻るので、選んだモードは残しておく
-  try{localStorage.setItem('neverend_htmltitle',String(_titleHtmlMode));}catch(_){}
-  const b=document.getElementById('tsCmpView');
-  if(b)b.textContent='VIEW:'+_TS_MODE_NAME[_titleHtmlMode];
-  // 値の反映は loop() の毎フレーム呼び出しに任せる。ここで呼ぶと、この行より後ろで
-  // let 宣言される変数（_currentUser など）を初期化前に読んでしまう。
-};
+// ── HTML 版タイトルが本番かどうか ──────────────────────────────
+// 状態はこの真偽値ひとつだけ。drawTitle() を呼ぶかどうかも、_canvasActivate の
+// タイトル分岐を殺すかどうかも、ボタンを触れるようにするかどうかも、全部ここから決まる。
+// ★ 段階1 にあった比較モード（XRAY / BLINK）とツールバー、その localStorage 保存は
+//   すべて撤去した。あれらは「HTML を表示しつつタップは canvas の座標判定に流す」
+//   状態を作れてしまい、しかも前回の選択が localStorage 経由で次の起動に持ち越された。
+//   つまり本人の知らないうちに座標判定モードで動いている可能性が残っていた。
+//   段階1 は終わっているので、その状態を作れる経路ごと無くす。
+//   canvas 版に戻す手段は ?canvastitle=1 の 1 つだけ（明示的に指定したときのみ）。
+const _titleHtmlOn = (_urlParams.get('canvastitle')!=='1');
+function _titleHtmlLive(){return _titleHtmlOn;}
 
 // ═══ タイトルの操作（キーボードもボタンも必ずここを通る）═══════════════════
 // 挙動が「キー用」と「タップ用」に分かれていると必ず片方だけ直る。入口を 1 本にする。
@@ -7953,6 +7926,16 @@ if(_titleDom){
             btn=document.getElementById('tsSettings'),cb=document.getElementById('cookieBanner');
       L.push('pe scr:'+pe(scr)+' stg:'+pe(stg)+' btn:'+pe(btn));
       L.push('z  scr:'+zi(scr)+'  cls:'+(scr?scr.className:'-'));
+      // 「STARTの下を押すと効く」の実測。sta = ボタンの箱、txt = 文字が実際に占める行。
+      // この2つは同じ要素なので、箱の中で文字がどこに乗っているかがそのまま出る。
+      {const b=document.getElementById('tsStart');
+       if(b){const r=b.getBoundingClientRect(),cs=getComputedStyle(b),
+             pt=parseFloat(cs.paddingTop)||0,fs=parseFloat(cs.fontSize)||0;
+         L.push('sta '+Math.round(r.top)+'-'+Math.round(r.bottom)+
+                ' 字'+Math.round(r.top+pt)+'-'+Math.round(r.top+pt+fs));}}
+      {const s=stg.getBoundingClientRect();
+       L.push('stg '+Math.round(s.left)+','+Math.round(s.top)+' '+
+              Math.round(s.width)+'x'+Math.round(s.height)+' vh'+window.innerHeight);}
       if(cb){const cr=cb.getBoundingClientRect();
         L.push('cb '+getComputedStyle(cb).display+' y'+Math.round(cr.top)+'-'+Math.round(cr.bottom)+
                ' vh'+window.innerHeight);}
@@ -7962,83 +7945,11 @@ if(_titleDom){
     }catch(e){box.textContent='0801y ERR '+(e&&e.message||'err');}
   },400);
 })();
-
-// ═══ 見た目比較ツールバー（段階1 の確認専用）═══════════════════════════
-// PWA はホーム画面から素の URL で起動するので ?htmltitle= を渡せない。
-// 実機で切り替える手段として、画面に出せるツールバーを用意する。
-// 開き方: ブラウザ=?htmltitle=1..3 / どちらでも「タイトル画面で上端中央を素早く3回タップ」。
-// ★ 検出は document の pointerup を capture で覗くだけで、preventDefault も
-//    stopPropagation もしない。既存のタップ処理には一切干渉しない。
-const _tsCmp=(()=>{
-  const el=document.getElementById('tsCmp');
-  if(!el)return null;
-  const $=id=>document.getElementById(id);
-  return {el:el,view:$('tsCmpView'),dm:$('tsCmpDm'),sel:$('tsCmpSel'),close:$('tsCmpClose')};
-})();
-function _tsCmpOpen(on){
-  if(!_tsCmp)return;
-  _tsCmp.el.classList.toggle('open',!!on);
-  try{localStorage.setItem('neverend_htmltitle_bar',on?'1':'0');}catch(_){}
-  if(on&&_titleHtmlMode===0)window.__titleHtml(1);   // 開いたら何か見えている方が親切
-}
-if(_tsCmp){
-  _tsCmp.view.addEventListener('click',()=>window.__titleHtml(_titleHtmlMode+1));
-  _tsCmp.dm.addEventListener('click',()=>{
-    _tsPvDM=(_tsPvDM===null)?true:(_tsPvDM===true?false:null);
-    _tsCmp.dm.textContent='DM:'+(_tsPvDM===null?'real':(_tsPvDM?'unlocked':'locked'));
-  });
-  _tsCmp.sel.addEventListener('click',()=>{
-    _tsPvSel=(_tsPvSel===null)?0:(_tsPvSel===0?1:null);
-    _tsCmp.sel.textContent='SEL:'+(_tsPvSel===null?'real':(_tsPvSel===0?'NORMAL':'DEATH'));
-  });
-  // × は比較をやめて本番（HTML 版）に戻す。canvas 版に戻すのは ?canvastitle=1 だけ。
-  _tsCmp.close.addEventListener('click',()=>{window.__titleHtml(1);_tsPvDM=null;_tsPvSel=null;
-    _tsCmp.dm.textContent='DM:real';_tsCmp.sel.textContent='SEL:real';_tsCmpOpen(false);});
-  // ── 上端中央 3 連タップで開く ──
-  (function(){
-    let n=0,t0=0;
-    const bump=(x,y)=>{
-      if(state!=='title'||_tsCmp.el.classList.contains('open'))return;
-      const vw=window.innerWidth||1,vh=window.innerHeight||1;
-      if(!(y<vh*0.10&&Math.abs(x-vw/2)<vw*0.18)){n=0;return;}
-      const now=Date.now();
-      if(now-t0>1200)n=0;
-      t0=now;n++;
-      if(n>=3){n=0;_tsCmpOpen(true);}
-    };
-    if(window.PointerEvent){
-      document.addEventListener('pointerup',e=>bump(e.clientX,e.clientY),true);
-    }else{
-      document.addEventListener('touchend',e=>{const t=e.changedTouches&&e.changedTouches[0];if(t)bump(t.clientX,t.clientY);},true);
-      document.addEventListener('click',e=>{if(e.detail)bump(e.clientX,e.clientY);},true);
-    }
-  })();
-  // canvas と #titleStage が本当に重なっているかは、必要なときだけコンソールで見る。
-  // 画面には出さない（見た目の比較の邪魔になるため）。
-  window.__tsGeom=()=>{
-    const c=canvas.getBoundingClientRect(),s=_titleDom.stage.getBoundingClientRect();
-    return {canvas:c,stage:s,
-      dx:s.left-c.left, dy:s.top-c.top, dw:s.width-c.width, dh:s.height-c.height};
-  };
-}
-// 起動時の決定。段階2 からは HTML 版が既定で、canvas 版は緊急退避としてだけ残す。
-(function(){
-  // ★ 何かおかしくなったときの戻し方: ?canvastitle=1 を付けると段階1以前の
-  //   canvas 描画＋座標判定に丸ごと戻る（drawTitle() を消していないのはこのため）。
-  if(_urlParams.get('canvastitle')==='1'){window.__titleHtml(0);return;}
-  const q=_urlParams.get('htmltitle');
-  if(q!==null&&/^[0-3]$/.test(q)){window.__titleHtml(+q);if(+q!==1)_tsCmpOpen(true);return;}
-  // 前回ツールバーで比較モードにしたまま終わっていたら、その状態のまま開く。
-  try{
-    if(localStorage.getItem('neverend_htmltitle_bar')==='1'){
-      const m=localStorage.getItem('neverend_htmltitle');
-      window.__titleHtml((m&&/^[0-3]$/.test(m))?+m:1);
-      _tsCmpOpen(true);
-      return;
-    }
-  }catch(_){}
-  window.__titleHtml(1);   // 既定: HTML 版が本番
-})();
+// #titleStage が画面のどこに居るかは、必要なときだけコンソールで見る（表示はしない）。
+window.__tsGeom=()=>{
+  const s=document.getElementById('titleStage').getBoundingClientRect();
+  return {stage:s, vw:window.innerWidth, vh:window.innerHeight};
+};
 
 // ======== UPDATE ========
 function update(dt){
@@ -9112,13 +9023,12 @@ function loop(ts){
   document.body.classList.toggle('ctrls', state==='play'||state==='pause'||state==='dead'||state==='ending'||state==='memo');
   // HTML 版タイトルは title のときだけ出す。それ以外の state では必ず引っ込める
   // （play 中に前面へ残ると、透明でもゲームのタップを全部吸ってしまう）。
-  if(_titleDom){
+  if(_titleDom&&_titleHtmlLive()){
     const onTitle=(state==='title');
-    if(_titleHtmlMode>0)_titleDom.root.classList.toggle('show',onTitle);
-    // live = 本物のボタンとして触れる状態。HTML が本番のときだけ、かつ title のときだけ。
-    _titleDom.root.classList.toggle('live',onTitle&&_titleHtmlLive());
+    _titleDom.root.classList.toggle('show',onTitle);
+    // live = 本物のボタンとして触れる状態。title のときだけ。
+    _titleDom.root.classList.toggle('live',onTitle);
   }
-  if(_tsCmp){const v=(state==='title')?'':'hidden';if(_tsCmp.el.style.visibility!==v)_tsCmp.el.style.visibility=v;}
   // Slow motion after death
   if(slowTimer>0){slowTimer=Math.max(0,slowTimer-dt);dt*=0.15;}
   // Screen shake
@@ -9130,10 +9040,9 @@ function loop(ts){
     // HTML 版が本番のときは canvas に背景色だけを塗る。drawTitle() は呼ばない。
     // 塗るのをやめないのは、HTML の箱の外側（16:9 に収まらない余白）に前フレームの
     // ゲーム画面が残らないようにするため。色は HTML 側の背景と同じ値になる。
-    if(_titleHtmlLive()){drawBg(true);ctx.fillStyle='rgba(0,0,0,0.35)';ctx.fillRect(0,0,W,H);}
+    if(_titleHtmlLive()){drawBg(true);ctx.fillStyle='rgba(0,0,0,0.35)';ctx.fillRect(0,0,W,H);syncTitleDom();}
     else drawTitle();
     drawFloatMsgs();
-    if(_titleHtmlMode>0)syncTitleDom();
   }
   else if(state==='mypage'){drawMyPage();}
   else if(state==='testcomplete'){drawTestComplete();}

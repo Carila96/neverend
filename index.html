@@ -7843,112 +7843,285 @@ if(_titleDom){
 }
 
 // ╔═══════════════════════════════════════════════════════════════════════════╗
-// ║ BUILD 0801y ─ 一時調査。効かない間、ボタンの前に何が居るのかを名指しする。 ║
+// ║ BUILD 0801z5 ─ 一時調査。修正はしない。事実だけを記録して画面に出す。      ║
 // ╚═══════════════════════════════════════════════════════════════════════════╝
-// 座標変換もヒットテストも自前ではやらない。ブラウザ自身に
-//   「この画面座標にある最前面の要素は何か」
-// を document.elementFromPoint() で聞き、返ってきた要素の名前をそのまま出す。
-// 押したい <button> が返れば、その座標は確かにボタンのもの＝原因は被さりではない。
-// 別の要素が返れば、それが指を横取りしている犯人で、名前がそのまま画面に出る。
+// 0801z4 で分かったこと: elementFromPoint はボタンを返している（ヒットテストは正しい）。
+// それでも ck: が空 → 「当たり判定の位置」ではなく「イベントがボタンに届いていない」。
+// この 2 つは別の話なので、同じ 1 タップについて両方を並べて記録する。
 //
-// 併せて、実際のタップが要素に届いているかも記録する:
-//   ts/te … touchstart / touchend が実際に当たった要素
-//   ck    … その後 click イベントが発生した要素
-//   fire  … _tsBind のハンドラが動いたか（:p=pointerup 経由 / :c=click 経由）
-// 「efp はボタンを返しているのに te が別要素」なら、被さりではなくイベント経路の問題。
-// 「efp が別要素」なら被さり。この 2 つを 1 画面で切り分けるための表示。
+// ▼記録するもの
+//  raw   … touchstart/touchend/touchcancel/pointerdown/pointerup/pointercancel/click の生の回数。
+//          指を置いても ts が増えないなら、iOS がそのタッチをページに渡していない
+//          （レイアウトが動いている最中のタッチを iOS が捨てる、という既知の挙動）。
+//          ts は増えるのに ck が増えないなら、届いてはいるが合成 click が出ていない。
+//  TAP   … 1 タップ 1 行。その指の座標で
+//            in: どのボタンの矩形の中か（＝狙いは合っていたか）
+//            ts:/te: 実際にイベントの target になった要素
+//            ef: その瞬間の elementsFromPoint の積み重ね（上から順）
+//          「in:HOL なのに ts:body」なら、当たり判定は合っているのに target が body。
+//          「ef が #tsHol>… なのに ts:body」なら、ヒットテストとイベント配送が食い違っている。
+//          1 タップ目は上書きせず固定表示する（「1タップ目だけ効かない」を残すため）。
+//  CHANGE… #titleScreen / body の class、--app-vh / --cbh、viewport、各ボタンの矩形が
+//          「変わった瞬間」だけを時刻付きで積む。効くようになった瞬間に何が変わったのかを
+//          この列で読む。★FIRE の行が「効いた瞬間」。
+//  枠     … 各ボタンの実測矩形を破線で画面に描く。見た目の位置と実位置のズレも同時に見える。
 //
-// この板は pointer-events:none 固定・タッチ端末のみ・タイトル画面のときだけ更新する。
-// 調査が終わったらこのブロックごと削除する（他のコードから参照されていない）。
-(function _probe0801y(){
-  if(!isTouchDevice)return;                       // PC は現状でも 1 タップで効くので対象外
+// この板と枠は pointer-events:none 固定・タッチ端末のみ。調査用なので他から参照されない。
+(function _probe0801z5(){
+  if(!isTouchDevice)return;                       // PC は 1 タップで効くので対象外
+  const T0=Date.now();
+  const ms=()=>'+'+((Date.now()-T0)/1000).toFixed(2);
+  const R=n=>Math.round(n);
+
   const box=document.createElement('div');
-  box.id='probe0801y';
-  box.style.cssText='position:fixed;left:3px;top:74px;z-index:9998;pointer-events:none;'+
-    'background:rgba(0,0,0,0.86);border:1px solid rgba(0,255,0,0.45);border-radius:4px;'+
-    'padding:3px 6px;color:#0f0;font-family:monospace;font-size:9px;line-height:1.35;'+
-    'white-space:pre;text-align:left;max-width:62vw;overflow:hidden;';
+  box.id='probe0801z5';
+  box.style.cssText='position:fixed;left:2px;top:2px;width:57vw;z-index:9998;pointer-events:none;'+
+    'background:rgba(0,0,0,0.78);border:1px solid rgba(0,255,0,0.45);border-radius:3px;'+
+    'padding:2px 4px;color:#0f0;font-family:monospace;font-size:8px;line-height:1.28;'+
+    'white-space:pre;text-align:left;overflow:hidden;';
   document.body.appendChild(box);
 
-  // 要素を短い名前にする。id があれば id、無ければ tag.class の先頭 1 つ。
+  // 要素を短い名前に。id があれば id、無ければ tag.class の先頭 1 つ。
   const nm=e=>{
     if(!e)return '(null)';
+    if(e===document.body)return 'BODY';
+    if(e===document.documentElement)return 'HTML';
+    if(e===document)return 'DOC';
     if(e.id)return '#'+e.id;
     const c=(e.className&&e.className.baseVal!==undefined?e.className.baseVal:e.className)||'';
     const c1=String(c).trim().split(/\s+/)[0];
     return (e.tagName||'?').toLowerCase()+(c1?'.'+c1:'');
   };
-  // 調べる対象。cookie の 2 つは querySelector で毎回引き直す（バナーは出たり消えたりする）。
-  const targets=[
-    ['SET',()=>document.getElementById('tsSettings')],
-    ['MYP',()=>document.getElementById('tsMypage')],
-    ['HOL',()=>document.getElementById('tsHol')],
-    ['NRM',()=>document.getElementById('tsNormal')],
-    ['DTH',()=>document.getElementById('tsDeath')],
-    ['STA',()=>document.getElementById('tsStart')],
-    ['CK+',()=>document.querySelector('.cookie-accept')],
-    ['CK-',()=>document.querySelector('.cookie-decline')],
-  ];
-  const ngCount={};                               // 何回 NG だったか（効き出した瞬間に止まる）
+  const TS=[['SET','tsSettings'],['MYP','tsMypage'],['HOL','tsHol'],
+            ['NRM','tsNormal'],['DTH','tsDeath'],['STA','tsStart']];
+  const gid=id=>document.getElementById(id);
 
-  // 実タップの記録。capture 段で見るだけ。preventDefault も stopPropagation もしない。
-  let ts='-',te='-',ck='-';
-  document.addEventListener('touchstart',e=>{const t=e.target;ts=nm(t);},true);
-  document.addEventListener('touchend'  ,e=>{const t=e.target;te=nm(t);},true);
-  document.addEventListener('click'     ,e=>{ck=nm(e.target)+(e.isTrusted?'':'*');},true);
+  // 各ボタンの実測矩形を画面に描く枠（pointer-events:none）
+  const marks={};
+  for(const [tag,id] of TS){
+    const m=document.createElement('div');
+    // 枠は板より前に置く（板に隠れると左上の SETTINGS の位置が読めなくなる）。
+    m.style.cssText='position:fixed;z-index:10000;pointer-events:none;display:none;'+
+      'border:1px dashed rgba(0,255,255,0.85);box-sizing:border-box;'+
+      'font:8px monospace;color:rgba(0,255,255,0.95);';
+    m.textContent=tag;
+    document.body.appendChild(m);
+    marks[tag]=m;
+  }
 
-  const pe=el=>{try{return getComputedStyle(el).pointerEvents;}catch(_){return '?';}};
-  const zi=el=>{try{return getComputedStyle(el).zIndex;}catch(_){return '?';}};
+  // ── 生イベントの回数。ページに届いているか／どこまで届いたかの一次情報 ──
+  const C={ts:0,te:0,tc:0,pd:0,pu:0,pc:0,ck:0};
+  const tapLog=[];               // 1 タップ 1 行
+  let firstTap=null;             // 1 タップ目は固定（上書きしない）
+  let cur=null;                  // 進行中のタップ行
+  let pendPd='-';                // touchstart より先に来た pointerdown の預かり
+  const chg=[];                  // 変化したときだけ積む
+  const addChg=s=>{chg.push(ms()+' '+s);if(chg.length>13)chg.shift();};
+
+  // 座標 x,y の積み重ね（上から4つ）と、どのボタンの矩形の中か
+  const stackAt=(x,y)=>{
+    try{
+      const a=document.elementsFromPoint(x,y)||[];
+      return a.slice(0,4).map(nm).join('>')||'(空)';
+    }catch(_){return '(err)';}
+  };
+  // ★ タップの瞬間に getBoundingClientRect を撃たない。
+  //   いま調べているのは「タップが落ちる」現象そのもので、レイアウト読みでそれを
+  //   誘発しては測定にならない。矩形は下の 300ms の tick が控えた値を使う
+  //   （タップ時に最大 300ms 古いだけ。位置が動いていれば CHANGE 欄に出る）。
+  const rectCache={};   // tag -> {l,t,r,b}
+  const inWhich=(x,y)=>{
+    const hit=[];
+    for(const [tag] of TS){
+      const c=rectCache[tag];if(!c)continue;
+      if(x>=c.l&&x<=c.r&&y>=c.t&&y<=c.b)hit.push(tag);
+    }
+    return hit.length?hit.join('+'):'-';
+  };
+  // 外したとき、どのボタンにどれだけ足りなかったか。指は見えている文字を狙っているので、
+  // 毎回ほぼ同じ dx/dy で外しているなら「見えている位置と当たり判定の位置が一定量ずれている」
+  // （＝iOS が古いレイアウトで当たり判定している）ことになる。バラバラなら単なる押し損ね。
+  const nearest=(x,y)=>{
+    let best=null;
+    for(const [tag] of TS){
+      const c=rectCache[tag];if(!c)continue;
+      const dx=x<c.l?x-c.l:(x>c.r?x-c.r:0);
+      const dy=y<c.t?y-c.t:(y>c.b?y-c.b:0);
+      const d=Math.abs(dx)+Math.abs(dy);
+      if(!best||d<best.d)best={tag:tag,dx:R(dx),dy:R(dy),d:d};
+    }
+    return best?best.tag+' dx'+(best.dx>=0?'+':'')+best.dx+' dy'+(best.dy>=0?'+':'')+best.dy:'-';
+  };
+
+  const pushTap=line=>{
+    if(!firstTap)firstTap=line;
+    tapLog.push(line);
+    if(tapLog.length>5)tapLog.shift();
+  };
+
+  // capture 段で見るだけ。preventDefault も stopPropagation も一切しない。
+  const L=(type,fn)=>document.addEventListener(type,fn,{capture:true,passive:true});
+  L('touchstart',e=>{
+    C.ts++;
+    const t=e.changedTouches&&e.changedTouches[0];
+    const x=t?R(t.clientX):-1,y=t?R(t.clientY):-1;
+    cur={n:C.ts,x:x,y:y,in:inWhich(x,y),near:nearest(x,y),ts:nm(e.target),te:'-',pd:pendPd,pu:'-',ck:'-',
+         ef:stackAt(x,y),t:ms()};
+    pendPd='-';
+    pushTap(cur);
+  });
+  L('touchend',e=>{C.te++;if(cur)cur.te=nm(e.target);});
+  L('touchcancel',e=>{C.tc++;if(cur)cur.te='CANCEL';addChg('★touchcancel '+nm(e.target));});
+  // pointerdown は touchstart の前に来る実装と後に来る実装がある。まだ行が無ければ
+  // 預けておき、次に作られる行に貼る（順序の違いで記録が落ちないように）。
+  L('pointerdown',e=>{C.pd++;const s=nm(e.target);if(cur)cur.pd=s;else pendPd=s;});
+  L('pointerup',e=>{C.pu++;if(cur)cur.pu=nm(e.target);});
+  L('pointercancel',e=>{C.pc++;addChg('★pointercancel '+nm(e.target));});
+  L('click',e=>{C.ck++;const s=nm(e.target)+(e.isTrusted?'':'*');if(cur)cur.ck=s;addChg('click '+s);});
+
+  // ── 変化の記録。class / style / viewport / 矩形が変わった瞬間だけ積む ──
+  const cs=el=>{try{return getComputedStyle(el);}catch(_){return null;}};
+  const cssVar=(el,n)=>{const s=cs(el);return s?s.getPropertyValue(n).trim():'?';};
+  const _last={vh:'',cbh:'',body:'',scr:'',vp:'',rects:'',state:''};
+  try{
+    const mo=new MutationObserver(recs=>{
+      for(const r of recs){
+        const t=r.target;
+        if(t===document.documentElement){
+          // --app-vh / --cbh は canvas とタイトルの縦位置の基準。書き換わるとレイアウトが動く。
+          const v=cssVar(t,'--app-vh'),c=cssVar(t,'--cbh');
+          if(v!==_last.vh){addChg('--app-vh '+(_last.vh||'-')+' -> '+v);_last.vh=v;}
+          if(c!==_last.cbh){addChg('--cbh '+(_last.cbh||'-')+' -> '+c);_last.cbh=c;}
+        }else if(t===document.body){
+          const c=t.className||'(空)';
+          if(c!==_last.body){addChg('body cls -> "'+c+'"');_last.body=c;}
+        }else{
+          const c=t.className||'(空)';
+          if(c!==_last.scr){addChg('scr cls -> "'+c+'"');_last.scr=c;}
+        }
+      }
+    });
+    mo.observe(document.documentElement,{attributes:true,attributeFilter:['style','class']});
+    mo.observe(document.body,{attributes:true,attributeFilter:['class']});
+    const sc=gid('titleScreen');
+    if(sc)mo.observe(sc,{attributes:true,attributeFilter:['class','style']});
+  }catch(_){}
+
+  // レイアウトが確定するきっかけになりうるイベント。発火した事実だけ残す。
+  const ev=(o,n,lbl)=>{try{o.addEventListener(n,()=>addChg('EV '+lbl),{passive:true});}catch(_){}};
+  ev(window,'resize','resize');
+  ev(window,'orientationchange','orientationchange');
+  ev(window,'pageshow','pageshow');
+  ev(window,'focus','focus');
+  ev(document,'visibilitychange','visibilitychange');
+  if(window.visualViewport){
+    ev(window.visualViewport,'resize','vv.resize');
+    ev(window.visualViewport,'scroll','vv.scroll');
+  }
+  let firstGesture=false;
+  document.addEventListener('touchstart',()=>{
+    if(!firstGesture){firstGesture=true;addChg('★最初のユーザージェスチャ');}
+  },{capture:true,passive:true});
+
+  let lastFireN=0;
+  addChg('boot vp'+window.innerWidth+'x'+window.innerHeight+
+         ' ICB'+document.documentElement.clientWidth+'x'+document.documentElement.clientHeight);
 
   setInterval(()=>{
-    if(state!=='title'){box.style.display='none';return;}
-    box.style.display='block';
     try{
-      const L=['BUILD 0801z4 n:'+(window.__tsFireN|0)+'  '+(window.__standalone?'PWA':'BRW')];
-      // 条件B（elementFromPoint が自分を返す）と 条件C（矩形が画面内）を数える。
-      // 対象は 6 ボタン（cookie の 2 つは判定に入れない＝タイトルの構成要素ではない）。
-      let bOK=0,bN=0,cOK=0,cN=0;
-      for(const [tag,get] of targets){
-        const el=get();
-        const isTs=tag!=='CK+'&&tag!=='CK-';
-        if(!el){L.push(tag+' (無し)');if(isTs){bN++;cN++;}continue;}
+      // 変化の検出（表示するかどうかに関係なく常に走らせる）
+      const vp=window.innerWidth+'x'+window.innerHeight+'/'+
+               document.documentElement.clientWidth+'x'+document.documentElement.clientHeight;
+      if(vp!==_last.vp){addChg('vp/ICB '+(_last.vp||'-')+' -> '+vp);_last.vp=vp;}
+      if(state!==_last.state){addChg('state '+(_last.state||'-')+' -> '+state);_last.state=state;}
+      const fn=window.__tsFireN|0;
+      if(fn!==lastFireN){lastFireN=fn;addChg('★FIRE '+(window.__tsFire||'?')+' n='+fn);}
+
+      const scr=gid('titleScreen');
+      const rows=[];let sig='';
+      for(const [tag,id] of TS){
+        const el=gid(id);
+        const m=marks[tag];
+        if(!el){rows.push(tag+' ex0 DOMに無い');if(m)m.style.display='none';sig+=tag+':none|';
+                delete rectCache[tag];continue;}
+        const inDom=document.body.contains(el)?1:0;
+        const s=cs(el);
         const r=el.getBoundingClientRect();
-        if(!(r.width>0&&r.height>0)){L.push(tag+' 非表示');if(isTs){bN++;cN++;}continue;}
-        const x=r.left+r.width/2, y=r.top+r.height/2;
-        const hit=document.elementFromPoint(x,y);
-        const ok=!!hit&&(hit===el||el.contains(hit));
-        // 条件C: 4 辺すべてが viewport の内側にあること
-        const inView=r.top>=0&&r.left>=0&&
-                     r.bottom<=window.innerHeight&&r.right<=window.innerWidth;
-        if(isTs){bN++;cN++;if(ok)bOK++;if(inView)cOK++;}
-        if(!ok)ngCount[tag]=(ngCount[tag]|0)+1;
-        L.push(tag+' '+(ok?'OK ':'NG ')+nm(hit)+
-               ' ['+Math.round(r.left)+','+Math.round(r.top)+' '+
-               Math.round(r.width)+'x'+Math.round(r.height)+']'+
-               (ok?'':' @'+Math.round(x)+','+Math.round(y)+' x'+(ngCount[tag]|0))+
-               (inView?'':' 画面外'));
+        sig+=tag+':'+R(r.left)+','+R(r.top)+','+R(r.width)+'x'+R(r.height)+'|';
+        // タップ時の in:/近: はこの控えを使う（タップ中はレイアウトを読まない）
+        if(r.width>0&&r.height>0)rectCache[tag]={l:r.left,t:r.top,r:r.right,b:r.bottom};
+        else delete rectCache[tag];
+        const ef=(r.width>0&&r.height>0)
+          ? nm(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)) : '-';
+        rows.push(tag+' ex'+inDom+
+          ' d:'+(s?s.display.slice(0,5):'?')+
+          ' v:'+(s?s.visibility.slice(0,3):'?')+
+          ' o'+(s?(+s.opacity).toFixed(2):'?')+
+          ' pe:'+(s?s.pointerEvents.slice(0,4):'?')+
+          ' z'+(s?s.zIndex:'?')+
+          ' r'+R(r.left)+','+R(r.top)+' '+R(r.width)+'x'+R(r.height)+
+          ' ef:'+ef);
+        if(m){
+          if(r.width>0&&r.height>0){
+            m.style.display='block';m.style.left=r.left+'px';m.style.top=r.top+'px';
+            m.style.width=r.width+'px';m.style.height=r.height+'px';
+          }else m.style.display='none';
+        }
       }
-      // ★ 合否をこの 1 行で読む。B が 6/6・C が 6/6 なら条件B・条件Cは成立。
-      L.push('★B '+bOK+'/'+bN+(bOK===bN?' OK':' NG')+
-             '   ★C '+cOK+'/'+cN+(cOK===cN?' 画面外0':' 画面外'+(cN-cOK)));
-      const scr=document.getElementById('titleScreen'),
-            btn=document.getElementById('tsSettings'),cb=document.getElementById('cookieBanner');
-      L.push('pe scr:'+pe(scr)+' btn:'+pe(btn)+' z'+zi(scr)+'/'+zi(btn));
-      L.push('cls '+(scr?scr.className:'-'));
-      // vp = window.innerHeight（見えている高さ）、ICB = documentElement.clientHeight。
-      // この 2 つが食い違う端末では bottom/vh がそのまま画面外を指す＝HOL が飛んだ原因。
-      // --H はその小さい方を採用しているので、下端要素は必ず vp の内側に入る。
-      L.push('vp '+window.innerWidth+'x'+window.innerHeight+
-             ' ICB '+document.documentElement.clientWidth+'x'+document.documentElement.clientHeight);
-      if(scr)L.push('--H '+getComputedStyle(scr).getPropertyValue('--H').trim()+
-                    ' vh '+getComputedStyle(document.documentElement).getPropertyValue('--app-vh').trim());
-      if(cb){const cr=cb.getBoundingClientRect();
-        L.push('cb '+getComputedStyle(cb).display+' y'+Math.round(cr.top)+'-'+Math.round(cr.bottom));}
-      L.push('ts:'+ts+'  te:'+te);
-      L.push('ck:'+ck+'  fire:'+(window.__tsFire||'-'));
-      box.textContent=L.join('\n');
-    }catch(e){box.textContent='0801z4 ERR '+(e&&e.message||'err');}
-  },400);
+      if(sig!==_last.rects){
+        if(_last.rects)addChg('矩形が動いた '+sig.replace(/\|/g,' '));
+        _last.rects=sig;
+      }
+
+      if(state!=='title'){box.style.display='none';
+        for(const [tag] of TS)if(marks[tag])marks[tag].style.display='none';
+        return;}
+      box.style.display='block';
+
+      const O=[];
+      O.push('0801z5 '+ms()+'s st:'+state+' '+(window.__standalone?'PWA':'BRW'));
+      O.push('raw ts'+C.ts+' te'+C.te+' tc'+C.tc+' | pd'+C.pd+' pu'+C.pu+' pc'+C.pc+
+             ' | ck'+C.ck+' fire'+(window.__tsFireN|0));
+      const vv=window.visualViewport;
+      O.push('vp '+window.innerWidth+'x'+window.innerHeight+
+             ' ICB '+document.documentElement.clientWidth+'x'+document.documentElement.clientHeight+
+             (vv?' vv '+R(vv.width)+'x'+R(vv.height)+' off'+R(vv.offsetTop)+' sc'+vv.scale.toFixed(2):''));
+      // --H は宣言そのままだと min(...) の式が返るので、それを使っている #tsCenter の
+      // 実際の高さ（＝解決後の px）を出す。これが「タイトルが思っている画面の高さ」。
+      const ctr=gid('tsCenter');
+      O.push('--app-vh '+cssVar(document.documentElement,'--app-vh')+
+             ' H(実)'+(ctr?R(ctr.getBoundingClientRect().height)+'px':'?')+
+             ' --cbh '+cssVar(document.documentElement,'--cbh'));
+      if(scr){
+        const ss=cs(scr),sr=scr.getBoundingClientRect();
+        O.push('scr ex'+(document.body.contains(scr)?1:0)+
+               ' d:'+(ss?ss.display:'?')+' v:'+(ss?ss.visibility.slice(0,3):'?')+
+               ' pe:'+(ss?ss.pointerEvents.slice(0,4):'?')+' z'+(ss?ss.zIndex:'?')+
+               ' r'+R(sr.left)+','+R(sr.top)+' '+R(sr.width)+'x'+R(sr.height));
+        O.push('cls '+(scr.className||'(空)'));
+      }else O.push('scr ex0 DOMに無い');
+      O.push.apply(O,rows);
+      // 前に居座りうる板。display:none 以外のものだけ名指しする。
+      const ov=[];
+      for(const id of ['settings','nameOverlay','loginModal','adminPanel','a2hsBanner','a2hsDim',
+                       'mypageOverlay','holOverlay','cookieBanner','rotateOverlay','touchControls']){
+        const el=gid(id);if(!el)continue;
+        const s=cs(el);if(!s||s.display==='none')continue;
+        ov.push(id+':'+s.display.slice(0,5)+'/'+s.pointerEvents.slice(0,4)+'/z'+s.zIndex);
+      }
+      O.push('OVL '+(ov.length?ov.join(' '):'(前面に出ている板は無し)'));
+      const fmt=t=>'#'+t.n+' '+t.t+' @'+t.x+','+t.y+' in:'+t.in+
+                   (t.in==='-'?' 近:'+t.near:'')+
+                   ' ts:'+t.ts+' te:'+t.te+' pd:'+t.pd+' pu:'+t.pu+' ck:'+t.ck+' ef:'+t.ef;
+      O.push('--- TAP  (1タップ目は固定表示) ---');
+      if(firstTap)O.push('1st '+fmt(firstTap));
+      else O.push('(まだ 1 度もタッチが届いていない)');
+      for(let i=tapLog.length-1;i>=0;i--)if(tapLog[i]!==firstTap)O.push('    '+fmt(tapLog[i]));
+      O.push('--- CHANGE (変わった瞬間だけ) ---');
+      for(let i=chg.length-1;i>=0;i--)O.push(chg[i]);
+      box.textContent=O.join('\n');
+    }catch(e){box.textContent='0801z5 ERR '+(e&&e.message||'err');}
+  },300);
 })();
 
 // ======== UPDATE ========

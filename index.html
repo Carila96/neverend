@@ -149,19 +149,36 @@ body.titletap canvas#c{pointer-events:none;}
   pointer-events:none;
   background:rgb(3,3,5);
   font-family:"Courier New",monospace;letter-spacing:0;
-  /* 文字の基準。横向きでは高さが短辺なので vh 側が効く。ワイドな PC で
+  /* ★★★ 0801z4: 画面の高さは vh ではなく「実際に見えている高さ」で持つ。
+     vh / 100% / bottom はどれも初期包含ブロック(ICB)＝レイアウトビューポート基準で、
+     iOS の Safari ではここに URL バー・ツールバーの分が含まれる。つまり
+       ICB の高さ  >  window.innerHeight（見えている高さ）
+     になり、bottom:2.4vh で置いた HALL OF LEGENDS は「ICB の下端付近」＝
+     見えている画面より下、という位置に正しく置かれてしまう。実機の
+       HOL NG(null)@645,432 画面外
+     がまさにこれで、elementFromPoint は viewport の外を撃つと null を返す。
+     → 高さの基準を --app-vh（JS が window.innerHeight/100 を px で書いている、
+       canvas の高さ計算が既に信頼している実測値）に切り替える。
+       100dvh との min を取るので、片方が壊れてももう片方が上限を押さえる。
+       以後 #titleScreen 内では vh を一切使わない。--H が唯一の縦の物差し。 */
+  --H:min(100dvh, calc(var(--app-vh, 1dvh) * 100));
+  /* 文字の基準。横向きでは高さが短辺なので高さ側が効く。ワイドな PC で
      大きくなりすぎないよう vw 側でも頭を抑えるだけの、ごく普通の指定。 */
-  --f:min(1.02vw, 1.81vh);
+  --f:min(1.02vw, calc(var(--H) * 0.0181));
   --logo:7.6;              /* ロゴだけ倍率が違うので分けて持つ */
   /* 画面端からの余白 */
   --ex:2.4vw;
-  --ey:2.4vh;
+  --ey:calc(var(--H) * 0.024);
   --er:2.4vw;              /* 右端だけ別に持つ（PWA で広げる） */
+  /* 下端専用の余白。Cookie バナーが出ている間だけ、その実高さ(--cbh)を足して
+     下端の要素（HALL OF LEGENDS / WORLD DEATHS / 案内文）をバナーの上へ逃がす。
+     バナーが無いとき --cbh は 0px なので、通常時の見た目は --ey と完全に同じ。 */
+  --eyb:calc(var(--H) * 0.024 + var(--cbh, 0px));
 }
 /* スマホは画面が小さいぶん文字を相対的に大きくする（canvas 版の _UI_K=1.7 と同じ意図）。
    media query なので JS のクラス付与を待たない。 */
 @media (pointer:coarse){
-  #titleScreen.show{--f:min(1.7vw, 2.6vh);--logo:4.8;}
+  #titleScreen.show{--f:min(1.7vw, calc(var(--H) * 0.026));--logo:4.8;}
 }
 /* PWA(standalone) は画面の左右端に iOS のシステムジェスチャ帯があり、そこに触れた指は
    OS に取られてアプリまで届かない。右端に接する MY PAGE / HALL OF LEGENDS を内側へ寄せる。
@@ -170,7 +187,7 @@ body.titletap canvas#c{pointer-events:none;}
   #titleScreen.show{--er:7vw;}
 }
 /* 塔（左側の帯）。装飾なので絶対に指を受けない */
-#tsTower{position:fixed;left:0;top:0;width:30%;height:100%;
+#tsTower{position:fixed;left:0;top:0;width:30%;height:var(--H);z-index:0;
   opacity:0.5;mix-blend-mode:screen;pointer-events:none;
   object-fit:fill;image-rendering:pixelated;}
 
@@ -183,13 +200,27 @@ body.titletap canvas#c{pointer-events:none;}
   white-space:nowrap;text-align:center;cursor:pointer;pointer-events:auto;
   -webkit-appearance:none;appearance:none;border-radius:0;
   -webkit-tap-highlight-color:transparent;touch-action:manipulation;
-  padding:1.4vh 1.8vw;                      /* 44px 相当の指の当たりを確保 */
+  padding:calc(var(--H) * 0.014) 1.8vw;     /* 44px 相当の指の当たりを確保 */
+  /* ★ #titleScreen(z-index:50, position:fixed) が作る積み重ねコンテキストの中で、
+     ボタンだけを最前面に固定する。塔・BEST マーカー・文字行・中央の箱より必ず上。
+     DOM の並び順が変わっても順序が入れ替わらない＝elementFromPoint が
+     常にボタン自身を返す（条件B）。50 より上げないのは、SETTINGS(#settings z100)や
+     MY PAGE(z1000) のモーダルが開いたときに、そちらが必ず前に来る必要があるため。 */
+  z-index:5;
 }
 .ts-btn::-moz-focus-inner{border:0;padding:0;}
 #titleScreen.live .ts-btn:active{filter:brightness(1.7);}
 /* 文字だけの行。位置を占めるだけで指は一切受けない */
-.ts-txt{position:fixed;pointer-events:none;font-family:"Courier New",monospace;
+.ts-txt{position:fixed;pointer-events:none;z-index:2;font-family:"Courier New",monospace;
   line-height:1.2;white-space:nowrap;}
+
+/* ★ 下端に置くものは bottom を使わない ── 0801z4 の要
+   bottom:X は ICB（レイアウトビューポート）の下端から X。iOS ではそこが
+   ツールバーの裏＝見えていない位置なので、正しく置いたつもりの要素が画面外に出る。
+   代わりに「見えている高さ --H の下端から --ey 上」を top で指定し、
+   自分の高さぶんを transform:translateY(-100%) で戻す。
+   要素の高さを知らなくても下端が --H を超えない＝画面外へ出る経路が無い。
+   transform は自分自身の配置には影響しない（fixed のまま viewport 基準）。 */
 
 /* ── 四隅 ─────────────────────────────────────────────────── */
 #tsSettings{top:var(--ey);left:var(--ex);
@@ -199,24 +230,36 @@ body.titletap canvas#c{pointer-events:none;}
   background:rgba(0,0,0,0.6);border:1px solid rgba(255,220,50,0.8);
   color:rgba(255,220,50,1);letter-spacing:0.05em;}
 #titleScreen.ts-test #tsMypage{display:none;}
-#tsHol{bottom:var(--ey);right:var(--er);color:rgba(100,140,200,0.9);}
+/* 右下。bottom を使うと ICB の下端＝画面外に落ちる（実機 @645,432）。.ts-bot で上から置く */
+#tsHol{top:calc(var(--H) - var(--eyb));transform:translateY(-100%);
+  right:var(--er);color:rgba(100,140,200,0.9);}
 #titleScreen.ts-test #tsHol{color:rgba(80,80,100,0.6);}
-/* 左下の 2 行。四隅ボタンと同じ余白に揃える */
-#tsYourDeaths{left:var(--ex);bottom:calc(var(--ey) + 2.6vh);
+/* 左下の 2 行。四隅ボタンと同じ余白に揃える（こちらも top 基準へ） */
+#tsYourDeaths{left:var(--ex);top:calc(var(--H) - var(--eyb) - var(--H) * 0.026);
+  transform:translateY(-100%);
   font-size:var(--f);color:rgba(255,100,100,0.85);}
-#tsWorldDeaths{left:var(--ex);bottom:var(--ey);
+#tsWorldDeaths{left:var(--ex);top:calc(var(--H) - var(--eyb));transform:translateY(-100%);
   font-size:var(--f);color:rgba(220,120,120,0.85);}
 
 /* ── 中央の縦積み ────────────────────────────────────────────
-   ★ 上端からの距離だけで置く。height も bottom も justify-content:center も使わない。
-     画面の高さが誤って報告されても、この積み木は上端に貼り付いたまま動かない。
-     （高さを使うと、その誤差の分だけ全部が下へずれ、下端の要素は画面外へ出る） */
-#tsCenter{position:fixed;left:0;right:0;top:6vh;
-  display:flex;flex-direction:column;align-items:center;
-  gap:0.8vh;pointer-events:none;padding:0 2vw;}
+   ★ 0801z4: canvas 版と同じ「中央寄せ」に戻す（条件A）。
+     canvas 版の構図(1280x720)は
+       ロゴ baseline y330 / タグ y376 / サブ y404 / NORMAL y444 / DEATH y484 /
+       START y526 / Playing as y556
+     で、積み木の上端≒y258・下端≒y566、その中心は y412 ＝ canvas 高さの 57%。
+     canvas はタッチ端末で「画面上端 4px から高さ 88%」に置かれているので、
+     画面に対しては 0.57*0.88 + 4/H ≒ 0.507 …ほぼ画面のど真ん中だった。
+     つまり canvas 版の見た目は「積み木を画面の縦中央に置く」と一致する。
+     → 高さ --H（見えている高さの実測）の箱を敷いて justify-content:center。
+     以前の top:6vh は上端に貼り付ける指定で、全体が上へ寄っていた（条件A の不成立）。
+     --H は 100dvh と実測 innerHeight の小さい方なので、中央寄せにしても
+     下端が画面外へ出ることはない。 */
+#tsCenter{position:fixed;left:0;right:0;top:0;height:var(--H);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:calc(var(--H) * 0.008);pointer-events:none;padding:0 2vw;z-index:4;}
 #tsCenter>*{position:static;}      /* .ts-btn の fixed を flex の流れに戻す */
 #tsLogo{font-weight:bold;font-size:calc(var(--f)*var(--logo));line-height:1;
-  letter-spacing:0;white-space:nowrap;margin-bottom:0.6vh;}
+  letter-spacing:0;white-space:nowrap;margin-bottom:calc(var(--H) * 0.006);}
 #tsLogoN{color:#fff;}
 #tsLogoE{color:#e74c3c;}
 body:not(.touch) #tsLogoN{text-shadow:0 0 0.45em rgba(255,255,255,0.85);}
@@ -225,11 +268,11 @@ body:not(.touch) #tsLogoE{text-shadow:0 0 0.45em rgba(255,50,50,0.9);}
   pointer-events:none;white-space:nowrap;}
 body:not(.touch) #tsTag{text-shadow:0 0 0.5em rgba(160,185,255,0.6);}
 #tsSub{font-size:calc(var(--f)*0.92);color:rgba(140,140,160,0.5);
-  pointer-events:none;white-space:nowrap;margin-bottom:1.2vh;}
+  pointer-events:none;white-space:nowrap;margin-bottom:calc(var(--H) * 0.012);}
 
 /* モード行。▶ は ::before で場所を常に確保するので、選択が動いても行が跳ねない */
 .ts-mode{font-weight:bold;font-size:calc(var(--f)*1.2);letter-spacing:0.08em;
-  padding:0.9vh 2vw;}
+  padding:calc(var(--H) * 0.009) 2vw;}
 .ts-mode::before{content:'\25B6';opacity:0;margin-right:0.7em;}
 .ts-mode.sel::before{opacity:1;}
 #tsNormal{color:rgba(150,160,190,0.45);}
@@ -242,17 +285,17 @@ body:not(.touch) #tsDeath.sel{text-shadow:0 0 0.5em rgba(255,60,40,0.8);}
 #tsDeath.locked.sel{color:rgba(170,170,190,0.7);text-shadow:none;}
 
 #tsStart{font-weight:bold;font-size:calc(var(--f)*1.45);letter-spacing:0.06em;
-  color:#fff;margin-top:1.2vh;animation:tsPulseStart 3.1416s linear infinite;}
+  color:#fff;margin-top:calc(var(--H) * 0.012);animation:tsPulseStart 3.1416s linear infinite;}
 body:not(.touch) #tsStart{text-shadow:0 0 0.5em rgba(255,255,255,0.85);}
 @keyframes tsPulseStart{
   0%{opacity:.700}12.5%{opacity:.912}25%{opacity:1}37.5%{opacity:.912}
   50%{opacity:.700}62.5%{opacity:.488}75%{opacity:.400}87.5%{opacity:.488}100%{opacity:.700}}
 #tsName{font-size:calc(var(--f)*0.95);color:rgba(160,180,220,0.7);
-  padding:0.8vh 1.5vw;cursor:default;pointer-events:none;}
+  padding:calc(var(--H) * 0.008) 1.5vw;cursor:default;pointer-events:none;}
 #titleScreen.ts-noname #tsName{cursor:pointer;pointer-events:auto;}
 
 /* 未解放の DEATH MODE を選んだときの一言。canvas の floatMsgs 相当 */
-#tsMsg{position:fixed;left:0;right:0;top:40vh;text-align:center;
+#tsMsg{position:fixed;left:0;right:0;top:calc(var(--H) * 0.4);text-align:center;z-index:3;
   font-weight:bold;font-size:calc(var(--f)*1.2);color:rgba(255,220,50,0.95);
   pointer-events:none;opacity:0;display:none;}
 #tsMsg.show{display:block;animation:tsMsgFloat 3s linear forwards;}
@@ -261,15 +304,18 @@ body:not(.touch) #tsStart{text-shadow:0 0 0.5em rgba(255,255,255,0.85);}
   40%,73%{opacity:1;transform:translateY(-4vh)}
   100%{opacity:0;transform:translateY(-4vh)}}
 
-/* ── 画面下中央の案内 ───────────────────────────────────────── */
-#tsFoot{position:fixed;left:0;right:0;bottom:0.4vh;text-align:center;
+/* ── 画面下中央の案内 ─────────────────────────────────────────
+   ここも bottom を捨てて --H の下端から積む（ICB 下端＝画面外を踏まない）*/
+#tsFoot{position:fixed;left:0;right:0;
+  top:calc(var(--H) - var(--H) * 0.004 - var(--cbh, 0px));
+  transform:translateY(-100%);text-align:center;z-index:2;
   pointer-events:none;}
 #tsKeys{font-size:calc(var(--f)*0.9);color:rgba(100,120,160,0.6);}
 #tsTerms{font-size:calc(var(--f)*0.78);color:rgba(120,120,150,0.6);}
 #tsAdmin{font-size:calc(var(--f)*0.8);font-weight:bold;color:rgba(255,220,50,0.6);display:none;}
 #titleScreen.ts-admin #tsAdmin{display:block;}
 #tsHard,#tsRetro{font-size:calc(var(--f)*0.8);font-weight:bold;
-  bottom:calc(var(--ey) + 5.6vh);display:none;}
+  top:calc(var(--H) - var(--eyb) - var(--H) * 0.056);transform:translateY(-100%);display:none;}
 #tsHard{left:var(--ex);color:rgba(255,80,60,0.7);}
 #tsRetro{right:var(--er);color:rgba(100,255,120,0.7);}
 #titleScreen.ts-hard #tsHard{display:block;}
@@ -279,7 +325,7 @@ body:not(.touch) #tsStart{text-shadow:0 0 0.5em rgba(255,255,255,0.85);}
    縦位置だけは「何階まで登ったか」というゲームの値で決まるので JS が --my(%) を入れる。
    これはレイアウトの較正値ではなくゲームデータで、しかもボタンではないので、
    値がどうなろうとタップの当たり判定には一切影響しない。 */
-#tsBest{position:fixed;left:0;top:0;width:30%;height:100%;
+#tsBest{position:fixed;left:0;top:0;width:30%;height:var(--H);z-index:1;
   pointer-events:none;display:none;--my:92%;}
 #titleScreen.ts-best #tsBest{display:block;}
 #tsBestLabel{position:absolute;right:8%;top:var(--my);transform:translateY(-50%);
@@ -7683,6 +7729,27 @@ function _titleHtmlLive(){return _titleHtmlOn;}
 // 挙動が「キー用」と「タップ用」に分かれていると必ず片方だけ直る。入口を 1 本にする。
 // ここに書いてある処理は、いずれも canvas 版の _canvasActivate / update() から
 // そのまま移してきたもので、条件も順序も変えていない。
+// ── Cookie バナーの高さをタイトルの下端余白に足す（条件B: HoL が最前面で押せること）──
+// バナーは z-index:9999 で #titleScreen(z50) より前にあり、bottom:0 なので
+// HALL OF LEGENDS / WORLD DEATHS / 案内文にちょうど重なる。バナーが出ている間、
+// その領域の elementFromPoint は #cookieBanner を返す＝タップはバナーに吸われる。
+// バナーを退かすわけにいかないので、下端要素の方をバナーの高さぶん持ち上げる。
+let _cbhLast='';
+function _syncCookiePad(){
+  const cb=document.getElementById('cookieBanner');
+  let v='0px';
+  if(cb&&!cb.classList.contains('hidden')){
+    let shown=cb.style.display!=='none';
+    if(shown){try{shown=getComputedStyle(cb).display!=='none';}catch(_){}}
+    if(shown){
+      const h=cb.getBoundingClientRect().height;
+      if(h>0)v=Math.ceil(h)+'px';
+    }
+  }
+  if(v===_cbhLast)return;            // 同値なら書かない（レイアウト再計算を起こさない）
+  _cbhLast=v;
+  document.documentElement.style.setProperty('--cbh',v);
+}
 function _titleCookieBlocking(){
   // 同意バナーが出ている間は開始しない。Accept がジャンプゾーンと重なるため、
   // Accept を狙った指でゲームが始まってしまうのを防ぐ（canvas 版と同じ条件）。
@@ -7837,31 +7904,50 @@ if(_titleDom){
     if(state!=='title'){box.style.display='none';return;}
     box.style.display='block';
     try{
-      const L=['BUILD 0801z3 n:'+(window.__tsFireN|0)+'  '+(window.__standalone?'PWA':'BRW')];
+      const L=['BUILD 0801z4 n:'+(window.__tsFireN|0)+'  '+(window.__standalone?'PWA':'BRW')];
+      // 条件B（elementFromPoint が自分を返す）と 条件C（矩形が画面内）を数える。
+      // 対象は 6 ボタン（cookie の 2 つは判定に入れない＝タイトルの構成要素ではない）。
+      let bOK=0,bN=0,cOK=0,cN=0;
       for(const [tag,get] of targets){
         const el=get();
-        if(!el){L.push(tag+' (無し)');continue;}
+        const isTs=tag!=='CK+'&&tag!=='CK-';
+        if(!el){L.push(tag+' (無し)');if(isTs){bN++;cN++;}continue;}
         const r=el.getBoundingClientRect();
-        if(!(r.width>0&&r.height>0)){L.push(tag+' 非表示');continue;}
+        if(!(r.width>0&&r.height>0)){L.push(tag+' 非表示');if(isTs){bN++;cN++;}continue;}
         const x=r.left+r.width/2, y=r.top+r.height/2;
         const hit=document.elementFromPoint(x,y);
         const ok=!!hit&&(hit===el||el.contains(hit));
+        // 条件C: 4 辺すべてが viewport の内側にあること
+        const inView=r.top>=0&&r.left>=0&&
+                     r.bottom<=window.innerHeight&&r.right<=window.innerWidth;
+        if(isTs){bN++;cN++;if(ok)bOK++;if(inView)cOK++;}
         if(!ok)ngCount[tag]=(ngCount[tag]|0)+1;
         L.push(tag+' '+(ok?'OK ':'NG ')+nm(hit)+
+               ' ['+Math.round(r.left)+','+Math.round(r.top)+' '+
+               Math.round(r.width)+'x'+Math.round(r.height)+']'+
                (ok?'':' @'+Math.round(x)+','+Math.round(y)+' x'+(ngCount[tag]|0))+
-               (r.bottom>window.innerHeight||r.top<0||r.right>window.innerWidth||r.left<0?' 画面外':''));
+               (inView?'':' 画面外'));
       }
+      // ★ 合否をこの 1 行で読む。B が 6/6・C が 6/6 なら条件B・条件Cは成立。
+      L.push('★B '+bOK+'/'+bN+(bOK===bN?' OK':' NG')+
+             '   ★C '+cOK+'/'+cN+(cOK===cN?' 画面外0':' 画面外'+(cN-cOK)));
       const scr=document.getElementById('titleScreen'),
             btn=document.getElementById('tsSettings'),cb=document.getElementById('cookieBanner');
-      L.push('pe scr:'+pe(scr)+' btn:'+pe(btn)+' z'+zi(scr));
+      L.push('pe scr:'+pe(scr)+' btn:'+pe(btn)+' z'+zi(scr)+'/'+zi(btn));
       L.push('cls '+(scr?scr.className:'-'));
-      L.push('vp '+window.innerWidth+'x'+window.innerHeight);
+      // vp = window.innerHeight（見えている高さ）、ICB = documentElement.clientHeight。
+      // この 2 つが食い違う端末では bottom/vh がそのまま画面外を指す＝HOL が飛んだ原因。
+      // --H はその小さい方を採用しているので、下端要素は必ず vp の内側に入る。
+      L.push('vp '+window.innerWidth+'x'+window.innerHeight+
+             ' ICB '+document.documentElement.clientWidth+'x'+document.documentElement.clientHeight);
+      if(scr)L.push('--H '+getComputedStyle(scr).getPropertyValue('--H').trim()+
+                    ' vh '+getComputedStyle(document.documentElement).getPropertyValue('--app-vh').trim());
       if(cb){const cr=cb.getBoundingClientRect();
         L.push('cb '+getComputedStyle(cb).display+' y'+Math.round(cr.top)+'-'+Math.round(cr.bottom));}
       L.push('ts:'+ts+'  te:'+te);
       L.push('ck:'+ck+'  fire:'+(window.__tsFire||'-'));
       box.textContent=L.join('\n');
-    }catch(e){box.textContent='0801z3 ERR '+(e&&e.message||'err');}
+    }catch(e){box.textContent='0801z4 ERR '+(e&&e.message||'err');}
   },400);
 })();
 
@@ -8946,6 +9032,14 @@ function loop(ts){
   // タイトル中だけ canvas をタップの対象から外す（body.titletap canvas#c{pointer-events:none}）。
   // ゲーム本編の状態では付かないので、canvas のタップは従来どおり。
   document.body.classList.toggle('titletap', state==='title'&&_titleHtmlLive());
+  // ★ 0801z4: Cookie 同意バナー(z-index:9999, bottom:0)はタイトルの下端に重なる。
+  // 実測(headless Chrome 5構成)で HALL OF LEGENDS の中心を elementFromPoint すると
+  // #cookieBanner / button.cookie-btn が返ってきた＝バナーが出ている間 HoL は押せない。
+  // バナー自体は下げられない(Accept を押させる必要がある)ので、タイトルの下端要素を
+  // バナーの実高さ分だけ持ち上げる。--cbh はバナーが無い間ずっと 0px。
+  // 値が変わったときだけ書く（毎フレーム書くとレイアウトが延々と無効化され、
+  // iOS がタップを取りこぼす。--app-vh と同じ理由）。
+  _syncCookiePad();
   // Slow motion after death
   if(slowTimer>0){slowTimer=Math.max(0,slowTimer-dt);dt*=0.15;}
   // Screen shake

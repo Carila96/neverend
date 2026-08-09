@@ -7831,19 +7831,28 @@ function _titleOpenName(){
   ov.classList.add('show');
   setTimeout(()=>{const f=document.getElementById('nameInputField');if(f)f.focus();},50);
 }
-// ══ 0801z6: 横向き確定後に一度だけ、実測したずれを打ち消して配置する ═══════════
-// 縦向きで置かれた座標が横向きに持ち越されて 59px ずれる問題への対処。
-// 59 という数字はどこにも書かない。#tsFixRef（position:fixed;top:0;left:0 の
-// 大きさゼロの点）の実際の位置を測り、0 から外れていればその差をそのまま補正量にする。
-//   ずれ無し … rect.top === 0 → --tsdy:0px（PC と同じ、何も起きない）
-//   standalone のオフセットあり … rect.top === 59 → --tsdy:-59px
-// 補正は #titleScreen の transform に入れるので、中のボタンは全部まとめて動く。
-// transform はヒットテストにも効くため、見た目と当たり判定が同時に正しくなる。
+// ══ 0801z8: ボタン自身を見て、あるべき位置との差をそのまま詰める（閉ループ）═══════
+// 0801z7 までは #tsFixRef（固定レイヤの原点を指す代理点）を測り、その値を打ち消して
+// いた。これは「測った瞬間の原点」を前提にした開ループで、次の 2 つに弱い:
+//   ・iOS が resize も visualViewport イベントも出さずに黙ってレイアウトを取り直す
+//     （まさに「タップすると直る」の正体）。原点が 0 に戻っても補正は -59 のまま
+//     残り、今度は逆向きに 59px 行きすぎる ＝ タイトル全体が上にずれる。
+//   ・代理点と #titleScreen が同じ原点に居ることを前提にしている。
+// どちらも「あるべき位置」を見ていないことが原因。
 //
-// ★ 書くのは値が変わったときだけ。毎回書くとレイアウトが動き続け、その間 iOS が
-//   タップを捨てる（--app-vh で同じ失敗をしている。同値なら何もしないのが重要）。
+// → 代理をやめ、SETTINGS ボタンの「あるべき top」と「実際の top」の差を直接詰める。
+//     あるべき top … getComputedStyle(el).top（CSS が意図した値。--ey の解決結果）
+//     実際の top   … getBoundingClientRect().top（transform 適用後の画面上の位置）
+//     err = 実際 - あるべき  →  --tsdy -= err
+//   傾き 1 の線形なので 1 回で収束する。原点がどこにあろうと、何が原因でずれようと、
+//   「あるべき位置」に着地する。行きすぎたら次の測定で自動的に戻る＝自己修復。
+//   SETTINGS は四隅の基準点で、中央の積み木も同じ #titleScreen に乗っているので、
+//   ここが合えば四隅も中央もまとめて合う。
+//
+// ★ 書くのは値が変わったときだけ（同値なら DOM に触れない。触るとレイアウトが動き、
+//   その間 iOS がタップを捨てる。--app-vh で同じ失敗をしている）。
 // ★ 縦向きの間は測らない・置かない。縦のレイアウトを基準にしないため。
-let _tsdyApplied=null,_tsCalTimer=0;
+let _tsdyApplied=0,_tsCalTimer=0,_tsCalErr=null;
 function _titleCalibrate(){
   if(!isTouchDevice)return;                        // PC は現状のまま一切触らない
   const D=_titleDom;if(!D||!D.root)return;
@@ -7853,17 +7862,21 @@ function _titleCalibrate(){
     scr.classList.remove('ts-cal');
     return;
   }
-  const ref=document.getElementById('tsFixRef');if(!ref)return;
-  const dy=Math.round(ref.getBoundingClientRect().top);
-  if(!isFinite(dy))return;
-  // 1px 未満の揺れは追いかけない（追うと永久に書き換わり続ける）
-  if(_tsdyApplied===null||Math.abs(dy+_tsdyApplied)>=1){
-    _tsdyApplied=-dy;
-    // ★0801z7: :root に置く。#titleScreen の element style に置いていたときは、
-    //   タイトルの外にある固定要素（デバッグの枠・板）がこの値を読めず、補正を
-    //   受けられなかった。カスタムプロパティは :root から継承されるので、
-    //   ここに置けば「補正後の座標系」をページ全体で共有できる。
-    document.documentElement.style.setProperty('--tsdy',_tsdyApplied+'px');
+  const el=D.settings;                             // 四隅の基準点
+  if(el){
+    const r=el.getBoundingClientRect();
+    if(r.width>0||r.height>0){
+      const want=parseFloat(getComputedStyle(el).top);   // CSS が意図した top(px)
+      if(isFinite(want)){
+        const err=r.top-want;                            // + なら下すぎ / - なら上すぎ
+        _tsCalErr=Math.round(err);
+        if(Math.abs(err)>=1){
+          _tsdyApplied=Math.round(_tsdyApplied-err);
+          // :root に置く。タイトルの外の固定要素（デバッグの枠・板）も同じ座標系に乗る。
+          document.documentElement.style.setProperty('--tsdy',_tsdyApplied+'px');
+        }
+      }
+    }
   }
   scr.classList.add('ts-cal');                     // ここで初めて見える＝ずれた姿を見せない
 }
@@ -7896,6 +7909,16 @@ function _titleCalibrateBurst(){
     window.visualViewport.addEventListener('scroll',soon,{passive:true});
   }
   _titleCalibrateBurst();
+  // ★0801z8: 定期的に測り直す。iOS は resize も visualViewport イベントも出さずに
+  //   黙ってレイアウトを取り直すこと（「タップすると直る」の正体）があり、
+  //   イベント待ちだと補正が古いまま取り残されて逆向きにずれる。
+  //   測るのは矩形 1 つと computed top 1 つ。差が 1px 未満なら DOM には触らないので、
+  //   落ち着いている間の書き込みはゼロ＝レイアウトを揺らさない。
+  setInterval(()=>{
+    if(state!=='title')return;                       // タイトル以外では測らない
+    if(document.body.classList.contains('portrait'))return;
+    _titleCalibrate();
+  },300);
   // 保険。何かの理由で較正できなくても、タイトルが永久に見えないことだけは避ける。
   setTimeout(()=>{
     const D=_titleDom;
@@ -8206,6 +8229,17 @@ if(_titleDom){
              '  --tsdy '+(cssVar(document.documentElement,'--tsdy')||'(未設定)')+
              '  cal:'+(scr&&scr.classList.contains('ts-cal')?'済':'未')+
              '  '+(document.body.classList.contains('portrait')?'縦':'横'));
+      // ★0801z8 の要。SETTINGS の「あるべき top」と「実際の top」の差。
+      //   閉ループで詰めているので、落ち着けば 0 になる。0 でなければ追従中か失敗。
+      {
+        const se=gid('tsSettings');
+        if(se){
+          const sr=se.getBoundingClientRect(),sw=parseFloat(getComputedStyle(se).top);
+          O.push('位置ずれ SET 実際'+R(sr.top)+' / あるべき'+R(sw)+
+                 ' = '+(sr.top-sw>0?'+':'')+R(sr.top-sw)+'px'+
+                 (Math.abs(sr.top-sw)<=1?' → 正位置':' → 追従中'));
+        }
+      }
       if(scr){
         const ss=cs(scr),sr=scr.getBoundingClientRect();
         O.push('scr ex'+(document.body.contains(scr)?1:0)+

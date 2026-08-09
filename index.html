@@ -7853,6 +7853,24 @@ function _titleOpenName(){
 //   その間 iOS がタップを捨てる。--app-vh で同じ失敗をしている）。
 // ★ 縦向きの間は測らない・置かない。縦のレイアウトを基準にしないため。
 let _tsdyApplied=0,_tsCalTimer=0,_tsCalErr=null;
+let _tsdyLast='',_tsfixLast='',_tsSafeSeen=0;
+// ══ 0801za: standalone のときだけ、かたまりを下へ平行移動する量 ═══════════════
+// standalone では固定レイヤの原点が画面の可視領域より上にあり、CSS どおりに
+// 置くとタイトル全体がステータスバー側へ食い込んで「上にずれて」見える。
+// その量は visualViewport.offsetTop（実機で off-59）。これをそのまま下げ量にする。
+// ・ブラウザ(off無し)では 0 を返す＝従来と 1px も変わらない。
+// ・viewport-fit=cover を指定していないので env(safe-area-inset-top) は 0 になり
+//   使えない。offsetTop が唯一の実測手段。
+// ・一瞬 0 を返す瞬間があっても跳ねないよう、観測した最大値を保持する
+//   （向きが変わったら破棄して測り直す）。異常値は採らない。
+function _tsSafeTop(){
+  if(!window.__standalone)return 0;               // ★ブラウザ・PC は対象外
+  const vv=window.visualViewport;
+  let v=vv?Math.abs(Math.round(vv.offsetTop||0)):0;
+  if(!(v>=0)||v>window.innerHeight*0.25)v=0;      // 画面の1/4を超える値は異常とみなす
+  if(v>_tsSafeSeen)_tsSafeSeen=v;
+  return _tsSafeSeen;
+}
 function _titleCalibrate(){
   if(!isTouchDevice)return;                        // PC は現状のまま一切触らない
   const D=_titleDom;if(!D||!D.root)return;
@@ -7868,13 +7886,21 @@ function _titleCalibrate(){
     if(r.width>0||r.height>0){
       const want=parseFloat(getComputedStyle(el).top);   // CSS が意図した top(px)
       if(isFinite(want)){
-        const err=r.top-want;                            // + なら下すぎ / - なら上すぎ
+        // ★0801za: 目標を「CSS の意図 + standalone の下げ量」にする。
+        //   ブラウザでは safe=0 なので目標は従来と同じ＝挙動不変。
+        //   standalone では目標が 59px 下がり、閉ループがかたまりごとそこへ運ぶ。
+        const safe=_tsSafeTop();
+        const err=r.top-(want+safe);                     // + なら下すぎ / - なら上すぎ
         _tsCalErr=Math.round(err);
-        if(Math.abs(err)>=1){
-          _tsdyApplied=Math.round(_tsdyApplied-err);
-          // :root に置く。タイトルの外の固定要素（デバッグの枠・板）も同じ座標系に乗る。
-          document.documentElement.style.setProperty('--tsdy',_tsdyApplied+'px');
-        }
+        if(Math.abs(err)>=1)_tsdyApplied=Math.round(_tsdyApplied-err);
+        // --tsdy … タイトル本体の平行移動量（UI文字もボタンも同じ親なので一緒に動く）
+        // --tsfix … 「固定レイヤの原点ずれ」だけを打ち消す量。getBoundingClientRect
+        //           から位置を決めるデバッグの枠・板はこちらに乗せる。safe の分を
+        //           含めないので、枠は下げた後のボタンにぴったり重なったままになる。
+        const dy=_tsdyApplied+'px', fx=(_tsdyApplied-safe)+'px';
+        const root=document.documentElement;
+        if(dy!==_tsdyLast){_tsdyLast=dy;root.style.setProperty('--tsdy',dy);}
+        if(fx!==_tsfixLast){_tsfixLast=fx;root.style.setProperty('--tsfix',fx);}
       }
     }
   }
@@ -7897,12 +7923,13 @@ function _titleCalibrateBurst(){
       const p=document.body.classList.contains('portrait');
       if(p===wasPortrait)return;
       wasPortrait=p;
+      _tsSafeSeen=0;                               // 向きが変われば下げ量は測り直し
       if(p)_titleDom&&_titleDom.root&&_titleDom.root.classList.remove('ts-cal');
       else _titleCalibrateBurst();                 // 縦→横。ここで初めて配置する
     }).observe(document.body,{attributes:true,attributeFilter:['class']});
   }catch(_){}
   window.addEventListener('resize',soon,{passive:true});
-  window.addEventListener('orientationchange',()=>_titleCalibrateBurst(),{passive:true});
+  window.addEventListener('orientationchange',()=>{_tsSafeSeen=0;_titleCalibrateBurst();},{passive:true});
   window.addEventListener('pageshow',()=>_titleCalibrateBurst(),{passive:true});
   if(window.visualViewport){
     window.visualViewport.addEventListener('resize',soon,{passive:true});
@@ -7998,7 +8025,7 @@ if(_titleDom){
   const box=document.createElement('div');
   box.id='probe0801z5';
   box.style.cssText='position:fixed;left:2px;top:2px;width:57vw;z-index:9998;pointer-events:none;'+
-    'transform:translateY(var(--tsdy, 0px));'+   // 板もタイトルと同じ座標系に乗せる
+    'transform:translateY(var(--tsfix, 0px));'+  // 板は原点ずれだけを打ち消す（safe は含めない）
     'background:rgba(0,0,0,0.78);border:1px solid rgba(0,255,0,0.45);border-radius:3px;'+
     'padding:2px 4px;color:#0f0;font-family:monospace;font-size:8px;line-height:1.28;'+
     'white-space:pre;text-align:left;overflow:hidden;';
@@ -8030,7 +8057,7 @@ if(_titleDom){
     //   ボタンと文字は同じ #titleScreen の中なので元から一致しており、ずれていたのは
     //   この枠のほうだった。#titleScreen と同じ補正を枠にも掛けて座標系を揃える。
     m.style.cssText='position:fixed;z-index:10000;pointer-events:none;display:none;'+
-      'transform:translateY(var(--tsdy, 0px));'+
+      'transform:translateY(var(--tsfix, 0px));'+
       'border:1px dashed rgba(0,255,255,0.85);box-sizing:border-box;'+
       'font:8px monospace;color:rgba(0,255,255,0.95);';
     m.textContent=tag;
@@ -8235,9 +8262,14 @@ if(_titleDom){
         const se=gid('tsSettings');
         if(se){
           const sr=se.getBoundingClientRect(),sw=parseFloat(getComputedStyle(se).top);
-          O.push('位置ずれ SET 実際'+R(sr.top)+' / あるべき'+R(sw)+
-                 ' = '+(sr.top-sw>0?'+':'')+R(sr.top-sw)+'px'+
-                 (Math.abs(sr.top-sw)<=1?' → 正位置':' → 追従中'));
+          const sf=(typeof _tsSafeTop==='function')?_tsSafeTop():0;
+          const tgt=sw+sf, d=sr.top-tgt;
+          O.push('位置 SET 実際'+R(sr.top)+' / 目標'+R(tgt)+
+                 '(CSS'+R(sw)+'+下げ'+R(sf)+')'+
+                 ' = '+(d>0?'+':'')+R(d)+'px'+(Math.abs(d)<=1?' → 正位置':' → 追従中'));
+          O.push('  --tsdy '+(cssVar(document.documentElement,'--tsdy')||'-')+
+                 ' / --tsfix '+(cssVar(document.documentElement,'--tsfix')||'-')+
+                 ' / '+(window.__standalone?'PWA(下げる)':'ブラウザ(下げない)'));
         }
       }
       if(scr){

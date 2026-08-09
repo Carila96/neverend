@@ -7859,7 +7859,11 @@ function _titleCalibrate(){
   // 1px 未満の揺れは追いかけない（追うと永久に書き換わり続ける）
   if(_tsdyApplied===null||Math.abs(dy+_tsdyApplied)>=1){
     _tsdyApplied=-dy;
-    scr.style.setProperty('--tsdy',_tsdyApplied+'px');
+    // ★0801z7: :root に置く。#titleScreen の element style に置いていたときは、
+    //   タイトルの外にある固定要素（デバッグの枠・板）がこの値を読めず、補正を
+    //   受けられなかった。カスタムプロパティは :root から継承されるので、
+    //   ここに置けば「補正後の座標系」をページ全体で共有できる。
+    document.documentElement.style.setProperty('--tsdy',_tsdyApplied+'px');
   }
   scr.classList.add('ts-cal');                     // ここで初めて見える＝ずれた姿を見せない
 }
@@ -7971,6 +7975,7 @@ if(_titleDom){
   const box=document.createElement('div');
   box.id='probe0801z5';
   box.style.cssText='position:fixed;left:2px;top:2px;width:57vw;z-index:9998;pointer-events:none;'+
+    'transform:translateY(var(--tsdy, 0px));'+   // 板もタイトルと同じ座標系に乗せる
     'background:rgba(0,0,0,0.78);border:1px solid rgba(0,255,0,0.45);border-radius:3px;'+
     'padding:2px 4px;color:#0f0;font-family:monospace;font-size:8px;line-height:1.28;'+
     'white-space:pre;text-align:left;overflow:hidden;';
@@ -7996,7 +8001,13 @@ if(_titleDom){
   for(const [tag,id] of TS){
     const m=document.createElement('div');
     // 枠は板より前に置く（板に隠れると左上の SETTINGS の位置が読めなくなる）。
+    // ★0801z7: 枠は getBoundingClientRect（＝補正後の座標）で置くのに、枠自身は
+    //   タイトルの外の素の固定レイヤに居るため、standalone では枠だけが 59px 下に
+    //   描かれていた。実測: ボタン y10 に対し枠 y69（差ちょうど +59、全ボタン）。
+    //   ボタンと文字は同じ #titleScreen の中なので元から一致しており、ずれていたのは
+    //   この枠のほうだった。#titleScreen と同じ補正を枠にも掛けて座標系を揃える。
     m.style.cssText='position:fixed;z-index:10000;pointer-events:none;display:none;'+
+      'transform:translateY(var(--tsdy, 0px));'+
       'border:1px dashed rgba(0,255,255,0.85);box-sizing:border-box;'+
       'font:8px monospace;color:rgba(0,255,255,0.95);';
     m.textContent=tag;
@@ -8192,7 +8203,7 @@ if(_titleDom){
       //   ref59 なのに tsdy が -59px でなければ、補正が当たっていない。
       const ref=gid('tsFixRef');
       O.push('ref '+(ref?R(ref.getBoundingClientRect().top):'?')+
-             '  --tsdy '+(scr?(scr.style.getPropertyValue('--tsdy')||'(未設定)'):'?')+
+             '  --tsdy '+(cssVar(document.documentElement,'--tsdy')||'(未設定)')+
              '  cal:'+(scr&&scr.classList.contains('ts-cal')?'済':'未')+
              '  '+(document.body.classList.contains('portrait')?'縦':'横'));
       if(scr){
@@ -8213,6 +8224,18 @@ if(_titleDom){
         ov.push(id+':'+s.display.slice(0,5)+'/'+s.pointerEvents.slice(0,4)+'/z'+s.zIndex);
       }
       O.push('OVL '+(ov.length?ov.join(' '):'(前面に出ている板は無し)'));
+      // ★0801z7 の要。枠（水色の破線）が、それが指しているボタンと実際に重なっているか。
+      //   枠はボタンの矩形から置いているので、両者が同じ座標系に居れば差は 0 になる。
+      //   差が出るなら、枠とボタンが別の座標系に居る＝見える場所と押す場所が食い違う。
+      let worst=0,worstTag='-';
+      for(const [tag,id] of TS){
+        const el=gid(id),m=marks[tag];
+        if(!el||!m||m.style.display==='none')continue;
+        const g=R(m.getBoundingClientRect().top-el.getBoundingClientRect().top);
+        if(Math.abs(g)>Math.abs(worst)){worst=g;worstTag=tag;}
+      }
+      O.push('★枠と文字の差 最大'+(worst>0?'+':'')+worst+'px ('+worstTag+') '+
+             (Math.abs(worst)<=1?'→ 一致':'→ ずれている'));
       const fmt=t=>'#'+t.n+' '+t.t+' @'+t.x+','+t.y+' in:'+t.in+
                    (t.in==='-'?' 近:'+t.near:'')+
                    ' ts:'+t.ts+' te:'+t.te+' pd:'+t.pd+' pu:'+t.pu+' ck:'+t.ck+' ef:'+t.ef;

@@ -143,6 +143,30 @@ body.titletap canvas#c{pointer-events:none;}
        画面高が誤って報告されても縦にずれない・あふれない。
    ═══════════════════════════════════════════════════════════════════════════ */
 #titleScreen{display:none;}
+/* ═══ 0801z6: 縦向きでは配置しない / 横向き確定後に一度だけ置く ═══════════════
+   実機の数値で確定した症状:
+     ・縦向きの時点で既にボタンが配置されている
+     ・縦→横の直後、SETTINGS が r18,68。正しい位置は r18,9。差 59px。
+     ・その 59px は standalone の visualViewport のオフセット(off-59)と一致する。
+     ・効かない間 ts:BODY（指の位置にボタンが無い＝ボタンは 59px 下に居る）
+     ・ずれた位置を数回タップすると全ボタンが 59px 上へ動いて正しくなる（r18,68→r18,9）
+   つまり「縦向きのときのレイアウトで置かれた座標が、横向きになっても置き直されず
+   残る」。iOS が偶然レイアウトを取り直したときだけ正しくなる。
+
+   (1) 縦向きの間は display:none。レイアウトボックスを持たせない＝縦基準の座標を
+       そもそも作らない。#rotateOverlay が全面を覆っているので見た目は変わらない。
+       body.touch を必ず伴わせるので PC には一切適用されない。
+   (2) 横向きになってレイアウトが確定してから、実測した位置ずれを --tsdy に入れて
+       まとめて打ち消す（下の _titleCalibrate）。59 を定数で書かない。測って入れる。
+   (3) 較正が済むまでは visibility:hidden。ずれた位置のボタンを指に触れさせない
+       （visibility:hidden はヒットテスト対象外）。取りこぼしても 600ms で必ず出す。 */
+body.touch.portrait #titleScreen.show{display:none;}
+body.touch #titleScreen.show{transform:translateY(var(--tsdy, 0px));}
+body.touch #titleScreen.show:not(.ts-cal){visibility:hidden;}
+/* 位置ずれの物差し。#titleScreen の外に置いた、大きさゼロの基準点。
+   position:fixed;top:0 なので、ずれが無ければ getBoundingClientRect().top は 0。
+   standalone で固定レイヤ全体が 59px 下がっていれば 59 が返る。それが補正量そのもの。 */
+#tsFixRef{position:fixed;top:0;left:0;width:0;height:0;pointer-events:none;visibility:hidden;}
 #titleScreen.show{
   display:block;position:fixed;top:0;left:0;right:0;bottom:0;z-index:50;
   /* ★ ここは常に none。.live でも auto にしない（板が指を飲む唯一の経路を塞ぐ）*/
@@ -611,6 +635,9 @@ body.touch.portrait #rotateOverlay{display:flex;}
      ボタンは全て本物の <button>。位置は CSS だけで決まり、JS が書いた値も
      canvas の実測値も一切読まない。見えている文字とタップを受ける箱は同一要素。
      canvas 版の描画に戻したいときだけ ?canvastitle=1 -->
+<!-- 位置ずれの基準点。#titleScreen の中に入れてはいけない（親を transform で動かすと
+     一緒に動いてしまい、ずれが測れなくなる）。必ず外・素の viewport 基準に置く。 -->
+<div id="tsFixRef" aria-hidden="true"></div>
 <div id="titleScreen" aria-hidden="true">
   <img id="tsTower" src="/public/tower.png" alt="" draggable="false">
   <div id="tsBest"><span id="tsBestLabel"></span></div>
@@ -7804,6 +7831,74 @@ function _titleOpenName(){
   ov.classList.add('show');
   setTimeout(()=>{const f=document.getElementById('nameInputField');if(f)f.focus();},50);
 }
+// ══ 0801z6: 横向き確定後に一度だけ、実測したずれを打ち消して配置する ═══════════
+// 縦向きで置かれた座標が横向きに持ち越されて 59px ずれる問題への対処。
+// 59 という数字はどこにも書かない。#tsFixRef（position:fixed;top:0;left:0 の
+// 大きさゼロの点）の実際の位置を測り、0 から外れていればその差をそのまま補正量にする。
+//   ずれ無し … rect.top === 0 → --tsdy:0px（PC と同じ、何も起きない）
+//   standalone のオフセットあり … rect.top === 59 → --tsdy:-59px
+// 補正は #titleScreen の transform に入れるので、中のボタンは全部まとめて動く。
+// transform はヒットテストにも効くため、見た目と当たり判定が同時に正しくなる。
+//
+// ★ 書くのは値が変わったときだけ。毎回書くとレイアウトが動き続け、その間 iOS が
+//   タップを捨てる（--app-vh で同じ失敗をしている。同値なら何もしないのが重要）。
+// ★ 縦向きの間は測らない・置かない。縦のレイアウトを基準にしないため。
+let _tsdyApplied=null,_tsCalTimer=0;
+function _titleCalibrate(){
+  if(!isTouchDevice)return;                        // PC は現状のまま一切触らない
+  const D=_titleDom;if(!D||!D.root)return;
+  const scr=D.root;
+  // 縦向き＝配置しない。較正済みの印も落として、次に横になったとき必ず測り直させる。
+  if(document.body.classList.contains('portrait')){
+    scr.classList.remove('ts-cal');
+    return;
+  }
+  const ref=document.getElementById('tsFixRef');if(!ref)return;
+  const dy=Math.round(ref.getBoundingClientRect().top);
+  if(!isFinite(dy))return;
+  // 1px 未満の揺れは追いかけない（追うと永久に書き換わり続ける）
+  if(_tsdyApplied===null||Math.abs(dy+_tsdyApplied)>=1){
+    _tsdyApplied=-dy;
+    scr.style.setProperty('--tsdy',_tsdyApplied+'px');
+  }
+  scr.classList.add('ts-cal');                     // ここで初めて見える＝ずれた姿を見せない
+}
+// 横向き確定は一度で決まらないことがある（iOS は回転直後しばらく古い値を返す）。
+// 測るのは安いうえ、値が変わらなければ何も書かないので、確定するまで数回測る。
+function _titleCalibrateBurst(){
+  if(!isTouchDevice)return;
+  [0,60,160,400,900,1800].forEach(t=>setTimeout(_titleCalibrate,t));
+}
+(function _titleCalibrateInit(){
+  if(!isTouchDevice)return;
+  const soon=()=>{clearTimeout(_tsCalTimer);_tsCalTimer=setTimeout(_titleCalibrate,120);};
+  // 向きが変わった瞬間に body.portrait が付け外しされる。それを合図にする
+  // （updateOrientation を書き換えず、外から見ているだけ）。
+  try{
+    let wasPortrait=document.body.classList.contains('portrait');
+    new MutationObserver(()=>{
+      const p=document.body.classList.contains('portrait');
+      if(p===wasPortrait)return;
+      wasPortrait=p;
+      if(p)_titleDom&&_titleDom.root&&_titleDom.root.classList.remove('ts-cal');
+      else _titleCalibrateBurst();                 // 縦→横。ここで初めて配置する
+    }).observe(document.body,{attributes:true,attributeFilter:['class']});
+  }catch(_){}
+  window.addEventListener('resize',soon,{passive:true});
+  window.addEventListener('orientationchange',()=>_titleCalibrateBurst(),{passive:true});
+  window.addEventListener('pageshow',()=>_titleCalibrateBurst(),{passive:true});
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize',soon,{passive:true});
+    window.visualViewport.addEventListener('scroll',soon,{passive:true});
+  }
+  _titleCalibrateBurst();
+  // 保険。何かの理由で較正できなくても、タイトルが永久に見えないことだけは避ける。
+  setTimeout(()=>{
+    const D=_titleDom;
+    if(D&&D.root&&!document.body.classList.contains('portrait'))D.root.classList.add('ts-cal');
+  },600);
+})();
+
 // ── ボタン 1 つを処理に繋ぐ ────────────────────────────────────
 // click だけに頼らない。iOS は条件によって合成 click を落とすことがあり、それが
 // 「何度か押すと急に効く」の正体だったため。pointerup でも同じ処理を呼び、
@@ -8079,7 +8174,7 @@ if(_titleDom){
       box.style.display='block';
 
       const O=[];
-      O.push('0801z5 '+ms()+'s st:'+state+' '+(window.__standalone?'PWA':'BRW'));
+      O.push('0801z6 '+ms()+'s st:'+state+' '+(window.__standalone?'PWA':'BRW'));
       O.push('raw ts'+C.ts+' te'+C.te+' tc'+C.tc+' | pd'+C.pd+' pu'+C.pu+' pc'+C.pc+
              ' | ck'+C.ck+' fire'+(window.__tsFireN|0));
       const vv=window.visualViewport;
@@ -8092,6 +8187,14 @@ if(_titleDom){
       O.push('--app-vh '+cssVar(document.documentElement,'--app-vh')+
              ' H(実)'+(ctr?R(ctr.getBoundingClientRect().height)+'px':'?')+
              ' --cbh '+cssVar(document.documentElement,'--cbh'));
+      // ★0801z6 の要。ref = 固定レイヤの実際の原点（0 ならずれ無し / 59 ならずれている）。
+      //   --tsdy はそれを打ち消すために入れた補正量。cal は較正済みか。
+      //   ref59 なのに tsdy が -59px でなければ、補正が当たっていない。
+      const ref=gid('tsFixRef');
+      O.push('ref '+(ref?R(ref.getBoundingClientRect().top):'?')+
+             '  --tsdy '+(scr?(scr.style.getPropertyValue('--tsdy')||'(未設定)'):'?')+
+             '  cal:'+(scr&&scr.classList.contains('ts-cal')?'済':'未')+
+             '  '+(document.body.classList.contains('portrait')?'縦':'横'));
       if(scr){
         const ss=cs(scr),sr=scr.getBoundingClientRect();
         O.push('scr ex'+(document.body.contains(scr)?1:0)+
@@ -8120,7 +8223,7 @@ if(_titleDom){
       O.push('--- CHANGE (変わった瞬間だけ) ---');
       for(let i=chg.length-1;i>=0;i--)O.push(chg[i]);
       box.textContent=O.join('\n');
-    }catch(e){box.textContent='0801z5 ERR '+(e&&e.message||'err');}
+    }catch(e){box.textContent='0801z6 ERR '+(e&&e.message||'err');}
   },300);
 })();
 

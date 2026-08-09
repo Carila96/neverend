@@ -7871,10 +7871,16 @@ function _tsSafeTop(){
   if(v>_tsSafeSeen)_tsSafeSeen=v;
   return _tsSafeSeen;
 }
+// ▼0801zb 調査用のカウンタ。挙動は変えない（数えるだけ）。
+//   「横向きで一度だけ配置」が本当に一度だけかを、実機の数字で確かめるため。
+//   走行 = _titleCalibrate が呼ばれた回数 / 書込 = 実際に DOM を書き換えた回数。
+//   書込が 1 で止まっていれば「一度だけ」。増え続けていれば再配置が止まっていない。
+let _tsCalRuns=0,_tsCalWrites=0,_tsCalLastWrite='-';
 function _titleCalibrate(){
   if(!isTouchDevice)return;                        // PC は現状のまま一切触らない
   const D=_titleDom;if(!D||!D.root)return;
   const scr=D.root;
+  _tsCalRuns++;
   // 縦向き＝配置しない。較正済みの印も落として、次に横になったとき必ず測り直させる。
   if(document.body.classList.contains('portrait')){
     scr.classList.remove('ts-cal');
@@ -7899,6 +7905,12 @@ function _titleCalibrate(){
         //           含めないので、枠は下げた後のボタンにぴったり重なったままになる。
         const dy=_tsdyApplied+'px', fx=(_tsdyApplied-safe)+'px';
         const root=document.documentElement;
+        if(dy!==_tsdyLast||fx!==_tsfixLast){
+          // ▼0801zb: 実際に書き換えた回数と、そのときの中身を控える（数えるだけ）
+          _tsCalWrites++;
+          _tsCalLastWrite='err'+(_tsCalErr>0?'+':'')+_tsCalErr+' 実際'+Math.round(r.top)+
+                          ' 目標'+Math.round(want+safe)+'(CSS'+Math.round(want)+'+下げ'+safe+')';
+        }
         if(dy!==_tsdyLast){_tsdyLast=dy;root.style.setProperty('--tsdy',dy);}
         if(fx!==_tsfixLast){_tsfixLast=fx;root.style.setProperty('--tsfix',fx);}
       }
@@ -8046,23 +8058,25 @@ if(_titleDom){
             ['NRM','tsNormal'],['DTH','tsDeath'],['STA','tsStart']];
   const gid=id=>document.getElementById(id);
 
-  // 各ボタンの実測矩形を画面に描く枠（pointer-events:none）
+  // ── 枠は「ボタン自身の outline」にする ────────────────────────────
+  // ★0801zb: これまでの枠は body 直下の position:fixed で、ボタンの
+  //   getBoundingClientRect を読んで自分の top/left に写していた。座標を写している
+  //   以上、写した瞬間と描かれる瞬間の間に本物が動けば枠は嘘をつく。枠自身も
+  //   固定レイヤのずれを受けるので、補正の当て方次第でいくらでも食い違う。
+  //   ＝「枠は合っているのに押せない」を構造的に作り出せてしまっていた。
+  //   → outline はその要素の境界そのものに描かれる。座標計算がゼロになり、
+  //     本物がどこへ動いても必ず一緒に動く＝枠が嘘をつく経路が消える。
+  //     見えている枠 = 本物の当たり判定。
+  //   outline は場所を取らないのでレイアウトに一切影響しない（位置は動かさない）。
+  //   子要素を足す方式は駄目だった: syncTitleDom の _tsText が textContent を
+  //   書き直すため HOL/NORMAL/DEATH では子が消え、さらに #tsCenter の中の
+  //   ボタンは position:static なので inset:0 が #titleScreen まで広がってしまう。
   const marks={};
   for(const [tag,id] of TS){
-    const m=document.createElement('div');
-    // 枠は板より前に置く（板に隠れると左上の SETTINGS の位置が読めなくなる）。
-    // ★0801z7: 枠は getBoundingClientRect（＝補正後の座標）で置くのに、枠自身は
-    //   タイトルの外の素の固定レイヤに居るため、standalone では枠だけが 59px 下に
-    //   描かれていた。実測: ボタン y10 に対し枠 y69（差ちょうど +59、全ボタン）。
-    //   ボタンと文字は同じ #titleScreen の中なので元から一致しており、ずれていたのは
-    //   この枠のほうだった。#titleScreen と同じ補正を枠にも掛けて座標系を揃える。
-    m.style.cssText='position:fixed;z-index:10000;pointer-events:none;display:none;'+
-      'transform:translateY(var(--tsfix, 0px));'+
-      'border:1px dashed rgba(0,255,255,0.85);box-sizing:border-box;'+
-      'font:8px monospace;color:rgba(0,255,255,0.95);';
-    m.textContent=tag;
-    document.body.appendChild(m);
-    marks[tag]=m;
+    const el=gid(id);if(!el)continue;
+    el.style.outline='1px dashed rgba(0,255,255,0.85)';
+    el.style.outlineOffset='0px';
+    marks[tag]=el;
   }
 
   // ── 生イベントの回数。ページに届いているか／どこまで届いたかの一次情報 ──
@@ -8072,7 +8086,13 @@ if(_titleDom){
   let cur=null;                  // 進行中のタップ行
   let pendPd='-';                // touchstart より先に来た pointerdown の預かり
   const chg=[];                  // 変化したときだけ積む
-  const addChg=s=>{chg.push(ms()+' '+s);if(chg.length>13)chg.shift();};
+  // ★0801zb: 「直前に何が起きたか」を全ての変化行に付ける。
+  //   位置が動いた瞬間の直前イベントが、再配置の引き金そのもの。
+  let lastEv={n:'(なし)',t:Date.now(),tap:0};
+  const mark=n=>{lastEv={n:n,t:Date.now(),tap:C.ts};};
+  const since=()=>' ←直前:'+lastEv.n+' #'+lastEv.tap+' '+((Date.now()-lastEv.t)/1000).toFixed(2)+'s前';
+  const addChg=s=>{chg.push(ms()+' '+s);if(chg.length>16)chg.shift();};
+  const addChgE=s=>addChg(s+since());   // 直前イベント付きで積む
 
   // 座標 x,y の積み重ね（上から4つ）と、どのボタンの矩形の中か
   const stackAt=(x,y)=>{
@@ -8118,7 +8138,7 @@ if(_titleDom){
   // capture 段で見るだけ。preventDefault も stopPropagation も一切しない。
   const L=(type,fn)=>document.addEventListener(type,fn,{capture:true,passive:true});
   L('touchstart',e=>{
-    C.ts++;
+    C.ts++;mark('touchstart');
     const t=e.changedTouches&&e.changedTouches[0];
     const x=t?R(t.clientX):-1,y=t?R(t.clientY):-1;
     cur={n:C.ts,x:x,y:y,in:inWhich(x,y),near:nearest(x,y),ts:nm(e.target),te:'-',pd:pendPd,pu:'-',ck:'-',
@@ -8126,34 +8146,38 @@ if(_titleDom){
     pendPd='-';
     pushTap(cur);
   });
-  L('touchend',e=>{C.te++;if(cur)cur.te=nm(e.target);});
-  L('touchcancel',e=>{C.tc++;if(cur)cur.te='CANCEL';addChg('★touchcancel '+nm(e.target));});
+  L('touchend',e=>{C.te++;mark('touchend');if(cur)cur.te=nm(e.target);});
+  L('touchcancel',e=>{C.tc++;mark('touchcancel');if(cur)cur.te='CANCEL';addChg('★touchcancel '+nm(e.target));});
   // pointerdown は touchstart の前に来る実装と後に来る実装がある。まだ行が無ければ
   // 預けておき、次に作られる行に貼る（順序の違いで記録が落ちないように）。
-  L('pointerdown',e=>{C.pd++;const s=nm(e.target);if(cur)cur.pd=s;else pendPd=s;});
-  L('pointerup',e=>{C.pu++;if(cur)cur.pu=nm(e.target);});
-  L('pointercancel',e=>{C.pc++;addChg('★pointercancel '+nm(e.target));});
-  L('click',e=>{C.ck++;const s=nm(e.target)+(e.isTrusted?'':'*');if(cur)cur.ck=s;addChg('click '+s);});
+  L('pointerdown',e=>{C.pd++;mark('pointerdown');const s=nm(e.target);if(cur)cur.pd=s;else pendPd=s;});
+  L('pointerup',e=>{C.pu++;mark('pointerup');if(cur)cur.pu=nm(e.target);});
+  L('pointercancel',e=>{C.pc++;mark('pointercancel');addChg('★pointercancel '+nm(e.target));});
+  L('click',e=>{C.ck++;mark('click');const s=nm(e.target)+(e.isTrusted?'':'*');if(cur)cur.ck=s;addChg('click '+s);});
 
   // ── 変化の記録。class / style / viewport / 矩形が変わった瞬間だけ積む ──
   const cs=el=>{try{return getComputedStyle(el);}catch(_){return null;}};
   const cssVar=(el,n)=>{const s=cs(el);return s?s.getPropertyValue(n).trim():'?';};
-  const _last={vh:'',cbh:'',body:'',scr:'',vp:'',rects:'',state:''};
+  const _last={vh:'',cbh:'',body:'',scr:'',vp:'',rects:'',state:'',dy:'',fx:'',H:''};
   try{
     const mo=new MutationObserver(recs=>{
       for(const r of recs){
         const t=r.target;
         if(t===document.documentElement){
           // --app-vh / --cbh は canvas とタイトルの縦位置の基準。書き換わるとレイアウトが動く。
-          const v=cssVar(t,'--app-vh'),c=cssVar(t,'--cbh');
-          if(v!==_last.vh){addChg('--app-vh '+(_last.vh||'-')+' -> '+v);_last.vh=v;}
-          if(c!==_last.cbh){addChg('--cbh '+(_last.cbh||'-')+' -> '+c);_last.cbh=c;}
+          const v=cssVar(t,'--app-vh'),c=cssVar(t,'--cbh'),
+                dy=cssVar(t,'--tsdy'),fx=cssVar(t,'--tsfix');
+          if(v!==_last.vh){addChgE('--app-vh '+(_last.vh||'-')+' -> '+v);_last.vh=v;}
+          if(c!==_last.cbh){addChgE('--cbh '+(_last.cbh||'-')+' -> '+c);_last.cbh=c;}
+          // ★0801zb: 配置量そのものが書き換わった瞬間。これが「再配置」の実体。
+          if(dy!==_last.dy){addChgE('★--tsdy '+(_last.dy||'-')+' -> '+dy+'  '+_tsCalLastWrite);_last.dy=dy;}
+          if(fx!==_last.fx){addChgE('★--tsfix '+(_last.fx||'-')+' -> '+fx);_last.fx=fx;}
         }else if(t===document.body){
           const c=t.className||'(空)';
-          if(c!==_last.body){addChg('body cls -> "'+c+'"');_last.body=c;}
+          if(c!==_last.body){addChgE('body cls -> "'+c+'"');_last.body=c;}
         }else{
           const c=t.className||'(空)';
-          if(c!==_last.scr){addChg('scr cls -> "'+c+'"');_last.scr=c;}
+          if(c!==_last.scr){addChgE('scr cls -> "'+c+'"');_last.scr=c;}
         }
       }
     });
@@ -8164,7 +8188,7 @@ if(_titleDom){
   }catch(_){}
 
   // レイアウトが確定するきっかけになりうるイベント。発火した事実だけ残す。
-  const ev=(o,n,lbl)=>{try{o.addEventListener(n,()=>addChg('EV '+lbl),{passive:true});}catch(_){}};
+  const ev=(o,n,lbl)=>{try{o.addEventListener(n,()=>{mark(lbl);addChg('EV '+lbl);},{passive:true});}catch(_){}};
   ev(window,'resize','resize');
   ev(window,'orientationchange','orientationchange');
   ev(window,'pageshow','pageshow');
@@ -8198,7 +8222,7 @@ if(_titleDom){
       for(const [tag,id] of TS){
         const el=gid(id);
         const m=marks[tag];
-        if(!el){rows.push(tag+' ex0 DOMに無い');if(m)m.style.display='none';sig+=tag+':none|';
+        if(!el){rows.push(tag+' ex0 DOMに無い');sig+=tag+':none|';
                 delete rectCache[tag];continue;}
         const inDom=document.body.contains(el)?1:0;
         const s=cs(el);
@@ -8217,25 +8241,39 @@ if(_titleDom){
           ' z'+(s?s.zIndex:'?')+
           ' r'+R(r.left)+','+R(r.top)+' '+R(r.width)+'x'+R(r.height)+
           ' ef:'+ef);
-        if(m){
-          if(r.width>0&&r.height>0){
-            m.style.display='block';m.style.left=r.left+'px';m.style.top=r.top+'px';
-            m.style.width=r.width+'px';m.style.height=r.height+'px';
-          }else m.style.display='none';
-        }
+        // 枠はボタンの子なので位置を書く必要が無い（勝手に一緒に動く）。何もしない。
       }
+      // ★0801zb: どのボタンが何px動いたかを、直前イベント付きで残す。
+      //   「効いた瞬間に下がる」の直前に何があったかは、この行に出る。
       if(sig!==_last.rects){
-        if(_last.rects)addChg('矩形が動いた '+sig.replace(/\|/g,' '));
+        if(_last.rects){
+          const a=_last.rects.split('|'),b=sig.split('|'),moved=[];
+          for(let i=0;i<b.length;i++){
+            if(!b[i]||a[i]===b[i])continue;
+            const t0=(a[i]||'').split(':'),t1=b[i].split(':');
+            const p0=(t0[1]||'').split(','),p1=(t1[1]||'').split(',');
+            const dx=(parseInt(p1[0],10)||0)-(parseInt(p0[0],10)||0);
+            const dy=(parseInt(p1[1],10)||0)-(parseInt(p0[1],10)||0);
+            moved.push(t1[0]+(dx||dy?' dx'+(dx>=0?'+':'')+dx+' dy'+(dy>=0?'+':'')+dy:' 寸法'));
+          }
+          addChgE('★矩形が動いた '+(moved.join(' ')||sig));
+        }
         _last.rects=sig;
       }
+      // --H の解決値（#tsCenter の高さ）。--app-vh が書き換わると必ずここが動く。
+      {
+        const ctr0=gid('tsCenter');
+        if(ctr0){
+          const h=String(R(ctr0.getBoundingClientRect().height));
+          if(h!==_last.H){if(_last.H)addChgE('H(実) '+_last.H+' -> '+h);_last.H=h;}
+        }
+      }
 
-      if(state!=='title'){box.style.display='none';
-        for(const [tag] of TS)if(marks[tag])marks[tag].style.display='none';
-        return;}
+      if(state!=='title'){box.style.display='none';return;}
       box.style.display='block';
 
       const O=[];
-      O.push('0801z6 '+ms()+'s st:'+state+' '+(window.__standalone?'PWA':'BRW'));
+      O.push('0801zb '+ms()+'s st:'+state+' '+(window.__standalone?'PWA':'BRW'));
       O.push('raw ts'+C.ts+' te'+C.te+' tc'+C.tc+' | pd'+C.pd+' pu'+C.pu+' pc'+C.pc+
              ' | ck'+C.ck+' fire'+(window.__tsFireN|0));
       const vv=window.visualViewport;
@@ -8290,18 +8328,15 @@ if(_titleDom){
         ov.push(id+':'+s.display.slice(0,5)+'/'+s.pointerEvents.slice(0,4)+'/z'+s.zIndex);
       }
       O.push('OVL '+(ov.length?ov.join(' '):'(前面に出ている板は無し)'));
-      // ★0801z7 の要。枠（水色の破線）が、それが指しているボタンと実際に重なっているか。
-      //   枠はボタンの矩形から置いているので、両者が同じ座標系に居れば差は 0 になる。
-      //   差が出るなら、枠とボタンが別の座標系に居る＝見える場所と押す場所が食い違う。
-      let worst=0,worstTag='-';
-      for(const [tag,id] of TS){
-        const el=gid(id),m=marks[tag];
-        if(!el||!m||m.style.display==='none')continue;
-        const g=R(m.getBoundingClientRect().top-el.getBoundingClientRect().top);
-        if(Math.abs(g)>Math.abs(worst)){worst=g;worstTag=tag;}
-      }
-      O.push('★枠と文字の差 最大'+(worst>0?'+':'')+worst+'px ('+worstTag+') '+
-             (Math.abs(worst)<=1?'→ 一致':'→ ずれている'));
+      // ★0801zb の要。「横向きで一度だけ配置」が本当に一度だけか。
+      //   書込 が 1 のまま増えなければ一度だけ。増え続けていれば再配置が止まっていない。
+      //   最後の書込 には、そのとき何を見て動かしたのかが入る。
+      O.push('配置 走行'+(typeof _tsCalRuns!=='undefined'?_tsCalRuns:'?')+
+             '回 / 書込'+(typeof _tsCalWrites!=='undefined'?_tsCalWrites:'?')+'回'+
+             ((typeof _tsCalWrites!=='undefined'&&_tsCalWrites>1)?' ← 一度きりでない':''));
+      if(typeof _tsCalLastWrite!=='undefined')O.push('  最後の書込 '+_tsCalLastWrite);
+      // 枠はボタンの子（position:absolute;inset:0）なので、定義上ボタンと同一。
+      O.push('枠=ボタン自身の outline につき定義上ずれない（座標計算なし）');
       const fmt=t=>'#'+t.n+' '+t.t+' @'+t.x+','+t.y+' in:'+t.in+
                    (t.in==='-'?' 近:'+t.near:'')+
                    ' ts:'+t.ts+' te:'+t.te+' pd:'+t.pd+' pu:'+t.pu+' ck:'+t.ck+' ef:'+t.ef;
@@ -8312,7 +8347,7 @@ if(_titleDom){
       O.push('--- CHANGE (変わった瞬間だけ) ---');
       for(let i=chg.length-1;i>=0;i--)O.push(chg[i]);
       box.textContent=O.join('\n');
-    }catch(e){box.textContent='0801z6 ERR '+(e&&e.message||'err');}
+    }catch(e){box.textContent='0801zb ERR '+(e&&e.message||'err');}
   },300);
 })();
 

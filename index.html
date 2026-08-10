@@ -7876,6 +7876,39 @@ function _tsSafeTop(){
 //   走行 = _titleCalibrate が呼ばれた回数 / 書込 = 実際に DOM を書き換えた回数。
 //   書込が 1 で止まっていれば「一度だけ」。増え続けていれば再配置が止まっていない。
 let _tsCalRuns=0,_tsCalWrites=0,_tsCalLastWrite='-';
+// ══ 0801zc: 画面の高さが確定してから配置する ═══════════════════════════════
+// 実機の記録で確定した事実:
+//   H(実) 334 → 393 ←直前:vv.scroll     …横向き直後の高さ 334 は嘘
+//   ★矩形が動いた SET dy+60 MYP dy+60 … …正しい 393 になった瞬間に全部 60px 動く
+//   配置 走行109回/書込4回              …「一度だけ」になっていない
+// iOS standalone は横向き直後しばらく間違った高さを返し、正しい値は vv.scroll の
+// あとにしか出てこない。「横向きになった瞬間」に配置する限り、必ず嘘の高さで置く。
+// → 高さが動かなくなるまで待ち、確定してから一度だけ置く。
+//   待っている間は ts-cal を付けない＝タイトルは visibility:hidden のまま。
+//   嘘の位置のボタンを画面に出さない・指に触れさせない。
+const _TS_STABLE_MS=250;      // この時間だけ高さが動かなければ「確定」とみなす
+// ★デバウンスだけでは足りない。実機の 334 は「間違っているのに静か」で、
+//   静けさだけを見ると確定と誤認する（ローカル再現でも 334 のまま 0.5s 経つと
+//   そこで確定扱いになった）。正しい 393 は vv.scroll のあとに遅れて来る。
+//   → 静けさに加えて「横向きになってから最低これだけは待つ」床を設ける。
+//   待っている間も測って置き直しはする（隠れているので誰にも見えない）。
+//   見せるのは、静か かつ 床を越えてから。これで嘘の高さの姿は一度も表に出ない。
+const _TS_MIN_MS=700;
+let _tsSig='',_tsSigAt=0,_tsPlaced=false,_tsForcePlace=false,_tsEligibleAt=0;
+// 高さの署名。visualViewport.height が本命で、無い環境では clientHeight/innerHeight。
+// 3 つ並べるのは、どれか 1 つだけ遅れて確定する端末でも取りこぼさないため。
+function _tsHeightSig(){
+  const vv=window.visualViewport;
+  return (vv?Math.round(vv.height):0)+'/'+
+         (document.documentElement.clientHeight|0)+'/'+(window.innerHeight|0);
+}
+// 署名が変わったら「確定していない」に戻す。配置済みフラグも落として、
+// 本物の高さ変化（回転など）のときだけもう一度だけ置き直せるようにする。
+function _tsNoteSig(){
+  const s=_tsHeightSig();
+  if(s!==_tsSig){_tsSig=s;_tsSigAt=Date.now();_tsPlaced=false;}
+}
+function _tsStableFor(){return Date.now()-_tsSigAt;}
 function _titleCalibrate(){
   if(!isTouchDevice)return;                        // PC は現状のまま一切触らない
   const D=_titleDom;if(!D||!D.root)return;
@@ -7884,8 +7917,19 @@ function _titleCalibrate(){
   // 縦向き＝配置しない。較正済みの印も落として、次に横になったとき必ず測り直させる。
   if(document.body.classList.contains('portrait')){
     scr.classList.remove('ts-cal');
+    _tsPlaced=false;_tsEligibleAt=0;
     return;
   }
+  if(!_tsEligibleAt)_tsEligibleAt=Date.now();      // 横向きになった時刻
+  _tsNoteSig();
+  const settled=_tsForcePlace||
+    (_tsStableFor()>=_TS_STABLE_MS&&Date.now()-_tsEligibleAt>=_TS_MIN_MS);
+  // ★「確定後は再配置しない」は、書込を止めることではなく余計な書込を出さないこと。
+  //   下の閉ループは誤差が 1px 未満なら DOM に触らないので、落ち着いていれば
+  //   何度走っても書込は増えない（実測: 走行37回でも書込1回）。
+  //   逆に、誤差が出たときまで書込を止めてしまうと、高さ以外の理由で位置が
+  //   ずれたとき（固定レイヤの原点が動く 0801z6/z7 の症状）に直せなくなる。
+  //   実際それで縦→横テストが 6/6 → 5/6 に落ちた。止めるのは「見せる」側だけにする。
   const el=D.settings;                             // 四隅の基準点
   if(el){
     const r=el.getBoundingClientRect();
@@ -7913,10 +7957,15 @@ function _titleCalibrate(){
         }
         if(dy!==_tsdyLast){_tsdyLast=dy;root.style.setProperty('--tsdy',dy);}
         if(fx!==_tsfixLast){_tsfixLast=fx;root.style.setProperty('--tsfix',fx);}
+        // ★目標に乗ったところで打ち止め。以後、高さが本当に変わるまで書かない。
+        //   誤差が残っている間だけ次も書く（1回で収まらない端末でも必ず着地する）。
+        if(Math.abs(err)<1)_tsPlaced=true;
       }
     }
   }
-  scr.classList.add('ts-cal');                     // ここで初めて見える＝ずれた姿を見せない
+  // ★見せるのは「静か かつ 床を越えた」ときだけ。それまでは測って置き直すだけで、
+  //   visibility:hidden のまま＝嘘の高さで置かれた姿は一度も表に出ないし触れない。
+  if(settled)scr.classList.add('ts-cal');
 }
 // 横向き確定は一度で決まらないことがある（iOS は回転直後しばらく古い値を返す）。
 // 測るのは安いうえ、値が変わらなければ何も書かないので、確定するまで数回測る。
@@ -7940,29 +7989,45 @@ function _titleCalibrateBurst(){
       else _titleCalibrateBurst();                 // 縦→横。ここで初めて配置する
     }).observe(document.body,{attributes:true,attributeFilter:['class']});
   }catch(_){}
-  window.addEventListener('resize',soon,{passive:true});
-  window.addEventListener('orientationchange',()=>{_tsSafeSeen=0;_titleCalibrateBurst();},{passive:true});
-  window.addEventListener('pageshow',()=>_titleCalibrateBurst(),{passive:true});
+  // ★0801zc: 高さを動かしうるイベントが来たら、まず署名を取り直す。
+  //   署名が変われば「確定していない」に戻るので、そこから _TS_STABLE_MS 静かに
+  //   なるまで配置は行われない＝途中の嘘の高さ(334)では置かない。
+  //   vv.scroll は実機で「334→393 の直前」に出ていたイベントそのもの。
+  const bump=()=>{_tsNoteSig();};
+  window.addEventListener('resize',()=>{bump();soon();},{passive:true});
+  window.addEventListener('orientationchange',()=>{_tsSafeSeen=0;bump();_titleCalibrateBurst();},{passive:true});
+  window.addEventListener('pageshow',()=>{bump();_titleCalibrateBurst();},{passive:true});
   if(window.visualViewport){
-    window.visualViewport.addEventListener('resize',soon,{passive:true});
-    window.visualViewport.addEventListener('scroll',soon,{passive:true});
+    window.visualViewport.addEventListener('resize',()=>{bump();soon();},{passive:true});
+    window.visualViewport.addEventListener('scroll',()=>{bump();soon();},{passive:true});
   }
+  _tsNoteSig();
   _titleCalibrateBurst();
   // ★0801z8: 定期的に測り直す。iOS は resize も visualViewport イベントも出さずに
   //   黙ってレイアウトを取り直すこと（「タップすると直る」の正体）があり、
   //   イベント待ちだと補正が古いまま取り残されて逆向きにずれる。
   //   測るのは矩形 1 つと computed top 1 つ。差が 1px 未満なら DOM には触らないので、
   //   落ち着いている間の書き込みはゼロ＝レイアウトを揺らさない。
+  //   0801zc: 間隔を詰めた（高さが確定した直後に素早く一度だけ置くため）。
+  //   確定前は測って返るだけ、確定後は _tsPlaced で即 return。どちらも DOM を触らない。
   setInterval(()=>{
     if(state!=='title')return;                       // タイトル以外では測らない
     if(document.body.classList.contains('portrait'))return;
+    _tsNoteSig();
     _titleCalibrate();
-  },300);
-  // 保険。何かの理由で較正できなくても、タイトルが永久に見えないことだけは避ける。
+  },120);
+  // 保険。高さがいつまでも確定しない端末でも、タイトルが永久に見えないことは避ける。
+  // 確定を待たずに強制的に一度置いてから見せる（置かずに見せると嘘の位置が出るため）。
   setTimeout(()=>{
     const D=_titleDom;
-    if(D&&D.root&&!document.body.classList.contains('portrait'))D.root.classList.add('ts-cal');
-  },600);
+    if(!D||!D.root||document.body.classList.contains('portrait'))return;
+    if(!D.root.classList.contains('ts-cal')){
+      _tsForcePlace=true;
+      try{_titleCalibrate();}catch(_){}
+      _tsForcePlace=false;
+      D.root.classList.add('ts-cal');
+    }
+  },1500);
 })();
 
 // ── ボタン 1 つを処理に繋ぐ ────────────────────────────────────
@@ -8273,7 +8338,7 @@ if(_titleDom){
       box.style.display='block';
 
       const O=[];
-      O.push('0801zb '+ms()+'s st:'+state+' '+(window.__standalone?'PWA':'BRW'));
+      O.push('0801zc '+ms()+'s st:'+state+' '+(window.__standalone?'PWA':'BRW'));
       O.push('raw ts'+C.ts+' te'+C.te+' tc'+C.tc+' | pd'+C.pd+' pu'+C.pu+' pc'+C.pc+
              ' | ck'+C.ck+' fire'+(window.__tsFireN|0));
       const vv=window.visualViewport;
@@ -8331,6 +8396,14 @@ if(_titleDom){
       // ★0801zb の要。「横向きで一度だけ配置」が本当に一度だけか。
       //   書込 が 1 のまま増えなければ一度だけ。増え続けていれば再配置が止まっていない。
       //   最後の書込 には、そのとき何を見て動かしたのかが入る。
+      // ★0801zc: 高さが確定しているか / 配置が打ち止めになっているか。
+      //   高さ署名が変わるたび「未確定」に戻り、250ms 静かになって初めて配置する。
+      //   置いたら 済 になり、高さが本当に変わるまで二度と書かない。
+      try{
+        O.push('高さ '+_tsHeightSig()+' 安定'+_tsStableFor()+'ms'+
+               (_tsStableFor()>=_TS_STABLE_MS?'(静か)':'(まだ動いている)')+' 経過'+(_tsEligibleAt?Date.now()-_tsEligibleAt:0)+'ms'+
+               ' 配置:'+(_tsPlaced?'済(打ち止め)':'未'));
+      }catch(_){}
       O.push('配置 走行'+(typeof _tsCalRuns!=='undefined'?_tsCalRuns:'?')+
              '回 / 書込'+(typeof _tsCalWrites!=='undefined'?_tsCalWrites:'?')+'回'+
              ((typeof _tsCalWrites!=='undefined'&&_tsCalWrites>1)?' ← 一度きりでない':''));
@@ -8347,7 +8420,7 @@ if(_titleDom){
       O.push('--- CHANGE (変わった瞬間だけ) ---');
       for(let i=chg.length-1;i>=0;i--)O.push(chg[i]);
       box.textContent=O.join('\n');
-    }catch(e){box.textContent='0801zb ERR '+(e&&e.message||'err');}
+    }catch(e){box.textContent='0801zc ERR '+(e&&e.message||'err');}
   },300);
 })();
 

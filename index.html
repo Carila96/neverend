@@ -210,8 +210,20 @@ body.touch #titleScreen.show:not(.ts-cal){visibility:hidden;}
 @media (display-mode:standalone) and (pointer:coarse){
   #titleScreen.show{--er:7vw;}
 }
-/* 塔（左側の帯）。装飾なので絶対に指を受けない */
-#tsTower{position:fixed;left:0;top:0;width:30%;height:var(--H);z-index:0;
+/* ══ 0818a の調整値。触るのはここだけ ═══════════════════════════════════════
+   --tower-x       … 塔の左位置。上げると塔が内側(右)へ寄る。上げすぎると
+                     中央テキストに重なるので、その手前が上限。
+   --deaths-outline… 死亡数の縁取り。塔と重なっても読めるようにするためのもの。
+                     背景ボックスは付けない（画面が汚れるため）。 */
+#titleScreen{
+  --tower-x:8%;
+  --deaths-outline:0 0 3px #000,0 0 3px #000,0 0 6px #000;
+}
+/* 塔（左側の帯）。装飾なので絶対に指を受けない。
+   0818a: マーカーを左・塔を右に入れ替えたので、塔だけ内側へ寄せる。
+   width:30% は維持する（object-fit:fill なので width を変えると塔が細くなる）。
+   transform:translateX は使わない（合成レイヤを作るため）。 */
+#tsTower{position:fixed;left:var(--tower-x,8%);top:0;width:30%;height:var(--H);z-index:0;
   opacity:0.5;mix-blend-mode:screen;pointer-events:none;
   object-fit:fill;image-rendering:pixelated;}
 
@@ -261,9 +273,11 @@ body.touch #titleScreen.show:not(.ts-cal){visibility:hidden;}
 /* 左下の 2 行。四隅ボタンと同じ余白に揃える（こちらも top 基準へ） */
 #tsYourDeaths{left:var(--ex);top:calc(var(--H) - var(--eyb) - var(--H) * 0.026);
   transform:translateY(-100%);
-  font-size:var(--f);color:rgba(255,100,100,0.85);}
+  font-size:var(--f);color:rgba(255,100,100,0.85);
+  text-shadow:var(--deaths-outline);}
 #tsWorldDeaths{left:var(--ex);top:calc(var(--H) - var(--eyb));transform:translateY(-100%);
-  font-size:var(--f);color:rgba(220,120,120,0.85);}
+  font-size:var(--f);color:rgba(220,120,120,0.85);
+  text-shadow:var(--deaths-outline);}
 
 /* ── 中央の縦積み ────────────────────────────────────────────
    ★ 0801z4: canvas 版と同じ「中央寄せ」に戻す（条件A）。
@@ -352,7 +366,8 @@ body:not(.touch) #tsStart{text-shadow:0 0 0.5em rgba(255,255,255,0.85);}
 #tsBest{position:fixed;left:0;top:0;width:30%;height:var(--H);z-index:1;
   pointer-events:none;display:none;--my:92%;}
 #titleScreen.ts-best #tsBest{display:block;}
-#tsBestLabel{position:absolute;right:8%;top:var(--my);transform:translateY(-50%);
+/* 0818a: 帯の右→左へ。▶ は ::after で末尾に出るので、左に置くと右隣の塔を指す。 */
+#tsBestLabel{position:absolute;left:8%;top:var(--my);transform:translateY(-50%);
   font-weight:bold;font-size:calc(var(--f)*0.85);color:rgb(255,80,60);
   white-space:nowrap;animation:tsPulseBest 2.5133s linear infinite;}
 #tsBestLabel::after{content:'\25B6';margin-left:0.4em;}
@@ -620,8 +635,11 @@ body.standalone #titleScreen.show{
      （解除しないとタイトルが永久に出ない）*/
   visibility:visible!important;
 }
-/* 塔・BESTマーカーは var(--H) 依存をやめて親いっぱいに */
-body.standalone #tsTower,
+/* 塔・BESTマーカーは var(--H) 依存をやめて親いっぱいに。
+   0818a: 塔だけ left を --tower-x にする（帯 #tsBest は left:0 のまま）。 */
+body.standalone #tsTower{
+  position:absolute;left:var(--tower-x,8%);top:0;height:100%;transform:none!important;
+}
 body.standalone #tsBest{
   position:absolute;left:0;top:0;height:100%;transform:none!important;
 }
@@ -768,7 +786,7 @@ body.standalone #tsMsg{
   <div id="tsTestBadge">TEST PLAY MODE<span id="tsTestBadgeName"></span></div>
   <!-- ビルド識別子。iOS PWA が古い HTML を掴んでいないかの判別用。
        #titleScreen の子なので、タイトル以外の state では親ごと消える。 -->
-  <div id="tsBuild">0817a</div>
+  <div id="tsBuild">0818a</div>
 </div>
 <div id="touchControls" aria-hidden="true">
   <div id="lrRow">
@@ -854,7 +872,7 @@ window.onerror=function(msg,src,line,col,err){
 // ═══ BUILD 0815a ═══════════════════════════════════════════════════════════
 // 診断のマスタースイッチ。true にすれば全診断が復活する（コードは残してある）。
 // 再発時はここ 1 箇所だけを変える。
-const BUILD_ID='0817a';
+const BUILD_ID='0818a';
 const DIAG_MASTER=false;
 const DIAG_AUTOSCAN=DIAG_MASTER;        // elementFromPoint による走査
 const DIAG_LEGACY_OVERLAY=false;        // 旧プローブ(緑)。DIAG_MASTER が true のときのみ意味を持つ
@@ -7853,7 +7871,9 @@ function syncTitleDom(){
   _tsClass(S,'ts-best',bestFloor>0);
   if(bestFloor>0){
     _tsText(D.bestLabel,'BEST: '+bestFloor+'F');
-    const pct=Math.max(4,Math.min(96,92-(bestFloor/100)*84));  // 下=1階 / 上=100階
+    // 0818a: 起点を 92 → 88 にして「1階」の基準位置をわずかに上へ。
+    //   他の項(4/96/84)は変更しない。100階では Math.max(4,…) の下限に接触する。
+    const pct=Math.max(4,Math.min(96,88-(bestFloor/100)*84));  // 下=1階 / 上=100階
     if(D.best.__my!==pct){D.best.__my=pct;D.best.style.setProperty('--my',pct+'%');}
   }
 }

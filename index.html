@@ -797,7 +797,7 @@ body.standalone #tsMsg{
   <div id="tsTestBadge">TEST PLAY MODE<span id="tsTestBadgeName"></span></div>
   <!-- ビルド識別子。iOS PWA が古い HTML を掴んでいないかの判別用。
        #titleScreen の子なので、タイトル以外の state では親ごと消える。 -->
-  <div id="tsBuild">0819a</div>
+  <div id="tsBuild">0820a</div>
 </div>
 <div id="touchControls" aria-hidden="true">
   <div id="lrRow">
@@ -883,7 +883,7 @@ window.onerror=function(msg,src,line,col,err){
 // ═══ BUILD 0815a ═══════════════════════════════════════════════════════════
 // 診断のマスタースイッチ。true にすれば全診断が復活する（コードは残してある）。
 // 再発時はここ 1 箇所だけを変える。
-const BUILD_ID='0819a';
+const BUILD_ID='0820a';
 const DIAG_MASTER=false;
 const DIAG_AUTOSCAN=DIAG_MASTER;        // elementFromPoint による走査
 const DIAG_LEGACY_OVERLAY=false;        // 旧プローブ(緑)。DIAG_MASTER が true のときのみ意味を持つ
@@ -7833,7 +7833,13 @@ const _titleDom=(()=>{
 // textContent は変わったときだけ書く（毎フレーム呼ばれるのでレイアウトを無駄に走らせない）
 function _tsText(el,txt){if(el&&el.__t!==txt){el.__t=txt;el.textContent=txt;}}
 function _tsClass(el,cls,on){if(el)el.classList.toggle(cls,!!on);}
-const _BEST_SPAN=74;   // ★0819a: BEST マーカーの振れ幅（1階→100階）。調整はここだけ
+// ★0820a: BEST マーカーの縦の可動範囲。調整はこの 2 つだけ。
+//   狙いは「SETTINGS の下端と死亡数の上端の間に収める」こと。塔の絵柄とは対応させない。
+//   standalone 734x393 の実測: SETTINGS 下端 40 / 死亡数 上端 348 / マーカー高さ 11。
+//   上下 8px の余裕を見て 中心 53.5(13.6%) 〜 334.5(85.1%) が可動域。
+//   ブラウザ経路は余裕が広い(33/361)ので、厳しい standalone 側に合わせれば両方成立する。
+const _BEST_START=85.8;  // bestFloor=0 相当の位置(%)
+const _BEST_SPAN=72.0;   // 1階→100階の振れ幅(%)
 function syncTitleDom(){
   const D=_titleDom;if(!D)return;
   const S=D.root;                 // 状態クラスは #titleScreen に付ける
@@ -7889,7 +7895,7 @@ function syncTitleDom(){
     _tsText(D.bestLabel,'BEST: '+bestFloor+'F');
     // 0818a: 起点を 92 → 88 にして「1階」の基準位置をわずかに上へ。
     //   他の項(4/96/84)は変更しない。100階では Math.max(4,…) の下限に接触する。
-    const pct=Math.max(4,Math.min(96,88-(bestFloor/100)*_BEST_SPAN));  // 下=1階 / 上=100階
+    const pct=Math.max(4,Math.min(96,_BEST_START-(bestFloor/100)*_BEST_SPAN));  // 下=1階 / 上=100階
     if(D.best.__my!==pct){D.best.__my=pct;D.best.style.setProperty('--my',pct+'%');}
   }
 }

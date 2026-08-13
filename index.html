@@ -695,6 +695,17 @@ html.layout-test-fixed body.standalone #tsMsg,
 html.layout-test-absolute body.standalone #tsMsg{
   position:absolute;left:0;right:0;top:40%;transform:none!important;
 }
+/* ★0814a タスクC: フォールバック（既定 OFF）。
+   scrollTop=0 が WebKit に差し戻される場合のみ、次ビルドで SCROLL_LOCK_TEST=true
+   にして検証する。position:fixed は被疑対象なので既定では使わない。
+   クラスが付かない限り 1 行も効かない。 */
+html.scroll-lock, html.scroll-lock body.standalone{
+  position:fixed;
+  top:0;left:0;right:0;bottom:0;
+  width:100%;height:100%;
+  margin:0;padding:0;
+  overflow:hidden;
+}
 </style>
 </head>
 <body>
@@ -868,8 +879,12 @@ const DIAG_AUTOSCAN=true;      // false にすると elementFromPoint を一切�
 // 旧プローブ(緑)の描画。0812a のオレンジ枠と重なって判読できないので既定で止める。
 // true にすれば復活する（削除はしていない）。
 const DIAG_LEGACY_OVERLAY=false;
+// ★0814a タスクC: scrollTop=0 が差し戻される場合に備えた第二案。既定 OFF。
+//   position:fixed は被疑対象だったため、0814a の結果を見るまで有効化しない。
+const SCROLL_LOCK_TEST=false;  // true で html/body 固定方式に切り替える
 window.TITLE_LAYOUT_TEST=TITLE_LAYOUT_TEST;
 window.DIAG_AUTOSCAN=DIAG_AUTOSCAN;
+window.SCROLL_LOCK_TEST=SCROLL_LOCK_TEST;
 window.DIAG_LEGACY_OVERLAY=DIAG_LEGACY_OVERLAY;
 document.documentElement.classList.add('layout-test-'+TITLE_LAYOUT_TEST);
 const canvas=document.getElementById('c');
@@ -8232,7 +8247,7 @@ if(_titleDom){
 //
 // この板と枠は pointer-events:none 固定・タッチ端末のみ。調査用なので他から参照されない。
 // ╔═══════════════════════════════════════════════════════════════════════════╗
-// ║ BUILD 0813a 診断 — OF(はみ出し) と vvT と 実タップ target を数値で出す      ║
+// ║ BUILD 0814a 診断 — scrollTop=0 が維持されるかを数値で出す                   ║
 // ╚═══════════════════════════════════════════════════════════════════════════╝
 // 知りたいのは 2 つだけ:
 //   (1) STARTボタンの getBoundingClientRect() は何px か
@@ -8240,6 +8255,35 @@ if(_titleDom){
 // 「数タップすると直る」ため、一度もタップしていない状態の値が最重要。
 // 横向き検知後に自動採取する。DIAG_AUTOSCAN=false なら elementFromPoint を
 // 一切撃たない（観測者効果の排除。elementFromPoint 自身が layout flush を誘発しうる）。
+// ══ 0814a タスクA: 不正なスクロール位置を唯一の正しい値へ戻す ═══════════════
+// 実機で確定した事実:
+//   docH393/393 OF+0        …スクロール可能量はゼロ
+//   sT-59                    …なのにスクロール位置が -59
+// 取りうる合法なスクロール位置は 0 しか存在しない。これは新しい補正値の追加ではなく、
+// 不正な値を唯一の正しい値へ戻す操作。sT が 0→-59 になった瞬間に rectTop が
+// 253→318 へ動いており、要素ではなくドキュメント全体が押し下げられている。
+// WebKit 自身は正しい位置を知っている（0812a で初回タップを機に -59→0 へ自力で戻した）。
+// それをタップを待たずに起こす。
+let _sfRuns=0,_sfReverts=0;
+function _diagLine(s){try{if(window.__diagLine)window.__diagLine(s);}catch(_){}}
+function _resetStandaloneScroll(reason){
+  if(!window.__standalone)return;
+  if(typeof state==='undefined'||state!=='title')return;
+  const se=document.scrollingElement;
+  if(!se)return;
+  const clH=document.documentElement.clientHeight;
+  const OF=se.scrollHeight-clH;
+  // ★はみ出しが無いときだけ実行する。OF>0 のときは正当なスクロールなので触らない
+  //   （ゲーム本編で正当なスクロールが存在する場合に巻き込まないため）。
+  if(OF!==0)return;
+  if(se.scrollTop===0)return;
+  const before=se.scrollTop;
+  se.scrollTop=0;
+  const after=se.scrollTop;
+  _sfRuns++;
+  _diagLine('SCROLLFIX '+reason+' sT'+Math.round(before)+' -> '+Math.round(after));
+}
+
 (function _diag0812a(){
   if(!window.__neverendTouch)return;               // PC は対象外
   const R=n=>Math.round(n);
@@ -8287,6 +8331,8 @@ if(_titleDom){
     line(p.join(' '));
   }
   window.debugLog=debugLog;
+  // _resetStandaloneScroll から SCROLLFIX 行を積めるようにする（IIFE の外に出す）
+  window.__diagLine=s=>line('t'+T()+' '+s);
   const box=document.createElement('div');
   box.id='diag0812a';
   box.style.cssText='position:absolute;left:2px;top:2px;width:62vw;z-index:100000;'+
@@ -8330,7 +8376,10 @@ if(_titleDom){
   }
   function runSchedule(){
     if(scanned)return;scanned=true;
-    requestAnimationFrame(()=>requestAnimationFrame(()=>sample('raf2')));
+    // rAF×2 の直後に一度だけスクロール位置を戻す（setTimeout の遅延呼び出しは足さない）
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      _resetStandaloneScroll('raf2');noteST('raf2');sample('raf2');
+    }));
     [100,300,600,1000,2000,4000].forEach(ms=>setTimeout(()=>sample('t'+ms),ms));
   }
   // 横向きになったら開始（縦の間はタイトルを置いていないので測る意味が無い）
@@ -8352,20 +8401,50 @@ if(_titleDom){
     const prev=_vvTLast; _vvTLast=cur;
     line('t'+T()+' vvT: '+(prev===null?'-':prev)+' -> '+cur+' (ev:'+evName+')');
   };
+  // ★0814a A-3: sT が変化したときだけ 1 行出す（vvT と同じ方式。同値の連続は出さない）。
+  //   判定項目はただ一つ「SCROLLFIX の直後に sT がまた -59 に戻るか」。
+  let _sTLast=null;
+  const noteST=(evName)=>{
+    const s=se(); if(!s)return;
+    const cur=R(s.scrollTop);
+    if(cur===_sTLast)return;
+    const prev=_sTLast; _sTLast=cur;
+    line('t'+T()+' sT: '+(prev===null?'-':prev)+' -> '+cur+' (ev:'+evName+')');
+    // 一度でも 0 に直したあとに 0 以外へ動いたら、それが差し戻し。
+    if(_sfRuns>0&&cur!==0){
+      _sfReverts++;
+      line('t'+T()+' ★差し戻り '+cur+' (ev:'+evName+')');
+    }
+  };
+  // ★0814a タスクC: 既定 OFF。true のときだけ html に scroll-lock を付ける。
+  const applyScrollLock=()=>{
+    if(!SCROLL_LOCK_TEST)return;
+    const on=!!window.__standalone&&typeof state!=='undefined'&&state==='title';
+    document.documentElement.classList.toggle('scroll-lock',on);
+  };
+  // レイアウトを動かしうるイベントの後で、必ず同じ順序で処理する。
+  const onLayoutEv=(l)=>{
+    noteVvT(l);
+    noteST(l);
+    applyScrollLock();
+    _resetStandaloneScroll('ev:'+l);
+    noteST('after '+l);
+  };
   // イベント発火時刻も同じログに混ぜる（高さが変わった時刻と hit 正常化の時刻を比べる）
   const evl=(o,n,l)=>{try{o.addEventListener(n,()=>{
-    noteVvT(l);
+    onLayoutEv(l);
     line('t'+T()+' EV:'+l+' '+env());
     if(DIAG_AUTOSCAN)setTimeout(()=>sample('after:'+l),50);
   },{passive:true});}catch(_){}};
   evl(window,'resize','resize');
   evl(window,'orientationchange','orientationchange');
   if(vv()){
-    // vv.scroll は連続で飛ぶので、EV 行は出さず vvT の変化だけ拾う（ログが溢れるため）
-    try{vv().addEventListener('scroll',()=>noteVvT('vv.scroll'),{passive:true});}catch(_){}
+    // vv.scroll は連続で飛ぶので、EV 行は出さず vvT/sT の変化だけ拾う（ログが溢れるため）
+    try{vv().addEventListener('scroll',()=>onLayoutEv('vv.scroll'),{passive:true});}catch(_){}
     evl(vv(),'resize','vv.resize');
   }
   noteVvT('init');
+  noteST('init');
 
   // ★B-2: タップ座標に最も近いボタンとの差分。
   //   (cY-pY) と vvT と near dY の 3 つが一致すれば、ズレは 1 系統で補正量が一意に決まる。
@@ -8415,12 +8494,15 @@ if(_titleDom){
       if(typeof state==='undefined'||state!=='title'){box.style.display='none';return;}
       box.style.display='block';
       const m=metrics();
-      const O=['BUILD 0813a  MODE:'+TITLE_LAYOUT_TEST+
+      const O=['BUILD 0814a  MODE:'+TITLE_LAYOUT_TEST+
                (window.__standalone?'  PWA':'  BRW')+(DIAG_AUTOSCAN?'':'  scanOFF')];
       O.push(env());
       // ★今回の主要指標。OF が 0 なら 59px のはみ出しが消えている。
       O.push('docH'+m.docH+'/'+m.clH+' OF'+(m.OF>=0?'+':'')+m.OF+
              (m.OF===0?'  ← はみ出し無し':'  ← はみ出している'));
+      // ★0814a の唯一の判定項目。差し戻り0回なら scrollTop=0 が維持されている。
+      O.push('SCROLLFIX 実行'+_sfRuns+'回 / 差し戻り'+_sfReverts+'回'+
+             (_sfReverts>0?'  ← WebKitが再設定している':''));
       const st=gid('tsStart');
       if(st){
         const r=st.getBoundingClientRect();
@@ -8443,7 +8525,7 @@ if(_titleDom){
       O.push('--- LOG ---');
       for(let i=LOG.length-1;i>=0;i--)O.push(LOG[i]);
       box.textContent=O.join('\n');
-    }catch(e){box.textContent='0813a ERR '+(e&&e.message||'err');}
+    }catch(e){box.textContent='0814a ERR '+(e&&e.message||'err');}
   },500);
 })();
 

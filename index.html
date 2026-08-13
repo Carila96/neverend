@@ -598,114 +598,89 @@ body.touch.portrait #a2hsBanner.show ~ #a2hsDim{display:none;}
 body.touch.portrait #rotateOverlay{display:flex;}
 
 /* ╔═══════════════════════════════════════════════════════════════════════════╗
-   ║ BUILD 0812a — 一時A/B。原因特定後にこのブロックごと削除する。              ║
+   ║ standalone(PWA)のタイトル配置 — BUILD 0815a で恒久化                      ║
    ╚═══════════════════════════════════════════════════════════════════════════╝
-   ★適用条件は必ず「html.layout-test-fixed / -absolute」かつ「body.standalone」。
-     current モード・Safariブラウザ・PC には 1 行も効かない。
-   ★viewport 単位(dvh/svh/lvh/vh)をタイトルに一切持たせない。100% と inset:0 だけ。
-     「正しい viewport 単位を選ぶ」方向へは戻らないため。 */
-html.layout-test-fixed, html.layout-test-absolute{height:100%;}
-html.layout-test-fixed body.standalone,
-html.layout-test-absolute body.standalone{
+   iOS standalone では、position:fixed + transform + JS配置 + 59px補正 の組合せが
+   「見えている位置」と「WebKit が hit-test に使う位置」を別座標系にしていた。
+   実機で確定した対処が以下:
+     ・position:absolute; inset:0（fixed を使わない）
+     ・transform を掛けない
+     ・JS による配置(--tsdy/--tsfix/高さ確定待ち)を行わない
+     ・safe-area は env() のみ。JSで算出した値を足さない
+     ・viewport単位(dvh/svh/lvh/vh)をタイトルに一切持たせない。100% と inset:0 だけ
+   ★条件の body.standalone は絶対に外さないこと。外すとブラウザ版・PC版に波及する。 */
+html.standalone{height:100%;}
+body.standalone{
   width:100%;height:100%;min-height:0;margin:0;padding:0;overflow:hidden;position:relative;
 }
-/* FIXED: JS配置だけ撤去、position:fixed は残す */
-html.layout-test-fixed body.standalone #titleScreen.show{
-  position:fixed;inset:0;width:100%;height:100%;box-sizing:border-box;
-  transform:none!important;
-}
-/* ABSOLUTE: fixed も撤去する */
-html.layout-test-absolute body.standalone #titleScreen.show{
+body.standalone #titleScreen.show{
   position:absolute;inset:0;width:100%;height:100%;box-sizing:border-box;
   transform:none!important;
+  /* JS配置を止めているので ts-cal が付かない。visibility ゲートを解除する
+     （解除しないとタイトルが永久に出ない）*/
+  visibility:visible!important;
 }
-/* 較正(_titleCalibrate)を止めるので ts-cal が付かない。visibility ゲートを解除する
-   （解除しないとタイトルが永久に出ない）*/
-html.layout-test-fixed body.standalone #titleScreen.show,
-html.layout-test-absolute body.standalone #titleScreen.show{visibility:visible!important;}
 /* 塔・BESTマーカーは var(--H) 依存をやめて親いっぱいに */
-html.layout-test-fixed body.standalone #tsTower,
-html.layout-test-absolute body.standalone #tsTower,
-html.layout-test-fixed body.standalone #tsBest,
-html.layout-test-absolute body.standalone #tsBest{
+body.standalone #tsTower,
+body.standalone #tsBest{
   position:absolute;left:0;top:0;height:100%;transform:none!important;
 }
 /* ── 四隅: 画面基準の absolute + env() のみ。JSで算出した safe-area は足さない ── */
-html.layout-test-fixed body.standalone #titleScreen.show .ts-btn,
-html.layout-test-absolute body.standalone #titleScreen.show .ts-btn,
-html.layout-test-fixed body.standalone #titleScreen.show .ts-txt,
-html.layout-test-absolute body.standalone #titleScreen.show .ts-txt{
+body.standalone #titleScreen.show .ts-btn,
+body.standalone #titleScreen.show .ts-txt{
   position:absolute;transform:none!important;
 }
-html.layout-test-fixed body.standalone #tsSettings,
-html.layout-test-absolute body.standalone #tsSettings{
+body.standalone #tsSettings{
   top:max(16px,env(safe-area-inset-top));left:max(16px,env(safe-area-inset-left));
   right:auto;bottom:auto;
 }
-html.layout-test-fixed body.standalone #tsMypage,
-html.layout-test-absolute body.standalone #tsMypage{
+body.standalone #tsMypage{
   top:max(16px,env(safe-area-inset-top));right:max(16px,env(safe-area-inset-right));
   left:auto;bottom:auto;
 }
-html.layout-test-fixed body.standalone #tsHol,
-html.layout-test-absolute body.standalone #tsHol{
+body.standalone #tsHol{
   bottom:max(16px,env(safe-area-inset-bottom));right:max(16px,env(safe-area-inset-right));
   top:auto;left:auto;
 }
-html.layout-test-fixed body.standalone #tsWorldDeaths,
-html.layout-test-absolute body.standalone #tsWorldDeaths{
+body.standalone #tsWorldDeaths{
   bottom:max(16px,env(safe-area-inset-bottom));left:max(16px,env(safe-area-inset-left));
   top:auto;right:auto;
 }
-html.layout-test-fixed body.standalone #tsYourDeaths,
-html.layout-test-absolute body.standalone #tsYourDeaths{
+body.standalone #tsYourDeaths{
   bottom:calc(max(16px,env(safe-area-inset-bottom)) + 1.6em);
   left:max(16px,env(safe-area-inset-left));top:auto;right:auto;
 }
-html.layout-test-fixed body.standalone #tsHard,
-html.layout-test-absolute body.standalone #tsHard{
+body.standalone #tsHard{
   bottom:calc(max(16px,env(safe-area-inset-bottom)) + 3.2em);
   left:max(16px,env(safe-area-inset-left));top:auto;right:auto;}
-html.layout-test-fixed body.standalone #tsRetro,
-html.layout-test-absolute body.standalone #tsRetro{
+body.standalone #tsRetro{
   bottom:calc(max(16px,env(safe-area-inset-bottom)) + 3.2em);
   right:max(16px,env(safe-area-inset-right));top:auto;left:auto;}
 /* ── 中央UI: pixel座標を計算せず inset:0 の flex で縦中央寄せ ── */
-html.layout-test-fixed body.standalone #tsCenter,
-html.layout-test-absolute body.standalone #tsCenter{
+body.standalone #tsCenter{
   position:absolute;inset:0;width:100%;height:100%;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:0.8em;pointer-events:none;transform:none!important;
 }
 /* 中央の子は流し込みに戻す（.ts-btn の absolute を打ち消す）。押せるのはボタンだけ */
-html.layout-test-fixed body.standalone #tsCenter>*,
-html.layout-test-absolute body.standalone #tsCenter>*{
+body.standalone #tsCenter>*{
   position:static!important;top:auto;left:auto;right:auto;bottom:auto;
   transform:none!important;margin-top:0;margin-bottom:0;
 }
-html.layout-test-fixed body.standalone #tsCenter button,
-html.layout-test-absolute body.standalone #tsCenter button{pointer-events:auto;}
+body.standalone #tsCenter button{pointer-events:auto;}
 /* 下端の案内も画面基準へ */
-html.layout-test-fixed body.standalone #tsFoot,
-html.layout-test-absolute body.standalone #tsFoot{
+body.standalone #tsFoot{
   position:absolute;left:0;right:0;top:auto;
   bottom:max(4px,env(safe-area-inset-bottom));transform:none!important;
 }
-html.layout-test-fixed body.standalone #tsMsg,
-html.layout-test-absolute body.standalone #tsMsg{
+body.standalone #tsMsg{
   position:absolute;left:0;right:0;top:40%;transform:none!important;
 }
-/* ★0814a タスクC: フォールバック（既定 OFF）。
-   scrollTop=0 が WebKit に差し戻される場合のみ、次ビルドで SCROLL_LOCK_TEST=true
-   にして検証する。position:fixed は被疑対象なので既定では使わない。
-   クラスが付かない限り 1 行も効かない。 */
-html.scroll-lock, html.scroll-lock body.standalone{
-  position:fixed;
-  top:0;left:0;right:0;bottom:0;
-  width:100%;height:100%;
-  margin:0;padding:0;
-  overflow:hidden;
-}
+/* ビルド識別子。iOS PWA のキャッシュ判別用。タイトル画面のときだけ出る
+   （#titleScreen の子なので、それ以外の state では親ごと display:none）。 */
+#tsBuild{position:absolute;left:50%;top:1px;transform:translateX(-50%);
+  font:7px monospace;color:rgba(255,255,255,0.22);pointer-events:none;z-index:9;
+  letter-spacing:1px;}
 </style>
 </head>
 <body>
@@ -777,6 +752,9 @@ html.scroll-lock, html.scroll-lock body.standalone{
     <div id="tsTerms">By playing you agree to our Terms of Service  |  damnrun.com/terms</div>
   </div>
   <div id="tsTestBadge">TEST PLAY MODE<span id="tsTestBadgeName"></span></div>
+  <!-- ビルド識別子。iOS PWA が古い HTML を掴んでいないかの判別用。
+       #titleScreen の子なので、タイトル以外の state では親ごと消える。 -->
+  <div id="tsBuild">0815a</div>
 </div>
 <div id="touchControls" aria-hidden="true">
   <div id="lrRow">
@@ -859,34 +837,18 @@ window.onerror=function(msg,src,line,col,err){
   console.error('neverEND error:',msg,'at',src+':'+line+':'+col,err);
   return false;
 };
-// ═══ 一時デバッグ（原因特定後に削除する）BUILD 0812a ═══════════════════════
-// 仮説: iOS standalone の横向き直後、
-//   (1) DOMレイアウト上の位置 (2) 実際に paint されている位置
-//   (3) WebKit が hit-test に使っている位置  が別座標系になっている。
-// これを A/B で切り分ける。current は比較用ベースライン（現行のまま）。
-//   fixed    … JS配置を停止し、#titleScreen は position:fixed のまま
-//   absolute … JS配置を停止し、position:absolute にする（fixed を疑う）
-// 実機PWAは start_url 固定なので定数で切り替える。ブラウザ検証用に ?layout= も見る。
-const TITLE_LAYOUT_TEST=(function(){
-  try{
-    const q=new URLSearchParams(location.search).get('layout');
-    if(q==='current'||q==='fixed'||q==='absolute')return q;
-  }catch(_){}
-  return 'absolute';           // ← 実機テストのたびにここを書き換えて push する
-})();
-const DIAG_AUTOSCAN=true;      // false にすると elementFromPoint を一切撃たない
-                               // （観測者効果を排して「初回タップが効くか」だけを見る）
-// 旧プローブ(緑)の描画。0812a のオレンジ枠と重なって判読できないので既定で止める。
-// true にすれば復活する（削除はしていない）。
-const DIAG_LEGACY_OVERLAY=false;
-// ★0814a タスクC: scrollTop=0 が差し戻される場合に備えた第二案。既定 OFF。
-//   position:fixed は被疑対象だったため、0814a の結果を見るまで有効化しない。
-const SCROLL_LOCK_TEST=false;  // true で html/body 固定方式に切り替える
-window.TITLE_LAYOUT_TEST=TITLE_LAYOUT_TEST;
+// ═══ BUILD 0815a ═══════════════════════════════════════════════════════════
+// 診断のマスタースイッチ。true にすれば全診断が復活する（コードは残してある）。
+// 再発時はここ 1 箇所だけを変える。
+const BUILD_ID='0815a';
+const DIAG_MASTER=false;
+const DIAG_AUTOSCAN=DIAG_MASTER;        // elementFromPoint による走査
+const DIAG_LEGACY_OVERLAY=false;        // 旧プローブ(緑)。DIAG_MASTER が true のときのみ意味を持つ
+window.BUILD_ID=BUILD_ID;
+window.DIAG_MASTER=DIAG_MASTER;
 window.DIAG_AUTOSCAN=DIAG_AUTOSCAN;
-window.SCROLL_LOCK_TEST=SCROLL_LOCK_TEST;
 window.DIAG_LEGACY_OVERLAY=DIAG_LEGACY_OVERLAY;
-document.documentElement.classList.add('layout-test-'+TITLE_LAYOUT_TEST);
+try{console.log('neverEND BUILD',BUILD_ID);}catch(_){}
 const canvas=document.getElementById('c');
 const ctx=canvas.getContext('2d');
 ctx.imageSmoothingEnabled=false;
@@ -1862,7 +1824,10 @@ if(isTouchDevice){
     window.addEventListener('orientationchange',_relayoutBurst);
     if(window.visualViewport)window.visualViewport.addEventListener('resize',_relayoutBurst);
   }
-  if(_standalone){document.body.classList.add('standalone');}
+  // html 側にも付ける。body{height:100%} を解決させるため html にも高さが要る
+  // （CSS の html.standalone{height:100%}）。条件は body.standalone と完全に同一。
+  if(_standalone){document.body.classList.add('standalone');
+                  document.documentElement.classList.add('standalone');}
   if(!_standalone && localStorage.getItem('neverend_a2hs_dismissed')!=='1'){
     const _banner=document.getElementById('a2hsBanner');
     if(_banner){
@@ -7900,13 +7865,15 @@ function _titleHtmlLive(){return _titleHtmlOn;}
 // その領域の elementFromPoint は #cookieBanner を返す＝タップはバナーに吸われる。
 // バナーを退かすわけにいかないので、下端要素の方をバナーの高さぶん持ち上げる。
 // ═══ BUILD 0812a: タイトル配置のJS書き込みを止める共通ガード ═══════════════
-// standalone かつ タイトル画面 かつ current 以外のモードのときだけ true。
-// 各配置関数の先頭で早期returnする（中身は消さない。いつでも戻せる）。
-// ゲーム本編canvasのviewport処理・回転オーバーレイ・仮想コントローラーは対象外。
+// standalone のタイトル画面では、JS による配置を恒久的に行わない（BUILD 0815a）。
+// 配置は CSS(body.standalone …)だけで決まる。--tsdy/--tsfix/高さ確定待ち/
+// visibility ゲート/59px補正 はすべてここで止まる。
+// 各配置関数の先頭で早期returnする（関数本体は消さない。ブラウザ版・PC版では
+// 従来どおり動く）。ゲーム本編canvasのviewport処理・回転オーバーレイ・
+// 仮想コントローラーは対象外。
 function isTitleLayoutSuppressed(){
   return !!window.__standalone
-      && typeof state!=='undefined' && state==='title'
-      && TITLE_LAYOUT_TEST!=='current';
+      && typeof state!=='undefined' && state==='title';
 }
 let _cbhLast='';
 function _syncCookiePad(){
@@ -8265,7 +8232,10 @@ if(_titleDom){
 // WebKit 自身は正しい位置を知っている（0812a で初回タップを機に -59→0 へ自力で戻した）。
 // それをタップを待たずに起こす。
 let _sfRuns=0,_sfReverts=0;
-function _diagLine(s){try{if(window.__diagLine)window.__diagLine(s);}catch(_){}}
+// 診断が止まっていても動くようにする（__diagLine は DIAG_MASTER のときだけ生える）
+function _diagLine(s){
+  try{if(typeof window.__diagLine==='function')window.__diagLine(s);}catch(_){}
+}
 function _resetStandaloneScroll(reason){
   if(!window.__standalone)return;
   if(typeof state==='undefined'||state!=='title')return;
@@ -8285,6 +8255,10 @@ function _resetStandaloneScroll(reason){
 }
 
 (function _diag0812a(){
+  // ★0815a: 診断のマスタースイッチ。false のときは DOM も作らず、
+  //   pointerdown リスナーも登録せず、走査も時系列ログも一切行わない。
+  //   コードは残してあるので、再発時は DIAG_MASTER=true の 1 箇所で復活する。
+  if(!DIAG_MASTER)return;
   if(!window.__neverendTouch)return;               // PC は対象外
   const R=n=>Math.round(n);
   const BTN=[['SET','tsSettings'],['MYP','tsMypage'],['HOL','tsHol'],
@@ -8378,7 +8352,7 @@ function _resetStandaloneScroll(reason){
     if(scanned)return;scanned=true;
     // rAF×2 の直後に一度だけスクロール位置を戻す（setTimeout の遅延呼び出しは足さない）
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      _resetStandaloneScroll('raf2');noteST('raf2');sample('raf2');
+      noteST('raf2');sample('raf2');
     }));
     [100,300,600,1000,2000,4000].forEach(ms=>setTimeout(()=>sample('t'+ms),ms));
   }
@@ -8416,18 +8390,11 @@ function _resetStandaloneScroll(reason){
       line('t'+T()+' ★差し戻り '+cur+' (ev:'+evName+')');
     }
   };
-  // ★0814a タスクC: 既定 OFF。true のときだけ html に scroll-lock を付ける。
-  const applyScrollLock=()=>{
-    if(!SCROLL_LOCK_TEST)return;
-    const on=!!window.__standalone&&typeof state!=='undefined'&&state==='title';
-    document.documentElement.classList.toggle('scroll-lock',on);
-  };
   // レイアウトを動かしうるイベントの後で、必ず同じ順序で処理する。
   const onLayoutEv=(l)=>{
     noteVvT(l);
     noteST(l);
-    applyScrollLock();
-    _resetStandaloneScroll('ev:'+l);
+
     noteST('after '+l);
   };
   // イベント発火時刻も同じログに混ぜる（高さが変わった時刻と hit 正常化の時刻を比べる）
@@ -8494,7 +8461,7 @@ function _resetStandaloneScroll(reason){
       if(typeof state==='undefined'||state!=='title'){box.style.display='none';return;}
       box.style.display='block';
       const m=metrics();
-      const O=['BUILD 0814a  MODE:'+TITLE_LAYOUT_TEST+
+      const O=['BUILD '+BUILD_ID+
                (window.__standalone?'  PWA':'  BRW')+(DIAG_AUTOSCAN?'':'  scanOFF')];
       O.push(env());
       // ★今回の主要指標。OF が 0 なら 59px のはみ出しが消えている。
@@ -8529,7 +8496,37 @@ function _resetStandaloneScroll(reason){
   },500);
 })();
 
+// ══ 恒久: standalone のスクロール位置復元（診断とは独立に必ず動く）══════════
+// 診断(DIAG_MASTER)を止めてもここは動く。呼び出しは 5 箇所のみで、
+// setTimeout による遅延呼び出しは足さない（イベント駆動と rAF のみ）。
+(function _scrollFixInit(){
+  const call=l=>_resetStandaloneScroll('ev:'+l);
+  window.addEventListener('resize',()=>call('resize'),{passive:true});
+  window.addEventListener('orientationchange',()=>call('orientationchange'),{passive:true});
+  const vv=window.visualViewport;
+  if(vv){
+    vv.addEventListener('resize',()=>call('vv.resize'),{passive:true});
+    vv.addEventListener('scroll',()=>call('vv.scroll'),{passive:true});
+  }
+  // 起動時と、縦→横になった直後の rAF×2。
+  // 横向きのままのコールドスタート（orientationchange が来ない）でも必ず一度走る。
+  const raf2=()=>requestAnimationFrame(()=>requestAnimationFrame(
+    ()=>_resetStandaloneScroll('raf2')));
+  raf2();
+  try{
+    let wasPortrait=document.body.classList.contains('portrait');
+    new MutationObserver(()=>{
+      const p=document.body.classList.contains('portrait');
+      if(p===wasPortrait)return;
+      wasPortrait=p;
+      if(!p)raf2();                       // 縦→横になった直後
+    }).observe(document.body,{attributes:true,attributeFilter:['class']});
+  }catch(_){}
+})();
+
 (function _probe0801z5(){
+  // ★0815a: 旧プローブ(緑)もマスタースイッチ配下。DOM も枠(outline)も作らない。
+  if(!DIAG_MASTER)return;
   if(!isTouchDevice)return;                       // PC は 1 タップで効くので対象外
   const T0=Date.now();
   const ms=()=>'+'+((Date.now()-T0)/1000).toFixed(2);

@@ -596,6 +596,105 @@ body.touch.portrait #a2hsBanner.show ~ #a2hsDim{display:none;}
    この板が横取りしてしまう（タイトルのボタンが最初の数タップだけ効かない原因）。 */
 #rotateOverlay{display:none;position:fixed;inset:0;z-index:9999;pointer-events:none;background:#000;color:#fff;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:'Share Tech Mono',monospace;font-size:18px;letter-spacing:2px;line-height:1.8;padding:20px;}
 body.touch.portrait #rotateOverlay{display:flex;}
+
+/* ╔═══════════════════════════════════════════════════════════════════════════╗
+   ║ BUILD 0812a — 一時A/B。原因特定後にこのブロックごと削除する。              ║
+   ╚═══════════════════════════════════════════════════════════════════════════╝
+   ★適用条件は必ず「html.layout-test-fixed / -absolute」かつ「body.standalone」。
+     current モード・Safariブラウザ・PC には 1 行も効かない。
+   ★viewport 単位(dvh/svh/lvh/vh)をタイトルに一切持たせない。100% と inset:0 だけ。
+     「正しい viewport 単位を選ぶ」方向へは戻らないため。 */
+html.layout-test-fixed, html.layout-test-absolute{height:100%;}
+html.layout-test-fixed body.standalone,
+html.layout-test-absolute body.standalone{
+  width:100%;height:100%;min-height:0;margin:0;padding:0;overflow:hidden;position:relative;
+}
+/* FIXED: JS配置だけ撤去、position:fixed は残す */
+html.layout-test-fixed body.standalone #titleScreen.show{
+  position:fixed;inset:0;width:100%;height:100%;box-sizing:border-box;
+  transform:none!important;
+}
+/* ABSOLUTE: fixed も撤去する */
+html.layout-test-absolute body.standalone #titleScreen.show{
+  position:absolute;inset:0;width:100%;height:100%;box-sizing:border-box;
+  transform:none!important;
+}
+/* 較正(_titleCalibrate)を止めるので ts-cal が付かない。visibility ゲートを解除する
+   （解除しないとタイトルが永久に出ない）*/
+html.layout-test-fixed body.standalone #titleScreen.show,
+html.layout-test-absolute body.standalone #titleScreen.show{visibility:visible!important;}
+/* 塔・BESTマーカーは var(--H) 依存をやめて親いっぱいに */
+html.layout-test-fixed body.standalone #tsTower,
+html.layout-test-absolute body.standalone #tsTower,
+html.layout-test-fixed body.standalone #tsBest,
+html.layout-test-absolute body.standalone #tsBest{
+  position:absolute;left:0;top:0;height:100%;transform:none!important;
+}
+/* ── 四隅: 画面基準の absolute + env() のみ。JSで算出した safe-area は足さない ── */
+html.layout-test-fixed body.standalone #titleScreen.show .ts-btn,
+html.layout-test-absolute body.standalone #titleScreen.show .ts-btn,
+html.layout-test-fixed body.standalone #titleScreen.show .ts-txt,
+html.layout-test-absolute body.standalone #titleScreen.show .ts-txt{
+  position:absolute;transform:none!important;
+}
+html.layout-test-fixed body.standalone #tsSettings,
+html.layout-test-absolute body.standalone #tsSettings{
+  top:max(16px,env(safe-area-inset-top));left:max(16px,env(safe-area-inset-left));
+  right:auto;bottom:auto;
+}
+html.layout-test-fixed body.standalone #tsMypage,
+html.layout-test-absolute body.standalone #tsMypage{
+  top:max(16px,env(safe-area-inset-top));right:max(16px,env(safe-area-inset-right));
+  left:auto;bottom:auto;
+}
+html.layout-test-fixed body.standalone #tsHol,
+html.layout-test-absolute body.standalone #tsHol{
+  bottom:max(16px,env(safe-area-inset-bottom));right:max(16px,env(safe-area-inset-right));
+  top:auto;left:auto;
+}
+html.layout-test-fixed body.standalone #tsWorldDeaths,
+html.layout-test-absolute body.standalone #tsWorldDeaths{
+  bottom:max(16px,env(safe-area-inset-bottom));left:max(16px,env(safe-area-inset-left));
+  top:auto;right:auto;
+}
+html.layout-test-fixed body.standalone #tsYourDeaths,
+html.layout-test-absolute body.standalone #tsYourDeaths{
+  bottom:calc(max(16px,env(safe-area-inset-bottom)) + 1.6em);
+  left:max(16px,env(safe-area-inset-left));top:auto;right:auto;
+}
+html.layout-test-fixed body.standalone #tsHard,
+html.layout-test-absolute body.standalone #tsHard{
+  bottom:calc(max(16px,env(safe-area-inset-bottom)) + 3.2em);
+  left:max(16px,env(safe-area-inset-left));top:auto;right:auto;}
+html.layout-test-fixed body.standalone #tsRetro,
+html.layout-test-absolute body.standalone #tsRetro{
+  bottom:calc(max(16px,env(safe-area-inset-bottom)) + 3.2em);
+  right:max(16px,env(safe-area-inset-right));top:auto;left:auto;}
+/* ── 中央UI: pixel座標を計算せず inset:0 の flex で縦中央寄せ ── */
+html.layout-test-fixed body.standalone #tsCenter,
+html.layout-test-absolute body.standalone #tsCenter{
+  position:absolute;inset:0;width:100%;height:100%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:0.8em;pointer-events:none;transform:none!important;
+}
+/* 中央の子は流し込みに戻す（.ts-btn の absolute を打ち消す）。押せるのはボタンだけ */
+html.layout-test-fixed body.standalone #tsCenter>*,
+html.layout-test-absolute body.standalone #tsCenter>*{
+  position:static!important;top:auto;left:auto;right:auto;bottom:auto;
+  transform:none!important;margin-top:0;margin-bottom:0;
+}
+html.layout-test-fixed body.standalone #tsCenter button,
+html.layout-test-absolute body.standalone #tsCenter button{pointer-events:auto;}
+/* 下端の案内も画面基準へ */
+html.layout-test-fixed body.standalone #tsFoot,
+html.layout-test-absolute body.standalone #tsFoot{
+  position:absolute;left:0;right:0;top:auto;
+  bottom:max(4px,env(safe-area-inset-bottom));transform:none!important;
+}
+html.layout-test-fixed body.standalone #tsMsg,
+html.layout-test-absolute body.standalone #tsMsg{
+  position:absolute;left:0;right:0;top:40%;transform:none!important;
+}
 </style>
 </head>
 <body>
@@ -749,6 +848,26 @@ window.onerror=function(msg,src,line,col,err){
   console.error('neverEND error:',msg,'at',src+':'+line+':'+col,err);
   return false;
 };
+// ═══ 一時デバッグ（原因特定後に削除する）BUILD 0812a ═══════════════════════
+// 仮説: iOS standalone の横向き直後、
+//   (1) DOMレイアウト上の位置 (2) 実際に paint されている位置
+//   (3) WebKit が hit-test に使っている位置  が別座標系になっている。
+// これを A/B で切り分ける。current は比較用ベースライン（現行のまま）。
+//   fixed    … JS配置を停止し、#titleScreen は position:fixed のまま
+//   absolute … JS配置を停止し、position:absolute にする（fixed を疑う）
+// 実機PWAは start_url 固定なので定数で切り替える。ブラウザ検証用に ?layout= も見る。
+const TITLE_LAYOUT_TEST=(function(){
+  try{
+    const q=new URLSearchParams(location.search).get('layout');
+    if(q==='current'||q==='fixed'||q==='absolute')return q;
+  }catch(_){}
+  return 'current';            // ← 実機テストのたびにここを書き換えて push する
+})();
+const DIAG_AUTOSCAN=true;      // false にすると elementFromPoint を一切撃たない
+                               // （観測者効果を排して「初回タップが効くか」だけを見る）
+window.TITLE_LAYOUT_TEST=TITLE_LAYOUT_TEST;
+window.DIAG_AUTOSCAN=DIAG_AUTOSCAN;
+document.documentElement.classList.add('layout-test-'+TITLE_LAYOUT_TEST);
 const canvas=document.getElementById('c');
 const ctx=canvas.getContext('2d');
 ctx.imageSmoothingEnabled=false;
@@ -7761,8 +7880,19 @@ function _titleHtmlLive(){return _titleHtmlOn;}
 // HALL OF LEGENDS / WORLD DEATHS / 案内文にちょうど重なる。バナーが出ている間、
 // その領域の elementFromPoint は #cookieBanner を返す＝タップはバナーに吸われる。
 // バナーを退かすわけにいかないので、下端要素の方をバナーの高さぶん持ち上げる。
+// ═══ BUILD 0812a: タイトル配置のJS書き込みを止める共通ガード ═══════════════
+// standalone かつ タイトル画面 かつ current 以外のモードのときだけ true。
+// 各配置関数の先頭で早期returnする（中身は消さない。いつでも戻せる）。
+// ゲーム本編canvasのviewport処理・回転オーバーレイ・仮想コントローラーは対象外。
+function isTitleLayoutSuppressed(){
+  return !!window.__standalone
+      && typeof state!=='undefined' && state==='title'
+      && TITLE_LAYOUT_TEST!=='current';
+}
 let _cbhLast='';
 function _syncCookiePad(){
+  // --cbh はタイトル下端(--eyb)専用の配置値。テストモードでは書かない。
+  if(isTitleLayoutSuppressed())return;
   const cb=document.getElementById('cookieBanner');
   let v='0px';
   if(cb&&!cb.classList.contains('hidden')){
@@ -7910,6 +8040,10 @@ function _tsNoteSig(){
 }
 function _tsStableFor(){return Date.now()-_tsSigAt;}
 function _titleCalibrate(){
+  // ★BUILD 0812a: fixed/absolute モードでは配置を一切行わない。
+  //   --tsdy / --tsfix の書き込み、59px系オフセット(_tsSafeTop)、高さ確定待ち、
+  //   visibility ゲートまで全てここで止まる。CSS だけで置いた結果を観測する。
+  if(isTitleLayoutSuppressed())return;
   if(!isTouchDevice)return;                        // PC は現状のまま一切触らない
   const D=_titleDom;if(!D||!D.root)return;
   const scr=D.root;
@@ -8093,6 +8227,162 @@ if(_titleDom){
 //  枠     … 各ボタンの実測矩形を破線で画面に描く。見た目の位置と実位置のズレも同時に見える。
 //
 // この板と枠は pointer-events:none 固定・タッチ端末のみ。調査用なので他から参照されない。
+// ╔═══════════════════════════════════════════════════════════════════════════╗
+// ║ BUILD 0812a 診断 — rect と hit-test の座標系が一致しているかを数値で出す ║
+// ╚═══════════════════════════════════════════════════════════════════════════╝
+// 知りたいのは 2 つだけ:
+//   (1) STARTボタンの getBoundingClientRect() は何px か
+//   (2) elementFromPoint 上で START が実在するのは何px か（差は何px か）
+// 「数タップすると直る」ため、一度もタップしていない状態の値が最重要。
+// 横向き検知後に自動採取する。DIAG_AUTOSCAN=false なら elementFromPoint を
+// 一切撃たない（観測者効果の排除。elementFromPoint 自身が layout flush を誘発しうる）。
+(function _diag0812a(){
+  if(!window.__neverendTouch)return;               // PC は対象外
+  const R=n=>Math.round(n);
+  const BTN=[['SET','tsSettings'],['MYP','tsMypage'],['HOL','tsHol'],
+             ['NRM','tsNormal'],['DTH','tsDeath'],['STA','tsStart']];
+  const gid=id=>document.getElementById(id);
+  const nm=e=>e?(e.tagName+'#'+(e.id||'-')):'null';
+
+  // ── 6-1 中央ヒット判定 ──
+  function checkButtonHit(button){
+    const r=button.getBoundingClientRect();
+    const x=r.left+r.width/2, y=r.top+r.height/2;
+    const hit=document.elementFromPoint(x,y);
+    return {id:button.id,cx:R(x),cy:R(y),
+      rect:R(r.left)+','+R(r.top)+','+R(r.width)+','+R(r.height),
+      hit:hit?nm(hit):'null', ok:hit===button||button.contains(hit)};
+  }
+  // ── 6-2 格子スキャン。全点は出さず min/max と差分だけ ──
+  function scanHitArea(button,step,margin){
+    step=step||10;margin=margin||80;
+    const r=button.getBoundingClientRect();
+    let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity,n=0;
+    for(let y=r.top-margin;y<=r.bottom+margin;y+=step){
+      for(let x=r.left-margin;x<=r.right+margin;x+=step){
+        const hit=document.elementFromPoint(x,y);
+        if(hit===button||button.contains(hit)){
+          n++;
+          if(x<minX)minX=x; if(x>maxX)maxX=x;
+          if(y<minY)minY=y; if(y>maxY)maxY=y;
+        }
+      }
+    }
+    if(!n)return {id:button.id,found:0};
+    return {id:button.id,found:n,
+      rectY:R(r.top)+'-'+R(r.bottom), hitY:R(minY)+'-'+R(maxY), dY:R(minY-r.top),
+      rectX:R(r.left)+'-'+R(r.right), hitX:R(minX)+'-'+R(maxX), dX:R(minX-r.left)};
+  }
+  window.checkButtonHit=checkButtonHit;window.scanHitArea=scanHitArea;
+
+  // ── ログ。position:absolute で置く（fixed 自体が被疑対象のため使わない）──
+  const LOG=[];
+  const line=o=>{LOG.push(o);if(LOG.length>26)LOG.shift();};
+  function debugLog(o){
+    const p=[];for(const k in o)p.push(k+':'+o[k]);
+    line(p.join(' '));
+  }
+  window.debugLog=debugLog;
+  const box=document.createElement('div');
+  box.id='diag0812a';
+  box.style.cssText='position:absolute;left:2px;top:2px;width:62vw;z-index:100000;'+
+    'pointer-events:none;background:rgba(0,0,0,0.82);border:1px solid rgba(255,180,0,0.6);'+
+    'padding:2px 4px;color:#fc0;font-family:monospace;font-size:8px;line-height:1.3;'+
+    'white-space:pre;text-align:left;overflow:hidden;';
+  (document.body||document.documentElement).appendChild(box);
+
+  const t0=Date.now();
+  const T=()=>((Date.now()-t0)/1000).toFixed(2);
+  const vv=()=>window.visualViewport;
+  const env=()=>'vvH'+(vv()?R(vv().height):'-')+' vvT'+(vv()?R(vv().offsetTop):'-')+
+                ' iH'+window.innerHeight+' cH'+document.documentElement.clientHeight;
+
+  // ── 6-3 自動診断。横向き検知後、タップ前の時系列を取る ──
+  let scanned=false;
+  function sample(tag){
+    if(!DIAG_AUTOSCAN)return;
+    const st=gid('tsStart');if(!st)return;
+    const h=checkButtonHit(st);
+    const s=scanHitArea(st,10,80);
+    line('t'+T()+' '+tag+' '+env()+
+         ' rectTop'+h.rect.split(',')[1]+
+         (s.found?(' hitY'+s.hitY+' dY'+(s.dY>=0?'+':'')+s.dY):' hit無し')+
+         ' '+(h.ok?'HIT_OK':'HIT_NG('+h.hit+')'));
+  }
+  function runSchedule(){
+    if(scanned)return;scanned=true;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>sample('raf2')));
+    [100,300,600,1000,2000,4000].forEach(ms=>setTimeout(()=>sample('t'+ms),ms));
+  }
+  // 横向きになったら開始（縦の間はタイトルを置いていないので測る意味が無い）
+  const watchLandscape=()=>{
+    if(!document.body.classList.contains('portrait'))runSchedule();
+  };
+  watchLandscape();
+  try{
+    new MutationObserver(watchLandscape)
+      .observe(document.body,{attributes:true,attributeFilter:['class']});
+  }catch(_){}
+  // イベント発火時刻も同じログに混ぜる（高さが変わった時刻と hit 正常化の時刻を比べる）
+  const evl=(o,n,l)=>{try{o.addEventListener(n,()=>{
+    line('t'+T()+' EV:'+l+' '+env());
+    if(DIAG_AUTOSCAN)setTimeout(()=>sample('after:'+l),50);
+  },{passive:true});}catch(_){}};
+  evl(window,'resize','resize');
+  evl(window,'orientationchange','orientationchange');
+  if(vv()){evl(vv(),'resize','vv.resize');evl(vv(),'scroll','vv.scroll');}
+
+  // ── 6-4 pointerdown 診断 ──
+  document.addEventListener('pointerdown',e=>{
+    if(!window.__standalone||typeof state==='undefined'||state!=='title')return;
+    const st=gid('tsStart');
+    const hit=DIAG_AUTOSCAN?document.elementFromPoint(e.clientX,e.clientY):null;
+    debugLog({tag:'PDOWN',t:T(),
+      cX:R(e.clientX),cY:R(e.clientY),pX:R(e.pageX),pY:R(e.pageY),
+      tgt:(e.target&&(e.target.id||e.target.tagName))||'-',
+      efp:DIAG_AUTOSCAN?(hit?nm(hit):'null'):'(scanOFF)',
+      vvH:vv()?R(vv().height):'-',vvT:vv()?R(vv().offsetTop):'-',
+      iH:window.innerHeight,cH:document.documentElement.clientHeight,
+      sTop:document.scrollingElement?R(document.scrollingElement.scrollTop):'-',
+      staTop:st?R(st.getBoundingClientRect().top):'-'});
+  },true);
+
+  // ── 6-5 常時表示（圧縮形式）──
+  setInterval(()=>{
+    try{
+      if(typeof state==='undefined'||state!=='title'){box.style.display='none';return;}
+      box.style.display='block';
+      const O=['BUILD 0812a  MODE:'+TITLE_LAYOUT_TEST+
+               (window.__standalone?'  PWA':'  BRW')+(DIAG_AUTOSCAN?'':'  scanOFF')];
+      O.push(env());
+      const st=gid('tsStart');
+      if(st){
+        const r=st.getBoundingClientRect();
+        if(DIAG_AUTOSCAN){
+          const s=scanHitArea(st,10,80), h=checkButtonHit(st);
+          O.push('START rect '+R(r.top)+'-'+R(r.bottom)+
+                 (s.found?(' / hit '+s.hitY+' / d'+(s.dY>=0?'+':'')+s.dY):' / hit無し')+
+                 '  '+(h.ok?'OK':'NG('+h.hit+')'));
+        }else{
+          O.push('START rect '+R(r.top)+'-'+R(r.bottom)+'  (scanOFF)');
+        }
+      }
+      if(DIAG_AUTOSCAN){
+        const st2=[];
+        for(const [tag,id] of BTN){
+          const el=gid(id);if(!el){st2.push(tag+' 無');continue;}
+          const h=checkButtonHit(el);
+          st2.push(tag+' '+(h.ok?'OK':'NG'));
+        }
+        O.push(st2.join('  '));
+      }
+      O.push('--- LOG ---');
+      for(let i=LOG.length-1;i>=0;i--)O.push(LOG[i]);
+      box.textContent=O.join('\n');
+    }catch(e){box.textContent='0812a ERR '+(e&&e.message||'err');}
+  },500);
+})();
+
 (function _probe0801z5(){
   if(!isTouchDevice)return;                       // PC は 1 タップで効くので対象外
   const T0=Date.now();
@@ -8162,6 +8452,7 @@ if(_titleDom){
   // 座標 x,y の積み重ね（上から4つ）と、どのボタンの矩形の中か
   const stackAt=(x,y)=>{
     try{
+      if(!DIAG_AUTOSCAN)return '(scanOFF)';
       const a=document.elementsFromPoint(x,y)||[];
       return a.slice(0,4).map(nm).join('>')||'(空)';
     }catch(_){return '(err)';}
@@ -8296,8 +8587,9 @@ if(_titleDom){
         // タップ時の in:/近: はこの控えを使う（タップ中はレイアウトを読まない）
         if(r.width>0&&r.height>0)rectCache[tag]={l:r.left,t:r.top,r:r.right,b:r.bottom};
         else delete rectCache[tag];
-        const ef=(r.width>0&&r.height>0)
-          ? nm(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)) : '-';
+        const ef=(DIAG_AUTOSCAN&&r.width>0&&r.height>0)
+          ? nm(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2))
+          : (DIAG_AUTOSCAN?'-':'(scanOFF)');
         rows.push(tag+' ex'+inDom+
           ' d:'+(s?s.display.slice(0,5):'?')+
           ' v:'+(s?s.visibility.slice(0,3):'?')+

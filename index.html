@@ -217,6 +217,13 @@ body.touch #titleScreen.show:not(.ts-cal){visibility:hidden;}
                      背景ボックスは付けない（画面が汚れるため）。 */
 #titleScreen{
   --tower-x:8%;
+  /* --best-x … BEST マーカーの「右端」を帯の右からどれだけ内側に置くか。
+     left ではなく right で持つ理由: ラベルは "BEST: 5F ▶" と "BEST: 100F ▶" で
+     幅が変わる。left 基準だと桁が増えたぶん右へ伸びて塔に食い込む。
+     right 基準なら ▶ 側の端が固定され、伸びるのは左（空いている側）になる。
+     帯幅は 30%(=220px @734) なので、right:39% → 右端 ≒ 220-85.8 = 134px。
+     塔の実描画左端は 140px なので、▶ の 6px 右が塔。 */
+  --best-x:39%;
   --deaths-outline:0 0 3px #000,0 0 3px #000,0 0 6px #000;
 }
 /* 塔（左側の帯）。装飾なので絶対に指を受けない。
@@ -366,8 +373,12 @@ body:not(.touch) #tsStart{text-shadow:0 0 0.5em rgba(255,255,255,0.85);}
 #tsBest{position:fixed;left:0;top:0;width:30%;height:var(--H);z-index:1;
   pointer-events:none;display:none;--my:92%;}
 #titleScreen.ts-best #tsBest{display:block;}
-/* 0818a: 帯の右→左へ。▶ は ::after で末尾に出るので、左に置くと右隣の塔を指す。 */
-#tsBestLabel{position:absolute;left:8%;top:var(--my);transform:translateY(-50%);
+/* 0818a: ▶ は ::after で末尾に出るので、塔の左に置くと右隣の塔を指す。
+   0819a: 帯の左端(8%)基準だと塔の実描画(140px)まで 73px も空いていた。
+   塔 PNG は幅の 73% が透明余白で、帯の枠と絵柄の位置が一致しないため。
+   右端を --best-x で固定し、▶ が塔のすぐ隣に来るようにする。 */
+#tsBestLabel{position:absolute;right:var(--best-x,39%);left:auto;
+  top:var(--my);transform:translateY(-50%);
   font-weight:bold;font-size:calc(var(--f)*0.85);color:rgb(255,80,60);
   white-space:nowrap;animation:tsPulseBest 2.5133s linear infinite;}
 #tsBestLabel::after{content:'\25B6';margin-left:0.4em;}
@@ -786,7 +797,7 @@ body.standalone #tsMsg{
   <div id="tsTestBadge">TEST PLAY MODE<span id="tsTestBadgeName"></span></div>
   <!-- ビルド識別子。iOS PWA が古い HTML を掴んでいないかの判別用。
        #titleScreen の子なので、タイトル以外の state では親ごと消える。 -->
-  <div id="tsBuild">0818a</div>
+  <div id="tsBuild">0819a</div>
 </div>
 <div id="touchControls" aria-hidden="true">
   <div id="lrRow">
@@ -872,7 +883,7 @@ window.onerror=function(msg,src,line,col,err){
 // ═══ BUILD 0815a ═══════════════════════════════════════════════════════════
 // 診断のマスタースイッチ。true にすれば全診断が復活する（コードは残してある）。
 // 再発時はここ 1 箇所だけを変える。
-const BUILD_ID='0818a';
+const BUILD_ID='0819a';
 const DIAG_MASTER=false;
 const DIAG_AUTOSCAN=DIAG_MASTER;        // elementFromPoint による走査
 const DIAG_LEGACY_OVERLAY=false;        // 旧プローブ(緑)。DIAG_MASTER が true のときのみ意味を持つ
@@ -7822,6 +7833,7 @@ const _titleDom=(()=>{
 // textContent は変わったときだけ書く（毎フレーム呼ばれるのでレイアウトを無駄に走らせない）
 function _tsText(el,txt){if(el&&el.__t!==txt){el.__t=txt;el.textContent=txt;}}
 function _tsClass(el,cls,on){if(el)el.classList.toggle(cls,!!on);}
+const _BEST_SPAN=74;   // ★0819a: BEST マーカーの振れ幅（1階→100階）。調整はここだけ
 function syncTitleDom(){
   const D=_titleDom;if(!D)return;
   const S=D.root;                 // 状態クラスは #titleScreen に付ける
@@ -7864,6 +7876,10 @@ function syncTitleDom(){
     }
   }
   // ── 到達階層マーカー ──
+  // ★0819a 調整値: 100階までの振れ幅。ここだけ変えれば全階層の位置が動く。
+  //   起点 88% は据え置き（1階側の位置は現状維持の指示）。
+   //  84 だと 100階が 4% になり SETTINGS(t16-40) と重なっていた。
+   //  74 にすると 100階が 14% ＝ 帯の 55px 付近で、SETTINGS の下端 40px より下になる。
   // 100 階のうち何階まで登ったかを、塔の帯の中の縦位置(%)にする。
   // これはゲームの値であってレイアウトの較正値ではない。しかも #tsBest は
   // pointer-events:none の飾りなので、値が何であれタップ判定には影響しない。
@@ -7873,7 +7889,7 @@ function syncTitleDom(){
     _tsText(D.bestLabel,'BEST: '+bestFloor+'F');
     // 0818a: 起点を 92 → 88 にして「1階」の基準位置をわずかに上へ。
     //   他の項(4/96/84)は変更しない。100階では Math.max(4,…) の下限に接触する。
-    const pct=Math.max(4,Math.min(96,88-(bestFloor/100)*84));  // 下=1階 / 上=100階
+    const pct=Math.max(4,Math.min(96,88-(bestFloor/100)*_BEST_SPAN));  // 下=1階 / 上=100階
     if(D.best.__my!==pct){D.best.__my=pct;D.best.style.setProperty('--my',pct+'%');}
   }
 }

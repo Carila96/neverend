@@ -861,12 +861,16 @@ const TITLE_LAYOUT_TEST=(function(){
     const q=new URLSearchParams(location.search).get('layout');
     if(q==='current'||q==='fixed'||q==='absolute')return q;
   }catch(_){}
-  return 'current';            // ← 実機テストのたびにここを書き換えて push する
+  return 'absolute';           // ← 実機テストのたびにここを書き換えて push する
 })();
 const DIAG_AUTOSCAN=true;      // false にすると elementFromPoint を一切撃たない
                                // （観測者効果を排して「初回タップが効くか」だけを見る）
+// 旧プローブ(緑)の描画。0812a のオレンジ枠と重なって判読できないので既定で止める。
+// true にすれば復活する（削除はしていない）。
+const DIAG_LEGACY_OVERLAY=false;
 window.TITLE_LAYOUT_TEST=TITLE_LAYOUT_TEST;
 window.DIAG_AUTOSCAN=DIAG_AUTOSCAN;
+window.DIAG_LEGACY_OVERLAY=DIAG_LEGACY_OVERLAY;
 document.documentElement.classList.add('layout-test-'+TITLE_LAYOUT_TEST);
 const canvas=document.getElementById('c');
 const ctx=canvas.getContext('2d');
@@ -8228,7 +8232,7 @@ if(_titleDom){
 //
 // この板と枠は pointer-events:none 固定・タッチ端末のみ。調査用なので他から参照されない。
 // ╔═══════════════════════════════════════════════════════════════════════════╗
-// ║ BUILD 0812a 診断 — rect と hit-test の座標系が一致しているかを数値で出す ║
+// ║ BUILD 0813a 診断 — OF(はみ出し) と vvT と 実タップ target を数値で出す      ║
 // ╚═══════════════════════════════════════════════════════════════════════════╝
 // 知りたいのは 2 つだけ:
 //   (1) STARTボタンの getBoundingClientRect() は何px か
@@ -8294,8 +8298,23 @@ if(_titleDom){
   const t0=Date.now();
   const T=()=>((Date.now()-t0)/1000).toFixed(2);
   const vv=()=>window.visualViewport;
-  const env=()=>'vvH'+(vv()?R(vv().height):'-')+' vvT'+(vv()?R(vv().offsetTop):'-')+
-                ' iH'+window.innerHeight+' cH'+document.documentElement.clientHeight;
+  // ★0813a: オーバーフロー量 OF と scrollTop を必ず併記する。
+  //   実機ログで docH452 / clH393 = OF+59 が出ており、この 59 が visual viewport の
+  //   オフセットとして残留している疑いが濃厚。OF が 0 になるかが検証そのもの。
+  //   高さの判断に visualViewport.height は使わない（回転直後 334 と嘘をつくため。
+  //   clientHeight は最初から 393 で正しかった）。表示には残すが判定には使わない。
+  const se=()=>document.scrollingElement;
+  const metrics=()=>{
+    const s=se();
+    const docH=s?s.scrollHeight:0;
+    const clH=document.documentElement.clientHeight;
+    return {docH:docH,clH:clH,OF:docH-clH,sT:s?R(s.scrollTop):0,
+            vvT:vv()?R(vv().offsetTop):null,vvH:vv()?R(vv().height):null};
+  };
+  const env=()=>{const m=metrics();
+    return 'vvH'+(m.vvH===null?'-':m.vvH)+' vvT'+(m.vvT===null?'-':m.vvT)+
+           ' iH'+window.innerHeight+' cH'+m.clH+' sT'+m.sT+
+           ' OF'+(m.OF>=0?'+':'')+m.OF;};
 
   // ── 6-3 自動診断。横向き検知後、タップ前の時系列を取る ──
   let scanned=false;
@@ -8323,27 +8342,70 @@ if(_titleDom){
     new MutationObserver(watchLandscape)
       .observe(document.body,{attributes:true,attributeFilter:['class']});
   }catch(_){}
+  // ★B-3: vvT が変化したときだけ 1 行出す。全サンプルは要らない。
+  //   -59 になった時刻と 0 に戻った時刻が読めればよい。
+  //   （実機ログでは MY PAGE タップ後に -44→-35→…→0 と 250ms かけて動いていた）
+  let _vvTLast=null;
+  const noteVvT=(evName)=>{
+    const cur=vv()?R(vv().offsetTop):null;
+    if(cur===_vvTLast)return;
+    const prev=_vvTLast; _vvTLast=cur;
+    line('t'+T()+' vvT: '+(prev===null?'-':prev)+' -> '+cur+' (ev:'+evName+')');
+  };
   // イベント発火時刻も同じログに混ぜる（高さが変わった時刻と hit 正常化の時刻を比べる）
   const evl=(o,n,l)=>{try{o.addEventListener(n,()=>{
+    noteVvT(l);
     line('t'+T()+' EV:'+l+' '+env());
     if(DIAG_AUTOSCAN)setTimeout(()=>sample('after:'+l),50);
   },{passive:true});}catch(_){}};
   evl(window,'resize','resize');
   evl(window,'orientationchange','orientationchange');
-  if(vv()){evl(vv(),'resize','vv.resize');evl(vv(),'scroll','vv.scroll');}
+  if(vv()){
+    // vv.scroll は連続で飛ぶので、EV 行は出さず vvT の変化だけ拾う（ログが溢れるため）
+    try{vv().addEventListener('scroll',()=>noteVvT('vv.scroll'),{passive:true});}catch(_){}
+    evl(vv(),'resize','vv.resize');
+  }
+  noteVvT('init');
 
+  // ★B-2: タップ座標に最も近いボタンとの差分。
+  //   (cY-pY) と vvT と near dY の 3 つが一致すれば、ズレは 1 系統で補正量が一意に決まる。
+  //   一致しなければ、もう 1 系統ズレが存在する。
+  function tapDelta(e){
+    let best=null;
+    for(const [,id] of BTN){
+      const b=gid(id); if(!b)continue;
+      const r=b.getBoundingClientRect();
+      if(!(r.width>0||r.height>0))continue;
+      const cy=r.top+r.height/2, cx=r.left+r.width/2;
+      const d=Math.abs(cy-e.clientY);
+      if(!best||d<best.d)best={id:b.id,d:d,dY:R(cy-e.clientY),dX:R(cx-e.clientX)};
+    }
+    return best;
+  }
   // ── 6-4 pointerdown 診断 ──
+  let lastTapLine='(まだタップ無し)';
   document.addEventListener('pointerdown',e=>{
     if(!window.__standalone||typeof state==='undefined'||state!=='title')return;
     const st=gid('tsStart');
     const hit=DIAG_AUTOSCAN?document.elementFromPoint(e.clientX,e.clientY):null;
+    const m=metrics();
+    const nb=tapDelta(e);
+    const tgt=(e.target&&(e.target.id||e.target.tagName))||'-';
+    const efp=DIAG_AUTOSCAN?(hit?nm(hit):'null'):'(scanOFF)';
+    // ★合格判定はこの 2 つだけで行う（rect中心の elementFromPoint は同じ座標系を
+    //   共有するため原理的にほぼ必ず OK になり、判定に使えない＝事実3）。
+    const ok=!!(e.target&&(e.target.id||'').indexOf('ts')===0);
+    lastTapLine='LASTTAP cY'+R(e.clientY)+' pY'+R(e.pageY)+
+                ' d'+R(e.clientY-e.pageY)+
+                ' vvT'+(m.vvT===null?'-':m.vvT)+' sT'+m.sT+
+                (nb?(' near:'+nb.id+' dY'+(nb.dY>=0?'+':'')+nb.dY+' dX'+(nb.dX>=0?'+':'')+nb.dX):'')+
+                ' tgt:'+tgt+' efp:'+efp+'  '+(ok?'OK':'NG');
     debugLog({tag:'PDOWN',t:T(),
       cX:R(e.clientX),cY:R(e.clientY),pX:R(e.pageX),pY:R(e.pageY),
-      tgt:(e.target&&(e.target.id||e.target.tagName))||'-',
-      efp:DIAG_AUTOSCAN?(hit?nm(hit):'null'):'(scanOFF)',
-      vvH:vv()?R(vv().height):'-',vvT:vv()?R(vv().offsetTop):'-',
-      iH:window.innerHeight,cH:document.documentElement.clientHeight,
-      sTop:document.scrollingElement?R(document.scrollingElement.scrollTop):'-',
+      'cY-pY':R(e.clientY-e.pageY),
+      vvT:m.vvT===null?'-':m.vvT,sT:m.sT,OF:m.OF,
+      near:nb?nb.id:'-',dY:nb?nb.dY:'-',dX:nb?nb.dX:'-',
+      tgt:tgt,efp:efp,
       staTop:st?R(st.getBoundingClientRect().top):'-'});
   },true);
 
@@ -8352,34 +8414,36 @@ if(_titleDom){
     try{
       if(typeof state==='undefined'||state!=='title'){box.style.display='none';return;}
       box.style.display='block';
-      const O=['BUILD 0812a  MODE:'+TITLE_LAYOUT_TEST+
+      const m=metrics();
+      const O=['BUILD 0813a  MODE:'+TITLE_LAYOUT_TEST+
                (window.__standalone?'  PWA':'  BRW')+(DIAG_AUTOSCAN?'':'  scanOFF')];
       O.push(env());
+      // ★今回の主要指標。OF が 0 なら 59px のはみ出しが消えている。
+      O.push('docH'+m.docH+'/'+m.clH+' OF'+(m.OF>=0?'+':'')+m.OF+
+             (m.OF===0?'  ← はみ出し無し':'  ← はみ出している'));
       const st=gid('tsStart');
       if(st){
         const r=st.getBoundingClientRect();
-        if(DIAG_AUTOSCAN){
-          const s=scanHitArea(st,10,80), h=checkButtonHit(st);
-          O.push('START rect '+R(r.top)+'-'+R(r.bottom)+
-                 (s.found?(' / hit '+s.hitY+' / d'+(s.dY>=0?'+':'')+s.dY):' / hit無し')+
-                 '  '+(h.ok?'OK':'NG('+h.hit+')'));
-        }else{
-          O.push('START rect '+R(r.top)+'-'+R(r.bottom)+'  (scanOFF)');
-        }
+        O.push('START rect '+R(r.top)+'-'+R(r.bottom)+
+               (DIAG_AUTOSCAN?(function(){
+                 const s=scanHitArea(st,10,80);
+                 return s.found?('  [参考] hit '+s.hitY+' d'+(s.dY>=0?'+':'')+s.dY):'  [参考] hit無し';
+               })():'  (scanOFF)'));
       }
-      if(DIAG_AUTOSCAN){
-        const st2=[];
-        for(const [tag,id] of BTN){
-          const el=gid(id);if(!el){st2.push(tag+' 無');continue;}
-          const h=checkButtonHit(el);
-          st2.push(tag+' '+(h.ok?'OK':'NG'));
-        }
-        O.push(st2.join('  '));
+      // ★合格判定はこの行だけで行う。rect中心の HIT 判定は参考値に降格（事実3）。
+      O.push(lastTapLine);
+      // 四隅が clientHeight 内に収まっているか（HOL が押し出されていないか）
+      const outs=[];
+      for(const [tag,id] of BTN){
+        const el=gid(id);if(!el)continue;
+        const q=el.getBoundingClientRect();
+        if(q.bottom>m.clH||q.top<0)outs.push(tag+'('+R(q.top)+'-'+R(q.bottom)+')');
       }
+      O.push(outs.length?('画面外: '+outs.join(' ')):'画面外: 無し');
       O.push('--- LOG ---');
       for(let i=LOG.length-1;i>=0;i--)O.push(LOG[i]);
       box.textContent=O.join('\n');
-    }catch(e){box.textContent='0812a ERR '+(e&&e.message||'err');}
+    }catch(e){box.textContent='0813a ERR '+(e&&e.message||'err');}
   },500);
 })();
 
@@ -8453,6 +8517,9 @@ if(_titleDom){
   const stackAt=(x,y)=>{
     try{
       if(!DIAG_AUTOSCAN)return '(scanOFF)';
+      // 旧オーバーレイを止めているときは、この結果を誰も読まない。タップの瞬間に
+      // 余計な elementsFromPoint を撃たない（観測者効果をこれ以上増やさない）。
+      if(!DIAG_LEGACY_OVERLAY&&window.__standalone)return '(legacyOFF)';
       const a=document.elementsFromPoint(x,y)||[];
       return a.slice(0,4).map(nm).join('>')||'(空)';
     }catch(_){return '(err)';}
@@ -8564,6 +8631,16 @@ if(_titleDom){
          ' ICB'+document.documentElement.clientWidth+'x'+document.documentElement.clientHeight);
 
   setInterval(()=>{
+    // ★0813a タスクA: 旧プローブ(緑)の描画停止。0812a のオレンジ枠と重なって
+    //   判読できないため。standalone かつ タイトル のときだけ止める
+    //   （ブラウザ・PC・ゲーム中は従来どおり出る）。削除ではなく早期return。
+    //   ここで返ると下の getBoundingClientRect / elementFromPoint / marks 更新まで
+    //   まとめて走らないので、発火経路も同時に切れる。
+    if(!DIAG_LEGACY_OVERLAY&&window.__standalone&&
+       typeof state!=='undefined'&&state==='title'){
+      box.style.display='none';
+      return;
+    }
     try{
       // 変化の検出（表示するかどうかに関係なく常に走らせる）
       const vp=window.innerWidth+'x'+window.innerHeight+'/'+

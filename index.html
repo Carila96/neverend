@@ -754,7 +754,7 @@ body.standalone #tsMsg{
   <div id="tsTestBadge">TEST PLAY MODE<span id="tsTestBadgeName"></span></div>
   <!-- ビルド識別子。iOS PWA が古い HTML を掴んでいないかの判別用。
        #titleScreen の子なので、タイトル以外の state では親ごと消える。 -->
-  <div id="tsBuild">0815a</div>
+  <div id="tsBuild">0816a</div>
 </div>
 <div id="touchControls" aria-hidden="true">
   <div id="lrRow">
@@ -840,7 +840,7 @@ window.onerror=function(msg,src,line,col,err){
 // ═══ BUILD 0815a ═══════════════════════════════════════════════════════════
 // 診断のマスタースイッチ。true にすれば全診断が復活する（コードは残してある）。
 // 再発時はここ 1 箇所だけを変える。
-const BUILD_ID='0815a';
+const BUILD_ID='0816a';
 const DIAG_MASTER=false;
 const DIAG_AUTOSCAN=DIAG_MASTER;        // elementFromPoint による走査
 const DIAG_LEGACY_OVERLAY=false;        // 旧プローブ(緑)。DIAG_MASTER が true のときのみ意味を持つ
@@ -8238,13 +8238,19 @@ function _diagLine(s){
 }
 function _resetStandaloneScroll(reason){
   if(!window.__standalone)return;
-  if(typeof state==='undefined'||state!=='title')return;
+  // ★0816a: state==='title' のガードを撤去した。
+  //   standalone の WebKit は回転のたび scrollTop=-59 を設定する。これはタイトル固有の
+  //   現象ではないので、ゲーム中に回転すると HTML のポーズボタンだけが 59px ずれ、
+  //   押せなくなってタイトルへ戻れなくなっていた（脱出不能）。
+  //   ステート限定が不要なのは下の OF ガードがあるため。「はみ出しがゼロなのに
+  //   scrollTop が 0 でない」状態は、どのステートでも正当ではない。
+  //   正当なスクロールがある場面では OF>0 になり、この関数は何もしない。
   const se=document.scrollingElement;
   if(!se)return;
   const clH=document.documentElement.clientHeight;
   const OF=se.scrollHeight-clH;
-  // ★はみ出しが無いときだけ実行する。OF>0 のときは正当なスクロールなので触らない
-  //   （ゲーム本編で正当なスクロールが存在する場合に巻き込まないため）。
+  // ★このガードがこの修正の安全性そのもの。外さない・緩めないこと。
+  //   OF>0 のときは正当なスクロールなので触らない。
   if(OF!==0)return;
   if(se.scrollTop===0)return;
   const before=se.scrollTop;
@@ -8458,10 +8464,13 @@ function _resetStandaloneScroll(reason){
   // ── 6-5 常時表示（圧縮形式）──
   setInterval(()=>{
     try{
-      if(typeof state==='undefined'||state!=='title'){box.style.display='none';return;}
+      // ★0816a: DIAG_MASTER が true のときは全ステートで表示する。
+      //   ゲーム中の回転で起きる不具合を切り分けるには、プレイ中の sT / OF /
+      //   SCROLLFIX が読めないと話にならないため。既定は false なので通常は出ない。
+      if(typeof state==='undefined'){box.style.display='none';return;}
       box.style.display='block';
       const m=metrics();
-      const O=['BUILD '+BUILD_ID+
+      const O=['BUILD '+BUILD_ID+'  st:'+state+
                (window.__standalone?'  PWA':'  BRW')+(DIAG_AUTOSCAN?'':'  scanOFF')];
       O.push(env());
       // ★今回の主要指標。OF が 0 なら 59px のはみ出しが消えている。

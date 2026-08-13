@@ -660,13 +660,27 @@ body.standalone #tsRetro{
 body.standalone #tsCenter{
   position:absolute;inset:0;width:100%;height:100%;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:0.8em;pointer-events:none;transform:none!important;
+  /* ★0817a: 行間の間延びの原因その1。ここは 0.8em(=12.8px) だったが、ブラウザ経路の
+     実測は 3.14px で 4 倍開いていた。6 本の隙間で約 58px 余分に広がっていた。
+     ブラウザ経路は calc(var(--H)*0.008) だが、--H は --app-vh 由来なので
+     standalone では使わない指示。実測値を px で固定する。 */
+  gap:3.14px;
+  pointer-events:none;transform:none!important;
 }
-/* 中央の子は流し込みに戻す（.ts-btn の absolute を打ち消す）。押せるのはボタンだけ */
+/* 中央の子は流し込みに戻す（.ts-btn の absolute を打ち消す）。押せるのはボタンだけ。
+   margin を 0 にするのは --H 由来の値が漏れてこないようにするため。
+   必要な行間はこの下で px で明示的に入れ直す。 */
 body.standalone #tsCenter>*{
   position:static!important;top:auto;left:auto;right:auto;bottom:auto;
   transform:none!important;margin-top:0;margin-bottom:0;
 }
+/* ★0817a: 行間の間延びの原因その2。上の margin:0 がブラウザ経路の 3 つの余白まで
+   消していた。ブラウザ経路の実測値をそのまま px で戻す
+   （ロゴ下 2.36px / サブ下 4.72px / START上 4.72px）。
+   #tsCenter>* と詳細度が同じなので、必ずこの順（後ろ）に置くこと。 */
+body.standalone #tsLogo{margin-bottom:2.36px;}
+body.standalone #tsSub{margin-bottom:4.72px;}
+body.standalone #tsStart{margin-top:4.72px;}
 body.standalone #tsCenter button{pointer-events:auto;}
 /* 下端の案内も画面基準へ */
 body.standalone #tsFoot{
@@ -754,7 +768,7 @@ body.standalone #tsMsg{
   <div id="tsTestBadge">TEST PLAY MODE<span id="tsTestBadgeName"></span></div>
   <!-- ビルド識別子。iOS PWA が古い HTML を掴んでいないかの判別用。
        #titleScreen の子なので、タイトル以外の state では親ごと消える。 -->
-  <div id="tsBuild">0816a</div>
+  <div id="tsBuild">0817a</div>
 </div>
 <div id="touchControls" aria-hidden="true">
   <div id="lrRow">
@@ -840,7 +854,7 @@ window.onerror=function(msg,src,line,col,err){
 // ═══ BUILD 0815a ═══════════════════════════════════════════════════════════
 // 診断のマスタースイッチ。true にすれば全診断が復活する（コードは残してある）。
 // 再発時はここ 1 箇所だけを変える。
-const BUILD_ID='0816a';
+const BUILD_ID='0817a';
 const DIAG_MASTER=false;
 const DIAG_AUTOSCAN=DIAG_MASTER;        // elementFromPoint による走査
 const DIAG_LEGACY_OVERLAY=false;        // 旧プローブ(緑)。DIAG_MASTER が true のときのみ意味を持つ

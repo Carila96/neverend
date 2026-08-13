@@ -7,6 +7,13 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 
 const BASE_URL = 'https://damnrun.com';
 
+// ★修正C: 適用を許すクーポン ID の許可リスト。
+//   環境変数 ALLOWED_COUPON_IDS にカンマ区切りで設定する（例: FRIENDS100,PRESS50）。
+//   未設定ならクーポンは一切適用されない（安全側に倒す）。
+//   クライアントからは読めないサーバー側の値なので、ID を推測されても効かない。
+const ALLOWED_COUPONS = (process.env.ALLOWED_COUPON_IDS || '')
+  .split(',').map(s => s.trim()).filter(Boolean);
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -52,6 +59,13 @@ export default async function handler(req, res) {
   const amountCents = plan_type === 'annual'
     ? monthly_total_raw * 10 * 100
     : monthly_total_raw * 100;
+
+  // ★修正B（多層防御）: reserve.js 側でも 0 以下を弾いているが、将来 reserve.js を
+  //   通らない経路が生まれても 0 円チェックアウトを作らないよう、ここでも止める。
+  if (!Number.isFinite(amountCents) || amountCents <= 0) {
+    console.error('[create-checkout] refused non-positive amount', { session_key, amountCents });
+    return res.status(400).json({ error: 'Invalid order amount' });
+  }
 
   const metadata = {
     session_key,
@@ -105,20 +119,28 @@ export default async function handler(req, res) {
       };
     }
 
-    // クーポンコード検証と適用
+    // ★修正C: クーポンは許可リスト方式。
+    //   旧実装は「Stripe 上に存在して valid なら何でも適用」だったため、100% OFF の
+    //   クーポンを 1 つ作るだけで、ID を知る/推測した誰もが無料購入できる状態だった
+    //   （クーポン ID は LAUNCH50 のような推測しやすい文字列になりがち）。
+    //   許可リストはサーバー側の環境変数だけで持ち、クライアントには一切出さない。
+    //   リスト外は「無視」ではなく 400 で拒否する（黙って定価で通すと、割引が
+    //   効かない理由が購入者にも運用者にも分からなくなるため）。
     if (coupon_id) {
+      if (!ALLOWED_COUPONS.includes(coupon_id)) {
+        console.warn('[create-checkout] coupon not in allowlist:', coupon_id);
+        return res.status(400).json({ error: 'Invalid coupon code' });
+      }
       try {
         const coupon = await stripe.coupons.retrieve(coupon_id);
         if (coupon && coupon.valid) {
-          if (plan_type === 'monthly') {
-            sessionParams.discounts = [{ coupon: coupon_id }];
-          } else {
-            sessionParams.discounts = [{ coupon: coupon_id }];
-          }
+          sessionParams.discounts = [{ coupon: coupon_id }];
+        } else {
+          return res.status(400).json({ error: 'Invalid coupon code' });
         }
       } catch (couponErr) {
         console.warn('Coupon not found or invalid:', coupon_id, couponErr.message);
-        // クーポンが無効でもチェックアウトは続行
+        return res.status(400).json({ error: 'Invalid coupon code' });
       }
     }
 

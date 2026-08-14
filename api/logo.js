@@ -2,6 +2,58 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
+// ★修正D-5: ロゴの内容検証。
+//   許可形式は PNG と JPEG のみ。SVG は許可しない（<script> と外部参照を書けるため、
+//   Storage の公開URLを直接開かれた場合や <img> 以外で描画された場合に XSS になる）。
+//   申告された image_type は信用せず、実バイト列の先頭（マジックバイト）で判定する。
+const MAX_LOGO_BYTES = 2 * 1024 * 1024;   // 2MB
+function sniffImageType(buf) {
+  if (!buf || buf.length < 4) return null;
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return 'image/png';
+  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'image/jpeg';
+  return null;
+}
+// base64 を検証してバッファを返す。問題があれば res を書いて null を返す。
+function decodeLogo(image_data, res) {
+  let buf;
+  try {
+    buf = Buffer.from(String(image_data), 'base64');
+  } catch (_) {
+    res.status(400).json({ error: 'Invalid image data' });
+    return null;
+  }
+  if (!buf.length) {
+    res.status(400).json({ error: 'Invalid image data' });
+    return null;
+  }
+  if (buf.length > MAX_LOGO_BYTES) {
+    res.status(400).json({ error: 'Image too large (max 2MB)' });
+    return null;
+  }
+  const sniffed = sniffImageType(buf);
+  if (!sniffed) {
+    res.status(400).json({ error: 'Unsupported image format — PNG or JPEG only' });
+    return null;
+  }
+  return { buf, sniffed };
+}
+
+// ★修正D: Authorization: Bearer <supabase access token> を検証する。
+async function requireUser(req, res) {
+  const authz = req.headers.authorization || '';
+  const token = authz.startsWith('Bearer ') ? authz.slice(7).trim() : '';
+  if (!token) {
+    res.status(401).json({ error: 'Authentication required' });
+    return null;
+  }
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error || !data || !data.user) {
+    res.status(401).json({ error: 'Invalid or expired session' });
+    return null;
+  }
+  return data.user;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
@@ -11,10 +63,15 @@ export default async function handler(req, res) {
   // チェックアウト前にロゴをlogo_stagingテーブルに一時保存
   if (action === 'stage') {
     if (!session_key || !image_data) return res.status(400).json({ error: 'Missing fields' });
+    // ★修正D-5: 購入前の一時保存にも同じ内容検証をかける（ここを素通りさせると
+    //   検証済みでないデータがそのまま本掲載へ流れる）。所有者確認は行わない —
+    //   この時点ではまだ契約が存在せず、session_key 自体が 32 バイトの秘密のため。
+    const checked = decodeLogo(image_data, res);
+    if (!checked) return;
     const { error } = await supabase
       .from('logo_staging')
       .upsert(
-        { session_key, image_data, image_type: image_type || 'image/png', created_at: new Date().toISOString() },
+        { session_key, image_data, image_type: checked.sniffed, created_at: new Date().toISOString() },
         { onConflict: 'session_key' }
       );
     if (error) return res.status(500).json({ error: error.message });
@@ -28,6 +85,15 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    // ★修正D: 所有者確認。他人のロゴを差し替えられないようにする。
+    //   「存在しない」と「他人のもの」を区別せず 404 に統一（IDの存在判別を防ぐ）。
+    const user = await requireUser(req, res);
+    if (!user) return;
+
+    // ★修正D-5: 内容検証を所有者確認の直後に行う（重い処理の前に弾く）。
+    const checked = decodeLogo(image_data, res);
+    if (!checked) return;
+
     const { data: contract, error: contractError } = await supabase
       .from('subscription_contracts')
       .select('*')
@@ -35,7 +101,7 @@ export default async function handler(req, res) {
       .eq('status', 'active')
       .maybeSingle();
 
-    if (contractError || !contract) {
+    if (contractError || !contract || !contract.user_id || contract.user_id !== user.id) {
       return res.status(404).json({ error: 'Contract not found or not active' });
     }
 
@@ -57,8 +123,9 @@ export default async function handler(req, res) {
     const width = maxX - minX + 1;
     const height = maxY - minY + 1;
 
-    const imageBuffer = Buffer.from(image_data, 'base64');
-    const mimeType = image_type || 'image/png';
+    // ★修正D-5: 申告 image_type ではなく、実バイト列から判定した型を使う。
+    const imageBuffer = checked.buf;
+    const mimeType = checked.sniffed;
     const ext = mimeType === 'image/jpeg' ? 'jpg' : 'png';
     const fileName = `${contract_id}_${stage_id}.${ext}`;
 

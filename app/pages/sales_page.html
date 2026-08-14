@@ -702,6 +702,19 @@ const _SB_KEY_SP='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 let _sbClient=null;
 let _spCurrentUser=null;
 
+// ★追加F: /api/reserve はログイン必須になった。アクセストークンを添える。
+//   サーバーは user_id をこのトークンから取り、リクエストボディの user_id は無視する。
+async function _spAuthHeaders(){
+  const h={'Content-Type':'application/json'};
+  try{
+    if(!_sbClient)return h;
+    const r=await _sbClient.auth.getSession();
+    const t=r&&r.data&&r.data.session?r.data.session.access_token:null;
+    if(t)h['Authorization']='Bearer '+t;
+  }catch(_){}
+  return h;
+}
+
 function _initSpAuth(){
   if(!window.supabase)return;
   _sbClient=window.supabase.createClient(_SB_URL_SP,_SB_KEY_SP);
@@ -2056,7 +2069,7 @@ async function proceedToCheckout(){
   const btn=document.getElementById('ctaBtn');btn.disabled=true;btn.textContent='RESERVING...';
   const s=STAGES_DATA[currentStage-1];const BASE='https://damnrun.com';
   try{
-    const resRes=await fetch(BASE+'/api/reserve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stage_id:currentStage,anchor_x:selectedArea.x,anchor_y:selectedArea.y,width:chosenW,height:chosenH,zone_type:s.type,plan_type:plan,deleted_blocks:deletedBlocks,active_blocks:activeBlockCount,user_id:_spCurrentUser?_spCurrentUser.id:null})});
+    const resRes=await fetch(BASE+'/api/reserve',{method:'POST',headers:await _spAuthHeaders(),body:JSON.stringify({stage_id:currentStage,anchor_x:selectedArea.x,anchor_y:selectedArea.y,width:chosenW,height:chosenH,zone_type:s.type,plan_type:plan,deleted_blocks:deletedBlocks})});
     const resData=await resRes.json();
     if(!resRes.ok||!resData.session_key){const msg=resData.message||resData.error||'';showCheckoutError(msg.toLowerCase().includes('overlap')||msg.toLowerCase().includes('conflict')||msg.toLowerCase().includes('already taken')?'Reservation failed: This area is currently reserved. Reservations expire in 30 minutes. Please try a different position or try again later.':'Reservation failed: Failed to create reservation session. If you just returned from checkout, your previous reservation expires in 30 minutes. Please try again later.');btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';return;}
     const session_key=resData.session_key;btn.textContent='UPLOADING LOGO...';

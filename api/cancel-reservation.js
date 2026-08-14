@@ -4,6 +4,39 @@ import { createClient } from '@supabase/supabase-js';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
+// ★修正D: Authorization: Bearer <supabase access token> を検証してユーザーを得る。
+//   このAPIはサービスロールキーで動くため RLS が効かない。所有者確認はここでやるしかない。
+//   失敗時は res を書いて null を返す（呼び出し側は null なら即 return）。
+async function requireUser(req, res) {
+  const authz = req.headers.authorization || '';
+  const token = authz.startsWith('Bearer ') ? authz.slice(7).trim() : '';
+  if (!token) {
+    res.status(401).json({ error: 'Authentication required' });
+    return null;
+  }
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error || !data || !data.user) {
+    res.status(401).json({ error: 'Invalid or expired session' });
+    return null;
+  }
+  return data.user;
+}
+
+// ★修正D: 契約を取得し、呼び出し元が所有者であることを確認する。
+//   「存在しない」と「他人のもの」を区別せず、どちらも 404 で返す。
+//   403 と 404 を返し分けると契約IDの存在有無が判別でき、総当たりで実在IDを
+//   列挙できてしまうため。所有者にとっては挙動が変わらないので不便も無い。
+async function loadOwnedContract(contractId, userId, columns) {
+  const { data, error } = await supabase
+    .from('subscription_contracts')
+    .select(columns)
+    .eq('id', contractId)
+    .maybeSingle();
+  if (error || !data) return null;
+  if (!data.user_id || data.user_id !== userId) return null;
+  return data;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
   const { session_key, contract_id } = req.body;
@@ -12,13 +45,12 @@ export default async function handler(req, res) {
   const { action, new_anchor_x, new_anchor_y } = req.body;
   if (contract_id && action === 'update_position') {
     try {
-      const { data: contract, error } = await supabase
-        .from('subscription_contracts')
-        .select('id, stage_id, anchor_x, anchor_y, width, height, status')
-        .eq('id', contract_id)
-        .maybeSingle();
-
-      if (error || !contract) return res.status(404).json({ error: 'Contract not found' });
+      // ★修正D: 所有者確認。他人の枠を動かせないようにする。
+      const user = await requireUser(req, res);
+      if (!user) return;
+      const contract = await loadOwnedContract(
+        contract_id, user.id, 'id, user_id, stage_id, anchor_x, anchor_y, width, height, status');
+      if (!contract) return res.status(404).json({ error: 'Contract not found' });
       if (contract.status === 'canceled') return res.status(400).json({ error: 'Contract is canceled' });
 
       const nx = parseInt(new_anchor_x, 10);
@@ -91,13 +123,12 @@ export default async function handler(req, res) {
   // --- 契約キャンセル（contract_idあり）---
   if (contract_id) {
     try {
-      const { data: contract, error } = await supabase
-        .from('subscription_contracts')
-        .select('id, stripe_subscription_id, status')
-        .eq('id', contract_id)
-        .maybeSingle();
-
-      if (error || !contract) return res.status(404).json({ error: 'Contract not found' });
+      // ★修正D: 所有者確認。他人の契約を解約できないようにする。
+      const user = await requireUser(req, res);
+      if (!user) return;
+      const contract = await loadOwnedContract(
+        contract_id, user.id, 'id, user_id, stripe_subscription_id, status');
+      if (!contract) return res.status(404).json({ error: 'Contract not found' });
       if (contract.status === 'canceled') return res.status(400).json({ error: 'Already canceled' });
 
       // Stripeサブスクリプションをキャンセル

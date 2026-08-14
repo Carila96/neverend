@@ -67,7 +67,9 @@ export default async function handler(req, res) {
 
   const { data: blocks, error } = await supabaseService
     .from('owned_blocks')
-    .select('x, y, status, contract_id')
+    // ★修正E: contract_id は公開レスポンスから外す。どのクライアントも使っておらず
+    //   （x/y/status のみ参照）、露出していると契約IDの総当たりが不要になるため。
+    .select('x, y, status')
     .eq('stage_id', stage_id)
     .in('status', ['claimed', 'reserved'])
     .limit(10000);
@@ -79,7 +81,8 @@ export default async function handler(req, res) {
 
   const { data: placements, error: placementError } = await supabaseService
     .from('placements')
-    .select('contract_id, anchor_x, anchor_y, width, height, image_url, zone_type, is_active')
+    // ★修正E: placements 側からも contract_id を外す（描画に不要）。
+    .select('anchor_x, anchor_y, width, height, image_url, zone_type, is_active')
     .eq('stage_id', stage_id)
     .eq('is_active', true);
   if(placementError) console.error('Placements fetch error:', placementError.message);

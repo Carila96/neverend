@@ -727,7 +727,7 @@ document.getElementById('confirmCancelBtn').addEventListener('click', async func
     if (!c) { closeModal(); return; }
     const res = await fetch(BASE + '/api/cancel-reservation', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: await _authHeaders(),
       body: JSON.stringify({ contract_id: c.id })
     });
     if (!res.ok) {
@@ -831,6 +831,19 @@ window.handleLogout=handleLogout;
 const _SB_URL='https://cokcftutqkwhfbmdnhgl.supabase.co';
 const _SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNva2NmdHV0cWt3aGZibWRuaGdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjk1NjIsImV4cCI6MjA5MDY0NTU2Mn0.FkDkRI8Ec5P07EKEZiGMA_kQ44rK0Pu6Hy_yeWBO3cQ';
 let _sbClient=null;
+// ★修正D: 契約を操作するAPIには Supabase のアクセストークンを添える。
+//   サーバー側が所有者確認に使う。未ログインなら Authorization は付かず、
+//   サーバーが 401 を返す（従来は誰でも操作できていた）。
+async function _authHeaders(){
+  const h={'Content-Type':'application/json'};
+  try{
+    if(!_sbClient)return h;
+    const {data}=await _sbClient.auth.getSession();
+    const t=data&&data.session?data.session.access_token:null;
+    if(t)h['Authorization']='Bearer '+t;
+  }catch(_){}
+  return h;
+}
 (function initAuth(){
   if(window.supabase){
     _sbClient=window.supabase.createClient(_SB_URL,_SB_KEY);
@@ -1907,7 +1920,7 @@ async function confirmEdit(){
   try{
     if(hasImageChange){
       const res=await fetch('https://damnrun.com/api/logo',{
-        method:'POST',headers:{'Content-Type':'application/json'},
+        method:'POST',headers:await _authHeaders(),
         body:JSON.stringify({
           action:'update',
           contract_id:_editContractId,
@@ -1924,7 +1937,7 @@ async function confirmEdit(){
     if(hasPosChange){
       const posRes=await fetch('https://damnrun.com/api/cancel-reservation',{
         method:'POST',
-        headers:{'Content-Type':'application/json'},
+        headers:await _authHeaders(),
         body:JSON.stringify({
           contract_id:_editContractId,
           action:'update_position',

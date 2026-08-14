@@ -31,7 +31,7 @@ export default async function handler(req, res) {
   //   旧実装は active_blocks をそのまま課金数に採用していたため、width×height で面積を
   //   確保しながら active_blocks:1 を送ると請求額が 0 になった（確保面積と課金数が別物だった）。
   const { stage_id, anchor_x, anchor_y, width, height, zone_type, plan_type, admin_key, deleted_blocks } = req.body;
-  const user_id = req.body.user_id || null;
+  // ★追加F: req.body.user_id は信用しない（下でトークンから取得する）。
   if (!stage_id || anchor_x == null || anchor_y == null || !width || !height || !zone_type || !plan_type)
     return res.status(400).json({ error: 'Missing required fields' });
 
@@ -125,6 +125,21 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true, admin: true, block_count, stage_id, anchor_x, anchor_y, width, height });
   }
 
+  // ★追加F: 一般の予約はログイン必須にする。購入フローは元からログイン必須
+  //   （sales_page.html のボタンがログインモーダルを出す）だが、API を直接叩けば
+  //   user_id: null の予約→契約が作れてしまい、修正D 実施後は所有者が居ないため
+  //   誰も解約もロゴ差し替えもできない契約になる。
+  //   user_id はクライアントの申告値ではなくトークンから取る（申告値は使わない）。
+  //   admin_key 経路はこの行より前で return しているので、従来どおり素通りする。
+  const authz = req.headers.authorization || '';
+  const token = authz.startsWith('Bearer ') ? authz.slice(7).trim() : '';
+  if (!token) return res.status(401).json({ error: 'Authentication required' });
+  const { data: authData, error: authErr } = await supabase.auth.getUser(token);
+  if (authErr || !authData || !authData.user) {
+    return res.status(401).json({ error: 'Invalid or expired session' });
+  }
+  const authed_user_id = authData.user.id;
+
   // Fetch current price tier based on total claimed blocks
   const { count: totalClaimed } = await supabase
     .from('owned_blocks')
@@ -158,11 +173,11 @@ export default async function handler(req, res) {
     .lt('expires_at', new Date().toISOString());
 
   // 同一ユーザーの古いreservedブロックを自動キャンセル（ブラウザを閉じた場合も対応）
-  if (user_id) {
+  if (authed_user_id) {
     const { data: oldSessions } = await supabase
       .from('reservation_sessions')
       .select('session_key, stage_id, anchor_x, anchor_y, width, height')
-      .eq('user_id', user_id)
+      .eq('user_id', authed_user_id)
       .eq('status', 'pending');
 
     if (oldSessions && oldSessions.length > 0) {
@@ -221,7 +236,7 @@ export default async function handler(req, res) {
 
   const { error: sessionError } = await supabase.from('reservation_sessions').insert({
     session_key,
-    user_id,
+    user_id: authed_user_id,
     stage_id,
     anchor_x: clampedX,
     anchor_y: clampedY,

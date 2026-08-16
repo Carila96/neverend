@@ -63,9 +63,31 @@ export default async function handler(req, res) {
   // チェックアウト前にロゴをlogo_stagingテーブルに一時保存
   if (action === 'stage') {
     if (!session_key || !image_data) return res.status(400).json({ error: 'Missing fields' });
+
+    // ★追加G: 一時保存にも所有者確認を入れる。この時点では契約がまだ無いので
+    //   契約ではなく予約(reservation_sessions)の user_id と突き合わせる。
+    //   従来は session_key(32バイト)の秘匿性だけが防御で、漏れた場合に他人の予約の
+    //   ロゴを差し替えられた。トークンは予約を引く前に検証する。
+    const user = await requireUser(req, res);
+    if (!user) return;
+
+    const { data: reservation, error: reservationError } = await supabase
+      .from('reservation_sessions')
+      .select('user_id')
+      .eq('session_key', session_key)
+      .maybeSingle();
+
+    if (reservationError || !reservation) {
+      return res.status(404).json({ error: 'Reservation session not found' });
+    }
+    // session_key を持っていることは上で確認済みなので、403 を返しても
+    // 新たに漏れる情報は無い（create-checkout.js と同じ返し分け）。
+    if (reservation.user_id !== user.id) {
+      return res.status(403).json({ error: 'This reservation belongs to another account' });
+    }
+
     // ★修正D-5: 購入前の一時保存にも同じ内容検証をかける（ここを素通りさせると
-    //   検証済みでないデータがそのまま本掲載へ流れる）。所有者確認は行わない —
-    //   この時点ではまだ契約が存在せず、session_key 自体が 32 バイトの秘密のため。
+    //   検証済みでないデータがそのまま本掲載へ流れる）。
     const checked = decodeLogo(image_data, res);
     if (!checked) return;
     const { error } = await supabase

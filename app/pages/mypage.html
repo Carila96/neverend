@@ -538,7 +538,7 @@ const GAME_TITLES=[
   {id:'tester',name:'Test Pilot',icon:'🧪',desc:'Played during the test phase. A legend from the beginning.',condition:()=>localStorage.getItem('neverend_is_tester')==='1'},
 ];
 
-// TITLES data — declared here (before init) to avoid TDZ when init() calls buildAchievements()
+// TITLES data — declared up here to avoid TDZ when the top-level buildAchievements(0) runs
 var TITLES=[
   {icon:'🌱',name:'NEWCOMER',rank:'RANK 1',minBlocks:1,desc:'You placed your first block. The neverEND grid now carries your mark. Small, but it\'s there.'},
   {icon:'🔷',name:'REGULAR',rank:'RANK 2',minBlocks:10,desc:'Double digits. You\'re no tourist. Your presence on the grid is starting to register.'},
@@ -549,7 +549,7 @@ var TITLES=[
   {icon:'🏆',name:'MONOPOLIST',rank:'RANK ∞',minBlocks:9216,desc:'FULL STAGE MONOPOLY. The entire background is yours. Nobody finishes this game. Everybody sees you.'},
 ];
 var TITLES_PER_PAGE=20;
-var blockCountGlobal=0,reservedAtGlobal=null,titlesPage=0;
+var blockCountGlobal=0,titlesPage=0;
 
 // Hide sales links in test mode
 (function(){
@@ -612,47 +612,13 @@ function renderTowerProgress(){
   el.innerHTML='<div class="panel-card"><div class="info-rows">'+rows+'</div></div>';
 }
 
-async function init(p){
-  document.getElementById('infoStage').textContent='STAGE '+p.stage_id;
-  document.getElementById('infoPos').textContent='col '+(p.anchor_x+1)+', row '+(p.anchor_y+1);
-  document.getElementById('infoSize').textContent=p.width+' x '+p.height+' blocks';
-  document.getElementById('infoBlocks').textContent=(p.width*p.height)+' total';
-  reservedAtGlobal=p.reserved_at||null;
-  buildAchievements(p.width*p.height);
-  renderTowerProgress();
-  document.getElementById('infoZone').textContent=(p.zone_type||'standard').toUpperCase();
-  document.getElementById('infoPlan').textContent=(p.plan_type||'monthly').toUpperCase();
-  document.getElementById('gridStageName').textContent='STAGE '+p.stage_id;
-  if(p.reserved_at){
-    const d=new Date(p.reserved_at);
-    document.getElementById('infoDate').textContent=d.toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});
-  }
-
-  const uploadBtn=document.getElementById('uploadLogoBtn');
-  if(p.contract_id){
-    uploadBtn.href='/upload.html?contract_id='+encodeURIComponent(p.contract_id)+'&stage_id='+(p.stage_id||1);
-    uploadBtn.textContent='CHANGE LOGO';
-    fetch(BASE+'/api/get-placement?contract_id='+encodeURIComponent(p.contract_id))
-      .then(r=>r.json()).then(d=>{
-        const pl=(d.placements||[]).find(x=>x.stage_id===p.stage_id);
-        if(pl&&pl.image_url){
-          const img=document.getElementById('logoPreviewImg');
-          img.src=pl.image_url;img.style.display='block';
-          document.getElementById('logoPreviewPlaceholder').style.display='none';
-        }
-      }).catch(()=>{});
-  }
-
-  try{
-    const res=await fetch(BASE+'/api/grid?stage_id='+p.stage_id);
-    const data=await res.json();
-    if(!res.ok)throw new Error(data.error||'Grid fetch failed');
-    verifyAndRender(p,data);
-  }catch(err){
-    setStatus('error','Could not verify placement: '+err.message);
-    renderGrid(p,null);
-  }
-}
+// init() はここにあったが削除した。呼び出し箇所が0件で、参照する DOM 要素
+// (#uploadLogoBtn / #logoPreviewImg / #logoPreviewPlaceholder) も API (/api/get-placement)
+// も存在しなかった。実際の描画は showContractGrid() が行っている。
+// 削除された /upload.html へのリンクを含んでいたため、復活させると認証なし前提の
+// 経路が戻ってしまう。ロゴの登録・差し替えは EDIT モーダル (action=update) が担う。
+// verifyAndRender() / renderGrid() / setStatus() は showContractGrid() からも
+// 呼ばれているので残す。
 
 function verifyAndRender(p,gridData){
   const myBlocks=new Set();

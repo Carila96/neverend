@@ -14,11 +14,35 @@ const BASE_URL = 'https://damnrun.com';
 const ALLOWED_COUPONS = (process.env.ALLOWED_COUPON_IDS || '')
   .split(',').map(s => s.trim()).filter(Boolean);
 
+// ★追加G: Authorization: Bearer <supabase access token> を検証する。
+//   logo.js の requireUser() と同じ形。
+async function requireUser(req, res) {
+  const authz = req.headers.authorization || '';
+  const token = authz.startsWith('Bearer ') ? authz.slice(7).trim() : '';
+  if (!token) {
+    res.status(401).json({ error: 'Authentication required' });
+    return null;
+  }
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error || !data || !data.user) {
+    res.status(401).json({ error: 'Invalid or expired session' });
+    return null;
+  }
+  return data.user;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { session_key, coupon_id } = req.body;
   if (!session_key) return res.status(400).json({ error: 'Missing session_key' });
+
+  // ★追加G: 予約の所有者だけがチェックアウトを作れるようにする。
+  //   これまでの防御は session_key(32バイト)の秘匿性だけだった。ログや Referer
+  //   経由で漏れた場合に他人の予約でチェックアウトを作れてしまうため、
+  //   予約を引く前にまずトークンを検証する（未認証には予約の存在自体を返さない）。
+  const user = await requireUser(req, res);
+  if (!user) return;
 
   const { data: reservation, error } = await supabase
     .from('reservation_sessions')
@@ -28,6 +52,13 @@ export default async function handler(req, res) {
     .single();
 
   if (error || !reservation) return res.status(404).json({ error: 'Reservation session not found or already used' });
+
+  // ★追加G: 予約の所有者確認。reserve.js が user_id をトークンから入れているので、
+  //   ここで突き合わせられる。session_key を持っていること自体は既に確認済みなので
+  //   （上の 404 を通過している）、403 を返しても新たに漏れる情報は無い。
+  if (reservation.user_id !== user.id) {
+    return res.status(403).json({ error: 'This reservation belongs to another account' });
+  }
 
   if (new Date(reservation.expires_at) < new Date()) {
     await supabase.from('reservation_sessions').update({ status: 'expired' }).eq('session_key', session_key);

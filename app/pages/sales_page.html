@@ -2031,10 +2031,12 @@ async function proceedToCheckout(){
     if(!resRes.ok||!resData.session_key){const msg=resData.message||resData.error||'';showCheckoutError(msg.toLowerCase().includes('overlap')||msg.toLowerCase().includes('conflict')||msg.toLowerCase().includes('already taken')?'Reservation failed: This area is currently reserved. Reservations expire in 30 minutes. Please try a different position or try again later.':'Reservation failed: Failed to create reservation session. If you just returned from checkout, your previous reservation expires in 30 minutes. Please try again later.');btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';return;}
     const session_key=resData.session_key;btn.textContent='UPLOADING LOGO...';
     const logoUrl=buildLogoDataUrl();
-    if(logoUrl){const parts=logoUrl.split(',');await fetch(BASE+'/api/logo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'stage',session_key,image_data:parts[1],image_type:parts[0].split(':')[1].split(';')[0]})}).catch(function(){});}
+    // ★追加G: action=stage もログイン必須になった。アクセストークンを添える。
+    if(logoUrl){const parts=logoUrl.split(',');const logoHeaders=await _spAuthHeaders();await fetch(BASE+'/api/logo',{method:'POST',headers:logoHeaders,body:JSON.stringify({action:'stage',session_key,image_data:parts[1],image_type:parts[0].split(':')[1].split(';')[0]})}).catch(function(){});}
     _appliedCoupon = (document.getElementById('couponInput').value||'').trim().toUpperCase() || null;
     btn.textContent='CREATING CHECKOUT...';
-    const coRes=await fetch(BASE+'/api/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_key,plan_type:plan,coupon_id:_appliedCoupon})});
+    // ★追加G: /api/create-checkout もログイン必須になった。アクセストークンを添える。
+    const coRes=await fetch(BASE+'/api/create-checkout',{method:'POST',headers:await _spAuthHeaders(),body:JSON.stringify({session_key,plan_type:plan,coupon_id:_appliedCoupon})});
     const coData=await coRes.json();
     if(!coRes.ok||(!coData.url&&!coData.subscription_url&&!coData.payment_url)){showCheckoutError('Payment setup failed.');btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';return;}
     localStorage.setItem('neverend_placement',JSON.stringify({session_key}));

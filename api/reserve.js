@@ -30,7 +30,7 @@ export default async function handler(req, res) {
   // ★修正A: active_blocks はリクエストから受け取らない。課金数はサーバーが算出する。
   //   旧実装は active_blocks をそのまま課金数に採用していたため、width×height で面積を
   //   確保しながら active_blocks:1 を送ると請求額が 0 になった（確保面積と課金数が別物だった）。
-  const { stage_id, anchor_x, anchor_y, width, height, zone_type, plan_type, admin_key, deleted_blocks } = req.body;
+  const { stage_id, anchor_x, anchor_y, width, height, zone_type, plan_type, deleted_blocks } = req.body;
   // ★追加F: req.body.user_id は信用しない（下でトークンから取得する）。
   if (!stage_id || anchor_x == null || anchor_y == null || !width || !height || !zone_type || !plan_type)
     return res.status(400).json({ error: 'Missing required fields' });
@@ -101,36 +101,15 @@ export default async function handler(req, res) {
   }
   const block_count = blocks.length;
 
-  // Admin free placement — bypass conflict check, insert directly as claimed
-  if (admin_key) {
-    if (admin_key !== process.env.ADMIN_SECRET_KEY) {
-      return res.status(403).json({ error: 'Invalid admin key' });
-    }
-    const adminBlocks = [];
-    for (let dy = 0; dy < height; dy++)
-      for (let dx = 0; dx < width; dx++)
-        adminBlocks.push({
-          stage_id,
-          x: anchor_x + dx,
-          y: anchor_y + dy,
-          status: 'claimed',
-          reserved_at: new Date().toISOString(),
-        });
-    const { error: adminErr } = await supabase.from('owned_blocks').insert(adminBlocks);
-    if (adminErr) {
-      if (adminErr.code === '23505')
-        return res.status(409).json({ error: 'Conflict', message: 'Some blocks already claimed.' });
-      return res.status(500).json({ error: 'Failed to place admin blocks', detail: adminErr.message });
-    }
-    return res.status(200).json({ ok: true, admin: true, block_count, stage_id, anchor_x, anchor_y, width, height });
-  }
-
-  // ★追加F: 一般の予約はログイン必須にする。購入フローは元からログイン必須
+  // ★追加F: 予約はログイン必須にする。購入フローは元からログイン必須
   //   （sales_page.html のボタンがログインモーダルを出す）だが、API を直接叩けば
   //   user_id: null の予約→契約が作れてしまい、修正D 実施後は所有者が居ないため
   //   誰も解約もロゴ差し替えもできない契約になる。
   //   user_id はクライアントの申告値ではなくトークンから取る（申告値は使わない）。
-  //   admin_key 経路はこの行より前で return しているので、従来どおり素通りする。
+  //   admin_key による無料配置経路は削除した（共有シークレットを販売ページで
+  //   入力させる方式のため、入力時点でブラウザとネットワークに露出していた）。
+  //   これによりこの認証チェックを迂回できる経路は無くなった。無料配置が要る場合は
+  //   100% OFF クーポン（修正C の許可リスト経由）で行う。
   const authz = req.headers.authorization || '';
   const token = authz.startsWith('Bearer ') ? authz.slice(7).trim() : '';
   if (!token) return res.status(401).json({ error: 'Authentication required' });

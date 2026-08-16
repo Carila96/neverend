@@ -17,7 +17,7 @@ const ALLOWED_COUPONS = (process.env.ALLOWED_COUPON_IDS || '')
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { session_key, admin_key, coupon_id } = req.body;
+  const { session_key, coupon_id } = req.body;
   if (!session_key) return res.status(400).json({ error: 'Missing session_key' });
 
   const { data: reservation, error } = await supabase
@@ -36,22 +36,8 @@ export default async function handler(req, res) {
 
   const { block_count, plan_type, stage_id, anchor_x, anchor_y, width, height, zone_type, monthly_total } = reservation;
 
-  // Admin free placement — skip Stripe, claim blocks directly
-  if (admin_key) {
-    if (admin_key !== process.env.ADMIN_SECRET_KEY) {
-      return res.status(403).json({ error: 'Invalid admin key' });
-    }
-    await supabase.from('owned_blocks')
-      .update({ status: 'claimed', expires_at: null })
-      .eq('stage_id', stage_id)
-      .gte('x', anchor_x).lt('x', anchor_x + width)
-      .gte('y', anchor_y).lt('y', anchor_y + height)
-      .eq('status', 'reserved');
-    await supabase.from('reservation_sessions')
-      .update({ status: 'completed' })
-      .eq('session_key', session_key);
-    return res.status(200).json({ ok: true, admin: true });
-  }
+  // admin_key による「Stripe を通さず直接 claimed にする」経路は削除した。
+  // ブロックが claimed になるのは webhook が支払い成立を確認した場合だけになる。
 
   // Use monthly_total stored in reservation (calculated at reserve time from live price tier)
   // Annual = 10 months upfront

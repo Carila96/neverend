@@ -1278,6 +1278,33 @@ function getTrimmedDataUrl(){
 function goToSection2(){if(!uploadedImage)return;markDone(1);unlockSec(2);setProgress(2);document.getElementById('sec2').scrollIntoView({behavior:'smooth',block:'start'});}
 
 let activeSizeBtn=null;
+// サイズを変えたときに破棄すべき「削除まわり」の状態をまとめて初期化する。
+// doConvert() は pixelArtOriginal / pixelArtEdit を毎回作り直すのに、deletedBlocks
+// などだけが前のサイズのまま残っていた。そのため通常サイズで EDIT BLOCKS を使った
+// あと FULL STAGE を選ぶと、旧サイズの deletedBlocks がそのまま /api/reserve へ
+// 送られ、block_count が 9216 に届かず全面価格の判定から外れていた
+// （画面は $1,000、請求は最大 $2,580）。reserve.js の deleted_blocks 検証は
+// 128x72 の範囲内かしか見ないため、旧サイズの座標は素通りしてしまう。
+// chosenW / chosenH を更新したあとに呼ぶこと（activeBlockCount がそれを使う）。
+function _spResetEditStateForSizeChange(){
+  deletedBlocks=[];
+  deleteHistory=[];
+  _redoStack=[];
+  _dragDeleteBuffer=[];
+  editMode=false;
+  _editDone=false;
+  activeBlockCount=chosenW*chosenH;
+  // 編集バーを出したままサイズを変更できるので、UI も編集モードから戻す。
+  document.getElementById('gridEditBar').style.display='none';
+  if(logoPlaced){
+    // enterEditMode() が隠したボタンを戻す。全面購入では EDIT BLOCKS を使わない
+    // （STEP5 の monopolyMode 分岐も editBlocksBtn を隠している）。
+    document.getElementById('confirmPlaceBtn').style.display='block';
+    document.getElementById('editBlocksBtn').style.display=monopolyMode?'none':'block';
+    document.getElementById('gridHint').textContent='Placement ready. Confirm or edit further.';
+  }
+}
+
 function selectPreset(w,h,btn){monopolyMode=false;if(activeSizeBtn)activeSizeBtn.classList.remove('active');activeSizeBtn=btn;btn.classList.add('active');document.getElementById('customInputs').style.display='none';
   if(uploadedImage){
     const iw=uploadedImage.naturalWidth,ih=uploadedImage.naturalHeight;
@@ -1300,6 +1327,9 @@ function selectMonopoly(btn){
   monopolyMode=true;if(activeSizeBtn)activeSizeBtn.classList.remove('active');activeSizeBtn=btn;btn.classList.add('active');
   document.getElementById('customInputs').style.display='none';
   chosenW=GRID_COLS;chosenH=GRID_ROWS;
+  // 画像が無い場合は convertAndPreview() を通らないので、ここでも初期化する。
+  // ここを外すと、前のサイズの deletedBlocks が残って全面判定が外れる。
+  _spResetEditStateForSizeChange();
   if(uploadedImage){trimCropX=0;trimCropY=0;trimCropW=1;trimCropH=1;drawTrimCanvas();convertAndPreview(GRID_COLS,GRID_ROWS);}
   else{
     const mp='$'+(currentPriceTier.currentTier?currentPriceTier.currentTier.monthlyFull.toLocaleString():'1,000')+'/mo';
@@ -1308,7 +1338,9 @@ function selectMonopoly(btn){
 }
 function updateCustomInfo(){const n=Math.max(1,Math.min(9216,parseInt(document.getElementById('customBlocks').value)||50));const r=calcPrice(n,plan);let t='none';if(n>=1000)t='-30%';else if(n>=500)t='-20%';else if(n>=200)t='-10%';document.getElementById('customInfo').innerHTML='Blocks: <strong>'+n+'</strong> | Discount: <strong>'+t+'</strong> | Monthly: <strong>$'+Math.round(r.total)+'</strong> | Annual: <strong>$'+Math.round(r.annual)+'</strong>';}
 function applyCustomBlocks(){const n=Math.max(1,Math.min(9216,parseInt(document.getElementById('customBlocks').value)||50));const w=Math.ceil(Math.sqrt(n)),h=Math.ceil(n/w);convertAndPreview(w,h);}
-function convertAndPreview(w,h){if(!uploadedImage)return;chosenW=w;chosenH=h;document.getElementById('sec2Converting').style.display='block';document.getElementById('sec2PreviewWrap').style.display='none';setTimeout(function(){doConvert(w,h);},30);}
+// サイズ変更の共通の入口。selectPreset / applyCustomBlocks / selectMonopoly の
+// 3つがここを通る。前サイズの削除状態を必ず捨てる。
+function convertAndPreview(w,h){if(!uploadedImage)return;chosenW=w;chosenH=h;_spResetEditStateForSizeChange();document.getElementById('sec2Converting').style.display='block';document.getElementById('sec2PreviewWrap').style.display='none';setTimeout(function(){doConvert(w,h);},30);}
 
 function doConvert(w,h){
   const dataUrl=getTrimmedDataUrl();
@@ -1985,7 +2017,15 @@ function updateSummary(){
   if(!selectedArea&&!monopolyMode)return;
   const s=STAGES_DATA[currentStage-1];
   let active,r;
-  if(monopolyMode){active=GRID_COLS*GRID_ROWS;const mf=currentPriceTier.currentTier?currentPriceTier.currentTier.monthlyFull:1000;r={base:mf,disc:0,total:mf,annual:mf*10};}
+  // 全面購入は固定額。calcPrice() と同じ6フィールドを揃える。
+  // totalDecimal と effective が欠けていたため、EST. MONTHLY と
+  // （年額プラン時の）MONTHLY TOTAL が "$undefined/mo" と表示されていた。
+  if(monopolyMode){
+    active=GRID_COLS*GRID_ROWS;
+    const mf=currentPriceTier.currentTier?currentPriceTier.currentTier.monthlyFull:1000;
+    const mfAnnual=mf*10;
+    r={base:mf,disc:0,total:mf,totalDecimal:mf,annual:mfAnnual,effective:Math.round(mfAnnual/12*10)/10};
+  }
   else{active=activeBlockCount;r=calcPrice(active,plan);}
   document.getElementById('sumStage').textContent=s.name+(monopolyMode?' (MONOPOLY)':'');
   document.getElementById('sumPos').textContent=monopolyMode?'Full Stage':'col '+(selectedArea.x+1)+', row '+(selectedArea.y+1);

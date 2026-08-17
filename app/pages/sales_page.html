@@ -1698,14 +1698,18 @@ function drawGrid(){
     gridCtx.setLineDash([6,3]);
     if(_editDone&&pixelArtEdit){
       gridCtx.beginPath();
+      // 削除は pixelArtEdit に焼き込まなくなったので、ここでも deletedBlocks を見る
+      // （配置済みを描く上の分岐と同じ扱い）。見ないと、持ち上げ直したときに
+      // 削除済みマスが復活して見える。
       for(let yr=0;yr<pixelArtEdit.length;yr++){
         for(let xc=0;xc<pixelArtEdit[yr].length;xc++){
           if(pixelArtEdit[yr][xc]===null)continue;
+          if(deletedBlocks.some(function(d){return d.x===xc&&d.y===yr;}))continue;
           const gpx=(lx+xc)*CELL,gpy=(ly+yr)*CELL;
-          const top=yr===0||pixelArtEdit[yr-1][xc]===null;
-          const bottom=yr===pixelArtEdit.length-1||pixelArtEdit[yr+1][xc]===null;
-          const left=xc===0||pixelArtEdit[yr][xc-1]===null;
-          const right=xc===pixelArtEdit[yr].length-1||pixelArtEdit[yr][xc+1]===null;
+          const top=yr===0||pixelArtEdit[yr-1][xc]===null||deletedBlocks.some(function(d){return d.x===xc&&d.y===yr-1;});
+          const bottom=yr===pixelArtEdit.length-1||pixelArtEdit[yr+1][xc]===null||deletedBlocks.some(function(d){return d.x===xc&&d.y===yr+1;});
+          const left=xc===0||pixelArtEdit[yr][xc-1]===null||deletedBlocks.some(function(d){return d.x===xc-1&&d.y===yr;});
+          const right=xc===pixelArtEdit[yr].length-1||pixelArtEdit[yr][xc+1]===null||deletedBlocks.some(function(d){return d.x===xc+1&&d.y===yr;});
           if(top){gridCtx.moveTo(gpx,gpy);gridCtx.lineTo(gpx+CELL,gpy);}
           if(bottom){gridCtx.moveTo(gpx,gpy+CELL);gridCtx.lineTo(gpx+CELL,gpy+CELL);}
           if(left){gridCtx.moveTo(gpx,gpy);gridCtx.lineTo(gpx,gpy+CELL);}
@@ -1899,14 +1903,27 @@ function updatePlaceInfo(){
   document.getElementById('placeStatus').innerHTML=conflict?'<span style="color:var(--accent)">CONFLICT — delete red blocks to resolve</span>':'<span style="color:var(--green)">AVAILABLE</span>';
   document.getElementById('confirmPlaceBtn').disabled=conflict;
 }
+// 課金対象マス数。reserve.js が blocks.length を数えるのと同じ規則にする。
+//   ・ロゴの透明部分は「削除していなければ課金対象」（仕様）。pixelArtEdit の
+//     null は見ない。EDIT COLORS の TRANSPARENT ツールで消したマスも同様に
+//     「透明だが削除していない」ので課金対象のまま。
+//   ・EDIT BLOCKS で削除したマス（deletedBlocks）だけを除く。
+//   ・グリッド(128x72)からはみ出したマスはサーバーが確保しないので除く。
+// 以前は null を一律に除いていたため、透明部分を課金対象とする仕様と食い違い、
+// かつサーバー（枠の全マス）とも食い違っていた。
 function countActivePlaced(){
-  if(!pixelArtEdit)return 0;
-  if(!_editDone)return chosenW*chosenH;
+  const w=chosenW||0,h=chosenH||0;
+  if(!w||!h)return 0;
+  const ax=(logoPlaced&&selectedArea)?selectedArea.x:logoGridX;
+  const ay=(logoPlaced&&selectedArea)?selectedArea.y:logoGridY;
+  const delSet=new Set();
+  deletedBlocks.forEach(function(d){delSet.add(d.x+','+d.y);});
   let count=0;
-  for(let yr=0;yr<pixelArtEdit.length;yr++){
-    for(let xc=0;xc<pixelArtEdit[yr].length;xc++){
-      if(pixelArtEdit[yr][xc]===null)continue;
-      if(deletedBlocks.some(function(d){return d.x===xc&&d.y===yr;}))continue;
+  for(let dy=0;dy<h;dy++){
+    for(let dx=0;dx<w;dx++){
+      if(delSet.has(dx+','+dy))continue;
+      const bx=ax+dx,by=ay+dy;
+      if(bx<0||bx>=GRID_COLS||by<0||by>=GRID_ROWS)continue;
       count++;
     }
   }
@@ -1915,16 +1932,15 @@ function countActivePlaced(){
 function enterEditMode(){if(!logoPlaced||!selectedArea)return;editMode=true;document.getElementById('gridEditBar').style.display='flex';document.getElementById('editBlocksBtn').style.display='none';document.getElementById('confirmPlaceBtn').style.display='none';document.getElementById('gridHint').textContent='EDIT MODE: click or drag blocks to delete them. Click deleted block to restore.';gridCanvas.style.cursor='crosshair';drawGrid();}
 function exitEditMode(){
   editMode=false;
-  if(pixelArtEdit){
-    deletedBlocks.forEach(function(d){
-      if(pixelArtEdit[d.y]&&pixelArtEdit[d.y][d.x]!==undefined){
-        pixelArtEdit[d.y][d.x]=null;
-      }
-    });
-  }
-  deletedBlocks=[];
-  deleteHistory=[];
-  _redoStack=[];
+  // 以前はここで deletedBlocks を pixelArtEdit に null として焼き込んでから
+  // 配列を空にしていた。購入時に送るのは deleted_blocks: deletedBlocks だけなので、
+  // 「確定した削除」がサーバーに伝わらず、画面 $72 に対して請求 $161 になっていた。
+  // 焼き込み方式には戻せない。EDIT COLORS の TRANSPARENT ツールでも
+  // pixelArtEdit は null になるため、null からは「透明にしただけ（課金対象）」と
+  // 「削除した（課金対象外）」を区別できない。deletedBlocks を唯一の正とし、
+  // 確定後も保持する。deleteHistory / _redoStack も残すので、EDIT BLOCKS に
+  // 入り直せば UNDO / REDO で確定前の削除まで戻せる。
+  // サイズ変更時の破棄は _spResetEditStateForSizeChange() が従来どおり行う。
   _editDone=true;
   activeBlockCount=countActivePlaced();
   document.getElementById('gridEditBar').style.display='none';

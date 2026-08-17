@@ -13,15 +13,21 @@ const GRID_ROWS = 72;
 //   「0 円で通る」経路だけを塞ぐ。
 const MIN_MONTHLY_TOTAL_USD = 1;
 
+// ★価格表は api/grid.js の PRICE_TIERS と完全に同一の内容を保つこと。
+//   Vercel の API ファイル数制限のため共通ファイルへ切り出していない。
+//   片方だけ直すと表示と請求が食い違う。実際に monthlyFull が grid.js にしか無く、
+//   全面購入が表示 $1,000 に対して請求 $2,396 になっていた。
 const PRICE_TIERS = [
-  { minBlocks: 0,       maxBlocks: 20000,    pricePerBlock: 0.40 },
-  { minBlocks: 20001,   maxBlocks: 50000,    pricePerBlock: 0.70 },
-  { minBlocks: 50001,   maxBlocks: 90000,    pricePerBlock: 1.10 },
-  { minBlocks: 90001,   maxBlocks: 140000,   pricePerBlock: 1.60 },
-  { minBlocks: 140001,  maxBlocks: 300000,   pricePerBlock: 2.40 },
-  { minBlocks: 300001,  maxBlocks: 800000,   pricePerBlock: 3.10 },
-  { minBlocks: 800001,  maxBlocks: Infinity, pricePerBlock: 4.00 },
+  { minBlocks: 0,       maxBlocks: 20000,    monthlyFull: 1000,  pricePerBlock: 0.40 },
+  { minBlocks: 20001,   maxBlocks: 50000,    monthlyFull: 2000,  pricePerBlock: 0.70 },
+  { minBlocks: 50001,   maxBlocks: 90000,    monthlyFull: 3500,  pricePerBlock: 1.10 },
+  { minBlocks: 90001,   maxBlocks: 140000,   monthlyFull: 5000,  pricePerBlock: 1.60 },
+  { minBlocks: 140001,  maxBlocks: 300000,   monthlyFull: 7500,  pricePerBlock: 2.40 },
+  { minBlocks: 300001,  maxBlocks: 800000,   monthlyFull: 10000, pricePerBlock: 3.10 },
+  { minBlocks: 800001,  maxBlocks: Infinity, monthlyFull: 12500, pricePerBlock: 4.00 },
 ];
+// 全面購入と判定するブロック数。grid.js の total_blocks と同値。
+const FULL_STAGE_BLOCKS = GRID_COLS * GRID_ROWS;   // 9216
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -128,12 +134,22 @@ export default async function handler(req, res) {
   const total = totalClaimed || 0;
   const tier = PRICE_TIERS.find(t => total <= t.maxBlocks) || PRICE_TIERS[PRICE_TIERS.length - 1];
   const price_per_block = tier.pricePerBlock;
+  // 数量割引。販売ページの VOLUME DISCOUNTS の表と同じ段階にする。
+  // 4609+ の -35% は廃止した（表に載っておらず、画面が -30% と出しながら
+  // -35% で計算していた。4,608 マス $1,290 → 4,609 マス $1,198 と、
+  // 1 マス増やすと安くなる逆転も起きていた）。
   let discount = 0;
-  if(block_count >= 4609) discount = 0.35;
-  else if(block_count >= 1001) discount = 0.30;
+  if(block_count >= 1001) discount = 0.30;
   else if(block_count >= 501) discount = 0.20;
   else if(block_count >= 200) discount = 0.10;
-  const monthly_total = Math.floor(price_per_block * block_count * (1 - discount));
+  // 全面購入は単価×マス数×割引とは無関係の固定額（monthlyFull）。
+  // 判定はクライアントの申告ではなく block_count で行う（修正A・F の方針）。
+  // block_count は blocks.length なので、deleted_blocks が 1 つでもあれば
+  // 9216 に届かず通常価格になる。CUSTOM で全面を組んでも同じ価格になる。
+  const is_full_stage = block_count === FULL_STAGE_BLOCKS;
+  const monthly_total = is_full_stage
+    ? tier.monthlyFull
+    : Math.floor(price_per_block * block_count * (1 - discount));
   // ★修正B: Math.floor により 1 ドル未満が 0 に潰れる。0 以下の予約は成立させない。
   //   最低額を「切り上げる」のではなく「拒否する」のは、意図しない少額課金を作らず、
   //   かつ 0 円で枠を確保できる経路を確実に断つため。最小構成でも 1 ドルには届く

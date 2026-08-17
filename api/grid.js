@@ -9,6 +9,10 @@ const supabaseService = createClient(process.env.SUPABASE_URL, process.env.SUPAB
 const GRID_COLS = 128;
 const GRID_ROWS = 72;
 
+// ★価格表は api/reserve.js の PRICE_TIERS と完全に同一の内容を保つこと。
+//   Vercel の API ファイル数制限のため共通ファイルへ切り出していない。
+//   このファイルは表示用の値を返し、reserve.js が実際の請求額を決める。
+//   片方だけ直すと表示と請求が食い違う。
 const PRICE_TIERS = [
   { minBlocks: 0,       maxBlocks: 20000,    monthlyFull: 1000,  pricePerBlock: 0.40 },
   { minBlocks: 20001,   maxBlocks: 50000,    monthlyFull: 2000,  pricePerBlock: 0.70 },

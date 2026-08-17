@@ -239,7 +239,12 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
 <header>
   <div class="logo">never<span>END</span></div>
   <nav>
-    <a href="#" onclick="window.close();return false;">← BACK TO GAME</a>
+    <!-- このページには入口が2つある: (a) mypage.html の CLAIM YOUR SPACE から
+         index.html の #mypageFrame iframe 内に読み込まれる経路、(b) タイトル画面の
+         SALES ボタンが window.open で開く別タブ。片方だけを想定して書くと必ず
+         もう片方が壊れる（過去2回発生）。判定は _spBackToGame() にまとめてある。
+         ここを書き換えるときは必ず両方の経路で確認すること。 -->
+    <a href="#" onclick="_spBackToGame();return false;">← BACK TO GAME</a>
     <a href="#">How It Works</a>
     <a href="#pricing">Pricing</a>
     <a href="/app/pages/terms.html#content-policy">Content Policy</a>
@@ -685,6 +690,47 @@ function cancelPreviousReservation(){
     localStorage.removeItem('neverend_placement');
   }
 }
+
+// ← BACK TO GAME の処理本体。
+// 販売ページには入口が2つあり、どちらから来たかで「戻る」の意味が変わる。
+//   (a) index.html の #mypageFrame iframe 内 — mypage.html の CLAIM YOUR SPACE 経由
+//   (b) 別タブ — タイトル画面の SALES ボタンが window.open('_blank') で開く
+// window.close() は iframe 内では例外を投げずに何もせず終了する（HTML 仕様: 対象が
+// script-closable でなければ何もしない）。そのため (b) だけを想定していた旧実装は
+// (a) で完全に無反応だった。逆に <a href="/"> だった時代は (a) で iframe の中に
+// ゲームが入れ子で読み込まれていた。両方を判定しないとどちらかが必ず壊れる。
+// iframe 判定を最初に置く: window.parent!==window が真なら、window.opener の
+// 有無に関わらず iframe 内であることが確実なため。
+function _spBackToGame(){
+  // (a) iframe 内 — 親のオーバーレイを閉じてゲーム画面を出す。
+  //     mypage.html / halloflegends.html の [ BACK ] と同じパターン（同一オリジン）。
+  if(window.parent!==window){
+    try{
+      const pd=window.parent.document;
+      const ov=pd.getElementById('mypageOverlay');
+      if(ov)ov.style.display='none';
+      const cv=pd.querySelector('canvas');
+      if(cv)cv.style.display='block';
+      // iframe は今このページを表示している。src を戻さないと、次に MY PAGE を
+      // 開いたときマイページではなく販売ページが出る。親側に src を戻す処理は
+      // 無いので（index.html はオーバーレイの display を変えるだけ）ここで戻す。
+      const fr=pd.getElementById('mypageFrame');
+      if(fr)fr.src='/app/pages/mypage.html';
+    }catch(_){
+      // 同一オリジンのはずなので通らない想定。万一親へ触れない場合の最後の手段。
+      window.location.href='/';
+    }
+    return;
+  }
+  // (b) スクリプトが開いた別タブ — 従来どおり閉じる。
+  if(window.opener&&!window.opener.closed){
+    window.close();
+    return;
+  }
+  // (c) 直接URL / ブックマーク — ゲームトップへ遷移する。
+  window.location.href='/';
+}
+
 const STAGES_DATA=(function(){
   return (typeof STAGES_GEO!=='undefined'?STAGES_GEO:[]).map(function(s,i){
     return Object.assign({id:i+1,type:'standard'},s);

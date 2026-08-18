@@ -290,8 +290,17 @@ function switchRankTab(mode){
     _rankData.death=normalizeRank(deathRes.data,'death');
     switchRankTab(_rankTab);
 
-    // Founding Partners取得
-    const partnersRes = await sb.from('subscription_contracts')
+    // Founding Partners取得。
+    // ★subscription_contracts を直読みしないこと。RLS は行しか絞れず列を絞れないため、
+    //   公開 SELECT ポリシーで読ませると display_name の入った有効な契約について
+    //   stripe_subscription_id / stripe_customer_id / monthly_total_usd / user_id まで
+    //   誰でも読める（anon キーはこのファイルに埋まっている公開情報）。
+    //   そのため公開してよい列だけを持つ public_partners ビューを経由する。
+    // ★このビューは security_invoker を指定していない（既定 OFF）ので、元テーブルの
+    //   RLS を迂回する。つまりビューの WHERE 句が唯一のフィルタであり、
+    //   そこを緩めると全契約が公開される。ビュー定義を変えるときは
+    //   「公開してよい列だけ」「status='active' かつ display_name IS NOT NULL」を必ず守ること。
+    const partnersRes = await sb.from('public_partners')
       .select('stage_id, display_name, display_url, status')
       .eq('status', 'active')
       .not('display_name', 'is', null)

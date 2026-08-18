@@ -17,28 +17,22 @@ export default async function handler(req, res) {
 
   // POST /api/stats?type=death → 世界デス数+1（旧 /api/death POST）
   if (req.method === 'POST' && req.query.type === 'death') {
-    // 加算ロジックは従来どおり total_deaths +1 のみ。
-    // 変更点はエラーを握りつぶさなくなったこと（旧: catch(_){} + 常に 200 ok:true）。
-    const { data: row, error: readErr } = await supabase
+    // 加算は DB 側の increment_deaths() に任せる。
+    //   UPDATE world_stats SET total_deaths = total_deaths + 1 ... WHERE id = 1
+    // 以前はここで SELECT → +1 → UPDATE していたため、同時に2人が死ぬと両方が
+    // 同じ値を読んで同じ値を書き、カウントが1つ失われていた（ロストアップデート）。
+    // 1行の UPDATE 内で加算すれば行ロックが効くので、同時実行でも取りこぼさない。
+    const { error: rpcErr } = await supabase.rpc('increment_deaths');
+    if (rpcErr) {
+      console.error('[stats:death] increment_deaths failed:', rpcErr.message);
+      return res.status(500).json({ ok: false, stage: 'increment', error: rpcErr.message });
+    }
+    // increment_deaths() は RETURNS void で更新後の値を返さないため、表示用に読み直す。
+    // クライアント(index.html)はこのレスポンスの total_deaths を使わず、POST 成功後に
+    // 改めて GET しているので、ここが取れなくても表示は壊れない。
+    const { data: row } = await supabase
       .from('world_stats').select('total_deaths').eq('id', 1).single();
-    if (readErr) {
-      console.error('[stats:death] read failed:', readErr.message);
-      return res.status(500).json({ ok: false, stage: 'read', error: readErr.message });
-    }
-    const next = (row?.total_deaths || 0) + 1;
-    const { data: updated, error: updErr } = await supabase
-      .from('world_stats').update({ total_deaths: next }).eq('id', 1).select('total_deaths');
-    if (updErr) {
-      console.error('[stats:death] update failed:', updErr.message);
-      return res.status(500).json({ ok: false, stage: 'update', error: updErr.message });
-    }
-    if (!updated || updated.length === 0) {
-      // RLSで弾かれると「0行更新・エラー無し」になる。SUPABASE_SERVICE_KEY が
-      // service_role キーか（anon キーになっていないか）を確認すること。
-      console.error('[stats:death] update affected 0 rows — check SUPABASE_SERVICE_KEY is the service_role key / world_stats RLS');
-      return res.status(500).json({ ok: false, stage: 'update', error: 'no rows updated' });
-    }
-    return res.status(200).json({ ok: true, total_deaths: updated[0].total_deaths });
+    return res.status(200).json({ ok: true, total_deaths: row?.total_deaths ?? null });
   }
 
   // POST /api/stats?type=stage&stage=N → 世界最高到達階を Math.max(既存, N) で更新。

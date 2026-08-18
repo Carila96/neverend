@@ -354,47 +354,50 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
       <div style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start;">
         <div>
           <div class="size-grid">
+            <!-- 各ボタンの価格は updatePresetPrices() が onclick の selectPreset(w,h)
+                 から w*h を読んで書き込む。単価は段階で変わるので静的な金額は書かない
+                 （monoPrice と同じ理由）。サイズを変えるときは onclick だけ直せばよい。 -->
             <button class="size-btn" onclick="selectPreset(2,2,this)">
               <span class="sb-name">NANO</span>
               <span class="sb-grid">2&times;2</span>
               <span class="sb-blocks">1+ blocks</span>
-              <span style="color:var(--green)" id="nanoPrice">from $1/mo</span>
+              <span style="color:var(--green)" id="nanoPrice" data-price-prefix="from ">&mdash;</span>
             </button>
             <button class="size-btn" onclick="selectPreset(7,7,this)">
               <span class="sb-name">SMALL</span>
               <span class="sb-grid">7&times;7</span>
               <span class="sb-blocks">~50 blocks</span>
-              <span style="color:var(--green)" id="smallPrice">~$16/mo</span>
+              <span style="color:var(--green)" id="smallPrice">&mdash;</span>
             </button>
             <button class="size-btn" onclick="selectPreset(15,14,this)">
               <span class="sb-name">MEDIUM</span>
               <span class="sb-grid">15&times;14</span>
               <span class="sb-blocks">~200 blk -10%</span>
-              <span style="color:var(--green)" id="medPrice">~$59/mo</span>
+              <span style="color:var(--green)" id="medPrice">&mdash;</span>
             </button>
             <button class="size-btn" onclick="selectPreset(23,22,this)">
               <span class="sb-name">LARGE</span>
               <span class="sb-grid">23&times;22</span>
               <span class="sb-blocks">~500 blk -20%</span>
-              <span style="color:var(--green)" id="largePrice">~$131/mo</span>
+              <span style="color:var(--green)" id="largePrice">&mdash;</span>
             </button>
             <button class="size-btn" onclick="selectPreset(48,22,this)">
               <span class="sb-name">WIDE</span>
               <span class="sb-grid">48&times;22</span>
               <span class="sb-blocks">~1k blk -30%</span>
-              <span style="color:var(--green)" id="widePrice">~$228/mo</span>
+              <span style="color:var(--green)" id="widePrice">&mdash;</span>
             </button>
             <button class="size-btn" onclick="selectPreset(22,48,this)">
               <span class="sb-name">TALL</span>
               <span class="sb-grid">22&times;48</span>
               <span class="sb-blocks">~1k blk -30%</span>
-              <span style="color:var(--green)" id="tallPrice">~$228/mo</span>
+              <span style="color:var(--green)" id="tallPrice">&mdash;</span>
             </button>
             <button class="size-btn" onclick="selectPreset(48,48,this)">
               <span class="sb-name">XL</span>
               <span class="sb-grid">48&times;48</span>
               <span class="sb-blocks">~2.3k blk -30%</span>
-              <span style="color:var(--green)" id="xlPrice">~$532/mo</span>
+              <span style="color:var(--green)" id="xlPrice">&mdash;</span>
             </button>
             <button class="size-btn" id="monopolyBtn" onclick="selectMonopoly(this)">
               <span class="sb-name">FULL STAGE</span>
@@ -428,10 +431,10 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
         <div style="background:var(--panel2);border:1px solid var(--border);padding:16px;">
           <div style="color:var(--accent2);font-size:16px;letter-spacing:2px;margin-bottom:12px;font-family:'Share Tech Mono',monospace;">PRICING &amp; ESCALATION</div>
           <div style="font-family:'Share Tech Mono',monospace;font-size:16px;color:var(--text);margin-bottom:8px;">
-            Current: <span style="color:#fff;font-size:18px;" id="pricePerBlockDisplay">$0.40</span>/block
+            Current: <span style="color:#fff;font-size:18px;" id="pricePerBlockDisplay">&mdash;</span>/block
           </div>
           <div style="font-family:'Share Tech Mono',monospace;font-size:16px;color:var(--text);margin-bottom:14px;">
-            Full stage: <span style="color:var(--gold);font-size:18px;" id="fullStageDisplay">$1,000/mo</span>
+            Full stage: <span style="color:var(--gold);font-size:18px;" id="fullStageDisplay">&mdash;</span>
           </div>
           <div style="font-family:'Share Tech Mono',monospace;font-size:16px;color:var(--muted);margin-bottom:8px;letter-spacing:1px;">Price rises globally as blocks are claimed:</div>
           <div style="font-family:'Share Tech Mono',monospace;font-size:17px;line-height:2.2;">
@@ -979,12 +982,25 @@ function setStage(id){
   updatePresetPrices();drawStageMap();
 }
 function changeStage(d){const n=currentStage+d;if(n>=1&&n<=STAGES_DATA.length)setStage(n);}
+// プリセットのラベル額は、ボタンの onclick に書かれた selectPreset(w,h) を読んで
+// w*h から算出する。ブロック数を JS 側にも書くと HTML と食い違っても気づけない。
+// 実際、XL は 48x48=2304 マスなのにラベルだけ calcPrice(1024) で計算しており、
+// $286 と表示して $645 請求していた。WIDE / TALL に至っては更新対象から漏れていて
+// HTML の $228 が出たまま、実額は $295 だった。
+// 単価は calcPrice() が currentPriceTier を見るので、段階が上がれば全ラベルが追従する。
+// FULL STAGE は onclick が selectMonopoly なので正規表現に掛からず、下の monoPrice
+// （固定額 monthlyFull）で別途処理される。CUSTOM は価格用の span を持たない。
 function updatePresetPrices(){
-  document.getElementById('nanoPrice').textContent='from $'+Math.round(calcPrice(4).total)+'/mo';
-  document.getElementById('smallPrice').textContent='~$'+Math.round(calcPrice(49).total)+'/mo';
-  document.getElementById('medPrice').textContent='~$'+Math.round(calcPrice(210).total)+'/mo';
-  document.getElementById('largePrice').textContent='~$'+Math.round(calcPrice(506).total)+'/mo';
-  document.getElementById('xlPrice').textContent='~$'+Math.round(calcPrice(1024).total)+'/mo';
+  document.querySelectorAll('.size-btn').forEach(function(btn){
+    const el=btn.querySelector('span[id$="Price"]');
+    if(!el)return;
+    const m=(btn.getAttribute('onclick')||'').match(/selectPreset\(\s*(\d+)\s*,\s*(\d+)/);
+    if(!m)return;
+    const blocks=parseInt(m[1],10)*parseInt(m[2],10);
+    // 実額は変換後の実マス数（削除分を除く）で決まるので、ラベルは概算。
+    const pre=el.dataset.pricePrefix||'~';
+    el.textContent=pre+'$'+Math.round(calcPrice(blocks).total)+'/mo';
+  });
   const t=currentPriceTier.currentTier;
   document.getElementById('monoPrice').textContent='$'+(t?t.monthlyFull.toLocaleString():'1,000')+'/mo';
   document.getElementById('pricePerBlockDisplay').textContent='$'+(t?t.pricePerBlock.toFixed(2):'0.40');

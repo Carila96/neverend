@@ -6766,7 +6766,7 @@ function loadRandomEndingStage(){
   loadEndingStage(idx);
 }
 
-let sessionStartTime=Date.now(),sessionDeaths=0,sessionMaxStage=1;
+let sessionStartTime=Date.now();
 let _goalReached=false;
 let stagePlacements=[],_placementImgCache={};
 
@@ -6810,7 +6810,7 @@ function prefetchAllPlacements(){
 function resetRun(){
   timeLeft=hardMode?25:30;score=0;
   loadStage(1);damnEffect=null;damnTimer=0;floatMsgs=[];
-  sessionStartTime=Date.now();sessionDeaths=0;sessionMaxStage=1;
+  sessionStartTime=Date.now();
   incStat('gamesStarted');
   checkAllTitles();
 }
@@ -9951,12 +9951,11 @@ function triggerDeath(){
   // Tester tracking
   _sessionDeaths++;_stageAttemptDeaths++;
   if(lastDeathStage>_sessionBestStage)_sessionBestStage=lastDeathStage;
-  // Session logging
-  sessionDeaths++;
-  if(lastDeathStage>sessionMaxStage)sessionMaxStage=lastDeathStage;
-  fetch('/api/session-log',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({session_time:Math.floor((Date.now()-sessionStartTime)/1000),death_count:sessionDeaths,max_stage_reached:sessionMaxStage})
-  }).catch(()=>{});
+  // /api/session-log への送信はここにあったが削除した。その API は存在せず
+  // 毎回 404 になっていた。死亡数は /api/stats?type=death、到達階層は
+  // /api/stats?type=stage と player_profiles で別途記録している。
+  // 集計にのみ使っていた sessionDeaths / sessionMaxStage も併せて削除した。
+  // sessionStartTime は speedDemon の実績判定で使うので残してある。
 }
 
 function drawMemo(){

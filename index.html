@@ -9723,6 +9723,93 @@ function checkTitlesOnDeath(){
 // エラーは絶対に握りつぶさない（console.error に code/message/details を出す）。
 let _profileSaveInFlight=false,_profileSaveQueued=null;
 
+// ── 匿名サインイン（Noname のランキング掲載・第1段階） ──────────────────
+// 2階に到達した時点で初めて匿名ユーザーを作り、player_profiles に行を作る。
+// ページを開いただけの訪問者の行は作らない。
+//
+// ★匿名ユーザーを _currentUser に入れてはいけない。あの変数は「ログイン済みか」の
+//   判定に、タイトルのバッジ・マイページの LOGIN/LOGOUT・テスト用ログインなど
+//   10箇所以上から使われている。匿名で埋めると未ログインの人の画面が全部
+//   「ログイン済み」に変わり、LOGIN ボタンが消えて実際にログインできなくなる。
+//   さらに onAuthStateChange の login-new 経路が _showNameInputModal() を呼び、
+//   閉じられない名前入力モーダルでゲームが操作不能になる。
+//   匿名は _anonUser で別に持ち、保存経路(saveProfile)だけが両方を見る。
+const ANON_MIN_STAGE=2;        // ここに到達したら登録する（1階で死んだ人は作らない）
+const ANON_SIGNIN_MAX=3;       // 1ページロードあたりの匿名サインイン回数の上限
+const ANON_NAME_RETRY_MAX=5;   // Noname の番号を振り直す上限
+let _anonUser=null;
+let _anonSignInFlight=false;
+let _anonSignInAttempts=0;
+
+// 番号を振り直し、sessionStorage と画面表示も同じ番号に揃える。
+// 生成方式（4桁乱数・sessionStorage）は既存のまま。
+function _anonNewNoname(){
+  const n='Noname'+Math.floor(1000+Math.random()*9000);
+  try{sessionStorage.setItem('neverend_noname',n);}catch(_){}
+  _currentNoname=n;
+  return n;
+}
+
+// player_name には UNIQUE 制約があり、Noname#### は 9000通りしかないので衝突は普通に
+// 起きる（113人で50%）。23505 が返ったら番号を振り直して再試行する。
+// onConflict:'id' で呼ぶので、23505 は player_name の UNIQUE 違反のときにしか出ない。
+function _anonEnsureName(uid,attempt){
+  attempt=attempt||0;
+  const name=_currentNoname||_anonNewNoname();
+  return supabaseClient.from('player_profiles')
+    .upsert({id:uid,player_name:name},{onConflict:'id'})
+    .then(function(r){
+      if(!r.error)return true;
+      if(r.error.code==='23505'&&attempt<ANON_NAME_RETRY_MAX){
+        _anonNewNoname();
+        return _anonEnsureName(uid,attempt+1);
+      }
+      // 上限まで衝突したら名前を付けずに諦める。ランキングに載らないだけで
+      // ゲームは続行でき、階層の保存も saveProfile が別途行う。
+      console.warn('[anon] name registration gave up:',r.error.code||'',r.error.message||r.error);
+      return false;
+    })
+    .catch(function(e){console.warn('[anon] name registration exception:',e);return false;});
+}
+
+function _anonRegister(uid){
+  return _anonEnsureName(uid).then(function(){
+    // 階層などの記録は既存の saveProfile に任せる（read してから Math.max でマージ）。
+    return saveProfile('anon-register');
+  });
+}
+
+function _maybeAnonSignIn(){
+  if(adminMode)return;
+  if(!supabaseClient)return;
+  if(_currentUser||_anonUser)return;
+  if(_anonSignInFlight)return;
+  if(_anonSignInAttempts>=ANON_SIGNIN_MAX)return;
+  if(getStat('bestStage',0)<ANON_MIN_STAGE)return;
+  _anonSignInFlight=true;
+  _anonSignInAttempts++;
+  supabaseClient.auth.signInAnonymously()
+    .then(function(r){
+      if(r.error||!r.data||!r.data.user){
+        console.warn('[anon] signInAnonymously failed:',(r.error&&r.error.message)||'no user');
+        return null;
+      }
+      _anonUser=r.data.user;
+      return _anonRegister(r.data.user.id);
+    })
+    .catch(function(e){console.warn('[anon] signInAnonymously exception:',e);})
+    .then(function(){_anonSignInFlight=false;});
+}
+
+// 第3段階で匿名行を削除するとセッションが無効になる。保存が失敗したらセッションを
+// 張り直し、ローカルの記録から作り直す。_anonSignInAttempts の上限で止まるので
+// 無限リトライにはならない（上限に達したらそのページロードでは以後あきらめる）。
+function _anonMaybeResignIn(){
+  if(_currentUser||!_anonUser)return;
+  _anonUser=null;
+  _maybeAnonSignIn();
+}
+
 // ローカル(localStorage)とDBの値をマージ。記録は単調増加のみ（絶対に下がらない）。
 function _profilePayload(d,uid){
   const localNormalBest=getStat('normalBestStage',0);
@@ -9752,15 +9839,19 @@ function _profilePayload(d,uid){
 function saveProfile(reason){
   reason=reason||'manual';
   if(adminMode)return Promise.resolve(false);
-  if(!supabaseClient||!_currentUser){
+  // 匿名ユーザーもここから書く。_currentUser（正式ログイン）が優先。
+  const _u=_currentUser||_anonUser;
+  if(!supabaseClient||!_u){
     // 未ログイン中はlocalStorageのみ。ログイン時に saveProfile('login-*') でまとめて書き戻る。
+    // 2階に到達していれば、ここで匿名サインインを開始する（第1段階）。
+    _maybeAnonSignIn();
     return Promise.resolve(false);
   }
   // 同時実行を防ぐ（read-modify-write のロストアップデート対策）。
   // 実行中に来た要求は捨てずに1件だけキューして直後に再実行する。
   if(_profileSaveInFlight){_profileSaveQueued=reason;return Promise.resolve(false);}
   _profileSaveInFlight=true;
-  const uid=_currentUser.id;
+  const uid=_u.id;
   return supabaseClient.from('player_profiles')
     .select('total_deaths,best_stage,total_play_time,normal_best_stage,death_best_stage,death_mode_deaths,death_mode_unlocked,normal_best_stage_at,death_best_stage_at')
     .eq('id',uid).maybeSingle()
@@ -9773,12 +9864,15 @@ function saveProfile(reason){
     .then(function(r2){
       if(r2.error){
         console.error('[saveProfile:'+reason+'] UPSERT FAILED:',r2.error.code||'',r2.error.message||r2.error,r2.error.details||'',r2.error.hint||'');
+        // 匿名セッションが失効していた場合はここに来る。張り直して作り直す。
+        _anonMaybeResignIn();
         return false;
       }
       if(!r2.data||r2.data.length===0){
         // RLSでUPDATE対象行が絞られると「0行更新・エラー無し」で静かに失敗する。
         // 以前はこれが完全に不可視だったため、ここで必ず顕在化させる。
         console.error('[saveProfile:'+reason+'] upsert affected 0 rows — player_profiles の RLS (INSERT/UPDATE) ポリシーを確認してください');
+        _anonMaybeResignIn();
         return false;
       }
       console.log('[saveProfile:'+reason+'] ok',r2.data[0]);
@@ -10409,6 +10503,17 @@ async function initSupabase(){
     const _SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNva2NmdHV0cWt3aGZibWRuaGdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjk1NjIsImV4cCI6MjA5MDY0NTU2Mn0.FkDkRI8Ec5P07EKEZiGMA_kQ44rK0Pu6Hy_yeWBO3cQ';
     supabaseClient=window.supabase.createClient(_SURL,_SKEY);
     supabaseClient.auth.onAuthStateChange(function(_event,session){
+      // ★匿名セッションは「ログイン」として扱わない。ここで _currentUser を埋めると
+      //   タイトルのバッジ・マイページの LOGIN/LOGOUT がログイン済みの表示になり、
+      //   さらに下の login-new 経路が _showNameInputModal() を呼んで、閉じられない
+      //   名前入力モーダルでゲームが操作不能になる（_nameRequired が入力を遮断する）。
+      //   匿名は _anonUser で別に持ち、以降のマージ処理も通さない。
+      if(session&&session.user&&session.user.is_anonymous===true){
+        _anonUser=session.user;
+        _currentUser=null;
+        return;
+      }
+      _anonUser=null;
       _currentUser=session?session.user:null;
       // 同一セッションの重複発火を防止
       const _sessionId = session ? session.access_token : null;
@@ -10517,7 +10622,17 @@ async function initSupabase(){
       }
     });
     const {data:{session}}=await supabaseClient.auth.getSession();
-    _currentUser=session?session.user:null;
+    // ★リロード時に匿名セッションが復元されることがある。これも _currentUser には
+    //   入れない（UI がログイン済み扱いになるため）。
+    if(session&&session.user&&session.user.is_anonymous===true){
+      _anonUser=session.user;
+      _currentUser=null;
+      // タブを開き直すと sessionStorage の Noname が変わるので、復元した行の
+      // player_name を今の表示名に合わせ直す。行が消えていても upsert で作り直る。
+      if(getStat('bestStage',0)>=ANON_MIN_STAGE)_anonRegister(session.user.id);
+    }else{
+      _currentUser=session?session.user:null;
+    }
   }catch(e){console.warn('Supabase init failed:',e);}
 }
 initSupabase();

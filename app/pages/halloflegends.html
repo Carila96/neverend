@@ -73,7 +73,16 @@ h1{
 }
 
 /* Table */
-.rank-table{width:100%;border-collapse:collapse;}
+.rank-table{width:100%;border-collapse:collapse;table-layout:fixed;}
+/* 左半分に「# + NAME」、右半分に BEST FLOOR を置く。
+   # を右寄せ・NAME を左寄せにして 22% の境目で突き合わせるので、名前の長さに
+   関わらずメダルと名前の1文字目の x が全行で揃う（列間の隙間は両側の padding
+   16px+16px で一定）。auto レイアウトだと中身の長さで列幅が動いてしまうため
+   table-layout:fixed が要る。thead にも同じ規則を当ててヘッダーと列位置を合わせる。 */
+.rank-table th,.rank-table td{box-sizing:border-box;}
+.rank-table th:nth-child(1),.rank-table td:nth-child(1){width:22%;text-align:right;}
+.rank-table th:nth-child(2),.rank-table td:nth-child(2){width:28%;text-align:left;}
+.rank-table th:nth-child(3),.rank-table td:nth-child(3){width:50%;text-align:center;}
 .rank-table thead tr{border-bottom:1px solid var(--border);}
 .rank-table th{
   padding:10px 16px;font-size:11px;letter-spacing:3px;
@@ -86,12 +95,17 @@ h1{
 .rank-table tr:last-child td{border-bottom:none;}
 .rank-table tbody tr:hover{background:rgba(74,184,255,0.04);}
 
-.rank-num{color:var(--muted);font-size:12px;width:40px;}
+/* 幅と揃えは上の nth-child 側で決める。ここは色と字面だけ。 */
+.rank-num{color:var(--muted);font-size:12px;}
 .rank-num.top1{color:var(--gold);text-shadow:0 0 8px rgba(245,200,66,0.6);font-size:16px;}
 .rank-num.top2{color:#c0c0c0;}
 .rank-num.top3{color:#cd7f32;}
-.rank-name{color:#e0eaff;font-size:15px;letter-spacing:1px;}
-.rank-floor{color:var(--accent);font-size:16px;text-align:right;font-weight:bold;text-shadow:0 0 8px rgba(74,184,255,0.5);}
+/* 長い名前は省略せず折り返す。1文字目の x は列幅で固定されているので、
+   折り返しても左端はずれない（行が縦に伸びるだけ）。 */
+.rank-name{color:#e0eaff;font-size:15px;letter-spacing:1px;overflow-wrap:anywhere;}
+/* 色は削除した DEATHS 列と同じ赤。text-shadow は付けない —
+   元の青いグローは赤字に合わず、DEATHS 列にもグローは無かった。 */
+.rank-floor{color:rgba(255,100,100,0.8);font-size:16px;font-weight:bold;}
 
 /* Ranking tabs */
 .rank-tabs{display:flex;border-bottom:1px solid var(--border);}
@@ -212,7 +226,9 @@ const _SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJl
 function buildRankingHTML(data){
   if(!data||data.length===0)return '<div class="empty">NO LEGENDS YET.<br><br>Be the first.</div>';
   let html='<table class="rank-table"><thead><tr>';
-  html+='<th>#</th><th>NAME</th><th style="text-align:right">BEST FLOOR</th>';
+  // 揃えはインラインで持たせず .rank-table の nth-child 側に一本化する
+  //（インライン指定が残っているとヘッダーだけ列位置からずれる）。
+  html+='<th>#</th><th>NAME</th><th>BEST FLOOR</th>';
   html+='</tr></thead><tbody>';
   data.forEach((r,i)=>{
     const rank=i+1;

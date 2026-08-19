@@ -92,8 +92,6 @@ h1{
 .rank-num.top3{color:#cd7f32;}
 .rank-name{color:#e0eaff;font-size:15px;letter-spacing:1px;}
 .rank-floor{color:var(--accent);font-size:16px;text-align:right;font-weight:bold;text-shadow:0 0 8px rgba(74,184,255,0.5);}
-.rank-deaths{color:rgba(255,100,100,0.8);text-align:right;font-size:13px;}
-.rank-time{color:var(--muted2);text-align:right;font-size:12px;}
 
 /* Ranking tabs */
 .rank-tabs{display:flex;border-bottom:1px solid var(--border);}
@@ -207,16 +205,14 @@ footer{
 const _SB_URL='https://cokcftutqkwhfbmdnhgl.supabase.co';
 const _SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNva2NmdHV0cWt3aGZibWRuaGdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjk1NjIsImV4cCI6MjA5MDY0NTU2Mn0.FkDkRI8Ec5P07EKEZiGMA_kQ44rK0Pu6Hy_yeWBO3cQ';
 
-function fmtTime(secs){
-  const h=Math.floor(secs/3600),m=Math.floor((secs%3600)/60);
-  if(h>0)return h+'h '+m+'m';
-  return m+'m';
-}
-
+// 個人ランキングは「何階まで登ったか」だけを出す。DEATHS とプレイ時間は載せない。
+// 未ログイン(Noname)の死亡数・プレイ時間は player_profiles に入らない一方、上部の
+// WORLD DEATHS などの全体集計には Noname 分も入っている。並べると数字が食い違って
+// 見えるため、個人側は到達階層に絞ってある。上部の統計タイルは全体の値なので別物。
 function buildRankingHTML(data){
   if(!data||data.length===0)return '<div class="empty">NO LEGENDS YET.<br><br>Be the first.</div>';
   let html='<table class="rank-table"><thead><tr>';
-  html+='<th>#</th><th>NAME</th><th style="text-align:right">BEST FLOOR</th><th style="text-align:right">DEATHS</th><th style="text-align:right">PLAY TIME</th>';
+  html+='<th>#</th><th>NAME</th><th style="text-align:right">BEST FLOOR</th>';
   html+='</tr></thead><tbody>';
   data.forEach((r,i)=>{
     const rank=i+1;
@@ -226,20 +222,18 @@ function buildRankingHTML(data){
       <td class="${rankClass}">${medal}</td>
       <td class="rank-name">${(r.name||'Anonymous').replace(/</g,'&lt;')}</td>
       <td class="rank-floor">${r.stage_reached||1}F</td>
-      <td class="rank-deaths">${(r.death_count||0).toLocaleString()}</td>
-      <td class="rank-time">${fmtTime(r.play_time||0)}</td>
     </tr>`;
   });
   return html+'</tbody></table>';
 }
 
-// player_profiles の行を buildRankingHTML が期待する形（name/stage_reached/death_count/play_time）へ変換
+// player_profiles の行を buildRankingHTML が期待する形（name/stage_reached）へ変換。
+// 同着の並び順は *_best_stage_at で決まるが、それはクエリ側の order で使うため
+// ここでは持ち回さない。
 function normalizeRank(rows,mode){
   return (rows||[]).map(r=>({
     name:r.player_name,
-    stage_reached:(mode==='death'?r.death_best_stage:r.normal_best_stage)||0,
-    death_count:(mode==='death'?r.death_mode_deaths:r.total_deaths)||0,
-    play_time:r.total_play_time||0
+    stage_reached:(mode==='death'?r.death_best_stage:r.normal_best_stage)||0
   }));
 }
 
@@ -263,14 +257,15 @@ function switchRankTab(mode){
   try{
     const [ws,normalRes,deathRes]=await Promise.all([
       fetch('https://damnrun.com/api/stats?type=world').then(r=>r.json()).catch(()=>({})),
+      // *_best_stage_at は表示しないが、同着を到達の早い順に並べる order に必要なので残す。
       sb.from('player_profiles')
-        .select('player_name,normal_best_stage,total_deaths,total_play_time,normal_best_stage_at')
+        .select('player_name,normal_best_stage,normal_best_stage_at')
         .gt('normal_best_stage',0)
         .order('normal_best_stage',{ascending:false})
         .order('normal_best_stage_at',{ascending:true})
         .limit(100),
       sb.from('player_profiles')
-        .select('player_name,death_best_stage,death_mode_deaths,total_play_time,death_best_stage_at')
+        .select('player_name,death_best_stage,death_best_stage_at')
         .eq('death_mode_unlocked',true)
         .order('death_best_stage',{ascending:false})
         .order('death_best_stage_at',{ascending:true})

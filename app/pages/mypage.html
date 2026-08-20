@@ -816,8 +816,18 @@ async function _authHeaders(){
 //   ログインとして扱うと、下の2箇所が誤動作する。
 function _mpIsAnonSession(s){
   if(!s||!s.user)return false;
-  if(s.user.is_anonymous===true)return true;
-  const p=s.user.app_metadata&&s.user.app_metadata.provider;
+  const u=s.user;
+  // ★第2段階: 昇格(linkIdentity)すると同じ uid のまま匿名ではなくなるが、
+  //   app_metadata.provider は anonymous のまま残ることがある。provider を先に見ると
+  //   昇格したユーザーを永久に匿名と誤判定し、ここが LOGIN のまま・
+  //   _syncProfileOnLogin も走らないままになる。判定順は index.html の
+  //   _isAnonSession() と完全に同一にすること。
+  const ids=Array.isArray(u.identities)?u.identities:[];
+  if(ids.some(function(i){return i&&i.provider&&i.provider!=='anonymous';}))return false;
+  if(u.email||u.phone)return false;
+  if(u.is_anonymous===true)return true;
+  if(u.is_anonymous===false)return false;
+  const p=u.app_metadata&&u.app_metadata.provider;
   return p==='anonymous';
 }
 (function initAuth(){
@@ -930,15 +940,30 @@ function updateAuthUI(session){
 
 async function loginWith(provider){
   if(!_sbClient)return;
-  const{data,error}=await _sbClient.auth.signInWithOAuth({
-    provider:provider,
-    options:{
-      redirectTo:'https://damnrun.com',
-      skipBrowserRedirect:true
-    }
-  });
-  if(error){console.error('OAuth error:',error);return;}
+  // ★第2段階: ここが実プレイヤーが通る唯一の Google ログイン経路。
+  //   匿名セッション(Noname)中に signInWithOAuth を使うと新しいユーザーが作られ、
+  //   player_profiles の Noname 行が孤立して「記録が消えた」ように見える。
+  //   匿名中は linkIdentity で今の匿名ユーザーに Google を紐づける(昇格)。
+  let anon=false;
+  try{
+    const {data:sd}=await _sbClient.auth.getSession();
+    anon=_mpIsAnonSession(sd&&sd.session);
+  }catch(_){}
+  const opts={redirectTo:'https://damnrun.com',skipBrowserRedirect:true};
+  const{data,error}=anon
+    ? await _sbClient.auth.linkIdentity({provider:provider,options:opts})
+    : await _sbClient.auth.signInWithOAuth({provider:provider,options:opts});
+  if(error){
+    // 無言で失敗させない。本命の identity_already_exists は戻り先の URL に載るので
+    // index.html 側が案内を出す。ここに来るのは Manual Linking 無効・セッション失効など。
+    console.error('OAuth error:',error);
+    try{alert('Could not start login: '+(error.message||'unknown error'));}catch(_){}
+    return;
+  }
   if(data&&data.url){
+    // 昇格であることをリダイレクトを跨いで index.html に伝える。sessionStorage は
+    // 同一オリジンなら iframe と親で共有され、Google への往復も跨いで保持される。
+    if(anon){try{sessionStorage.setItem('neverend_upgrading','1');}catch(_){}}
     if(window.parent!==window){
       window.parent.location.href=data.url;
     }else{

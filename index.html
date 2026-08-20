@@ -9758,9 +9758,57 @@ let _unloading=false;
 //   ★ mypage.html の _mpIsAnonSession() と必ず同一条件にすること。
 function _isAnonSession(s){
   if(!s||!s.user)return false;
-  if(s.user.is_anonymous===true)return true;
-  const p=s.user.app_metadata&&s.user.app_metadata.provider;
+  const u=s.user;
+  // ★第2段階: 昇格(linkIdentity)すると、同じ uid のまま匿名ではなくなる。ところが
+  //   app_metadata.provider は最初のプロバイダ(anonymous)のまま残ることがあり、
+  //   provider を先に見ると昇格したユーザーを永久に匿名と誤判定する
+  //   （_currentUser に入らず、マイページは LOGIN のまま、プロフィール同期も走らない）。
+  //   そこで「匿名でない証拠」を先に見て、provider へのフォールバックは
+  //   is_anonymous が undefined のとき（＝フラグ欠落）だけに限定する。
+  const ids=Array.isArray(u.identities)?u.identities:[];
+  if(ids.some(function(i){return i&&i.provider&&i.provider!=='anonymous';}))return false;
+  if(u.email||u.phone)return false;
+  if(u.is_anonymous===true)return true;
+  if(u.is_anonymous===false)return false;
+  const p=u.app_metadata&&u.app_metadata.provider;
   return p==='anonymous';
+}
+
+// ── 第2段階: 昇格（linkIdentity / updateUser） ─────────────────────────
+// 匿名セッション中のログインは新しいユーザーを作らず、今の auth.users.id に Google の
+// アイデンティティを紐づける。player_profiles の行がそのまま本人の行になるので、
+// 記録の移行処理は発生しない（_profilePayload の Math.max マージは従来どおり）。
+//
+// 昇格を発火してよいのは「匿名として遊んでいる」ときだけ。_anonUser / _currentUser は
+// onAuthStateChange が _isAnonSession() で振り分けた結果なので、ここを見れば足りる。
+function _canUpgrade(){return !!_anonUser&&!_currentUser;}
+
+// OAuth 昇格はリダイレクトを伴い、戻ってきたときはページが作り直されている。
+// 「直前の操作が昇格だったか」をメモリでは持てないので sessionStorage に置く。
+// localStorage を使わないのは、ログアウト時の neverend* 一括削除と混ざらないため。
+// sessionStorage は同一オリジンなら iframe(mypage) と親で共有され、Google への往復も跨ぐ。
+const UPGRADE_FLAG='neverend_upgrading';
+let _upgradeReturn=false;      // このページロードが昇格からの復帰かどうか
+let _upgradeUrlError=null;     // 復帰時に URL に載っていた OAuth エラー
+let _authUrlParams='';         // createClient() より前に控えた hash + query
+function _upgradeMarkSet(){try{sessionStorage.setItem(UPGRADE_FLAG,'1');}catch(_){}}
+function _upgradeMarkTake(){
+  try{
+    const v=sessionStorage.getItem(UPGRADE_FLAG);
+    sessionStorage.removeItem(UPGRADE_FLAG);
+    return v==='1';
+  }catch(_){return false;}
+}
+// 昇格の失敗は linkIdentity の戻り値ではなく、Google から戻ってきた URL に載ってくる。
+// flowType により hash / query のどちらに入るかが変わるので両方を見る。
+function _authUrlError(){
+  if(!_authUrlParams)return null;
+  let p;
+  try{p=new URLSearchParams(_authUrlParams);}catch(_){return null;}
+  const code=p.get('error_code')||'';
+  const err=p.get('error')||'';
+  if(!code&&!err)return null;
+  return {code:code,error:err,description:p.get('error_description')||''};
 }
 
 // 番号を振り直し、sessionStorage と画面表示も同じ番号に揃える。
@@ -10539,6 +10587,13 @@ async function initSupabase(){
   try{
     const _SURL='https://cokcftutqkwhfbmdnhgl.supabase.co';
     const _SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNva2NmdHV0cWt3aGZibWRuaGdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjk1NjIsImV4cCI6MjA5MDY0NTU2Mn0.FkDkRI8Ec5P07EKEZiGMA_kQ44rK0Pu6Hy_yeWBO3cQ';
+    // ★第2段階: supabase-js は detectSessionInUrl で URL を消してしまうので、
+    //   createClient() より前にハッシュとクエリを控える。昇格に失敗した場合は
+    //   error_code=identity_already_exists などがここに入って返ってくる。
+    _authUrlParams=(window.location.hash||'').replace(/^#/,'')+'&'+(window.location.search||'').replace(/^\?/,'');
+    // 昇格マーカーはここで1回だけ消費する。以降 _upgradeReturn を見る。
+    _upgradeReturn=_upgradeMarkTake();
+    _upgradeUrlError=_upgradeReturn?_authUrlError():null;
     supabaseClient=window.supabase.createClient(_SURL,_SKEY);
     supabaseClient.auth.onAuthStateChange(function(_event,session){
       // ★A: 明示的なログアウトだけをイベント名で捕まえる。INITIAL_SESSION（初回訪問・
@@ -10582,10 +10637,18 @@ async function initSupabase(){
           .then(function(r){
             if(r.data){
               const d=r.data;
-              if(d.player_name){
-                localStorage.setItem('neverend_playername',d.player_name);
-              }else{
+              // ★第2段階: 昇格直後の行は player_name に Noname#### が入ったままなので、
+              //   これを「本人が決めた名前」として採用してはいけない。採用すると名前入力が
+              //   出ず、Noname のままランキングに載り続ける。
+              //   ・昇格マーカーがある             → 初回ログイン扱い
+              //   ・player_name が Noname#### 形式 → まだ名前を決めていない扱い（保険。
+              //     マーカーがタブの開き直し等で失われても確実に名前入力が出る）
+              //   どちらでもなければ2回目以降の通常ログインなので、モーダルは出さない。
+              const _placeholderName=!d.player_name||ANON_NAME_RE.test(d.player_name);
+              if(_placeholderName||_upgradeReturn){
                 _showNameInputModal();
+              }else{
+                localStorage.setItem('neverend_playername',d.player_name);
               }
               try{
                 const saveStr=localStorage.getItem('neverend_save');
@@ -10683,6 +10746,9 @@ async function initSupabase(){
     }else{
       _currentUser=session?session.user:null;
     }
+    // ★第2段階(2-5/案A): 昇格から戻ってきた回だけ、失敗していないかを見る。
+    //   失敗しても匿名セッションは無傷なので、そのまま Noname で遊び続けられる。
+    if(_upgradeReturn&&_upgradeUrlError)_onUpgradeFailed(_upgradeUrlError);
   }catch(e){console.warn('Supabase init failed:',e);}
 }
 initSupabase();
@@ -10835,11 +10901,92 @@ function toggleLoginMode(){
 async function loginWithGoogle(){
   if(!supabaseClient){_setLmMsg('Not initialized. Try again shortly.','#e74c3c');return;}
   try{
+    // ★第2段階: 匿名セッション中は新しいユーザーを作らず、今の匿名ユーザーに Google を
+    //   紐づける(昇格)。これで player_profiles の Noname 行がそのまま本人の行になる。
+    //   匿名でないときは従来どおり signInWithOAuth（＝通常のログイン）。
+    if(_canUpgrade()){
+      _upgradeMarkSet();
+      const r=await supabaseClient.auth.linkIdentity({
+        provider:'google',
+        options:{redirectTo:window.location.origin}
+      });
+      // リダイレクト前に返るエラー（Manual Linking 無効・セッション失効など）。
+      // 本命の identity_already_exists は戻り先の URL に載るので initSupabase 側で拾う。
+      if(r&&r.error){
+        _upgradeMarkTake();
+        _onUpgradeFailed({code:r.error.code||'',error:'',description:r.error.message||''});
+      }
+      return;
+    }
     await supabaseClient.auth.signInWithOAuth({
       provider:'google',
       options:{redirectTo:window.location.origin}
     });
   }catch(e){_setLmMsg('Google login failed: '+e.message,'#e74c3c');}
+}
+
+// ── 第2段階 2-5（案A）: 昇格に失敗したときの案内 ────────────────────────
+// そのGoogleアカウントが既に別ユーザーに紐づいていると linkIdentity は失敗する。
+// ここで黙って signInWithOAuth に落とすと、Noname の記録が無言で孤立する
+// ——— 第2段階が直そうとしている状態そのものが再発する。何が起きたかを伝え、
+// 「記録を捨ててでも既存アカウントで入る」か「Noname のまま続ける」かを選ばせる。
+// ★失敗しても匿名セッションは無傷なので、キャンセルすればそのまま遊び続けられる。
+let _lmOriginalInner=null;
+function _lmStashInner(){
+  const inner=document.getElementById('loginModal-inner');
+  if(inner&&_lmOriginalInner===null)_lmOriginalInner=inner.innerHTML;
+}
+function _lmRestoreInner(){
+  const inner=document.getElementById('loginModal-inner');
+  if(inner&&_lmOriginalInner!==null)inner.innerHTML=_lmOriginalInner;
+}
+function _onUpgradeFailed(e){
+  const desc=(e&&e.description)||'';
+  const already=(e&&e.code==='identity_already_exists')||/already/i.test(desc);
+  const nm=_currentNoname||'your Noname record';
+  const best=getStat('bestStage',0),deaths=getStat('totalDeaths',0);
+  const modal=document.getElementById('loginModal');
+  const inner=document.getElementById('loginModal-inner');
+  if(!modal||!inner){
+    console.error('[upgrade] failed:',e);
+    try{alert(already?'This Google account already belongs to another neverEND account.':('Login link failed: '+desc));}catch(_){}
+    return;
+  }
+  _lmStashInner();
+  _nameRequired=false; // この案内は閉じてよい（名前入力モーダルとは別物）
+  const head=already
+    ? 'This Google account already belongs to another neverEND account.'
+    : 'Could not link this Google account.';
+  const detail=already
+    ? ('Your current record as <span style="color:#4ab8ff;">'+nm+'</span> (Floor '+best+' / Deaths '+deaths+') <b>cannot</b> be carried over to that account.')
+    : (desc?('<span style="color:#888;">'+desc+'</span>'):'Please try again.');
+  inner.innerHTML=
+    '<div class="lm-title">LINK FAILED</div>'+
+    '<div style="font-size:11px;color:#bbb;letter-spacing:0.5px;text-align:center;line-height:1.7;margin-bottom:14px;">'+
+      head+'<br><br>'+detail+
+    '</div>'+
+    '<button class="lm-submit" onclick="_upgradeFallbackLogin()">[ LOG IN ANYWAY ]</button>'+
+    '<div style="font-size:10px;color:#777;text-align:center;margin:6px 0 12px;letter-spacing:0.5px;">'+
+      'Your Noname record will NOT be transferred.'+
+    '</div>'+
+    '<button class="lm-submit" onclick="_upgradeKeepPlaying()" style="opacity:0.75;">[ CANCEL &mdash; KEEP PLAYING ]</button>'+
+    '<div class="lm-msg" id="lmMsg"></div>';
+  modal.classList.add('open');
+}
+function _upgradeFallbackLogin(){
+  if(!supabaseClient)return;
+  // 昇格をあきらめて通常ログインする。今の Noname 行はここで孤立する（第3段階の削除対象）。
+  // マーカーは立てない — これは昇格ではないので、名前入力を初回扱いにしてはいけない。
+  _setLmMsg('Redirecting...','#aaa');
+  Promise.resolve(supabaseClient.auth.signInWithOAuth({
+    provider:'google',
+    options:{redirectTo:window.location.origin}
+  })).catch(function(e){_setLmMsg('Google login failed: '+((e&&e.message)||''),'#e74c3c');});
+}
+function _upgradeKeepPlaying(){
+  _lmRestoreInner();
+  const modal=document.getElementById('loginModal');
+  if(modal)modal.classList.remove('open');
 }
 async function submitLogin(){
   if(!supabaseClient){_setLmMsg('Not initialized. Try again shortly.','#e74c3c');return;}
@@ -10848,6 +10995,32 @@ async function submitLogin(){
   if(!email||!password){_setLmMsg('Enter email and password.','#e74c3c');return;}
   _setLmMsg('Please wait...','#aaa');
   try{
+    // ★第2段階: 匿名セッション中は signUp / signInWithPassword を使わない。どちらも
+    //   新しいユーザーを作り、Noname の player_profiles 行が孤立する。updateUser で
+    //   今の匿名ユーザーにメールとパスワードを付ける（＝昇格）。
+    //   _loginMode(register/login) の区別は昇格では意味を持たない（どちらでもない
+    //   操作なので）ため、両モードとも同じ経路を通す。
+    if(_canUpgrade()){
+      const up=await supabaseClient.auth.updateUser({email:email,password:password});
+      if(up.error)throw up.error;
+      const u=up.data&&up.data.user;
+      // ★ メール確認が有効だと、リンクを開くまで is_anonymous は false にならない。
+      //   まだ匿名なので、ここで _currentUser を埋めたり名前入力を出したりしてはいけない。
+      if(!u||_isAnonSession({user:u})){
+        _setLmMsg('Confirmation email sent. Open the link to finish — you stay as '+(_currentNoname||'Noname')+' until then.','#4af');
+        return;
+      }
+      // 確認不要の設定なら即座に昇格が完了する。★ _anonUser を先に落としてから
+      //   _currentUser を埋める（_anonMaybeResignIn の誤動作を防ぐ）。
+      _anonUser=null;
+      _currentUser=u;
+      await _onLoginSuccess();
+      // この経路はリダイレクトが無く、access_token が変わらないと onAuthStateChange の
+      // 重複発火防止(_lastSessionId)で弾かれてプロフィール取得が走らないことがある。
+      // 昇格は初回ログインなので、ここで確実に名前入力を出す。
+      _showNameInputModal();
+      return;
+    }
     let result;
     if(_loginMode==='register'){
       result=await supabaseClient.auth.signUp({email,password});

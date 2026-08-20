@@ -810,6 +810,16 @@ async function _authHeaders(){
   }catch(_){}
   return h;
 }
+// ★C-1: 匿名セッション(Noname)の判定。index.html の _isAnonSession() と同一条件にすること。
+//   index.html が 2階到達時に signInAnonymously() を呼ぶと、同一オリジンの
+//   BroadcastChannel 経由でこの iframe の onAuthStateChange まで発火する。ここで匿名を
+//   ログインとして扱うと、下の2箇所が誤動作する。
+function _mpIsAnonSession(s){
+  if(!s||!s.user)return false;
+  if(s.user.is_anonymous===true)return true;
+  const p=s.user.app_metadata&&s.user.app_metadata.provider;
+  return p==='anonymous';
+}
 (function initAuth(){
   if(window.supabase){
     _sbClient=window.supabase.createClient(_SB_URL,_SB_KEY);
@@ -833,6 +843,13 @@ async function _authHeaders(){
 
 async function _syncProfileOnLogin(session){
   if(!_sbClient||!session)return;
+  // ★C-1: 匿名セッションでは絶対に走らせない。匿名ユーザーは email も
+  //   user_metadata.full_name も持たず、ログアウトで neverend_playername も消えるため、
+  //   下のフォールバックが player_name:'Player' まで落ち、player_profiles に 'Player' の
+  //   行を作ってしまう（しかも localStorage のローカル記録をそのまま書き込む）。
+  //   匿名行の名前付けは index.html の _anonEnsureName() が Noname#### で行うので、
+  //   この iframe は一切関与しないのが正しい。
+  if(_mpIsAnonSession(session))return;
   try{
     const {data:profile}=await _sbClient
       .from('player_profiles')
@@ -899,7 +916,10 @@ async function _syncProfileOnLogin(session){
 function updateAuthUI(session){
   const lb=document.getElementById('loginButtons');
   const lo=document.getElementById('logoutBtn');
-  if(session){
+  // ★C-1: 匿名セッション(Noname)はログイン扱いにしない。session の有無だけで判定していた
+  //   ため、未ログインの Noname に LOGOUT が表示されていた。押すと匿名セッションが切れ、
+  //   親が再度サインインして別の匿名行が作られる（到達階層・死亡数が変わって見えた原因）。
+  if(session&&!_mpIsAnonSession(session)){
     if(lb)lb.style.display='none';
     if(lo)lo.style.display='block';
   }else{

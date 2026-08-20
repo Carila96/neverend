@@ -9737,9 +9737,31 @@ let _profileSaveInFlight=false,_profileSaveQueued=null;
 const ANON_MIN_STAGE=2;        // ここに到達したら登録する（1階で死んだ人は作らない）
 const ANON_SIGNIN_MAX=3;       // 1ページロードあたりの匿名サインイン回数の上限
 const ANON_NAME_RETRY_MAX=5;   // Noname の番号を振り直す上限
+const ANON_NAME_RE=/^Noname\d{4}$/;  // 匿名行に付けてよい名前はこの形式だけ
 let _anonUser=null;
 let _anonSignInFlight=false;
 let _anonSignInAttempts=0;
+// ★A: ログアウト処理中フラグ。SIGNED_OUT を受けてからリロードが確定するまでの数百ms、
+//   「_currentUser は null、_saveCache にはログイン中の記録が残ったまま」という窓ができる。
+//   この窓で saveProfile() が走ると _maybeAnonSignIn() が発火し、アカウントの記録が
+//   匿名行に書き込まれる（Noname#### に他人=本人のログイン記録が入る事故の実体）。
+//   ※「session が null」で判定してはいけない。初回訪問の INITIAL_SESSION も session は
+//     null なので、それで判定すると2階到達時の匿名登録（第1段階）が丸ごと動かなくなる。
+let _signingOut=false;
+// ★F: アンロード中フラグ。この最中に始めた匿名サインインはどのみち完走しない。
+let _unloading=false;
+
+// ★E: 匿名セッションの判定を1箇所に集約する。is_anonymous の厳密比較だけだと、
+//   フラグが欠落したときに「非匿名」と誤判定して _currentUser に匿名ユーザーが入り、
+//   未ログインの人の画面が全部ログイン済みになる。app_metadata.provider を併用する
+//   （実ユーザーの provider は google / email なので誤判定はしない）。
+//   ★ mypage.html の _mpIsAnonSession() と必ず同一条件にすること。
+function _isAnonSession(s){
+  if(!s||!s.user)return false;
+  if(s.user.is_anonymous===true)return true;
+  const p=s.user.app_metadata&&s.user.app_metadata.provider;
+  return p==='anonymous';
+}
 
 // 番号を振り直し、sessionStorage と画面表示も同じ番号に揃える。
 // 生成方式（4桁乱数・sessionStorage）は既存のまま。
@@ -9755,7 +9777,16 @@ function _anonNewNoname(){
 // onConflict:'id' で呼ぶので、23505 は player_name の UNIQUE 違反のときにしか出ない。
 function _anonEnsureName(uid,attempt){
   attempt=attempt||0;
-  const name=_currentNoname||_anonNewNoname();
+  let name=_currentNoname||_anonNewNoname();
+  // ★D: Noname#### 以外の名前では絶対に登録しない。名前が用意できないときは登録せずに
+  //   諦める（ランキングに載らないだけで、階層の保存は saveProfile が別途行う）。
+  if(!ANON_NAME_RE.test(name)){
+    name=_anonNewNoname();
+    if(!ANON_NAME_RE.test(name)){
+      console.warn('[anon] refused to register a non-Noname name');
+      return Promise.resolve(false);
+    }
+  }
   return supabaseClient.from('player_profiles')
     .upsert({id:uid,player_name:name},{onConflict:'id'})
     .then(function(r){
@@ -9781,6 +9812,9 @@ function _anonRegister(uid){
 
 function _maybeAnonSignIn(){
   if(adminMode)return;
+  // ★A: ログアウト処理中は匿名サインインを一切始めない。
+  // ★F: アンロード中も同様（完走しないうえ、ここが記録漏れの侵入口になる）。
+  if(_signingOut||_unloading)return;
   if(!supabaseClient)return;
   if(_currentUser||_anonUser)return;
   if(_anonSignInFlight)return;
@@ -9891,7 +9925,11 @@ function saveProfile(reason){
 // プレイ中の定期フラッシュと離脱時フラッシュで取りこぼしを防ぐ。
 setInterval(function(){if(state==='play'||state==='ending')saveProfile('periodic');},60000);
 document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden')saveProfile('hidden');});
-window.addEventListener('pagehide',function(){saveProfile('pagehide');});
+// ★F: アンロードが確定したら「匿名サインインだけ」を止める。saveProfile() 自体は従来どおり
+//   走らせる（ローカル保存とログイン済みユーザーの書き戻しには必要）。beforeunload は
+//   visibilitychange(hidden) より前に発火するので、そちらの saveProfile も確実に覆える。
+window.addEventListener('beforeunload',function(){_unloading=true;});
+window.addEventListener('pagehide',function(){_unloading=true;saveProfile('pagehide');});
 function checkTitlesOnClear(nextStage){
   if(adminMode)return;
   // ノーマルモードで100面クリア → デスモード解放
@@ -10503,12 +10541,24 @@ async function initSupabase(){
     const _SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNva2NmdHV0cWt3aGZibWRuaGdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjk1NjIsImV4cCI6MjA5MDY0NTU2Mn0.FkDkRI8Ec5P07EKEZiGMA_kQ44rK0Pu6Hy_yeWBO3cQ';
     supabaseClient=window.supabase.createClient(_SURL,_SKEY);
     supabaseClient.auth.onAuthStateChange(function(_event,session){
+      // ★A: 明示的なログアウトだけをイベント名で捕まえる。INITIAL_SESSION（初回訪問・
+      //   セッション無し）も session は null なので、session の有無では判定しない。
+      //   さらに「直前まで正規ログインだった」ときに限定する。匿名セッションの期限切れで
+      //   SIGNED_OUT が来たときに、Noname の人のローカル記録まで消してしまわないため。
+      if(_event==='SIGNED_OUT'&&_currentUser){
+        _signingOut=true;
+        // ★B: localStorage の neverend_save を消すのと「同じ位置」でメモリ上の _saveCache も
+        //   空にする。ここが食い違うと getStat() がログイン中の記録を返し続け、直後の
+        //   匿名サインイン → saveProfile('anon-register') でその記録が匿名行に入る。
+        try{localStorage.removeItem(SAVE_KEY);}catch(_){}
+        _saveCache={};
+      }
       // ★匿名セッションは「ログイン」として扱わない。ここで _currentUser を埋めると
       //   タイトルのバッジ・マイページの LOGIN/LOGOUT がログイン済みの表示になり、
       //   さらに下の login-new 経路が _showNameInputModal() を呼んで、閉じられない
       //   名前入力モーダルでゲームが操作不能になる（_nameRequired が入力を遮断する）。
       //   匿名は _anonUser で別に持ち、以降のマージ処理も通さない。
-      if(session&&session.user&&session.user.is_anonymous===true){
+      if(_isAnonSession(session)){
         _anonUser=session.user;
         _currentUser=null;
         return;
@@ -10624,7 +10674,7 @@ async function initSupabase(){
     const {data:{session}}=await supabaseClient.auth.getSession();
     // ★リロード時に匿名セッションが復元されることがある。これも _currentUser には
     //   入れない（UI がログイン済み扱いになるため）。
-    if(session&&session.user&&session.user.is_anonymous===true){
+    if(_isAnonSession(session)){
       _anonUser=session.user;
       _currentUser=null;
       // タブを開き直すと sessionStorage の Noname が変わるので、復元した行の
@@ -10854,6 +10904,9 @@ async function _onLoginSuccess(){
   }
 }
 async function logoutUser(){
+  // ★A: signOut() の完了を待つ前に立てる。await 中に SIGNED_OUT が届いて _currentUser が
+  //   null になり、その状態で pagehide → saveProfile() → 匿名サインインが走りうる。
+  _signingOut=true;
   try{
     if(supabaseClient){
       await supabaseClient.auth.signOut({scope:'global'});
@@ -10867,6 +10920,9 @@ async function logoutUser(){
     }
   }
   keysToRemove.forEach(function(k){localStorage.removeItem(k);});
+  // ★B: localStorage から neverend_save を消したのと同じ位置で、メモリ上のキャッシュも空に
+  //   する。これが無いとリロードが確定するまで getStat() がログイン中の記録を返し続ける。
+  _saveCache={};
   sessionStorage.clear();
   window.location.reload();
 }

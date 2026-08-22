@@ -594,6 +594,14 @@ buildAchievements(0);
 renderTowerProgress();
 // emptyState/placementContentの表示はloadPurchases()に委譲する
 
+// ── 到達階層の「表示」用変換 ──────────────────────────────────────
+// 記録(normalBestStage/deathBestStage)は「踏み入れた階」基準のまま。記録の定義を変えると
+// Death Mode 解放条件・実績 Reach Floor N・匿名行の作成条件がずれ、Math.max マージのせいで
+// 既存ユーザーだけ旧基準で固定されて不公平になる。記録には触れず表示だけ -1 する。
+// ★ 使ってよいのは「表示」だけ。実績の condition や DB 送信には絶対に使わないこと。
+// ★ index.html / halloflegends.html にも同一実装がある。3ファイルで食い違わせないこと。
+function _displayFloor(n){return Math.max(0,(parseInt(n,10)||0)-1);}
+
 // TOWER PROGRESS — 各モードの最高到達階を .info-row パターンで描画
 function renderTowerProgress(){
   const el=document.getElementById('towerProgressGrid');
@@ -602,11 +610,11 @@ function renderTowerProgress(){
   const deathBest=parseInt(getStat('deathBestStage',0))||0;
   const unlocked=getStat('deathModeUnlocked',0)===1;
   let rows='<div class="info-row"><span class="info-label">NORMAL</span>'
-          +'<span class="info-val">'+normalBest+'/100F</span></div>';
+          +'<span class="info-val">'+_displayFloor(normalBest)+'/100F</span></div>';
   // 未解放のDEATHはタイトル画面の表記に合わせて '???'
   rows+='<div class="info-row"><span class="info-label">DEATH</span>'
        +(unlocked
-          ?'<span class="info-val">'+deathBest+'/100F</span>'
+          ?'<span class="info-val">'+_displayFloor(deathBest)+'/100F</span>'
           :'<span class="info-val" style="color:var(--muted)">???</span>')
        +'</div>';
   el.innerHTML='<div class="panel-card"><div class="info-rows">'+rows+'</div></div>';

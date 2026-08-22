@@ -921,6 +921,15 @@ function getStat(k,def){if(def===undefined)def=0;const v=loadSave()[k];return v!
 function setStat(k,v){const d=loadSave();d[k]=v;writeSave(d);}
 function incStat(k,by){if(by===undefined)by=1;setStat(k,(getStat(k))+by);}
 
+// ── 到達階層の「表示」用変換 ──────────────────────────────────────
+// 内部の記録は「踏み入れた階」基準のまま（5階にいる＝4階までクリア）。記録の定義を
+// 変えると Death Mode 解放条件(nextStage>=101)・実績 Reach Floor N・匿名行の作成条件
+// (bestStage>=2) が全部ずれるうえ、Math.max マージのせいで既存ユーザーだけ旧基準の
+// 値で固定され不公平になる。そこで記録には一切触れず、画面に出す数字だけ -1 する。
+// ★ 使ってよいのは「表示」だけ。判定・記録・DB送信・ソートには絶対に使わないこと。
+// ★ halloflegends.html / mypage.html にも同一実装がある。3ファイルで食い違わせないこと。
+function _displayFloor(n){return Math.max(0,(parseInt(n,10)||0)-1);}
+
 // Death cause tracking
 let lastDeathCause='';
 let lastDeathMsg='';  // 'spike','trap','fall','time'
@@ -7332,9 +7341,10 @@ function drawDead(){
   const stageCol=isNewBest?'rgba(255,220,50,0.95)':'rgba(160,185,255,0.85)';
   ctx.shadowColor=stageCol;ctx.shadowBlur=10;
   ctx.fillStyle=stageCol;ctx.font='bold 28px "Courier New"';
+  // ★ BEST は記録なので表示用に -1 する。isNewBest の判定は内部値のまま（触らない）。
   const stageStr=isNewBest
     ?'FLOOR '+lastDeathStage+'   ★ NEW BEST!'
-    :'FLOOR '+lastDeathStage+'   →   BEST '+best;
+    :'FLOOR '+lastDeathStage+'   →   BEST '+_displayFloor(best);
   ctx.fillText(stageStr,W/2,H/2+10);
 
   // 死因メッセージ — 中サイズ
@@ -7415,7 +7425,7 @@ function drawMyPage(){
   ctx.fillStyle='rgba(74,184,255,0.95)';ctx.font='bold 18px "Courier New"';ctx.textAlign='center';
   ctx.fillText(playerName,W/2,68);
   ctx.fillStyle='rgba(160,180,220,0.6)';ctx.font='11px "Courier New"';
-  ctx.fillText('Deaths: '+getStat('totalDeaths').toLocaleString()+'   |   Best: Floor '+getStat('bestStage',1)+'   |   Time: '+ph+'h '+pm+'m',W/2,86);
+  ctx.fillText('Deaths: '+getStat('totalDeaths').toLocaleString()+'   |   Best: Floor '+_displayFloor(getStat('bestStage',1))+'   |   Time: '+ph+'h '+pm+'m',W/2,86);
   ctx.restore();
 
   // Login status row
@@ -7659,15 +7669,19 @@ function drawTitle(){
   }
   ctx.restore();
   // 到達階層マーカー
+  // ★ bestFloor は記録（内部値）。マーカーの表示可否は従来どおり内部値で判定し、
+  //   ラベルと縦位置だけ表示用の値を使う。可否まで表示値にすると、1階で死んだだけの人の
+  //   マーカーが丸ごと消えて従来と挙動が変わってしまう。
   const bestFloor=(deathModeUnlocked?getStat('deathBestStage',0):getStat('normalBestStage',0))||getStat('bestStage',0)||0;
+  const bestFloorDisp=_displayFloor(bestFloor);
   const totalFloors=100;
   if(bestFloor>0){
     const towerTop=50,towerBase=650;
-    const markerY=towerBase-(bestFloor/totalFloors)*(towerBase-towerTop);
+    const markerY=towerBase-(bestFloorDisp/totalFloors)*(towerBase-towerTop);
     const pulse=Math.sin(animT*2.5)*0.4+0.6;
     ctx.save();
     ctx.font='bold 11px "Courier New"';
-    const label='BEST: '+bestFloor+'F';
+    const label='BEST: '+bestFloorDisp+'F';
     const labelW=ctx.measureText(label).width;
     // ▶（塔を向く・塔の左側）
     const triRightX=158;
@@ -7889,13 +7903,16 @@ function syncTitleDom(){
   // 100 階のうち何階まで登ったかを、塔の帯の中の縦位置(%)にする。
   // これはゲームの値であってレイアウトの較正値ではない。しかも #tsBest は
   // pointer-events:none の飾りなので、値が何であれタップ判定には影響しない。
+  // ★ bestFloor は記録（内部値）。表示可否は従来どおり内部値で判定し、ラベルと縦位置だけ
+  //   表示用の値を使う（キャンバス版 drawTitle の同じ処理と揃えてある）。
   const bestFloor=(dmu?getStat('deathBestStage',0):getStat('normalBestStage',0))||getStat('bestStage',0)||0;
+  const bestFloorDisp=_displayFloor(bestFloor);
   _tsClass(S,'ts-best',bestFloor>0);
   if(bestFloor>0){
-    _tsText(D.bestLabel,'BEST: '+bestFloor+'F');
+    _tsText(D.bestLabel,'BEST: '+bestFloorDisp+'F');
     // 0818a: 起点を 92 → 88 にして「1階」の基準位置をわずかに上へ。
     //   他の項(4/96/84)は変更しない。100階では Math.max(4,…) の下限に接触する。
-    const pct=Math.max(4,Math.min(96,_BEST_START-(bestFloor/100)*_BEST_SPAN));  // 下=1階 / 上=100階
+    const pct=Math.max(4,Math.min(96,_BEST_START-(bestFloorDisp/100)*_BEST_SPAN));  // 下=1階 / 上=100階
     if(D.best.__my!==pct){D.best.__my=pct;D.best.style.setProperty('--my',pct+'%');}
   }
 }
@@ -10958,7 +10975,7 @@ function _onUpgradeFailed(e){
     ? 'This Google account already belongs to another neverEND account.'
     : 'Could not link this Google account.';
   const detail=already
-    ? ('Your current record as <span style="color:#4ab8ff;">'+nm+'</span> (Floor '+best+' / Deaths '+deaths+') <b>cannot</b> be carried over to that account.')
+    ? ('Your current record as <span style="color:#4ab8ff;">'+nm+'</span> (Floor '+_displayFloor(best)+' / Deaths '+deaths+') <b>cannot</b> be carried over to that account.')
     : (desc?('<span style="color:#888;">'+desc+'</span>'):'Please try again.');
   inner.innerHTML=
     '<div class="lm-title">LINK FAILED</div>'+

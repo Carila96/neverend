@@ -219,6 +219,15 @@ footer{
 const _SB_URL='https://cokcftutqkwhfbmdnhgl.supabase.co';
 const _SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNva2NmdHV0cWt3aGZibWRuaGdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjk1NjIsImV4cCI6MjA5MDY0NTU2Mn0.FkDkRI8Ec5P07EKEZiGMA_kQ44rK0Pu6Hy_yeWBO3cQ';
 
+// ── 到達階層の「表示」用変換 ──────────────────────────────────────
+// DB の *_best_stage は「踏み入れた階」基準のまま（5階にいる＝4階までクリア）。記録の
+// 定義を変えると Death Mode 解放条件・実績・匿名行の作成条件がずれ、Math.max マージの
+// せいで既存ユーザーだけ旧基準で固定されて不公平になる。記録には触れず表示だけ -1 する。
+// ★ 使ってよいのは「表示」だけ。並び順(order)や絞り込み(gt)には絶対に使わないこと。
+//   全員一律に下がるので順位は変わらない。
+// ★ index.html / mypage.html にも同一実装がある。3ファイルで食い違わせないこと。
+function _displayFloor(n){return Math.max(0,(parseInt(n,10)||0)-1);}
+
 // 個人ランキングは「何階まで登ったか」だけを出す。DEATHS とプレイ時間は載せない。
 // 未ログイン(Noname)の死亡数・プレイ時間は player_profiles に入らない一方、上部の
 // WORLD DEATHS などの全体集計には Noname 分も入っている。並べると数字が食い違って
@@ -237,7 +246,7 @@ function buildRankingHTML(data){
     html+=`<tr>
       <td class="${rankClass}">${medal}</td>
       <td class="rank-name">${(r.name||'Anonymous').replace(/</g,'&lt;')}</td>
-      <td class="rank-floor">${r.stage_reached||1}F</td>
+      <td class="rank-floor">${_displayFloor(r.stage_reached)}F</td>
     </tr>`;
   });
   return html+'</tbody></table>';
@@ -267,7 +276,7 @@ function switchRankTab(mode){
 
 (async function(){
   const _cached=localStorage.getItem('neverend_world_stats_cache');
-  if(_cached){try{const c=JSON.parse(_cached);document.getElementById('statDeaths').textContent=Number(c.total_deaths||0).toLocaleString();document.getElementById('statFloor').textContent=(c.best_stage||0)+'F';document.getElementById('statHours').textContent=((c.total_play_time||0)/3600).toFixed(1)+'h';}catch(_){}}
+  if(_cached){try{const c=JSON.parse(_cached);document.getElementById('statDeaths').textContent=Number(c.total_deaths||0).toLocaleString();document.getElementById('statFloor').textContent=_displayFloor(c.best_stage)+'F';document.getElementById('statHours').textContent=((c.total_play_time||0)/3600).toFixed(1)+'h';}catch(_){}}
   const container=document.getElementById('rankingContainer');
   const sb=window.supabase.createClient(_SB_URL,_SB_KEY);
   try{
@@ -288,7 +297,7 @@ function switchRankTab(mode){
         .limit(100),
     ]);
     document.getElementById('statDeaths').textContent=Number(ws.total_deaths||0).toLocaleString();
-    document.getElementById('statFloor').textContent=(ws.best_stage||0)+'F';
+    document.getElementById('statFloor').textContent=_displayFloor(ws.best_stage)+'F';
     document.getElementById('statHours').textContent=((ws.total_play_time||0)/3600).toFixed(1)+'h';
     const pilots=ws.pilots||[];
     if(pilots.length>0){

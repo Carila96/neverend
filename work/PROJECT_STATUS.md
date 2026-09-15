@@ -44,6 +44,7 @@
 
 - PR #1: 収益化導線の価格表示と最低購入条件修正 — Merge済み。
 - PR #2: Growthファネル計測追加 — Merge済み。
+- PR #5: 標準Business Metrics endpoint追加 / 公開売上額分離 — Merge済み。
 
 ## 検証状況
 
@@ -65,8 +66,8 @@
 1. CARILA WORKS Controlから公開版更新。
 2. Productionで販売ページ表示・1マス購入フロー・growth-summary APIを確認。
 3. 実データで app_view → sales_view → sales_cta → checkout_created → purchase_completed の最大離脱点を特定。
-4. growth-summaryをCARILA WORKS Controlへ自動集約する共通方式を実装する。
-5. Growth Agentへ実売上・Checkout到達データを反映する。
+4. CARILA WORKS Controlの「事業」で標準Metrics自動取得が反映されることを確認する。
+5. 実測ファネルを基に最大離脱点を1つ改善する。
 
 ## 再開時の注意点 / Handoff
 
@@ -87,7 +88,7 @@
   - `checkout_created`
   - `purchase_completed`
 - ユーザーID、メール等はgrowth eventに保存しない。
-- `GET /api/stats?type=growth-summary` で過去30日の件数・転換率・売上USDを集計できる。
+- `GET /api/stats?type=growth-summary` で過去30日の件数・転換率を集計できる。売上額は公開レスポンスへ出さない。
 - Stripe webhookの `checkout.session.completed` 成功後に purchase_completed と実決済額を記録する。
 - Privacy Policy / cookie noticeを匿名利用分析に合わせて更新。
 - DB migrationのinsert/delete検証済み。テスト行は0件に戻した。

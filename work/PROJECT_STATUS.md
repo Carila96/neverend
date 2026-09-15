@@ -1,7 +1,7 @@
 # Project Status
 
 最終更新: 2026-09-15
-現在のbranch: `fix/monetization-pricing-and-status`
+現在のbranch: `feature/growth-funnel-tracking`
 
 ## 現在地
 
@@ -74,3 +74,22 @@
 - `api/grid.js` と `api/reserve.js` のPRICE_TIERSは同期が必要。
 - Production公開はCARILA WORKS Controlからユーザーが行う。
 - Checkout Session生成を「売上発生」と誤認しない。支払い完了・PaymentIntent・subscription成立まで確認する。
+
+
+## 2026-09-15 — Growth funnel計測基盤
+
+- 既存Supabaseへ `growth_events` テーブルを追加。
+- RLSを有効化し、anon/authenticatedからの直接アクセスをrevoke。service_role経由のサーバーAPIのみ書き込み可能。
+- 匿名イベント:
+  - `app_view`
+  - `sales_view`
+  - `sales_cta`
+  - `checkout_created`
+  - `purchase_completed`
+- ユーザーID、メール等はgrowth eventに保存しない。
+- `GET /api/stats?type=growth-summary` で過去30日の件数・転換率・売上USDを集計できる。
+- Stripe webhookの `checkout.session.completed` 成功後に purchase_completed と実決済額を記録する。
+- Privacy Policy / cookie noticeを匿名利用分析に合わせて更新。
+- DB migrationのinsert/delete検証済み。テスト行は0件に戻した。
+- Supabase Security Advisor確認: growth_eventsは「RLS enabled / policyなし」のINFO。anon/authenticated権限をrevokeしservice_role専用としているため意図した構成。既存DBには本件以前からの別Security Advisor警告あり（今回の変更範囲外）。
+- 次: PR → Vercel Preview確認 → Merge。Merge後にCARILA WORKS Controlから公開版更新し、Productionでファネル計測開始。

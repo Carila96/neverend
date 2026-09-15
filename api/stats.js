@@ -75,6 +75,59 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true, best_stage: updated[0].best_stage, updated: true });
   }
 
+
+  // POST /api/stats?type=growth — anonymous funnel event (server-side write only)
+  if (req.method === 'POST' && req.query.type === 'growth') {
+    const allowed = new Set(['app_view','sales_view','sales_cta','checkout_created']);
+    const event_name = String(req.body?.event_name || '');
+    if (!allowed.has(event_name)) return res.status(400).json({ ok:false, error:'invalid event_name' });
+
+    const rawSession = typeof req.body?.session_id === 'string' ? req.body.session_id : '';
+    const session_id = /^[a-zA-Z0-9_-]{8,80}$/.test(rawSession) ? rawSession : null;
+    const rawSource = typeof req.body?.source === 'string' ? req.body.source.slice(0,120) : null;
+    const metadata = req.body?.metadata && typeof req.body.metadata === 'object' && !Array.isArray(req.body.metadata)
+      ? req.body.metadata : {};
+
+    const { error } = await supabase.from('growth_events').insert({
+      event_name, session_id, source: rawSource, metadata,
+    });
+    if (error) {
+      console.error('[stats:growth] insert failed:', error.message);
+      return res.status(500).json({ ok:false, error:'event insert failed' });
+    }
+    return res.status(200).json({ ok:true });
+  }
+
+  // GET /api/stats?type=growth-summary — aggregate only; no raw event/session data exposed
+  if (req.method === 'GET' && req.query.type === 'growth-summary') {
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const { data, error } = await supabase
+      .from('growth_events')
+      .select('event_name,amount_usd')
+      .gte('created_at', since);
+    if (error) return res.status(500).json({ error:'growth summary failed' });
+
+    const counts = { app_view:0, sales_view:0, sales_cta:0, checkout_created:0, purchase_completed:0 };
+    let revenue_usd = 0;
+    for (const row of data || []) {
+      if (row.event_name in counts) counts[row.event_name]++;
+      if (row.event_name === 'purchase_completed') revenue_usd += Number(row.amount_usd || 0);
+    }
+    const rate = (a,b) => a > 0 ? Number(((b / a) * 100).toFixed(1)) : null;
+    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=120');
+    return res.status(200).json({
+      window_days:30,
+      counts,
+      rates:{
+        app_to_sales: rate(counts.app_view, counts.sales_view),
+        sales_to_cta: rate(counts.sales_view, counts.sales_cta),
+        cta_to_checkout: rate(counts.sales_cta, counts.checkout_created),
+        checkout_to_purchase: rate(counts.checkout_created, counts.purchase_completed),
+      },
+      revenue_usd:Number(revenue_usd.toFixed(2)),
+    });
+  }
+
   // GET /api/stats?type=world → 世界統計+テストパイロット名（旧 /api/world-stats）
   //   best_stage = 世界最高到達階。Hall of Legends の WORLD BEST タイルがこれを読む。
   if (req.method === 'GET' && req.query.type === 'world') {

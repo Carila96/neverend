@@ -2144,8 +2144,16 @@ function buildLogoDataUrl(){
 }
 let _appliedCoupon = null;
 
+function recordSalesGrowth(eventName, metadata){
+  try{
+    fetch('/api/stats?type=growth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_name:eventName,source:location.pathname,metadata:metadata||{}}),keepalive:true}).catch(function(){});
+  }catch(_){}
+}
+recordSalesGrowth('sales_view');
+
 async function proceedToCheckout(){
   clearCheckoutError();
+  recordSalesGrowth('sales_cta',{stage:currentStage,plan:plan});
   // ���O�C���`�F�b�N
   if(!_spCurrentUser){
     openSpLoginModal();
@@ -2168,6 +2176,7 @@ async function proceedToCheckout(){
     const coRes=await fetch(BASE+'/api/create-checkout',{method:'POST',headers:await _spAuthHeaders(),body:JSON.stringify({session_key,plan_type:plan,coupon_id:_appliedCoupon})});
     const coData=await coRes.json();
     if(!coRes.ok||(!coData.url&&!coData.subscription_url&&!coData.payment_url)){showCheckoutError('Payment setup failed.');btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';return;}
+    recordSalesGrowth('checkout_created',{stage:currentStage,plan:plan,block_count:resData.block_count,monthly_total:resData.monthly_total});
     localStorage.setItem('neverend_placement',JSON.stringify({session_key}));
     const checkoutUrl=coData.subscription_url||coData.payment_url||coData.url;
     if(window.parent!==window){

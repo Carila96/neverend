@@ -233,9 +233,17 @@ export default async function handler(req, res) {
   let processError = null;
   try {
     switch (event.type) {
-      case 'checkout.session.completed':
-        await handleCheckoutCompleted(event.data.object);
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        await handleCheckoutCompleted(session);
+        await supabase.from('growth_events').insert({
+          event_name:'purchase_completed',
+          amount_usd:Number(session.amount_total || 0) / 100,
+          source:'stripe',
+          metadata:{ stripe_session_id:session.id, plan_type:session.metadata?.plan_type || null },
+        });
         break;
+      }
       case 'customer.subscription.deleted':
         await handleSubscriptionDeleted(event.data.object);
         break;

@@ -11123,6 +11123,13 @@ function _setLmMsg(txt,color){
 }
 
 // ── X SHARE (dead screen button) ──
+function recordGrowthEvent(eventName, metadata){
+  try{
+    fetch('/api/stats?type=growth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_name:eventName,source:location.pathname,metadata:metadata||{}}),keepalive:true}).catch(function(){});
+  }catch(_){}
+}
+recordGrowthEvent('app_view');
+
 function shareDeathX(){
   const currentStage=lastDeathStage;
   const deathCount=getStat('totalDeaths');
@@ -11132,7 +11139,7 @@ function shareDeathX(){
 }
 </script>
 <div id="cookieBanner" style="display:none;">
-  <span>We use cookies to remember your stats (deaths, best stage, points). No tracking. No ads. &nbsp;<a href="#" onclick="return false;">Learn more</a></span>
+  <span>We use cookies to remember your stats (deaths, best stage, points). Anonymous usage analytics only. No targeted ads. &nbsp;<a href="#" onclick="return false;">Learn more</a></span>
   <div style="display:flex;gap:8px;">
     <button class="cookie-btn cookie-decline" onclick="declineCookies()">Decline</button>
     <button class="cookie-btn cookie-accept" onclick="acceptCookies()">Accept</button>

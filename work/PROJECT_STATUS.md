@@ -6,6 +6,7 @@
 ## 現在地
 
 - NeverEndは旧CARILA WORKS Harness導入前のRepository。
+- ゲーム自体は既にProduction公開済み。直近Mergeの反映有無と、作品そのものの公開状態を混同しない。
 - Stripe本番Checkoutは実際に生成されている。
 - 2026-09-15時点で確認したStripe本番アカウントでは、Checkout Sessionは存在するが全件 `payment_status=unpaid` / `expired`、PaymentIntentは0件。
 - したがって現時点の最大課題は「決済機能が存在しない」ことではなく、Checkout生成後に支払い完了へ至っていないこと。
@@ -104,3 +105,12 @@
 - 公開するのは30日間の匿名集計件数と転換率のみ（App / Offer / CTA / Checkout / Purchase）。
 - raw event、ユーザー情報、売上額は公開しない。
 - 次: CARILA WORKS Controlから公開版更新後、Production endpointとControl自動表示を確認。
+
+
+## 2026-09-15 — Audience-first Growth方針
+
+- The Million Dollar Homepageの成功要因を「ピクセル販売」ではなく、初期Social Proof → 物語化 → メディア露出 → 注目増加 → 広告価値増加の順序として整理。
+- neverENDは当面ゲームファーストで訴求し、背景広告/スポンサー販売を主要OGP・主要動画の第一メッセージにはしない。
+- 先にゲーム流入・共有・競争性を伸ばし、注目と最初の掲載例ができた段階でスポンサー訴求を強める。
+- `docs/GROWTH_STRATEGY.md` を追加。
+- DEPENDENCY DELTA: NONE

@@ -94,3 +94,12 @@
 - Supabase Security Advisor確認: growth_eventsは「RLS enabled / policyなし」のINFO。anon/authenticated権限をrevokeしservice_role専用としているため意図した構成。既存DBには本件以前からの別Security Advisor警告あり（今回の変更範囲外）。
 - PR #2はVercel Preview Ready / GitHub status successを確認後Merge済み。
 - 次: CARILA WORKS Controlから公開版更新し、Productionでファネル計測開始。
+
+
+## 2026-09-15 — 標準Business Metrics endpoint
+
+- 公開Growth集計から売上額を分離。
+- `GET /api/carila-business-metrics` を追加し、CARILA WORKS Controlの共通自動取得規格に対応。
+- 公開するのは30日間の匿名集計件数と転換率のみ（App / Offer / CTA / Checkout / Purchase）。
+- raw event、ユーザー情報、売上額は公開しない。
+- 次: CARILA WORKS Controlから公開版更新後、Production endpointとControl自動表示を確認。

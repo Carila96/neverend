@@ -1,0 +1,76 @@
+# Project Status
+
+最終更新: 2026-09-15
+現在のbranch: `fix/monetization-pricing-and-status`
+
+## 現在地
+
+- NeverEndは旧CARILA WORKS Harness導入前のRepository。
+- Stripe本番Checkoutは実際に生成されている。
+- 2026-09-15時点で確認したStripe本番アカウントでは、Checkout Sessionは存在するが全件 `payment_status=unpaid` / `expired`、PaymentIntentは0件。
+- したがって現時点の最大課題は「決済機能が存在しない」ことではなく、Checkout生成後に支払い完了へ至っていないこと。
+- 最初の1円候補として、購入導線・価格表示・Checkout到達後離脱の改善を優先する。
+
+## 完了済み
+
+- Stripe Checkout / subscription作成APIあり。
+- Stripe webhookでCheckout完了後に契約作成・blocks claim・placement反映を行う実装あり。
+- Supabase認証必須の購入フローあり。
+- 本番StripeでCheckout Session生成実績あり。
+- 価格はclaimed blocksに応じたtier方式。
+- 2026-09-15監査で販売ページの古い価格表示を修正。
+- 「1マスから / 最低決済$1」の確定仕様に合わせ、1〜2マスも$1で購入可能になるようreserve計算を修正。
+- 実装されていない「First month prorated」表記を削除。
+- Privacy Policyリンクを正しいページへ修正。
+
+## 現在の作業
+
+- 収益化経路監査と、最初の1円に向けた購入導線の整合性修正。
+
+## 直近の重要変更
+
+- 販売ページに残っていた旧価格:
+  - Launch $3,000/stage/mo
+  - sales-based escalation
+  を削除し、現行仕様:
+  - $1,000/stage/mo
+  - $0.40/block/mo
+  - 年払い10か月分
+  - price lock
+  と一致させた。
+- API側の最低購入条件を「3マス以上実質必要」から、仕様どおり「1マスから、最低決済$1」へ修正。
+
+## PR / Merge状況
+
+- 未作成。
+
+## 検証状況
+
+- Repositoryコード監査済み。
+- Stripe本番データ確認済み。
+- Checkout Session生成: 成功実績あり。
+- PaymentIntent: 0件。
+- 実購入完了: 未確認。
+- Production反映はMerge後、CARILA WORKS Control経由でユーザーが行う。
+
+## ブロッカー / 未確定事項
+
+- Checkout到達者が支払いを完了しなかった理由は、Stripeデータだけでは断定できない。
+- 利用数 / sales page到達数 / Checkout到達率の自動計測がまだ不足。
+- Stripe売上をCARILA WORKS Controlへ安全に自動集約するには、ControlからStripeへ直接アクセスする認証設計、またはNeverEnd側から安全に集計値を渡す仕組みが必要。
+
+## 次にやる具体的な作業
+
+1. 今回修正をPR→Merge。
+2. CARILA WORKS Controlから公開版更新。
+3. Productionで販売ページ表示と1マス購入フローを確認。
+4. 利用→販売ページ→Checkout→支払い完了のファネル計測を追加する。
+5. Stripe売上をControlへ自動集約する安全な方法を実装する。
+6. Growth Agentへ実売上・Checkout到達データを反映する。
+
+## 再開時の注意点 / Handoff
+
+- 価格表示と請求額は必ず同一仕様を参照する。
+- `api/grid.js` と `api/reserve.js` のPRICE_TIERSは同期が必要。
+- Production公開はCARILA WORKS Controlからユーザーが行う。
+- Checkout Session生成を「売上発生」と誤認しない。支払い完了・PaymentIntent・subscription成立まで確認する。

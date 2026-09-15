@@ -8,9 +8,8 @@ const TTL_MINUTES = 30;
 // ★修正A: グリッドの実寸。api/grid.js の GRID_COLS / GRID_ROWS と同値。
 const GRID_COLS = 128;
 const GRID_ROWS = 72;
-// ★修正B: 最低請求額(USD)。Math.floor により 1 ドル未満が 0 に潰れるため、
-//   0 以下になる注文は成立させない。金額そのものは切り捨てのままにして、
-//   「0 円で通る」経路だけを塞ぐ。
+// 最低決済額(USD)。確定仕様は「1マスから購入可 / 最低決済$1」。
+// 1〜2マスでも購入を拒否せず、通常価格計算が$1未満なら$1に切り上げる。
 const MIN_MONTHLY_TOTAL_USD = 1;
 
 // ★価格表は api/grid.js の PRICE_TIERS と完全に同一の内容を保つこと。
@@ -147,16 +146,15 @@ export default async function handler(req, res) {
   // block_count は blocks.length なので、deleted_blocks が 1 つでもあれば
   // 9216 に届かず通常価格になる。CUSTOM で全面を組んでも同じ価格になる。
   const is_full_stage = block_count === FULL_STAGE_BLOCKS;
-  const monthly_total = is_full_stage
+  const calculated_monthly_total = is_full_stage
     ? tier.monthlyFull
     : Math.floor(price_per_block * block_count * (1 - discount));
-  // ★修正B: Math.floor により 1 ドル未満が 0 に潰れる。0 以下の予約は成立させない。
-  //   最低額を「切り上げる」のではなく「拒否する」のは、意図しない少額課金を作らず、
-  //   かつ 0 円で枠を確保できる経路を確実に断つため。最小構成でも 1 ドルには届く
-  //   （最安 0.40/ブロックで 3 ブロック以上）ので、正規の購入導線には影響しない。
-  if (!Number.isFinite(monthly_total) || monthly_total < MIN_MONTHLY_TOTAL_USD) {
-    return res.status(400).json({ error: 'Order total too small' });
+  if (!Number.isFinite(calculated_monthly_total) || calculated_monthly_total < 0) {
+    return res.status(400).json({ error: 'Invalid order total' });
   }
+  const monthly_total = is_full_stage
+    ? calculated_monthly_total
+    : Math.max(MIN_MONTHLY_TOTAL_USD, calculated_monthly_total);
   const expires_at = new Date(Date.now() + TTL_MINUTES * 60 * 1000).toISOString();
   const session_key = randomBytes(32).toString('hex');
 

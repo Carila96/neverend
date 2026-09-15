@@ -11123,6 +11123,13 @@ function _setLmMsg(txt,color){
 }
 
 // ── X SHARE (dead screen button) ──
+function recordGrowthEvent(eventName, metadata){
+  try{
+    fetch('/api/stats?type=growth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_name:eventName,source:location.pathname,metadata:metadata||{}}),keepalive:true}).catch(function(){});
+  }catch(_){}
+}
+recordGrowthEvent('app_view');
+
 function shareDeathX(){
   const currentStage=lastDeathStage;
   const deathCount=getStat('totalDeaths');

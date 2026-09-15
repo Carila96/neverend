@@ -1,7 +1,7 @@
 # Project Status
 
 最終更新: 2026-09-15
-現在のbranch: `feature/growth-funnel-tracking`
+現在のbranch: `main`
 
 ## 現在地
 
@@ -42,7 +42,8 @@
 
 ## PR / Merge状況
 
-- 未作成。
+- PR #1: 収益化導線の価格表示と最低購入条件修正 — Merge済み。
+- PR #2: Growthファネル計測追加 — Merge済み。
 
 ## 検証状況
 
@@ -56,17 +57,16 @@
 ## ブロッカー / 未確定事項
 
 - Checkout到達者が支払いを完了しなかった理由は、Stripeデータだけでは断定できない。
-- 利用数 / sales page到達数 / Checkout到達率の自動計測がまだ不足。
+- ファネル計測コードはMerge済み。Production公開後に実データ蓄積・転換率確認が必要。
 - Stripe売上をCARILA WORKS Controlへ安全に自動集約するには、ControlからStripeへ直接アクセスする認証設計、またはNeverEnd側から安全に集計値を渡す仕組みが必要。
 
 ## 次にやる具体的な作業
 
-1. 今回修正をPR→Merge。
-2. CARILA WORKS Controlから公開版更新。
-3. Productionで販売ページ表示と1マス購入フローを確認。
-4. 利用→販売ページ→Checkout→支払い完了のファネル計測を追加する。
-5. Stripe売上をControlへ自動集約する安全な方法を実装する。
-6. Growth Agentへ実売上・Checkout到達データを反映する。
+1. CARILA WORKS Controlから公開版更新。
+2. Productionで販売ページ表示・1マス購入フロー・growth-summary APIを確認。
+3. 実データで app_view → sales_view → sales_cta → checkout_created → purchase_completed の最大離脱点を特定。
+4. growth-summaryをCARILA WORKS Controlへ自動集約する共通方式を実装する。
+5. Growth Agentへ実売上・Checkout到達データを反映する。
 
 ## 再開時の注意点 / Handoff
 
@@ -92,4 +92,5 @@
 - Privacy Policy / cookie noticeを匿名利用分析に合わせて更新。
 - DB migrationのinsert/delete検証済み。テスト行は0件に戻した。
 - Supabase Security Advisor確認: growth_eventsは「RLS enabled / policyなし」のINFO。anon/authenticated権限をrevokeしservice_role専用としているため意図した構成。既存DBには本件以前からの別Security Advisor警告あり（今回の変更範囲外）。
-- 次: PR → Vercel Preview確認 → Merge。Merge後にCARILA WORKS Controlから公開版更新し、Productionでファネル計測開始。
+- PR #2はVercel Preview Ready / GitHub status successを確認後Merge済み。
+- 次: CARILA WORKS Controlから公開版更新し、Productionでファネル計測開始。

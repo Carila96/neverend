@@ -108,10 +108,8 @@ export default async function handler(req, res) {
     if (error) return res.status(500).json({ error:'growth summary failed' });
 
     const counts = { app_view:0, sales_view:0, sales_cta:0, checkout_created:0, purchase_completed:0 };
-    let revenue_usd = 0;
     for (const row of data || []) {
       if (row.event_name in counts) counts[row.event_name]++;
-      if (row.event_name === 'purchase_completed') revenue_usd += Number(row.amount_usd || 0);
     }
     const rate = (a,b) => a > 0 ? Number(((b / a) * 100).toFixed(1)) : null;
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=120');
@@ -124,7 +122,6 @@ export default async function handler(req, res) {
         cta_to_checkout: rate(counts.sales_cta, counts.checkout_created),
         checkout_to_purchase: rate(counts.checkout_created, counts.purchase_completed),
       },
-      revenue_usd:Number(revenue_usd.toFixed(2)),
     });
   }
 

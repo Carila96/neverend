@@ -1,7 +1,7 @@
 # Project Status
 
 最終更新: 2026-09-15
-現在のbranch: `feature/growth-funnel-tracking`
+現在のbranch: `fix/private-revenue-public-funnel`
 
 ## 現在地
 
@@ -93,3 +93,17 @@
 - DB migrationのinsert/delete検証済み。テスト行は0件に戻した。
 - Supabase Security Advisor確認: growth_eventsは「RLS enabled / policyなし」のINFO。anon/authenticated権限をrevokeしservice_role専用としているため意図した構成。既存DBには本件以前からの別Security Advisor警告あり（今回の変更範囲外）。
 - 次: PR → Vercel Preview確認 → Merge。Merge後にCARILA WORKS Controlから公開版更新し、Productionでファネル計測開始。
+
+
+## 2026-09-15 — CARILA Business Metrics標準endpoint
+
+- 公開GETのgrowth summaryから売上額を除外。売上は今後認証付き経路でControlへ取り込む。
+- `GET /api/carila-business-metrics` を追加。
+- 公開するのは30日間の匿名集計件数と転換率のみ:
+  - appView
+  - offerView
+  - cta
+  - checkout
+  - purchase
+- raw event / user情報 / revenueは公開しない。
+- このendpointをCARILA WORKS Controlの作品横断自動計測規格として利用する予定。

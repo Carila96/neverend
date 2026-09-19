@@ -114,3 +114,8 @@
 - 先にゲーム流入・共有・競争性を伸ばし、注目と最初の掲載例ができた段階でスポンサー訴求を強める。
 - `docs/GROWTH_STRATEGY.md` を追加。
 - DEPENDENCY DELTA: NONE
+
+## Harness / GitHub capability verification
+- GitHub操作可否を一経路の失敗だけで判断しない必須ルールを `AGENTS.md` へ追加済み。
+- `GitHub操作不可` / `Merge不可` と報告する前に、認証済みGitHub connector/APIでRepository metadata、latest commit、Open PR、file readを直接確認する。
+- 書き込み依頼ではsafe writeも実際に試してから可否を判断する。

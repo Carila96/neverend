@@ -119,3 +119,14 @@
 - GitHub操作可否を一経路の失敗だけで判断しない必須ルールを `AGENTS.md` へ追加済み。
 - `GitHub操作不可` / `Merge不可` と報告する前に、認証済みGitHub connector/APIでRepository metadata、latest commit、Open PR、file readを直接確認する。
 - 書き込み依頼ではsafe writeも実際に試してから可否を判断する。
+
+
+## 2026-09-19 — CARILA共通Analytics / SEO補完
+
+- 既存GA4とNeverEnd専用growth funnelは維持したまま、CARILA WORKS横断比較用の共通匿名Analytics clientを追加。
+- project idは `neverend`。
+- 共通計測でpage view / UTM・referrer / session・再訪 / PWA standalone / 対応browserのinstall / outbound linkを横断比較可能にする。
+- 既存 `robots.txt` / `sitemap.xml` / canonical / OGP はすでに存在するため維持。
+- 検索エンジン向けに `VideoGame` JSON-LDを追加。
+- Control Production側の共通Analytics APIはGitHub Actions runner開始前failureが解消するまで未稼働。clientは失敗を無視するためゲーム本体へ影響しない。
+- DEPENDENCY DELTA: NONE

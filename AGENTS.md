@@ -22,3 +22,12 @@ CARILA WORKSの実装・修正タスクでGitHub操作が必要な場合は、co
 ## Production
 
 - Production公開はCARILA WORKS Controlからユーザーが行う。Repository側から勝手にProduction公開しない。
+
+## ChatGPT Work の提案・分業
+
+- CARILA WORKSの全作品で、依頼の一部または全部が通常ChatよりChatGPT Workに明確に適するかを毎回判断する。対象例は、大量のWeb横断調査、複数サイト比較、長時間のCloud Browser作業、フォーム入力、外部サービスをまたぐ多段階実務、調査から成果物作成までの長い作業である。
+- Workが有効な場合は、ユーザーが気付いていなくても**「この部分はWork向き」**と明示し、何が楽になるかを短く説明する。
+- その際、ユーザーがWorkへそのまま貼れる**具体的な依頼文をコードブロックで提示する**。抽象的に「Workを使ってください」で止めない。
+- 通常ChatからWorkへ自動切替できるような表現はしない。現在の環境で実行可能な作業はそのまま進め、Workが有利な部分だけを切り分ける。
+- Repository調査・実装・テスト・PR・Mergeは引き続きGitHub connectorを第一選択とし、WorkをGitHub作業の代替にしない。
+

@@ -148,3 +148,5 @@
 - 非Actions検証: 対象HTML/JS構文、法務リンク、canonical、sitemapのXML構造、関連の既存テストを確認。実機モバイル/本番広告配信は未検証。
 - DEPENDENCY DELTA: NONE / ACTIONS DELTA: NONE / LEGACY CLEANUP: NONE
 - ROUTE DELTA: NONE（既存法務URLの導線を整備）。
+
+- PR #12（branch: `codex/adsense-readiness-20261005`）作成済み。Vercelの自動Preview deployment成功を観測。main MergeによるProduction自動deployが無効である保証が取れないためMerge保留。

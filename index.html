@@ -360,6 +360,7 @@ body:not(.touch) #tsStart{text-shadow:0 0 0.5em rgba(255,255,255,0.85);}
   transform:translateY(-100%);text-align:center;z-index:2;
   pointer-events:none;}
 #tsKeys{font-size:calc(var(--f)*0.9);color:rgba(100,120,160,0.6);}
+#tsTerms a{pointer-events:auto;color:inherit;padding:4px;}
 #tsTerms{font-size:calc(var(--f)*0.78);color:rgba(120,120,150,0.6);}
 #tsAdmin{font-size:calc(var(--f)*0.8);font-weight:bold;color:rgba(255,220,50,0.6);display:none;}
 #titleScreen.ts-admin #tsAdmin{display:block;}
@@ -796,7 +797,7 @@ body.standalone #tsMsg{
   <div id="tsFoot">
     <div id="tsAdmin">[ ADMIN MODE ON ]</div>
     <div id="tsKeys">← →  MOVE    SPACE  JUMP    F / ESC  PAUSE</div>
-    <div id="tsTerms">By playing you agree to our Terms of Service  |  damnrun.com/terms</div>
+    <div id="tsTerms"><a href="/app/pages/terms.html">Terms</a> · <a href="/app/pages/privacy.html">Privacy</a> · <a href="/app/pages/contact.html">Contact</a></div>
   </div>
   <div id="tsTestBadge">TEST PLAY MODE<span id="tsTestBadgeName"></span></div>
   <!-- ビルド識別子。iOS PWA が古い HTML を掴んでいないかの判別用。
@@ -11143,7 +11144,7 @@ function shareDeathX(){
 }
 </script>
 <div id="cookieBanner" style="display:none;">
-  <span>We use cookies to remember your stats (deaths, best stage, points). Anonymous usage analytics only. No targeted ads. &nbsp;<a href="#" onclick="return false;">Learn more</a></span>
+  <span>We use cookies to remember your stats (deaths, best stage, points). Anonymous usage analytics only. No targeted ads. &nbsp;<a href="/app/pages/privacy.html">Learn more</a></span>
   <div style="display:flex;gap:8px;">
     <button class="cookie-btn cookie-decline" onclick="declineCookies()">Decline</button>
     <button class="cookie-btn cookie-accept" onclick="acceptCookies()">Accept</button>
@@ -11151,3 +11152,4 @@ function shareDeathX(){
 </div>
 </body>
 </html>
+

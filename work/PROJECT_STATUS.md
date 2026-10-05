@@ -136,3 +136,17 @@
 - PNG64×64 / ICO16・32・48・64（新規asset対象のみ）と参照先を非Actions検証。Worker変更はfaviconのHTMLタグのみ。
 - main反映とProduction反映は別。公開更新はControlのログイン待ちで未実施。既存機能の未公開変更がmainに含まれる場合、faviconだけの公開と見なさない。
 - DEPENDENCY DELTA: NONE / ROUTE DELTA: NONE / ACTIONS DELTA: NONE / LEGACY CLEANUP: NONE
+
+
+## AdSense公開前チェック（2026-10-05）
+- ControlのPUBLIC一覧と正式Productionを再取得して確認。法務導線・広告Privacy・検索用メタデータを対象範囲で補修。
+- 今回の変更: index.html, app/pages/privacy.html。
+- Production公開、AdSense再審査の送信は実施しない。mainへのMergeとProduction反映は別。
+- 公開版には未反映の既存main変更がある場合もある。Control公開前に全差分を確認し、公開後に法務導線・robots/sitemap・実画面を再確認する。
+- Search Consoleは今回ログイン先への通信が502のため現在状態を再取得できていない。
+- 広告はログイン・入力・管理・空データ・エラー・未審査UGC画面へ置かない。新規AdSenseコードは追加しない。
+- 非Actions検証: 対象HTML/JS構文、法務リンク、canonical、sitemapのXML構造、関連の既存テストを確認。実機モバイル/本番広告配信は未検証。
+- DEPENDENCY DELTA: NONE / ACTIONS DELTA: NONE / LEGACY CLEANUP: NONE
+- ROUTE DELTA: NONE（既存法務URLの導線を整備）。
+
+- PR #12（branch: `codex/adsense-readiness-20261005`）作成済み。Vercelの自動Preview deployment成功を観測。main MergeによるProduction自動deployが無効である保証が取れないためMerge保留。

@@ -11149,5 +11149,30 @@ function shareDeathX(){
     <button class="cookie-btn cookie-accept" onclick="acceptCookies()">Accept</button>
   </div>
 </div>
+<div id="oauthReturnError" role="alert" style="display:none;position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,.85);align-items:center;justify-content:center;padding:20px;">
+  <div style="width:100%;max-width:440px;padding:24px;background:#0a0a12;border:1px solid #4af;color:#e0e4f0;font:15px monospace;line-height:1.6;">
+    <h2 style="margin:0 0 12px;">SIGN-IN NOT COMPLETED</h2>
+    <p id="oauthReturnMessage"></p>
+    <p style="margin:16px 0;"><a href="/app/pages/mypage.html" style="color:#4af;">MY PAGE / SIGN IN</a> &nbsp; <a href="/app/pages/sales_page.html" style="color:#4af;">BACK TO STORE</a></p>
+    <button id="oauthReturnClose" type="button" style="padding:12px 20px;background:#13131f;border:1px solid #666;color:#fff;cursor:pointer;">CLOSE</button>
+  </div>
+</div>
+<script>
+(function showOAuthReturnError(){
+  const params=new URLSearchParams(window.location.search);
+  if(!params.has('error')&&!params.has('error_code'))return;
+  document.getElementById('oauthReturnMessage').textContent=params.get('error_code')==='bad_oauth_state'
+    ?'Your sign-in session expired. This sign-in was not completed. Please start sign-in again.'
+    :'Sign-in could not be completed. Please try again from My Page or the store.';
+  document.getElementById('oauthReturnError').style.display='flex';
+  document.getElementById('oauthReturnClose').addEventListener('click',function(){
+    document.getElementById('oauthReturnError').style.display='none';
+    const cleanUrl=new URL(window.location.href);
+    ['error','error_code','error_description'].forEach(function(key){cleanUrl.searchParams.delete(key);});
+    window.history.replaceState(null,'',cleanUrl.pathname+cleanUrl.search+cleanUrl.hash);
+  });
+})();
+</script>
 </body>
 </html>
+

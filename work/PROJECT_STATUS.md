@@ -140,9 +140,9 @@
 
 ## 2026-10-10 — Production Acceptance / safe fixes
 
-- Source refreshed from GitHub connector: main c074e8284ad801775674791cbec8b4db073860b6; open PR #12 remains independent.
-- Public Chrome gameplay: Normal start, movement, jump, two deaths and retries, pause inspected. Authentication and purchased-state Acceptance remain blocked by explicit terms consent / Google sign-in; mobile viewport and time-up/Hard remain unverified.
-- Safe branch fixes: sales login/cancel disruption, price preview aligned to unchanged backend, failed logo staging aborts checkout, duplicate click guard, cancellation fails closed on Stripe errors, safe public partner URLs, content-policy anchor, honest success/pending messaging and My Page links.
+- Source refreshed from GitHub connector: main c074e8284ad801775674791cbec8b4db073860b6; open PR #12 remains independent. Fixes are in PR #13; implementation commit 473e0abbf0af1e908c5cb9bad38a71777c1db743, with subsequent OAuth/report commit in the same branch.
+- Public Chrome gameplay: Normal start, movement, jump, two deaths and retries, pause inspected. Authentication and purchased-state Acceptance remain blocked by explicit terms consent / Google sign-in; mobile viewport and time-up remain unverified; Hard start/death/retry were subsequently confirmed.
+- Safe branch fixes: sales login/cancel disruption, price preview aligned to unchanged backend, failed logo staging aborts checkout, duplicate click guard, cancellation fails closed on Stripe errors, safe public partner URLs, content-policy anchor, honest success/pending messaging and My Page links, position bounds/fail-closed availability checks, OAuth expiry notice.
 - Regression command: node tests/acceptance-regression.mjs (PASS; 64,512 price/annual cases and mocked failure paths).
 - Sales blockers still require safe integration environment: webhook reservation ownership / transaction / retry integrity; destructive non-atomic update_position with rectangular replacement of transparent masks. Do not exercise these against customer data.
 - Production was not deployed. AGENTS.md requires user publishing through CARILA WORKS Control; merge auto-deploy safety is not established.

@@ -3,7 +3,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const sales=read('app/pages/sales_page.html');
-for(const path of ['app/pages/sales_page.html','app/pages/mypage.html','app/pages/halloflegends.html','app/pages/success.html','app/pages/terms.html']){
+for(const path of ['index.html','app/pages/sales_page.html','app/pages/mypage.html','app/pages/halloflegends.html','app/pages/success.html','app/pages/terms.html']){
   for(const match of read(path).matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)){
     if(!/src=|application\/ld\+json/.test(match[1]))new vm.Script(match[2],{filename:path});
   }
@@ -90,4 +90,12 @@ assert.ok(!sales.includes('window.history.back();\n    }else'));
 assert.ok(sales.includes('href="#how-it-works"'));
 assert.ok(read('app/pages/terms.html').includes('id="content-policy"'));
 assert.ok(read('app/pages/success.html').includes('[ MANAGE YOUR PLACEMENT ]'));
+const oauthScript=read('index.html').match(/<script>\s*(\(function showOAuthReturnError[\s\S]*?)<\/script>/)[1];
+const oauthElements={oauthReturnMessage:{textContent:''},oauthReturnError:{style:{}},oauthReturnClose:{addEventListener(_event,fn){this.click=fn;}}};
+let cleanedUrl='';
+vm.runInNewContext(oauthScript,{URL,URLSearchParams,document:{getElementById:id=>oauthElements[id]},window:{location:{search:'?error=invalid_request&error_code=bad_oauth_state&error_description=%3Cimg%3E',href:'https://damnrun.com/?error=invalid_request&error_code=bad_oauth_state&error_description=%3Cimg%3E'},history:{replaceState(_state,_title,url){cleanedUrl=url;}}}});
+assert.equal(oauthElements.oauthReturnError.style.display,'flex');
+assert.ok(oauthElements.oauthReturnMessage.textContent.includes('expired'));
+assert.ok(!oauthElements.oauthReturnMessage.textContent.includes('<img>'));
+oauthElements.oauthReturnClose.click();assert.equal(cleanedUrl,'/');
 console.log(`PASS: inline syntax; ${priceCases} price/annual cases; unsafe URLs; failed logo stops checkout; duplicate click; cancellation failure leaves all data intact; successful cancellation retains existing flow; invalid positions and failed availability checks do not mutate data.`);

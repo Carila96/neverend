@@ -1207,6 +1207,10 @@ async function savePartnerInfo(){
   const url = document.getElementById('partnerUrlInput').value.trim();
   const msg = document.getElementById('partnerInfoMsg');
 
+  if(url){
+    try{const parsed=new URL(url);if(!['http:','https:'].includes(parsed.protocol))throw new Error();}
+    catch(_){msg.style.color='#e74c3c';msg.textContent='Enter a complete http:// or https:// website URL.';return;}
+  }
   if(!_sbClient) return;
   const { data: { user } } = await _sbClient.auth.getUser();
   if(!user){ msg.style.color='#e74c3c'; msg.textContent='Please login first.'; return; }
@@ -2076,3 +2080,4 @@ async function confirmEdit(){
 </script>
 </body>
 </html>
+

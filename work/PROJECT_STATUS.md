@@ -136,3 +136,14 @@
 - PNG64×64 / ICO16・32・48・64（新規asset対象のみ）と参照先を非Actions検証。Worker変更はfaviconのHTMLタグのみ。
 - main反映とProduction反映は別。公開更新はControlのログイン待ちで未実施。既存機能の未公開変更がmainに含まれる場合、faviconだけの公開と見なさない。
 - DEPENDENCY DELTA: NONE / ROUTE DELTA: NONE / ACTIONS DELTA: NONE / LEGACY CLEANUP: NONE
+
+
+## 2026-10-10 — Production Acceptance / safe fixes
+
+- Source refreshed from GitHub connector: main c074e8284ad801775674791cbec8b4db073860b6; open PR #12 remains independent. Fixes are in PR #13; implementation commit 473e0abbf0af1e908c5cb9bad38a71777c1db743, with subsequent OAuth/report commit in the same branch.
+- Public Chrome gameplay: Normal start, movement, jump, two deaths and retries, pause inspected. Authentication and purchased-state Acceptance remain blocked by explicit terms consent / Google sign-in; mobile viewport and time-up remain unverified; Hard start/death/retry were subsequently confirmed.
+- Safe branch fixes: sales login/cancel disruption, price preview aligned to unchanged backend, failed logo staging aborts checkout, duplicate click guard, cancellation fails closed on Stripe errors, safe public partner URLs, content-policy anchor, honest success/pending messaging and My Page links, position bounds/fail-closed availability checks, OAuth expiry notice.
+- Regression command: node tests/acceptance-regression.mjs (PASS; 64,512 price/annual cases and mocked failure paths).
+- Sales blockers still require safe integration environment: webhook reservation ownership / transaction / retry integrity; destructive non-atomic update_position with rectangular replacement of transparent masks. Do not exercise these against customer data.
+- Production was not deployed. AGENTS.md requires user publishing through CARILA WORKS Control; merge auto-deploy safety is not established.
+- See docs/ACCEPTANCE_20261010.md for evidence, severity and unfinished tests. No real payment or external configuration change performed.

@@ -2,6 +2,28 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
+// Shared-account Checkout events must not be treated as neverEND purchases.
+const webhookSource=read('api/webhook.js').replace(/^import .*;\n/gm,'').replace('export const config','const config').replace('export default async function handler','async function handler');
+async function webhookRoutingTest(metadata,signatureOk=true){
+  let dbCalls=0;
+  const event={id:'evt_fixture',type:'checkout.session.completed',data:{object:{metadata}}};
+  const sb={from(table){dbCalls++;const q={select(){return this;},eq(){return this;},upsert(){return this;},update(){return this;},single:async()=>({data:null}),then(resolve,reject){return Promise.resolve({error:null}).then(resolve,reject);}};return q;}};
+  class Stripe{constructor(){this.webhooks={constructEvent(){if(!signatureOk)throw new Error('invalid signature');return event;}};}}
+  const ctx=vm.createContext({Stripe,createClient:()=>sb,process:{env:{}},console:{error(){},warn(){}},Buffer,Date});
+  vm.runInContext(webhookSource,ctx);
+  const req={method:'POST',headers:{'stripe-signature':'fixture'},on(name,cb){if(name==='data')cb(Buffer.from('{}'));if(name==='end')cb();}};
+  const res={code:null,body:null,status(code){this.code=code;return this;},json(body){this.body=body;return this;}};
+  await ctx.handler(req,res);return {res,dbCalls};
+}
+for(const metadata of [{app:'moshimo-box',checkout_key:'fixture'},{account_id:'fixture',tier:'team'},{},{app:'other',session_key:'fixture'}]){
+  const result=await webhookRoutingTest(metadata);assert.equal(result.res.code,200);assert.equal(result.res.body.ignored,true);assert.equal(result.dbCalls,0);
+}
+const invalidSignature=await webhookRoutingTest({app:'other'},false);assert.equal(invalidSignature.res.code,400);assert.equal(invalidSignature.dbCalls,0);
+for(const metadata of [{session_key:'fixture'},{app:'neverend',session_key:'fixture'},{app:'neverend'}]){
+  const result=await webhookRoutingTest(metadata);assert.equal(result.res.code,500);assert.ok(result.dbCalls>0);assert.ok(result.res.body.error.includes('No reservation'));
+}
+assert.match(read('api/create-checkout.js'),/app: 'neverend'/);
+console.log('PASS: foreign Checkout events return 200 without DB access; invalid signatures remain 400; legacy and marked neverEND sessions retain processing and retryable reservation errors.');
 const sales=read('app/pages/sales_page.html');
 for(const path of ['index.html','app/pages/sales_page.html','app/pages/mypage.html','app/pages/halloflegends.html','app/pages/success.html','app/pages/terms.html']){
   for(const match of read(path).matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)){

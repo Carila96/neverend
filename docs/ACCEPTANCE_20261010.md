@@ -181,3 +181,13 @@ neverEND PR #13とdocs/ACCEPTANCE_20261010.mdを現在のGitHub/Productionから
 3. PR #13および既存PR #12の反映は、販売整合性の残課題を解消・再検証したうえでCARILA WORKS Controlから行う。価格・ゲームルール・販売モデルの改善提案を採用するかは事業判断。
 
 実装・検証・レポート作成をユーザーの作業へ丸投げしない。上記の本人同意/認証と環境指定、公開判断以外は継続作業として実施できる。
+
+
+## 2026-10-14 JST — Sandbox配信停止予告と共有event処理
+- ユーザー提示のStripe通知: 10月10日11:28受信、neverEND Sandboxへ13回配信失敗、10月16日11:27 JSTにイベント送信停止予定。キー/契約の有効期限ではなく配信停止予告。現在endpointはenabledだが復旧の証拠ではない。
+- Carila SandboxのneverEND送信先は https://neverend.vercel.app/api/webhook。未完了eventを読み取り、他アプリのCheckout completedにも未完了配信が存在。個別endpointのHTTP status/responseは未取得。署名・URL・Runtime原因との切り分けはDashboardログイン待ち。
+- B14: 署名検証後に他アプリのCheckoutをneverENDの予約として処理し、session_key欠落で500になるコード欠陥を修正。appが別作品、または従来形式でsession_keyがないeventをDBアクセス前に200 ignoredで返す。新しいCheckout/subscription metadataにはapp=neverendを設定。既存session_key形式は維持し、neverENDと明示された不完全eventはエラー/再試行を維持。
+- 回帰PASS: foreign event 4形式は200かつDBアクセス0、無効署名は400、legacy/marked neverENDは既存処理へ進みmissing reservationエラーを維持。既存64,512価格ケースもPASS。実Webhook再送/Stripe設定変更/Production公開は未実施。
+- commits: 013dbc56d51cdf53ca5be6d34574e70554b2d773 (webhook), 45895e4b580e9846a10ba01283dc72618c68889c (metadata), ce9ed123e84c1c767024faf753591c933e4fbe2a (tests)。PR #13内のみ。
+- Google loginと購入済My Pageの実操作は10月10日に成功。本人規約同意後、2枠の所有/ACTIVE/一覧/詳細切替/EDIT/無変更保存拒否/位置プレビュー/CANCELを確認。本番保存・解約は未実施。10月14日Cloud Browserは新規未ログイン状態でありサイトsessionバグと断定しない。
+- 復旧判定条件: 個別配信エラー特定→必要修正を正しいSandbox Runtimeへ反映→署名付きの安全な配信で2xx確認→停止予告の解消を確認。コード回帰だけで復旧済みと言わない。

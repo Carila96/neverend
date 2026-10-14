@@ -53,14 +53,21 @@ export default async function handler(req, res) {
       if (!contract) return res.status(404).json({ error: 'Contract not found' });
       if (contract.status === 'canceled') return res.status(400).json({ error: 'Contract is canceled' });
 
-      const nx = parseInt(new_anchor_x, 10);
-      const ny = parseInt(new_anchor_y, 10);
+      const nx = Number(new_anchor_x);
+      const ny = Number(new_anchor_y);
       const w = contract.width;
       const h = contract.height;
       const stageId = contract.stage_id;
 
+      if (new_anchor_x == null || new_anchor_y == null ||
+          String(new_anchor_x).trim() === '' || String(new_anchor_y).trim() === '' ||
+          !Number.isInteger(nx) || !Number.isInteger(ny) ||
+          nx < 0 || ny < 0 || nx + w > 128 || ny + h > 72) {
+        return res.status(400).json({ error: 'Position must fit within the stage grid.' });
+      }
+
       // 新しい位置のブロックが他ユーザーにclaimedされていないか確認
-      const { data: conflictBlocks } = await supabase
+      const { data: conflictBlocks, error: conflictError } = await supabase
         .from('owned_blocks')
         .select('id')
         .eq('stage_id', stageId)
@@ -71,6 +78,10 @@ export default async function handler(req, res) {
         .gte('y', ny)
         .lte('y', ny + h - 1)
         .limit(1);
+
+      if (conflictError) {
+        return res.status(503).json({ error: 'Position availability could not be checked. Please retry.' });
+      }
 
       if (conflictBlocks && conflictBlocks.length > 0) {
         return res.status(409).json({ error: 'Position is already taken' });
@@ -137,6 +148,7 @@ export default async function handler(req, res) {
           await stripe.subscriptions.cancel(contract.stripe_subscription_id);
         } catch (stripeErr) {
           console.warn('Stripe cancel error:', stripeErr.message);
+          return res.status(502).json({ error: 'Cancellation could not be confirmed with Stripe. Your placement remains active. Please retry or contact support.' });
         }
       }
 
@@ -196,3 +208,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: err.message });
   }
 }
+

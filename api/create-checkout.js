@@ -85,6 +85,7 @@ export default async function handler(req, res) {
   }
 
   const metadata = {
+    app: 'neverend',
     session_key,
     stage_id:    String(stage_id),
     anchor_x:    String(anchor_x),
@@ -180,3 +181,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: err.message, type: err.type || null, code: err.code || null });
   }
 }
+

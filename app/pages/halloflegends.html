@@ -310,6 +310,9 @@ function switchRankTab(mode){
     _rankData.death=normalizeRank(deathRes.data,'death');
     switchRankTab(_rankTab);
 
+function escapePartnerHtml(value){return String(value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function partnerWebsite(value){try{const url=new URL(value);return ['http:','https:'].includes(url.protocol)?escapePartnerHtml(url.href):'';}catch(_){return '';}}
+
     // Founding Partners取得。
     // ★subscription_contracts を直読みしないこと。RLS は行しか絞れず列を絞れないため、
     //   公開 SELECT ポリシーで読ませると display_name の入った有効な契約について
@@ -343,8 +346,8 @@ function switchRankTab(mode){
           <div class="stage-group-title" onclick="togglePartners(this)">▶ FLOOR ${stageId} (${list.length})</div>
           <div class="stage-partners">
             ${list.map(p => `<div class="partner-row">
-              <span class="partner-name">${p.display_name.replace(/</g,'&lt;')}</span>
-              ${p.display_url ? `<a class="partner-link" href="${p.display_url}" target="_blank" rel="noopener">→ VISIT</a>` : ''}
+              <span class="partner-name">${escapePartnerHtml(p.display_name)}</span>
+              ${partnerWebsite(p.display_url) ? `<a class="partner-link" href="${partnerWebsite(p.display_url)}" target="_blank" rel="noopener noreferrer">→ VISIT</a>` : ''}
             </div>`).join('')}
           </div>
         </div>`;
@@ -418,3 +421,4 @@ function switchRankTab(mode){
 </script>
 </body>
 </html>
+

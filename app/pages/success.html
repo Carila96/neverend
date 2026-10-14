@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" href="/public/favicon.png">
 <link rel="apple-touch-icon" href="/public/favicon.png">
-<title>neverEND — Placement Confirmed</title>
+<title>neverEND — Placement Status</title>
+<meta name="robots" content="noindex,nofollow">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&display=swap');
 :root{--black:#090912;--dark:#0e0e1a;--panel:#13131f;--border:#262640;--accent:#e74c3c;--accent2:#4ab8ff;--gold:#f5c842;--green:#4ade80;--text:#e0e4f0;--muted:#787f90;}
@@ -37,18 +38,18 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <div id="stateProcessing">
     <div class="spinner"></div>
     <div class="heading">Processing...</div>
-    <div class="sub">Your payment was received.<br>Setting up your placement now.</div>
+    <div class="sub">Checking your placement status.<br>Please wait for confirmation.</div>
   </div>
 
   <!-- Live state -->
   <div id="stateLive" style="display:none;">
     <div class="status-icon">&#10003;</div>
     <div class="live-badge">PLACEMENT ACTIVE</div>
-    <div class="heading">YOUR LOGO IS NOW LIVE!</div>
-    <div class="sub">Your logo is now visible in the game background.<br>Thousands of players will see it every session.</div>
+    <div class="heading">YOUR PLACEMENT IS ACTIVE</div>
+    <div class="sub">Open My Page to check your image and placement.<br>Changes can take up to 5 minutes to appear in the game.</div>
     <div class="links">
       <a href="/" class="btn-link primary">[ PLAY THE GAME ]</a>
-      <a href="/" id="viewPlacementLink" class="btn-link">[ VIEW YOUR PLACEMENT ]</a>
+      <a href="/app/pages/mypage.html" class="btn-link">[ MANAGE YOUR PLACEMENT ]</a>
     </div>
   </div>
 
@@ -56,10 +57,11 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <div id="stateError" style="display:none;">
     <div class="status-icon" style="color:var(--accent);">&#33;</div>
     <div class="heading">STILL PROCESSING</div>
-    <div class="sub" id="errorSub">Your payment was received. Placement setup is taking a moment — please check back shortly or contact support.</div>
+    <div class="sub" id="errorSub">We could not confirm your placement yet. Check My Page or contact support before trying another payment.</div>
     <div class="links">
       <a href="/" class="btn-link primary">[ PLAY THE GAME ]</a>
-      <a href="/app/pages/sales_page.html" class="btn-link">[ BACK TO STORE ]</a>
+      <a href="/app/pages/mypage.html" class="btn-link">[ CHECK MY PAGE ]</a>
+      <a href="/app/pages/contact.html" class="btn-link">[ CONTACT SUPPORT ]</a>
     </div>
   </div>
 </div>
@@ -77,9 +79,6 @@ async function checkStatus() {
     if (data && data.status === 'active') {
       document.getElementById('stateProcessing').style.display = 'none';
       document.getElementById('stateLive').style.display = 'block';
-      if (data.stage_id) {
-        document.getElementById('viewPlacementLink').href = '/?stage=' + data.stage_id;
-      }
       return;
     }
   } catch(e) {
@@ -91,7 +90,7 @@ async function checkStatus() {
   } else {
     document.getElementById('stateProcessing').style.display = 'none';
     document.getElementById('stateError').style.display = 'block';
-    document.getElementById('errorSub').textContent = 'Your payment was received — placement will be active shortly. Please check My Page in a few minutes.';
+    document.getElementById('errorSub').textContent = 'Placement confirmation is taking longer than expected. Check My Page or contact support before making another payment.';
   }
 }
 
@@ -105,3 +104,4 @@ if (sessionId) {
 </script>
 </body>
 </html>
+

@@ -245,7 +245,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
          もう片方が壊れる（過去2回発生）。判定は _spBackToGame() にまとめてある。
          ここを書き換えるときは必ず両方の経路で確認すること。 -->
     <a href="#" onclick="_spBackToGame();return false;">← BACK TO GAME</a>
-    <a href="#">How It Works</a>
+    <a href="#how-it-works">How It Works</a>
     <a href="#pricing">Pricing</a>
     <a href="/app/pages/terms.html#content-policy">Content Policy</a>
     <a href="#sec1" class="nav-cta">CLAIM YOUR SPACE</a>
@@ -258,6 +258,11 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
   <div class="hero-eyebrow">// BACKGROUND GRID PLACEMENT MARKETPLACE</div>
   <h1>YOUR BRAND<br>LIVES IN THE <em>GAME</em></h1>
   <p>neverEND is a hardcore browser platformer. Every death, every retry &mdash; your logo is right there. Claim a piece of the background before it&rsquo;s gone.</p>
+</section>
+<section id="how-it-works" class="hero" style="padding:32px 24px;scroll-margin-top:80px;">
+  <h2>Choose your place in neverEND</h2>
+  <p>Upload a logo, choose its size and floor, then confirm the exact position in the preview before payment. You receive a licence to display it while your monthly or annual subscription is active, rather than ownership of the game background.</p>
+  <p>Manage your image, position, display name and website from My Page. Changes can take up to 5 minutes to appear. Exposure depends on players reaching your chosen floor; no impression count is guaranteed. Billing auto-renews, cancellation releases your space immediately, and your locked price lasts only while the subscription stays active. See the <a href="/app/pages/terms.html">Terms</a> for content and refund rules.</p>
 </section>
 <div class="stats-bar">
   <div class="stat-item"><div class="stat-num" id="statTotal">9,216</div><div class="stat-label">Blocks Per Stage</div></div>
@@ -443,7 +448,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
             <div>50k&ndash;90k &rarr; <span style="color:var(--gold)">$1.10/block</span></div>
             <div>90k+ &rarr; <span style="color:var(--gold)">$1.60&ndash;$4.00/block</span></div>
           </div>
-          <div style="margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:16px;color:var(--green);line-height:1.8;">Your purchase price is locked permanently. Cancel anytime.</div>
+          <div style="margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:16px;color:var(--green);line-height:1.8;">Your purchase price stays locked while your subscription remains active. Cancel anytime.</div>
         </div>
       </div>
     </div>
@@ -607,7 +612,7 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
           </div>
           <div class="checkout-err" id="checkoutError"></div>
           <button class="btn-primary w100" id="ctaBtn" onclick="proceedToCheckout()">PROCEED TO PAYMENT</button>
-          <p style="font-family:'Share Tech Mono',monospace;font-size:14px;color:var(--muted);text-align:center;margin-top:8px;letter-spacing:1px;">Changed your mind? Use your browser's back button to return.</p>
+          <p style="font-family:'Share Tech Mono',monospace;font-size:14px;color:var(--muted);text-align:center;margin-top:8px;letter-spacing:1px;">Changed your mind? Scroll up to review your placement before payment.</p>
           <p class="note">By proceeding you agree to our <a href="/app/pages/terms.html" target="_blank">Terms of Service</a> and <a href="/app/pages/privacy.html" target="_blank">Privacy Policy</a>.<br>Billing auto-renews. Cancel anytime.</p>
         </div>
         <div>
@@ -646,9 +651,9 @@ footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-i
   <div class="sec-sub" style="margin-bottom:14px;">Applied automatically at checkout.</div>
   <div class="vol-table">
     <div class="vol-row"><span class="v-blocks">1&ndash;199 blocks</span><span class="v-disc none">No discount &mdash; from $1/mo</span></div>
-    <div class="vol-row"><span class="v-blocks">200&ndash;499 blocks</span><span class="v-disc">-10%</span></div>
-    <div class="vol-row"><span class="v-blocks">500&ndash;999 blocks</span><span class="v-disc">-20%</span></div>
-    <div class="vol-row"><span class="v-blocks">1,000+ blocks</span><span class="v-disc">-30%</span></div>
+    <div class="vol-row"><span class="v-blocks">200&ndash;500 blocks</span><span class="v-disc">-10%</span></div>
+    <div class="vol-row"><span class="v-blocks">501&ndash;1,000 blocks</span><span class="v-disc">-20%</span></div>
+    <div class="vol-row"><span class="v-blocks">1,001+ blocks</span><span class="v-disc">-30%</span></div>
   </div>
   <div class="vol-title" style="margin-bottom:4px;margin-top:32px;">FULL STAGE PRICING</div>
   <div class="sec-sub" style="margin-bottom:14px;">One stage = 9,216 blocks. Price rises as the world fills.</div>
@@ -798,18 +803,7 @@ function _updateSpAuthUI(session){
 function openSpLoginModal(){document.getElementById('spLoginModal').style.display='flex';}
 function closeSpLoginModal(){
   document.getElementById('spLoginModal').style.display='none';
-  if(!_spCurrentUser){
-    // �V�����^�u�ŊJ���ꂽ�ꍇ�̓^�u�����
-    // �����^�u�ŊJ���ꂽ�ꍇ��history.back�Ŗ߂�
-    // window.opener�i���̃^�u�j������ꍇ�͂�����ɖ߂�
-    if(window.opener&&!window.opener.closed){
-      window.close();
-    }else if(window.history.length>1){
-      window.history.back();
-    }else{
-      window.location.href='/';
-    }
-  }
+
 }
 
 async function spLoginWith(provider){
@@ -855,11 +849,7 @@ async function spLogout(){
 document.addEventListener('DOMContentLoaded',function(){
   _initSpAuth();
   // ���O�C���`�F�b�N�F�����O�C���Ȃ烂�[�_����\��
-  setTimeout(function(){
-    if(!_spCurrentUser){
-      openSpLoginModal();
-    }
-  },800);
+
 });
 /*
 SUPABASE: owned_blocks table constraint must be updated to:
@@ -888,7 +878,7 @@ async function fetchPriceTier(){
 function updatePriceDisplay(){
   const t=currentPriceTier;
   const statEl=document.getElementById('statPriceFrom');
-  if(statEl)statEl.textContent='From $'+t.currentTier.pricePerBlock.toFixed(2)+'/block';
+  if(statEl)statEl.textContent='From $'+Math.max(1,Math.floor(t.currentTier.pricePerBlock))+'/mo';
   const monoEl=document.getElementById('monoPrice');
   if(monoEl)monoEl.textContent='$'+t.currentTier.monthlyFull.toLocaleString()+'/mo';
   const ppbEl=document.getElementById('pricePerBlockDisplay');
@@ -925,11 +915,13 @@ function calculatePrice(blockCount){
   else if(blockCount>=200)discount=0.10;
   const base=Math.round(blockCount*ppb*10)/10;
   const totalExact=blockCount*ppb*(1-discount);
-  const total=Math.floor(totalExact);
-  const totalDecimal=Math.round(totalExact*10)/10;
+  const fullStage=blockCount===9216;
+  const total=fullStage?currentPriceTier.currentTier.monthlyFull:Math.max(1,Math.floor(totalExact));
+  const totalDecimal=total;
+  if(fullStage)discount=0;
   const annual=total*10;
   const effective=Math.round(annual/12*10)/10;
-  return{base:base,disc:discount,total:total,totalDecimal:totalDecimal,annual:annual,effective:effective};
+  return{base:fullStage?total:base,disc:discount,total:total,totalDecimal:totalDecimal,annual:annual,effective:effective};
 }
 let GRID_COLS=128,GRID_ROWS=72,CELL=10;
 let monopolyMode=false,uploadedImage=null;
@@ -1352,7 +1344,7 @@ function selectMonopoly(btn){
     document.getElementById('sec2Converting').style.display='none';document.getElementById('sec2PreviewWrap').style.display='none';
   }
 }
-function updateCustomInfo(){const n=Math.max(1,Math.min(9216,parseInt(document.getElementById('customBlocks').value)||50));const r=calcPrice(n,plan);let t='none';if(n>=1000)t='-30%';else if(n>=500)t='-20%';else if(n>=200)t='-10%';document.getElementById('customInfo').innerHTML='Blocks: <strong>'+n+'</strong> | Discount: <strong>'+t+'</strong> | Monthly: <strong>$'+Math.round(r.total)+'</strong> | Annual: <strong>$'+Math.round(r.annual)+'</strong>';}
+function updateCustomInfo(){const n=Math.max(1,Math.min(9216,parseInt(document.getElementById('customBlocks').value)||50));const r=calcPrice(n,plan);let t='none';if(n===9216)t='Full stage fixed price';else if(n>=1001)t='-30%';else if(n>=501)t='-20%';else if(n>=200)t='-10%';document.getElementById('customInfo').innerHTML='Blocks: <strong>'+n+'</strong> | Discount: <strong>'+t+'</strong> | Monthly: <strong>$'+Math.round(r.total)+'</strong> | Annual: <strong>$'+Math.round(r.annual)+'</strong>';}
 function applyCustomBlocks(){const n=Math.max(1,Math.min(9216,parseInt(document.getElementById('customBlocks').value)||50));const w=Math.ceil(Math.sqrt(n)),h=Math.ceil(n/w);convertAndPreview(w,h);}
 // サイズ変更の共通の入口。selectPreset / applyCustomBlocks / selectMonopoly の
 // 3つがここを通る。前サイズの削除状態を必ず捨てる。
@@ -2152,6 +2144,8 @@ function recordSalesGrowth(eventName, metadata){
 recordSalesGrowth('sales_view');
 
 async function proceedToCheckout(){
+  const checkoutButton=document.getElementById('ctaBtn');
+  if(checkoutButton.disabled)return;
   clearCheckoutError();
   recordSalesGrowth('sales_cta',{stage:currentStage,plan:plan});
   // ���O�C���`�F�b�N
@@ -2169,7 +2163,10 @@ async function proceedToCheckout(){
     const session_key=resData.session_key;btn.textContent='UPLOADING LOGO...';
     const logoUrl=buildLogoDataUrl();
     // ★追加G: action=stage もログイン必須になった。アクセストークンを添える。
-    if(logoUrl){const parts=logoUrl.split(',');const logoHeaders=await _spAuthHeaders();await fetch(BASE+'/api/logo',{method:'POST',headers:logoHeaders,body:JSON.stringify({action:'stage',session_key,image_data:parts[1],image_type:parts[0].split(':')[1].split(';')[0]})}).catch(function(){});}
+    if(!logoUrl)throw new Error('Your logo could not be prepared. Please return to the image step.');
+    const parts=logoUrl.split(',');
+    const logoResponse=await fetch(BASE+'/api/logo',{method:'POST',headers:await _spAuthHeaders(),body:JSON.stringify({action:'stage',session_key,image_data:parts[1],image_type:parts[0].split(':')[1].split(';')[0]})});
+    if(!logoResponse.ok)throw new Error('Your logo could not be saved. No payment was started. Please try again.');
     _appliedCoupon = (document.getElementById('couponInput').value||'').trim().toUpperCase() || null;
     btn.textContent='CREATING CHECKOUT...';
     // ★追加G: /api/create-checkout もログイン必須になった。アクセストークンを添える。
@@ -2184,7 +2181,7 @@ async function proceedToCheckout(){
     }else{
       window.location.href=checkoutUrl;
     }
-  }catch(err){showCheckoutError('Connection error.');btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';}
+  }catch(err){showCheckoutError(err.message||'Connection error. No payment was started. Please try again.');btn.disabled=false;btn.textContent='PROCEED TO PAYMENT';}
 }
 
 function hsvToRgb(h,s,v){const i=Math.floor(h*6),f=h*6-i;const p=v*(1-s),q=v*(1-f*s),t=v*(1-(1-f)*s);let r,g,b;switch(i%6){case 0:r=v;g=t;b=p;break;case 1:r=q;g=v;b=p;break;case 2:r=p;g=v;b=t;break;case 3:r=p;g=q;b=v;break;case 4:r=t;g=p;b=v;break;case 5:r=v;g=p;b=q;break;}return{r:Math.round(r*255),g:Math.round(g*255),b:Math.round(b*255)};}

@@ -213,6 +213,18 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: `Webhook error: ${err.message}` });
   }
 
+  // A shared Stripe account sends other applications' events here too.
+  // Verify the signature first, then ignore unrelated Checkout sessions before
+  // reading/writing the database or retaining another application's payload.
+  // Legacy neverEND sessions have session_key but no app marker.
+  if (event.type === 'checkout.session.completed') {
+    const metadata = event.data.object.metadata || {};
+    if ((metadata.app && metadata.app !== 'neverend') ||
+        (!metadata.app && !metadata.session_key)) {
+      return res.status(200).json({ received: true, ignored: true });
+    }
+  }
+
   // Idempotency: skip already-processed events
   const { data: existing } = await supabase
     .from('stripe_webhook_events')
@@ -271,3 +283,4 @@ export default async function handler(req, res) {
   if (processError) return res.status(500).json({ error: processError });
   return res.status(200).json({ received: true });
 }
+

@@ -138,8 +138,8 @@ export default async function handler(req, res) {
   // -35% で計算していた。4,608 マス $1,290 → 4,609 マス $1,198 と、
   // 1 マス増やすと安くなる逆転も起きていた）。
   let discount = 0;
-  if(block_count >= 1001) discount = 0.30;
-  else if(block_count >= 501) discount = 0.20;
+  if(block_count >= 1000) discount = 0.30;
+  else if(block_count >= 500) discount = 0.20;
   else if(block_count >= 200) discount = 0.10;
   // 全面購入は単価×マス数×割引とは無関係の固定額（monthlyFull）。
   // 判定はクライアントの申告ではなく block_count で行う（修正A・F の方針）。

@@ -30,6 +30,9 @@ assert.match(webhookSource,/item\.current_period_end/);
 assert.ok(!sales.includes('First month prorated.'));
 assert.ok(!sales.includes('<sup>$</sup>3k<sub>/stage/mo</sub>'));
 assert.ok(sales.includes('Transparent pixels remain billable unless removed in EDIT BLOCKS'));
+assert.ok(sales.includes('200&ndash;500 blocks'));
+assert.ok(sales.includes('501&ndash;1,000 blocks'));
+assert.ok(sales.includes('1,001+ blocks'));
 console.log('PASS: foreign Checkout events return 200 without DB access; invalid signatures remain 400; legacy and marked neverEND sessions retain processing and retryable reservation errors.');
 const sales=read('app/pages/sales_page.html');
 for(const path of ['index.html','app/pages/sales_page.html','app/pages/mypage.html','app/pages/halloflegends.html','app/pages/success.html','app/pages/terms.html']){
@@ -46,7 +49,7 @@ let priceCases=0;
 for(const tier of tiers){
   priceContext.currentPriceTier.currentTier=tier;
   for(let n=1;n<=9216;n++){
-    const discount=n>=1000?.3:n>=500?.2:n>=200?.1:0;
+    const discount=n>=1001?.3:n>=501?.2:n>=200?.1:0;
     const expected=n===9216?tier.monthlyFull:Math.max(1,Math.floor(tier.pricePerBlock*n*(1-discount)));
     const result=priceContext.calculatePrice(n);
     assert.equal(result.total,expected,`tier ${tier.pricePerBlock}, blocks ${n}`);

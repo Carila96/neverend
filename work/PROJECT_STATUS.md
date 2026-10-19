@@ -147,3 +147,13 @@
 - Sales blockers still require safe integration environment: webhook reservation ownership / transaction / retry integrity; destructive non-atomic update_position with rectangular replacement of transparent masks. Do not exercise these against customer data.
 - Production was not deployed. AGENTS.md requires user publishing through CARILA WORKS Control; merge auto-deploy safety is not established.
 - See docs/ACCEPTANCE_20261010.md for evidence, severity and unfinished tests. No real payment or external configuration change performed.
+
+## 2026-10-19 — Stripe Sandbox Webhook delivery alert (unresolved)
+- User reported Stripe's sandbox warning dated 2026-10-16: 52 failed delivery attempts since 2026-10-13 18:16 JST to `https://neverend.vercel.app/api/webhook`; suspension projected 2026-10-22 18:16 JST.
+- Stripe connector confirms sandbox account `acct_1TH92mE7DVLqVMah` endpoint `we_1TIVDHE7DVLqVMahP3mA9BAF` is currently **enabled**, URL unchanged. Selected events: checkout.session.completed, customer.subscription.deleted, customer.subscription.updated, invoice.payment_failed.
+- GitHub main `api/webhook.js` does implement POST with raw Stripe body/signature verification and event processing. It needs runtime `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`. Current webhook initializes Stripe and Supabase clients at module load; missing runtime variables can prevent normal responses. The old user-observed signature mismatch may indicate a mismatched endpoint signing secret; **neither is confirmed as the 52 failures' cause**.
+- Current code handles invoice.payment_succeeded but this Stripe endpoint is not subscribed to that event; subscription.updated is subscribed but default-acknowledged. This event-selection difference requires functional review, not arbitrary live changes.
+- Stripe alert categorizes failures as 'other error' rather than a specific HTTP status. The available Stripe API did not expose individual delivery HTTP logs. Container DNS could not reach Vercel, which is not proof of a broken Vercel deployment.
+- **NOT FIXED / NOT ACCEPTED.** Verify sandbox endpoint dashboard delivery logs + Vercel deployment availability/Stripe secret pairing. Test signed `checkout.session.completed` using isolated fixture and check HTTP 2xx, idempotency, fulfillment. Do not replay production purchases or modify production secrets. No changes to Stripe endpoint, source code, or deployment in this diagnostic.
+- Production publishing remains user-controlled via CARILA WORKS Control, while Vercel auto-deploy behavior needs explicit safety verification before merging runtime code.
+

@@ -156,4 +156,4 @@
 - main上では旧 $3k/$5k/$7.5k/$15k pricing cardsは既に除去済みで、現行 $1,000 stage / $0.40 block の概要表示を維持していることを再確認。
 - `First month prorated` 表記はmain上ですでに除去済みであることを再確認。
 - 透明ピクセルの課金説明を実装に一致させ、EDIT BLOCKSで削除したblockのみ非課金であることを明記。
-- Production公開は未実施。CARILA WORKS Controlからユーザーが公開後、Stripe Checkout→webhook→contract/placement反映の実E2Eを再確認する。
+- 2026-10-19 main merge `7b0bc057...` 後、GitHub/Vercel statusで main deployment `Deployment has completed` / success を確認。neverENDはCARILA WORKS Control公開対象ではない。公開ドメインは `https://damnrun.com`、Stripe本番Webhookも `https://damnrun.com/api/webhook` でenabled。実課金を伴うCheckout→webhook→contract/placementの最終E2Eのみ未実施。

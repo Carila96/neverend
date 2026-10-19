@@ -152,7 +152,7 @@
 ## 2026-10-19 — Stripe / pricing integrity fix
 
 - Stripe webhookを2025-03-31以降のAPI構造へ追従。invoiceのsubscription参照は `parent.subscription_details.subscription` を優先し、subscription periodはitemsの `current_period_start/end` を利用する。
-- 数量割引境界を販売ページ表記どおり 500 blocks=-20%、1,000 blocks=-30% に統一。
+- 数量割引境界は販売ページ表記と既存請求ロジックどおり 200–500=-10%、501–1,000=-20%、1,001+=-30% を維持し、表示・計算・請求の一致を確認。
 - sales_pageに残存していた旧 $3k/$5k/$7.5k/$15k stage pricing cardsを削除。
 - 実装されていない `First month prorated` 表記を削除。
 - 透明ピクセルの課金説明を実装に一致させ、EDIT BLOCKSで削除したblockのみ非課金であることを明記。

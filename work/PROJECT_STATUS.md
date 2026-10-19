@@ -157,3 +157,18 @@
 - `First month prorated` 表記はmain上ですでに除去済みであることを再確認。
 - 透明ピクセルの課金説明を実装に一致させ、EDIT BLOCKSで削除したblockのみ非課金であることを明記。
 - 2026-10-19 main merge `7b0bc057...` 後、GitHub/Vercel statusで main deployment `Deployment has completed` / success を確認。neverENDはCARILA WORKS Control公開対象ではない。公開ドメインは `https://damnrun.com`、Stripe本番Webhookも `https://damnrun.com/api/webhook` でenabled。実課金を伴うCheckout→webhook→contract/placementの最終E2Eのみ未実施。
+
+
+## 2026-10-19 — Partner offer: 12 months free → 90% off thereafter
+
+- Partner-only Stripe offer flow implemented without changing ordinary customer pricing.
+- Customer-facing partner codes use Stripe Promotion Codes; legacy coupon IDs remain server allowlisted.
+- Partner Promotion Code metadata links the year-1 coupon to the year-2+ coupon.
+- Checkout validates the pair strictly: year 1 = 100% off for 12 months; year 2+ = 90% off forever.
+- Checkout explicitly collects a payment method even when the first invoice is $0.
+- On checkout.session.completed, only partner subscriptions are attached to a two-phase Subscription Schedule:
+  - Phase 1: 1 year with 100% coupon.
+  - Phase 2: indefinite with 90% coupon.
+  - Ordinary subscriptions do not enter this branch.
+- Sandbox created three one-redemption partner Promotion Codes (A/B/C), each backed by a 12-month 100% coupon and a 90%-forever coupon.
+- Production partner codes/coupons are intentionally not created until Sandbox Checkout → webhook → schedule transition acceptance passes.

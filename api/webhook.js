@@ -35,6 +35,63 @@ function subscriptionPeriod(subscription) {
   return { start, end };
 }
 
+async function ensurePartnerOfferSchedule(subscription, metadata) {
+  if (metadata?.partner_offer !== 'partner_free12_then_90') return null;
+  const year1CouponId = metadata.partner_year1_coupon_id;
+  const year2CouponId = metadata.partner_year2_coupon_id;
+  if (!year1CouponId || !year2CouponId) {
+    throw new Error('Partner offer metadata is incomplete');
+  }
+
+  let schedule;
+  const scheduleId = typeof subscription.schedule === 'string'
+    ? subscription.schedule
+    : subscription.schedule?.id;
+  if (scheduleId) {
+    schedule = await stripe.subscriptionSchedules.retrieve(scheduleId);
+  } else {
+    schedule = await stripe.subscriptionSchedules.create({
+      from_subscription: subscription.id,
+    });
+  }
+
+  const items = (subscription.items?.data || []).map(item => ({
+    price: item.price.id,
+    quantity: item.quantity || 1,
+  }));
+  if (!items.length) throw new Error('Partner subscription has no recurring items');
+
+  const firstPhaseStart = schedule.phases?.[0]?.start_date;
+  if (!Number.isFinite(firstPhaseStart)) {
+    throw new Error(`Subscription schedule missing first phase start for ${subscription.id}`);
+  }
+
+  return stripe.subscriptionSchedules.update(schedule.id, {
+    end_behavior: 'release',
+    proration_behavior: 'none',
+    metadata: {
+      app: 'neverend',
+      offer: 'partner_free12_then_90',
+      partner_slot: metadata.partner_slot || '',
+      checkout_session: metadata.checkout_session || '',
+    },
+    phases: [
+      {
+        start_date: firstPhaseStart,
+        duration: { interval: 'year', interval_count: 1 },
+        items,
+        discounts: [{ coupon: year1CouponId }],
+        proration_behavior: 'none',
+      },
+      {
+        items,
+        discounts: [{ coupon: year2CouponId }],
+        proration_behavior: 'none',
+      },
+    ],
+  });
+}
+
 // ── Event handlers ──────────────────────────────────────────────────────────
 
 // checkout.session.completed: payment collected → claim blocks, create contract
@@ -95,7 +152,13 @@ async function handleCheckoutCompleted(session) {
   // Stripe 2025-03-31+ exposes billing periods on subscription items.
   if (session.subscription) {
     contractPayload.stripe_subscription_id = session.subscription;
-    const sub = await stripe.subscriptions.retrieve(session.subscription);
+    const sub = await stripe.subscriptions.retrieve(session.subscription, {
+      expand: ['items.data.price', 'schedule'],
+    });
+    await ensurePartnerOfferSchedule(sub, {
+      ...session.metadata,
+      checkout_session: session.id,
+    });
     const period = subscriptionPeriod(sub);
     contractPayload.current_period_start = new Date(period.start * 1000).toISOString();
     contractPayload.current_period_end = new Date(period.end * 1000).toISOString();

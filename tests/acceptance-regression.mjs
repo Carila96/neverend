@@ -23,6 +23,17 @@ for(const metadata of [{session_key:'fixture'},{app:'neverend',session_key:'fixt
   const result=await webhookRoutingTest(metadata);assert.equal(result.res.code,500);assert.ok(result.dbCalls>0);assert.ok(result.res.body.error.includes('No reservation'));
 }
 assert.match(read('api/create-checkout.js'),/app: 'neverend'/);
+// Stripe 2025-03-31+ compatibility: invoice subscription location and item-level periods.
+assert.match(webhookSource,/invoice\?\.parent\?\.subscription_details\?\.subscription/);
+assert.match(webhookSource,/item\.current_period_start/);
+assert.match(webhookSource,/item\.current_period_end/);
+const salesCopy=read('app/pages/sales_page.html');
+assert.ok(!salesCopy.includes('First month prorated.'));
+assert.ok(!salesCopy.includes('<sup>$</sup>3k<sub>/stage/mo</sub>'));
+assert.ok(salesCopy.includes('Transparent pixels remain billable unless removed in EDIT BLOCKS'));
+assert.ok(salesCopy.includes('200&ndash;500 blocks'));
+assert.ok(salesCopy.includes('501&ndash;1,000 blocks'));
+assert.ok(salesCopy.includes('1,001+ blocks'));
 console.log('PASS: foreign Checkout events return 200 without DB access; invalid signatures remain 400; legacy and marked neverEND sessions retain processing and retryable reservation errors.');
 const sales=read('app/pages/sales_page.html');
 for(const path of ['index.html','app/pages/sales_page.html','app/pages/mypage.html','app/pages/halloflegends.html','app/pages/success.html','app/pages/terms.html']){

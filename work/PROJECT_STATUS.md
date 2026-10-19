@@ -157,3 +157,10 @@
 - **NOT FIXED / NOT ACCEPTED.** Verify sandbox endpoint dashboard delivery logs + Vercel deployment availability/Stripe secret pairing. Test signed `checkout.session.completed` using isolated fixture and check HTTP 2xx, idempotency, fulfillment. Do not replay production purchases or modify production secrets. No changes to Stripe endpoint, source code, or deployment in this diagnostic.
 - Production publishing remains user-controlled via CARILA WORKS Control, while Vercel auto-deploy behavior needs explicit safety verification before merging runtime code.
 
+
+## 2026-10-19 — Sandbox endpoint retirement confirmation
+- Stripe sandbox endpoint `we_1TIVDHE7DVLqVMahP3mA9BAF` targeting legacy `neverend.vercel.app/api/webhook` was disabled intentionally after confirming Vercel is no longer the user's active neverEND host.
+- Stripe API returned `status=disabled`; a subsequent list request independently confirmed disabled.
+- No live Stripe endpoint or application deployment was altered.
+- This stops attempts to deliver to that old destination. It does NOT verify webhook processing at the current damnrun deployment. Sandbox fulfillment remains unverified until current hosting and its webhook are tested.
+- Do not re-enable the obsolete Vercel destination without verifying actual hosting and obtaining user approval.

@@ -147,3 +147,13 @@
 - Sales blockers still require safe integration environment: webhook reservation ownership / transaction / retry integrity; destructive non-atomic update_position with rectangular replacement of transparent masks. Do not exercise these against customer data.
 - Production was not deployed. AGENTS.md requires user publishing through CARILA WORKS Control; merge auto-deploy safety is not established.
 - See docs/ACCEPTANCE_20261010.md for evidence, severity and unfinished tests. No real payment or external configuration change performed.
+
+
+## 2026-10-19 — Stripe / pricing integrity fix
+
+- Stripe webhookを2025-03-31以降のAPI構造へ追従。invoiceのsubscription参照は `parent.subscription_details.subscription` を優先し、subscription periodはitemsの `current_period_start/end` を利用する。
+- 数量割引境界を販売ページ表記どおり 500 blocks=-20%、1,000 blocks=-30% に統一。
+- sales_pageに残存していた旧 $3k/$5k/$7.5k/$15k stage pricing cardsを削除。
+- 実装されていない `First month prorated` 表記を削除。
+- 透明ピクセルの課金説明を実装に一致させ、EDIT BLOCKSで削除したblockのみ非課金であることを明記。
+- Production公開は未実施。CARILA WORKS Controlからユーザーが公開後、Stripe Checkout→webhook→contract/placement反映の実E2Eを再確認する。

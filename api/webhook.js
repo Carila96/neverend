@@ -19,6 +19,22 @@ function getRawBody(req) {
   });
 }
 
+function subscriptionIdFromInvoice(invoice) {
+  return invoice?.parent?.subscription_details?.subscription || invoice?.subscription || null;
+}
+
+function subscriptionPeriod(subscription) {
+  const items = subscription?.items?.data || [];
+  const starts = items.map(item => item.current_period_start).filter(Number.isFinite);
+  const ends = items.map(item => item.current_period_end).filter(Number.isFinite);
+  const start = starts.length ? Math.min(...starts) : subscription?.current_period_start;
+  const end = ends.length ? Math.max(...ends) : subscription?.current_period_end;
+  if (!Number.isFinite(start) || !Number.isFinite(end)) {
+    throw new Error(`Subscription period missing for subscription=${subscription?.id || 'unknown'}`);
+  }
+  return { start, end };
+}
+
 // ── Event handlers ──────────────────────────────────────────────────────────
 
 // checkout.session.completed: payment collected → claim blocks, create contract
@@ -75,11 +91,14 @@ async function handleCheckoutCompleted(session) {
     current_period_start: new Date().toISOString(),
   };
 
-  // Attach subscription ID for monthly plans
+  // Checkout creates a subscription for both monthly and annual plans.
+  // Stripe 2025-03-31+ exposes billing periods on subscription items.
   if (session.subscription) {
     contractPayload.stripe_subscription_id = session.subscription;
     const sub = await stripe.subscriptions.retrieve(session.subscription);
-    contractPayload.current_period_end = new Date(sub.current_period_end * 1000).toISOString();
+    const period = subscriptionPeriod(sub);
+    contractPayload.current_period_start = new Date(period.start * 1000).toISOString();
+    contractPayload.current_period_end = new Date(period.end * 1000).toISOString();
   }
 
   const { data: contract, error: contractError } = await supabase
@@ -171,28 +190,31 @@ async function handleSubscriptionDeleted(subscription) {
 
 // invoice.payment_failed: mark contract past_due
 async function handleInvoicePaymentFailed(invoice) {
-  if (!invoice.subscription) return;
+  const subscriptionId = subscriptionIdFromInvoice(invoice);
+  if (!subscriptionId) return;
 
   await supabase
     .from('subscription_contracts')
     .update({ status: 'past_due' })
-    .eq('stripe_subscription_id', invoice.subscription);
+    .eq('stripe_subscription_id', subscriptionId);
 }
 
 // invoice.payment_succeeded: recover from past_due after successful retry
 async function handleInvoicePaymentSucceeded(invoice) {
-  if (!invoice.subscription) return;
+  const subscriptionId = subscriptionIdFromInvoice(invoice);
+  if (!subscriptionId) return;
 
-  const sub = await stripe.subscriptions.retrieve(invoice.subscription);
+  const sub = await stripe.subscriptions.retrieve(subscriptionId);
+  const period = subscriptionPeriod(sub);
 
   await supabase
     .from('subscription_contracts')
     .update({
       status: 'active',
-      current_period_start: new Date(sub.current_period_start * 1000).toISOString(),
-      current_period_end:   new Date(sub.current_period_end   * 1000).toISOString(),
+      current_period_start: new Date(period.start * 1000).toISOString(),
+      current_period_end:   new Date(period.end   * 1000).toISOString(),
     })
-    .eq('stripe_subscription_id', invoice.subscription)
+    .eq('stripe_subscription_id', subscriptionId)
     .eq('status', 'past_due'); // only recover if it was past_due, not for first payment
 }
 

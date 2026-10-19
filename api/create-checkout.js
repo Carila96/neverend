@@ -14,6 +14,55 @@ const BASE_URL = 'https://damnrun.com';
 const ALLOWED_COUPONS = (process.env.ALLOWED_COUPON_IDS || '')
   .split(',').map(s => s.trim()).filter(Boolean);
 
+const PARTNER_OFFER = 'partner_free12_then_90';
+
+async function resolveDiscountCode(code) {
+  if (!code) return null;
+
+  // Partner codes are Stripe Promotion Codes. Their metadata defines the
+  // second-phase coupon, so a customer enters only one code once.
+  const partnerMatches = await stripe.promotionCodes.list({
+    code,
+    active: true,
+    limit: 1,
+  });
+  const promo = partnerMatches.data?.[0];
+  if (promo?.metadata?.app === 'neverend' &&
+      promo?.metadata?.offer === PARTNER_OFFER &&
+      promo?.metadata?.year2_coupon_id) {
+    const year1CouponId = typeof promo.promotion?.coupon === 'string'
+      ? promo.promotion.coupon
+      : promo.promotion?.coupon?.id;
+    if (!year1CouponId) throw new Error('Partner promotion is missing its first-year coupon');
+
+    const [year1, year2] = await Promise.all([
+      stripe.coupons.retrieve(year1CouponId),
+      stripe.coupons.retrieve(promo.metadata.year2_coupon_id),
+    ]);
+    const validYear1 = year1.valid && year1.percent_off === 100 &&
+      year1.duration === 'repeating' && year1.duration_in_months === 12;
+    const validYear2 = year2.valid && year2.percent_off === 90 &&
+      year2.duration === 'forever';
+    if (!validYear1 || !validYear2) throw new Error('Partner promotion configuration is invalid');
+
+    return {
+      discounts: [{ promotion_code: promo.id }],
+      partner: {
+        promotionCodeId: promo.id,
+        year1CouponId,
+        year2CouponId: year2.id,
+        slot: promo.metadata.partner_slot || '',
+      },
+    };
+  }
+
+  // Legacy coupon IDs remain server-allowlisted.
+  if (!ALLOWED_COUPONS.includes(code)) return null;
+  const coupon = await stripe.coupons.retrieve(code);
+  if (!coupon?.valid) return null;
+  return { discounts: [{ coupon: code }], partner: null };
+}
+
 // ★追加G: Authorization: Bearer <supabase access token> を検証する。
 //   logo.js の requireUser() と同じ形。
 async function requireUser(req, res) {
@@ -137,27 +186,31 @@ export default async function handler(req, res) {
       };
     }
 
-    // ★修正C: クーポンは許可リスト方式。
-    //   旧実装は「Stripe 上に存在して valid なら何でも適用」だったため、100% OFF の
-    //   クーポンを 1 つ作るだけで、ID を知る/推測した誰もが無料購入できる状態だった
-    //   （クーポン ID は LAUNCH50 のような推測しやすい文字列になりがち）。
-    //   許可リストはサーバー側の環境変数だけで持ち、クライアントには一切出さない。
-    //   リスト外は「無視」ではなく 400 で拒否する（黙って定価で通すと、割引が
-    //   効かない理由が購入者にも運用者にも分からなくなるため）。
     if (coupon_id) {
-      if (!ALLOWED_COUPONS.includes(coupon_id)) {
-        console.warn('[create-checkout] coupon not in allowlist:', coupon_id);
-        return res.status(400).json({ error: 'Invalid coupon code' });
-      }
       try {
-        const coupon = await stripe.coupons.retrieve(coupon_id);
-        if (coupon && coupon.valid) {
-          sessionParams.discounts = [{ coupon: coupon_id }];
-        } else {
+        const resolvedDiscount = await resolveDiscountCode(coupon_id);
+        if (!resolvedDiscount) {
+          console.warn('[create-checkout] invalid discount code:', coupon_id);
           return res.status(400).json({ error: 'Invalid coupon code' });
         }
+        sessionParams.discounts = resolvedDiscount.discounts;
+
+        if (resolvedDiscount.partner) {
+          // A 100% first invoice must still collect a reusable payment method
+          // for the automatic charge that begins in year two.
+          sessionParams.payment_method_collection = 'always';
+          Object.assign(metadata, {
+            partner_offer: PARTNER_OFFER,
+            partner_promo_code_id: resolvedDiscount.partner.promotionCodeId,
+            partner_year1_coupon_id: resolvedDiscount.partner.year1CouponId,
+            partner_year2_coupon_id: resolvedDiscount.partner.year2CouponId,
+            partner_slot: resolvedDiscount.partner.slot,
+          });
+          sessionParams.metadata = metadata;
+          sessionParams.subscription_data.metadata = metadata;
+        }
       } catch (couponErr) {
-        console.warn('Coupon not found or invalid:', coupon_id, couponErr.message);
+        console.warn('Coupon/promotion lookup failed:', coupon_id, couponErr.message);
         return res.status(400).json({ error: 'Invalid coupon code' });
       }
     }

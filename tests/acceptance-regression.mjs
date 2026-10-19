@@ -23,6 +23,19 @@ for(const metadata of [{session_key:'fixture'},{app:'neverend',session_key:'fixt
   const result=await webhookRoutingTest(metadata);assert.equal(result.res.code,500);assert.ok(result.dbCalls>0);assert.ok(result.res.body.error.includes('No reservation'));
 }
 assert.match(read('api/create-checkout.js'),/app: 'neverend'/);
+const checkoutSource=read('api/create-checkout.js');
+assert.match(checkoutSource,/promotionCodes\.list/);
+assert.match(checkoutSource,/payment_method_collection = 'always'/);
+assert.match(checkoutSource,/partner_free12_then_90/);
+assert.match(checkoutSource,/year1\.percent_off === 100/);
+assert.match(checkoutSource,/year1\.duration_in_months === 12/);
+assert.match(checkoutSource,/year2\.percent_off === 90/);
+assert.match(checkoutSource,/year2\.duration === 'forever'/);
+assert.match(webhookSource,/subscriptionSchedules\.create/);
+assert.match(webhookSource,/from_subscription: subscription\.id/);
+assert.match(webhookSource,/subscriptionSchedules\.update/);
+assert.match(webhookSource,/duration: \{ interval: 'year', interval_count: 1 \}/);
+assert.match(webhookSource,/discounts: \[\{ coupon: year2CouponId \}\]/);
 // Stripe 2025-03-31+ compatibility: invoice subscription location and item-level periods.
 assert.match(webhookSource,/invoice\?\.parent\?\.subscription_details\?\.subscription/);
 assert.match(webhookSource,/item\.current_period_start/);
